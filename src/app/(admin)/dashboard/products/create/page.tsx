@@ -1,27 +1,25 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+
+import { createProduct } from "./actions";
+import { createClient } from "@/utils/supabase/client";
 
 import { Button } from "@/components/atoms/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/atoms/card";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/atoms/form";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/atoms/form";
 import { Input } from "@/components/atoms/input";
 import { Textarea } from "@/components/atoms/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/atoms/select";
 import { Switch } from "@/components/atoms/switch";
 
+// Schema Validation Client-Side
 const productSchema = z.object({
   name: z.string().min(3, "Nama produk minimal 3 karakter"),
   slug: z.string().min(3, "Slug wajib diisi (unik)"),
@@ -35,7 +33,23 @@ const productSchema = z.object({
 type ProductFormValues = z.infer<typeof productSchema>;
 
 export default function CreateProductPage() {
-  // 2. Setup Form Hook
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+
+  // State untuk menyimpan kategori dari DB
+  const [categories, setCategories] = useState<any[]>([]);
+
+  // 1. Fetch Categories saat halaman dibuka
+  useEffect(() => {
+    const fetchCategories = async () => {
+      const supabase = createClient();
+      const { data, error } = await supabase.from("categories").select("id, name");
+      if (data) setCategories(data);
+      if (error) console.error("Error fetching categories:", error);
+    };
+    fetchCategories();
+  }, []);
+
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
     defaultValues: {
@@ -49,9 +63,28 @@ export default function CreateProductPage() {
     },
   });
 
-  function onSubmit(data: ProductFormValues) {
-    console.log("Data siap dikirim ke Supabase:", data);
-    alert("Cek Console (F12) untuk lihat data JSON");
+  // 2. Handle Submit - Mengubah data jadi FormData untuk dikirim ke Server Action
+  async function onSubmit(data: ProductFormValues) {
+    setIsLoading(true);
+
+    // Konversi object ke FormData (karena Server Action butuh FormData/Primitive)
+    const formData = new FormData();
+    formData.append("name", data.name);
+    formData.append("slug", data.slug);
+    formData.append("description", data.description || "");
+    formData.append("price", data.price.toString());
+    formData.append("stock", data.stock.toString());
+    formData.append("category_id", data.category_id);
+    formData.append("is_active", String(data.is_active));
+
+    // Panggil Server Action
+    const result = await createProduct(null, formData);
+
+    if (result?.error) {
+      alert(result.error); // Ganti dengan Toast kalau sudah setup
+      setIsLoading(false);
+    }
+    // Jika sukses, 'redirect' di server action akan otomatis memindahkan halaman
   }
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -66,7 +99,6 @@ export default function CreateProductPage() {
 
   return (
     <div className="max-w-4xl mx-auto">
-      {/* HEADER NAVIGASI */}
       <div className="flex items-center gap-4 mb-6">
         <Button variant="outline" size="icon" asChild className="h-7 w-7">
           <Link href="/dashboard/products">
@@ -81,7 +113,8 @@ export default function CreateProductPage() {
           <Button variant="outline" size="sm" asChild>
             <Link href="/dashboard/products">Discard</Link>
           </Button>
-          <Button size="sm" onClick={form.handleSubmit(onSubmit)}>
+          <Button size="sm" onClick={form.handleSubmit(onSubmit)} disabled={isLoading}>
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Save Product
           </Button>
         </div>
@@ -92,7 +125,6 @@ export default function CreateProductPage() {
           onSubmit={form.handleSubmit(onSubmit)}
           className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8"
         >
-          {/* KOLOM KIRI (UTAMA) */}
           <div className="grid auto-rows-max items-start gap-4 lg:col-span-2 lg:gap-8">
             <Card>
               <CardHeader>
@@ -101,7 +133,6 @@ export default function CreateProductPage() {
               </CardHeader>
               <CardContent>
                 <div className="grid gap-6">
-                  {/* Field Name */}
                   <FormField
                     control={form.control}
                     name="name"
@@ -109,18 +140,12 @@ export default function CreateProductPage() {
                       <FormItem>
                         <FormLabel>Name</FormLabel>
                         <FormControl>
-                          <Input
-                            placeholder="Contoh: Kopi Susu Gula Aren"
-                            {...field}
-                            onChange={handleNameChange} // Custom handler buat slug
-                          />
+                          <Input placeholder="Contoh: Kopi Susu" {...field} onChange={handleNameChange} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-
-                  {/* Field Slug */}
                   <FormField
                     control={form.control}
                     name="slug"
@@ -128,15 +153,12 @@ export default function CreateProductPage() {
                       <FormItem>
                         <FormLabel>Slug</FormLabel>
                         <FormControl>
-                          <Input placeholder="kopi-susu-gula-aren" {...field} />
+                          <Input {...field} />
                         </FormControl>
-                        <FormDescription>URL friendly name (otomatis terisi).</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-
-                  {/* Field Description */}
                   <FormField
                     control={form.control}
                     name="description"
@@ -144,7 +166,7 @@ export default function CreateProductPage() {
                       <FormItem>
                         <FormLabel>Description</FormLabel>
                         <FormControl>
-                          <Textarea className="min-h-32" placeholder="Deskripsi lengkap produk..." {...field} />
+                          <Textarea className="min-h-32" placeholder="Deskripsi..." {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -191,9 +213,7 @@ export default function CreateProductPage() {
             </Card>
           </div>
 
-          {/* KOLOM KANAN (SIDEBAR FORM) */}
           <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
-            {/* Status Card */}
             <Card>
               <CardHeader>
                 <CardTitle>Product Status</CardTitle>
@@ -206,7 +226,6 @@ export default function CreateProductPage() {
                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                       <div className="space-y-0.5">
                         <FormLabel className="text-base">Active</FormLabel>
-                        <FormDescription>Tampilkan di toko?</FormDescription>
                       </div>
                       <FormControl>
                         <Switch checked={field.value} onCheckedChange={field.onChange} />
@@ -217,7 +236,6 @@ export default function CreateProductPage() {
               </CardContent>
             </Card>
 
-            {/* Category Card */}
             <Card>
               <CardHeader>
                 <CardTitle>Category</CardTitle>
@@ -236,10 +254,18 @@ export default function CreateProductPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {/* Nanti ini ambil dari Database */}
-                          <SelectItem value="cat-1">Coffee</SelectItem>
-                          <SelectItem value="cat-2">Non-Coffee</SelectItem>
-                          <SelectItem value="cat-3">Snack</SelectItem>
+                          {/* MAPPING DATA KATEGORI DARI DATABASE */}
+                          {categories.length > 0 ? (
+                            categories.map((cat) => (
+                              <SelectItem key={cat.id} value={cat.id}>
+                                {cat.name}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="loading" disabled>
+                              Loading categories...
+                            </SelectItem>
+                          )}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -250,12 +276,11 @@ export default function CreateProductPage() {
             </Card>
           </div>
 
-          {/* TOMBOL SAVE MOBILE (Hanya muncul di HP) */}
           <div className="flex items-center justify-end gap-2 md:hidden">
-            <Button variant="outline" size="sm">
-              Discard
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/dashboard/products">Discard</Link>
             </Button>
-            <Button size="sm" onClick={form.handleSubmit(onSubmit)}>
+            <Button size="sm" onClick={form.handleSubmit(onSubmit)} disabled={isLoading}>
               Save Product
             </Button>
           </div>
