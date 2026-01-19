@@ -143,12 +143,12 @@ src/
 
 ## Admin Table Enhancement (NEXT)
 
-- [ ] TanStack Table integration
-- [ ] Sorting
-- [ ] Filtering (search & category)
-- [ ] Server-side pagination
-- [ ] Inline Active / Inactive toggle
-- [ ] Low-stock badge
+- [x] TanStack Table integration
+- [x] Sorting
+- [x] Filtering (search & category)
+- [x] Server-side pagination
+- [x] Inline Active / Inactive toggle
+- [x] Low-stock badge
 - [x] Sonner toast (success & error)
 - [x] Currency formatter (Rupiah)
 
@@ -165,19 +165,19 @@ src/
 
 ## Shoping Cart Logic
 
-- [ ] Setup Database Cart (Table `carts` & `cart_items`)
-- [ ] Server Action: `addToCart` (Cookie based session)
-- [ ] Client Component: `AddToCartButton` (Interaktif + Loading state)
-- [ ] Cart Page UI (/cart)
-- [ ] Update Quantity & Remove Item
+- [x] Setup Database Cart (Table `carts` & `cart_items`)
+- [x] Server Action: `addToCart` (Cookie based session)
+- [x] Client Component: `AddToCartButton` (Interaktif + Loading state)
+- [x] Cart Page UI (/cart)
+- [x] Update Quantity & Remove Item
 
 ## Store UX (NEXT)
 
-- [ ] Breadcrumb/Navigation Back
-- [ ] Filter produk via URL params (Category)
-- [ ] Search bar di Navbar berfungsi
-- [ ] Disable add-to-cart jika stok habis
-- [ ] Empty cart state
+- [x] Breadcrumb/Navigation Back
+- [x] Filter produk via URL params (Category)
+- [x] Search bar di Navbar berfungsi
+- [x] Disable add-to-cart jika stok habis
+- [x] Empty cart state
 
 # PHASE 5 — TRANSACTION & PAYMENT
 

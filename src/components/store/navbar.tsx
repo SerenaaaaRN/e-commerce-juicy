@@ -72,8 +72,10 @@ const Navbar = () => {
           </form>
 
           <Button variant="ghost" size="icon" aria-label="Shopping Cart">
-            <ShoppingBag className="h-5 w-5" />
-            <span className="sr-only">Cart</span>
+            <Link href="/cart">
+              <ShoppingBag className="h-5 w-5" />
+              <span className="sr-only">Cart</span>
+            </Link>
           </Button>
 
           <Button variant="ghost" size="icon" aria-label="User Account">

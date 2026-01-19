@@ -7,15 +7,8 @@ import { ChevronLeft, ShoppingCart, Check } from "lucide-react";
 import { Button } from "@/components/atoms/button";
 import { Badge } from "@/components/atoms/badge";
 import { Separator } from "@/components/atoms/separator";
-
-// Helper Format Rupiah
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    minimumFractionDigits: 0,
-  }).format(amount);
-};
+import { formatCurrency } from "@/lib/formatters";
+import { AddToCart } from "@/components/store/add-to-cart";
 
 interface ProductDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -27,11 +20,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
   const supabase = await createClient();
 
   // 2. Cari Produk di Database yang slug-nya COCOK
-  const { data: product, error } = await supabase
-    .from("products")
-    .select("*")
-    .eq("slug", slug)
-    .single();
+  const { data: product, error } = await supabase.from("products").select("*").eq("slug", slug).single();
 
   // 3. Kalau Gak Ketemu -> Lempar ke Halaman Not Found Next.js
   if (error || !product) {
@@ -89,10 +78,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
             </div>
 
             <div className="flex gap-4">
-              <Button size="lg" className="flex-1 gap-2">
-                <ShoppingCart className="h-5 w-5" />
-                Add to Cart
-              </Button>
+              <AddToCart productId={product.id} stock={product.stock} />
             </div>
           </div>
         </div>

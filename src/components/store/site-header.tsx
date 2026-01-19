@@ -2,13 +2,18 @@ import Link from "next/link";
 import { ShoppingCart, Search, Menu } from "lucide-react";
 import { Button } from "@/components/atoms/button";
 import { Input } from "@/components/atoms/input";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/atoms/sheet"; // Pastikan install sheet dulu
+import { Sheet, SheetContent, SheetTrigger } from "@/components/atoms/sheet";
+import { getCart } from "@/lib/cart";
+import { Badge } from "../atoms/badge";
 
-export function SiteHeader() {
+export async function SiteHeader() {
+  const cart = await getCart();
+  const cartCount = cart?.cart_items.reduce((acc, item) => acc + item.quantity, 0) || 0;
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center mx-auto px-4">
-        {/* MOBILE MENU (Hamburger) */}
+        {/* MOBILE MENU */}
         <Sheet>
           <SheetTrigger asChild>
             <Button
@@ -48,9 +53,6 @@ export function SiteHeader() {
             <Link href="/categories" className="transition-colors hover:text-foreground/80 text-foreground/60">
               Categories
             </Link>
-            <Link href="/about" className="transition-colors hover:text-foreground/80 text-foreground/60">
-              About
-            </Link>
           </nav>
         </div>
 
@@ -63,14 +65,24 @@ export function SiteHeader() {
             </div>
           </div>
 
-          <Button variant="ghost" size="icon" asChild>
+          {/* Cart Icon dengan Badge */}
+          <Button variant="ghost" size="icon" asChild className="relative">
             <Link href="/cart">
               <ShoppingCart className="h-5 w-5" />
               <span className="sr-only">Cart</span>
+
+              {/* Render Badge jika ada item */}
+              {cartCount > 0 && (
+                <Badge
+                  variant="destructive"
+                  className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center rounded-full p-0 text-[11px]"
+                >
+                  {cartCount}
+                </Badge>
+              )}
             </Link>
           </Button>
 
-          {/* Tombol Login Admin (Opsional, buat kamu akses dashboard) */}
           <Button variant="ghost" size="sm" asChild>
             <Link href="/login">Admin</Link>
           </Button>
