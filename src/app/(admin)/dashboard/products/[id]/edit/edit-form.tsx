@@ -1,12 +1,8 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react"; // Update: useActionState (Next.js 15) atau useFormState
-// Note: Di React 19/Next.js 15 'useFormState' diganti 'useActionState'.
-// Kalau error, ganti jadi 'useFormState' dari "react-dom".
-import { useFormState } from "react-dom";
+import { useActionState } from "react";
 
 import Link from "next/link";
-import { Loader2 } from "lucide-react";
 import { updateProduct } from "./actions";
 
 import { Button } from "@/components/atoms/button";
@@ -16,16 +12,16 @@ import { Textarea } from "@/components/atoms/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/atoms/select";
 import { Switch } from "@/components/atoms/switch";
 import { Label } from "@/components/atoms/label";
+import { Tables } from "@/types/supabase";
 
 interface EditProductFormProps {
-  product: any; // Data produk existing
-  categories: any[]; // Data kategori untuk dropdown
+  product: Tables<"products">;
+  categories: Tables<"categories">[];
 }
 
 export function EditProductForm({ product, categories }: EditProductFormProps) {
-  // Binding ID produk ke Server Action
   const updateProductWithId = updateProduct.bind(null, product.id);
-  const [state, formAction] = useFormState(updateProductWithId, null);
+  const [state, formAction, isPending] = useActionState(updateProductWithId, null);
 
   return (
     <form action={formAction}>
@@ -74,7 +70,7 @@ export function EditProductForm({ product, categories }: EditProductFormProps) {
                 </div>
                 <div className="grid gap-3">
                   <Label htmlFor="stock">Stock</Label>
-                  <Input id="stock" name="stock" type="number" defaultValue={product.stock} required />
+                  <Input id="stock" name="stock" type="number" defaultValue={product.stock || 0} required />
                 </div>
                 <div className="grid gap-3 col-span-2">
                   <Label>Category</Label>
@@ -103,7 +99,7 @@ export function EditProductForm({ product, categories }: EditProductFormProps) {
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-2">
-                <Switch id="is_active" name="is_active" value="true" defaultChecked={product.is_active} />
+                <Switch id="is_active" name="is_active" value="true" defaultChecked={product.is_active || false} />
                 <Label htmlFor="is_active">Active Status</Label>
               </div>
             </CardContent>

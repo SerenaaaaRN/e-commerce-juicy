@@ -1,22 +1,40 @@
-import AdminHeader from "@/components/admin/header";
-import AdminSidebar from "@/components/admin/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
+import { Separator } from "@/components/atoms/separator";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/atoms/sidebar";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/atoms/breadcrumb";
 
-const AdminLayout = ({ children }: { children: React.ReactNode }) => {
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen w-full">
-      <div className="hidden border-r bg-muted/40 md:block md:w-55 lg:w-70">
-        <div className="flex h-full max-h-screen flex-col gap-2">
-          <AdminSidebar />
-        </div>
-      </div>
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        {/* HEADER ADMIN (Breadcrumb + Trigger Sidebar) */}
+        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+          <SidebarTrigger className="-ml-1" />
+          <Separator orientation="vertical" className="mr-2 h-4" />
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem className="hidden md:block">
+                <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator className="hidden md:block" />
+              <BreadcrumbItem>
+                <BreadcrumbPage>Overview</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </header>
 
-      {/* main area */}
-      <div className="flex flex-col flex-1">
-        <AdminHeader />
-        <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">{children}</main>
-      </div>
-    </div>
+        {/* PAGE CONTENT */}
+        <div className="flex flex-1 flex-col gap-4 p-4">{children}</div>
+      </SidebarInset>
+    </SidebarProvider>
   );
-};
-
-export default AdminLayout;
+}

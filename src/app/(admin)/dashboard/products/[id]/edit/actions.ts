@@ -5,6 +5,13 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
+export type FormState = {
+  error?: string;
+  fieldErrors?: {
+    [key: string]: string[] | undefined;
+  };
+} | null;
+
 const productSchema = z.object({
   name: z.string().min(3),
   slug: z.string().min(3),
@@ -15,7 +22,7 @@ const productSchema = z.object({
   is_active: z.boolean(),
 });
 
-export async function updateProduct(productId: string, prevState: any, formData: FormData) {
+export async function updateProduct(productId: string, prevState: FormState, formData: FormData) {
   const supabase = await createClient();
 
   const rawData = {
