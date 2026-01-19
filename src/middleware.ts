@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
-import { NextResponse, type NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
-export async function middleware(request: NextRequest) {
+export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   });
@@ -25,9 +25,25 @@ export async function middleware(request: NextRequest) {
     }
   );
 
-  await supabase.auth.getUser();
+  // PENTING: Jangan gunakan getUser() di middleware Next.js
+  // Gunakan getSession() atau getUser() hanya untuk validasi token,
+  // tapi pastikan tidak memblokir static assets.
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user && !request.nextUrl.pathname.startsWith("/login") && !request.nextUrl.pathname.startsWith("/auth")) {
+    // Redirect ke login jika tidak ada user (opsional, sesuaikan kebutuhan)
+    // const url = request.nextUrl.clone();
+    // url.pathname = "/login";
+    // return NextResponse.redirect(url);
+  }
 
   return supabaseResponse;
+}
+
+export async function middleware(request: NextRequest) {
+  return await updateSession(request);
 }
 
 export const config = {
@@ -37,7 +53,7 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
+     * - public folder files
      */
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],

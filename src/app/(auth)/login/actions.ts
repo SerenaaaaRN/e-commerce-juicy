@@ -16,11 +16,13 @@ export async function login(formData: FormData) {
   });
 
   if (error) {
+    console.error("Login Error:", error.message);
     return redirect("/login?message=Gagal login: " + error.message);
   }
 
   revalidatePath("/", "layout");
-  redirect("/");
+  // Langsung ke dashboard biar sat-set ngetesnya
+  redirect("/dashboard");
 }
 
 export async function signup(formData: FormData) {
@@ -42,6 +44,7 @@ export async function signup(formData: FormData) {
   });
 
   if (error) {
+    console.error("Signup Error:", error.message);
     return redirect("/login?message=Gagal daftar: " + error.message);
   }
 

@@ -15,26 +15,8 @@ const productSchema = z.object({
   is_active: z.boolean(),
 });
 
-export async function createProduct(prevState: any, formData: FormData) {
+export async function updateProduct(productId: string, prevState: any, formData: FormData) {
   const supabase = await createClient();
-
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    console.error("❌ Auth Error di Server Action:", authError);
-    return { error: "Sesi habis atau tidak valid. Silakan login ulang." };
-  }
-
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-
-  console.log(`🔍 Debug User: ${user.email} | Role: ${profile?.role}`);
-
-  if (profile?.role !== "admin") {
-    return { error: "Akses Ditolak: Anda bukan Admin (Role detected: " + profile?.role + ")" };
-  }
 
   const rawData = {
     name: formData.get("name"),
@@ -55,11 +37,11 @@ export async function createProduct(prevState: any, formData: FormData) {
     };
   }
 
-  const { error } = await supabase.from("products").insert([validatedFields.data]);
+  const { error } = await supabase.from("products").update(validatedFields.data).eq("id", productId);
 
   if (error) {
-    console.error("❌ Supabase Insert Error:", error);
-    return { error: "Gagal menyimpan produk: " + error.message };
+    console.error("Error updating product:", error);
+    return { error: "Gagal update produk: " + error.message };
   }
 
   revalidatePath("/dashboard/products");
