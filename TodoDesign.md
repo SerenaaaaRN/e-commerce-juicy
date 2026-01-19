@@ -146,6 +146,7 @@ src/
 
 [x] CRUD kategori
 [x] Quick add kategori dari form produk
+[ ] saat ini user umum tanpa bukan role admin masih bisa crud dan masuk dashboard lewat url
 
 ## Admin Table Enhancement (NEXT)
 

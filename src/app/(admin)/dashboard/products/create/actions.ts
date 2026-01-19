@@ -24,6 +24,13 @@ const productSchema = z.object({
   is_active: z.boolean(),
 });
 
+/**
+ * Server Action untuk membuat produk baru.
+ * * @param prevState - State sebelumnya (diperlukan oleh useActionState)
+ * @param formData - Data form yang dikirim dari client
+ * @returns Object state yang berisi error jika gagal, atau redirect jika sukses.
+ */
+
 export async function createProduct(prevState: FormState, formData: FormData) {
   const supabase = await createClient();
 
