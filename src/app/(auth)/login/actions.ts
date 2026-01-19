@@ -50,3 +50,25 @@ export async function signup(formData: FormData) {
 
   return redirect("/login?message=Cek email untuk konfirmasi akun");
 }
+
+/**
+ * Server Action untuk mengeluarkan user dari sesi aktif.
+ * Menghapus session di Supabase dan mengarahkan kembali ke halaman login.
+ */
+export async function logout() {
+  const supabase = await createClient();
+
+  // 1. Sign out dari Supabase (ini akan membersihkan session)
+  const { error } = await supabase.auth.signOut();
+
+  if (error) {
+    console.error("Logout error:", error.message);
+    // Kita tetap redirect karena biasanya session lokal sudah bersih
+  }
+
+  // 2. Bersihkan cache agar UI berubah (misal nama user di navbar hilang)
+  revalidatePath("/", "layout");
+  
+  // 3. Lempar ke halaman login
+  redirect("/login");
+}

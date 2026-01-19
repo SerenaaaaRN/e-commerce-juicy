@@ -67,11 +67,7 @@ const Navbar = () => {
           <form className="hidden sm:flex-1 sm:flex sm:w-auto">
             <div className="relative">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="search"
-                placeholder="Search products..."
-                className="pl-8 sm:w-75 md:w-50 lg:w-75"
-              />
+              <Input type="search" placeholder="Search products..." className="pl-8 sm:w-75 md:w-50 lg:w-75" />
             </div>
           </form>
 
@@ -81,8 +77,10 @@ const Navbar = () => {
           </Button>
 
           <Button variant="ghost" size="icon" aria-label="User Account">
-            <User className="h-5 w-5" />
-            <span className="sr-only">Account</span>
+            <Link href="/login">
+              <User className="h-5 w-5" />
+              <span className="sr-only">Account</span>
+            </Link>
           </Button>
         </div>
       </div>

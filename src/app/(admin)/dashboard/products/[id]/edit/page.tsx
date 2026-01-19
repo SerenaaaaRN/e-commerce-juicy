@@ -1,40 +1,32 @@
 import { notFound } from "next/navigation";
+import { getProductById } from "@/lib/data/products";
 import { createClient } from "@/utils/supabase/server";
-import { EditProductForm } from "./edit-form";
-import { ChevronLeft } from "lucide-react";
-import Link from "next/link";
-import { Button } from "@/components/atoms/button";
+import EditProductForm from "./edit-form";
 
-interface EditPageProps {
-  params: Promise<{ id: string }>;
-}
-
-export default async function EditProductPage({ params }: EditPageProps) {
-  const { id } = await params;
+/**
+ * Server Component untuk halaman Edit Produk.
+ * Menangani pengambilan data di sisi server sebelum dikirim ke Client Form.
+ */
+export default async function EditProductPage(props: { params: Promise<{ id: string }> }) {
+  const { id } = await props.params;
   const supabase = await createClient();
 
-  const { data: product, error } = await supabase.from("products").select("*").eq("id", id).single();
+  // Ambil data secara paralel untuk efisiensi
+  const [product, { data: categories }] = await Promise.all([
+    getProductById(id),
+    supabase.from("categories").select("*"),
+  ]);
 
-  const { data: categories } = await supabase.from("categories").select("*").eq("is_active", true);
-
-  if (error || !product) {
-    return notFound();
+  // Jika produk tidak ada, tampilkan halaman 404 standar Next.js
+  if (!product) {
+    notFound();
   }
 
   return (
-    <div className="mx-auto grid max-w-5xl flex-1 auto-rows-max gap-4">
-      <div className="flex items-center gap-4">
-        <Button variant="outline" size="icon" className="h-7 w-7" asChild>
-          <Link href="/dashboard/products">
-            <ChevronLeft className="h-4 w-4" />
-            <span className="sr-only">Back</span>
-          </Link>
-        </Button>
-        <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
-          Edit Product
-        </h1>
+    <div className="flex-1 space-y-4 p-8 pt-6">
+      <div className="flex items-center justify-between space-y-2">
+        <h2 className="text-3xl font-bold tracking-tight">Edit Product</h2>
       </div>
-
       <EditProductForm product={product} categories={categories || []} />
     </div>
   );

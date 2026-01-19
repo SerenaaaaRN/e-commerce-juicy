@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 import Link from "next/link";
 import { MoreHorizontal, Pencil, Trash } from "lucide-react";
 
@@ -13,7 +13,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/atoms/dropdown-menu";
-import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface ProductRowActionsProps {
   productId: string;
@@ -21,7 +21,6 @@ interface ProductRowActionsProps {
 
 export function ProductRowActions({ productId }: ProductRowActionsProps) {
   const [isPending, startTransition] = useTransition();
-  const router = useRouter();
 
   const handleDelete = () => {
     const confirmDelete = confirm("Apakah anda yakin ingin menghapus produk ini?");
@@ -30,9 +29,9 @@ export function ProductRowActions({ productId }: ProductRowActionsProps) {
     startTransition(async () => {
       try {
         await deleteProduct(productId);
-        // alert("Produk berhasil dihapus"); // Ganti toast kalau ada
+        toast.success("Produk berhasil dihapus"); // Notifikasi sukses
       } catch (error) {
-        alert("Gagal menghapus produk");
+        toast.error("Gagal menghapus produk" + error); // Notifikasi error
       }
     });
   };

@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/atoms/dropdown-menu";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/atoms/sidebar";
+import { logout } from "@/app/(auth)/login/actions";
 
 export function NavUser({
   user,
@@ -86,7 +87,10 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={async () => await logout()}
+              className="cursor-pointer text-destructive focus:text-destructive"
+            >
               <LogOut />
               Log out
             </DropdownMenuItem>

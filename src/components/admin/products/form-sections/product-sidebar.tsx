@@ -6,7 +6,7 @@ import { ImageUpload } from "@/components/admin/image-upload";
 
 interface ProductSidebarProps {
   initialData?: {
-    is_active: boolean;
+    is_active: boolean | null;
     image_url: string | null;
   };
 }
@@ -26,7 +26,7 @@ export function ProductFormSidebar({ initialData }: ProductSidebarProps) {
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-2">
-            <Switch id="is_active" name="is_active" value="true" defaultChecked={initialData?.is_active} />
+            <Switch id="is_active" name="is_active" value="true" defaultChecked={initialData?.is_active ?? true} />
             <Label htmlFor="is_active">Active Status</Label>
           </div>
         </CardContent>
