@@ -4,20 +4,11 @@ import Image from "next/image";
 import { Badge } from "@/components/atoms/badge";
 import { Button } from "@/components/atoms/button";
 import { Card, CardContent, CardFooter } from "@/components/atoms/card";
-
-// Helper IDR
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    minimumFractionDigits: 0,
-  }).format(amount);
-};
+import { formatCurrency } from "@/lib/formatters";
 
 export default async function StorePage() {
   const supabase = await createClient();
 
-  // Ambil data produk
   const { data: products } = await supabase
     .from("products")
     .select("*, categories(name)")
@@ -34,8 +25,8 @@ export default async function StorePage() {
             New Collection 2026
           </Badge>
           <h1 className="text-3xl font-bold sm:text-5xl md:text-6xl tracking-tighter">
-            Fresh Kicks for <br className="hidden sm:inline" />
-            Everyday Hustle.
+            Rillah kece abis <br className="hidden sm:inline" />
+            Everyday To be Happy.
           </h1>
           <div className="flex gap-4 mt-4">
             <Button size="lg" asChild>
@@ -49,9 +40,6 @@ export default async function StorePage() {
       <section className="container mx-auto px-4">
         <h2 className="text-2xl font-bold tracking-tight mb-6">Featured Products</h2>
 
-        {/* --- PERBAIKAN GRID DISINI --- */}
-        {/* Kita pakai 'grid-cols-2' untuk HP, dan langsung 'grid-cols-4' untuk tablet ke atas */}
-        {/* Class 'gap-6' memberi jarak antar kartu */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {products?.map((product) => (
             <Card

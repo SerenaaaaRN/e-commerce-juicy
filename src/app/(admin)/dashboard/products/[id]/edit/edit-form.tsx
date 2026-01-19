@@ -37,7 +37,7 @@ export default function EditProductForm({ product, categories }: EditProductForm
           <ProductFormSidebar initialData={product} />
 
           <div className="flex flex-col gap-2">
-            <Button type="submit" disabled={isPending}>
+            <Button  type="submit" disabled={isPending}>
               {isPending ? "Saving..." : "Save Changes"}
             </Button>
             <Button variant="outline" asChild>

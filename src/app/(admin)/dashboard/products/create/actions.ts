@@ -13,8 +13,7 @@ export type ActionState = {
 } | null;
 
 export async function createProduct(prevState: ActionState, formData: FormData): Promise<ActionState> {
-  // 1. Validasi menggunakan Schema terpusat
-  // Object.fromEntries mengubah FormData jadi object biasa
+  
   const validation = productSchema.safeParse(Object.fromEntries(formData.entries()));
 
   if (!validation.success) {

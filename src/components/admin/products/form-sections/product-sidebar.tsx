@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/atoms/card";
 import { Label } from "@/components/atoms/label";
@@ -37,7 +39,7 @@ export function ProductFormSidebar({ initialData }: ProductSidebarProps) {
           <CardTitle>Product Image</CardTitle>
         </CardHeader>
         <CardContent>
-          <ImageUpload onOnChange={setImageUrl} />
+          <ImageUpload defaultValue={imageUrl} onOnChange={setImageUrl} />
           {/* Hidden Input untuk mengirim URL ke server action */}
           <input type="hidden" name="image_url" value={imageUrl} />
         </CardContent>

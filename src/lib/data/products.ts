@@ -1,6 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
 import { Tables } from "@/types/supabase";
-import { unstable_cache } from "next/cache";
 
 /**
  * Tipe data produk lengkap dengan relasi kategori.

@@ -9,7 +9,7 @@ import { Input } from "@/components/atoms/input";
 
 interface ImageUploadProps {
   defaultValue?: string | null;
-  onOnChange: (url: string) => void; // Callback untuk kirim URL ke parent form
+  onOnChange: (url: string) => void; 
 }
 
 export function ImageUpload({ defaultValue, onOnChange }: ImageUploadProps) {
@@ -22,9 +22,8 @@ export function ImageUpload({ defaultValue, onOnChange }: ImageUploadProps) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validasi sederhana
+    // validasi kalo file kurang dari 2mb
     if (file.size > 2 * 1024 * 1024) {
-      // 2MB limit
       alert("File terlalu besar (Max 2MB)");
       return;
     }
@@ -60,13 +59,13 @@ export function ImageUpload({ defaultValue, onOnChange }: ImageUploadProps) {
 
   const handleRemove = () => {
     setPreview(null);
-    onOnChange(""); // Kosongkan URL di parent
+    onOnChange(""); 
   };
 
   return (
     <div className="flex flex-col items-center gap-4">
       {/* Preview Container */}
-      <div className="relative flex aspect-square w-full max-w-[200px] items-center justify-center rounded-lg border border-dashed bg-gray-50">
+      <div className="relative flex aspect-square w-full max-w-50 items-center justify-center rounded-lg border border-dashed bg-gray-50">
         {isUploading ? (
           <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
         ) : preview ? (

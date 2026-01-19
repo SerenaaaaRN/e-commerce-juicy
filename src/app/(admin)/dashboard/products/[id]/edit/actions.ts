@@ -3,7 +3,7 @@
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { productSchema } from "@/lib/validation/product"; 
+import { productSchema } from "@/lib/validation/product";
 
 export type ActionState = {
   error?: string;
@@ -13,8 +13,10 @@ export type ActionState = {
 } | null;
 
 export async function updateProduct(id: string, prevState: ActionState, formData: FormData): Promise<ActionState> {
-  // 1. Validasi (Menggunakan aturan yang sama persis dengan Create)
-  const validation = productSchema.safeParse(Object.fromEntries(formData.entries()));
+  const rawData = Object.fromEntries(formData.entries());
+  console.log(rawData);
+
+  const validation = productSchema.safeParse(rawData);
 
   if (!validation.success) {
     return {
@@ -23,13 +25,12 @@ export async function updateProduct(id: string, prevState: ActionState, formData
     };
   }
 
-  // 2. Update Database
+  //  Update Database
   const supabase = await createClient();
   const { error } = await supabase
     .from("products")
     .update({
       ...validation.data,
-      updated_at: new Date().toISOString(), // Update timestamp
     })
     .eq("id", id);
 

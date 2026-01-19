@@ -18,7 +18,7 @@ export const productSchema = z.object({
   category_id: z.coerce.number({ message: "Kategori wajib dipilih" }),
 
   is_active: z.preprocess((val) => val === "true" || val === true, z.boolean()),
-  image_url: z.string().optional().nullable(),
+  image_url: z.preprocess((val) => (val === "" ? null : val), z.string().optional().nullable()),
 });
 
 export type ProductFormValues = z.infer<typeof productSchema>;

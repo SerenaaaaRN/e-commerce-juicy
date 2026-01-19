@@ -1,7 +1,10 @@
+"use client";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/atoms/card";
 import { Input } from "@/components/atoms/input";
 import { Label } from "@/components/atoms/label";
 import { Textarea } from "@/components/atoms/textarea";
+import { useState } from "react";
 
 /**
  * Props untuk komponen ProductGeneralInfo.
@@ -13,7 +16,6 @@ interface ProductGeneralInfoProps {
     slug?: string[];
     description?: string[];
   };
-  // Tambahan baru: Data awal untuk mode Edit
   initialData?: {
     name: string;
     slug: string;
@@ -29,6 +31,19 @@ interface ProductGeneralInfoProps {
  * @returns React Component
  */
 export function ProductGeneralInfo({ errors, initialData }: ProductGeneralInfoProps) {
+  const [slug, setSlug] = useState(initialData?.slug || "");
+
+  const slugify = (text: string) => {
+    return text
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+  };
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newSlug = slugify(e.target.value);
+    setSlug(newSlug);
+  };
   return (
     <Card>
       <CardHeader>
@@ -43,8 +58,9 @@ export function ProductGeneralInfo({ errors, initialData }: ProductGeneralInfoPr
               id="name"
               name="name"
               type="text"
-              placeholder="Contoh: Sepatu Nike"
+              placeholder="Enter the name of the item"
               defaultValue={initialData?.name}
+              onChange={handleNameChange}
               required
             />
             {/* menampilkan error jika ada */}
@@ -57,8 +73,8 @@ export function ProductGeneralInfo({ errors, initialData }: ProductGeneralInfoPr
               id="slug"
               name="slug"
               type="text"
-              placeholder="sepatu-nike"
-              defaultValue={initialData?.slug}
+              value={slug}
+              onChange={e=> setSlug(e.target.value)}
               required
             />
             {errors?.slug && <p className="text-destructive text-sm">{errors.slug[0]}</p>}
