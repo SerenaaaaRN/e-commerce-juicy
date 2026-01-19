@@ -1,26 +1,6 @@
-"use client";
+import { Frame, LayoutDashboard, MapIcon, Package, PieChart, Settings, Store } from "lucide-react";
 
-import * as React from "react";
-import {
-  LayoutDashboard,
-  Package,
-  ShoppingCart,
-  Users,
-  Settings,
-  Store,
-  PieChart,
-  Map as MapIcon,
-  Frame,
-} from "lucide-react";
-
-import { NavMain } from "@/components/nav-main";
-import { NavProjects } from "@/components/nav-projects";
-import { NavUser } from "@/components/nav-user";
-import { TeamSwitcher } from "@/components/team-switcher";
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from "@/components/atoms/sidebar";
-
-// DATA MENU ADMIN KITA
-const data = {
+export const adminNavConfig = {
   user: {
     name: "Admin",
     email: "admin@juicy.com",
@@ -104,21 +84,3 @@ const data = {
     },
   ],
 };
-
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  return (
-    <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
-      </SidebarHeader>
-      <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
-      </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={data.user} />
-      </SidebarFooter>
-      <SidebarRail />
-    </Sidebar>
-  );
-}
