@@ -25,19 +25,28 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  // 1. Ambil data user untuk validasi sesi
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // 2. PROTEKSI: Jika tidak ada user dan mencoba akses /dashboard
-  if (!user && request.nextUrl.pathname.startsWith("/dashboard")) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login"; // Lempar ke halaman login
-    return NextResponse.redirect(url);
+  // cek User & role
+  if (request.nextUrl.pathname.startsWith("/dashboard")) {
+    if (!user) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      return NextResponse.redirect(url);
+    }
+
+    const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+
+    if (profile?.role !== "admin") {
+      // jika bukan admin, lempar balik ke homepage store
+      const url = request.nextUrl.clone();
+      url.pathname = "/";
+      return NextResponse.redirect(url);
+    }
   }
 
-  // 3. OPTIONAL: Jika sudah login tapi malah buka /login, lempar ke /dashboard
   if (user && request.nextUrl.pathname.startsWith("/login")) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";

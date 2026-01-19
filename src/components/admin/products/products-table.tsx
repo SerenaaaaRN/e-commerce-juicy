@@ -1,70 +1,108 @@
+"use client";
+
+import {
+  ColumnDef,
+  ColumnFiltersState,
+  SortingState,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+
 import { Badge } from "@/components/atoms/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/atoms/table";
-import { ProductRowActions } from "@/components/admin/product-row-actions"; 
-import { Tables } from "@/types/supabase"; 
+import { ProductRowActions } from "@/components/admin/product-row-actions";
+import { Tables } from "@/types/supabase";
 import { formatCurrency, formatDate } from "@/lib/formatters";
+import { useState } from "react";
+
+import { columns } from "./columns";
+import { Search } from "lucide-react";
+import { Input } from "@/components/atoms/input";
+import { Button } from "@/components/atoms/button";
 
 type ProductWithCategory = Tables<"products"> & {
   categories: { name: string } | null;
 };
 
 export function ProductsTable({ products }: { products: ProductWithCategory[] }) {
-  if (!products || products.length === 0) {
-    return (
-      <div className="h-24 flex items-center justify-center text-muted-foreground border rounded-md">
-        Tidak ada produk ditemukan.
-      </div>
-    );
-  }
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+
+  const table = useReactTable({
+    data: products,
+    columns,
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    state: {
+      sorting,
+      columnFilters,
+    },
+  });
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="hidden w-25 sm:table-cell">Image</TableHead>
-          <TableHead>Name</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Price</TableHead>
-          <TableHead className="hidden md:table-cell">Stock</TableHead>
-          <TableHead className="hidden md:table-cell">Category</TableHead>
-          <TableHead className="hidden md:table-cell">Created at</TableHead>
-          <TableHead>
-            <span className="sr-only">Actions</span>
-          </TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {products.map((product) => (
-          <TableRow key={product.id}>
-            <TableCell className="hidden sm:table-cell">
-              
-              <div className="aspect-square rounded-md bg-gray-100 relative overflow-hidden h-16 w-16 flex items-center justify-center text-xs text-gray-400">
-                {product.image_url ? (
-                  <img alt={product.name} className="object-cover w-full h-full" src={product.image_url} />
-                ) : (
-                  "No Img"
-                )}
-              </div>
-            </TableCell>
-            <TableCell className="font-medium">
-              {product.name}
-              <div className="text-xs text-muted-foreground md:hidden">Stok: {product.stock}</div>
-            </TableCell>
-            <TableCell>
-              <Badge variant={product.is_active ? "default" : "secondary"}>
-                {product.is_active ? "Active" : "Draft"}
-              </Badge>
-            </TableCell>
-            <TableCell>{formatCurrency(product.price)}</TableCell>
-            <TableCell className="hidden md:table-cell">{product.stock}</TableCell>
-            <TableCell className="hidden md:table-cell">{product.categories?.name || "-"}</TableCell>
-            <TableCell className="hidden md:table-cell">{formatDate(product.created_at)}</TableCell>
-            <TableCell>
-              <ProductRowActions productId={product.id} />
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+    <div className="space-y-4">
+      <div className="flex items-center py-4">
+        <div className="relative max-w-sm w-full">
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Filter nama produk..."
+            className="pl-8"
+            value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+            onChange={(e) => table.getColumn("name")?.setFilterValue(e.target.value)}
+          />
+        </div>
+      </div>
+
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={columns.length} className="h-24 text-center">
+                  Tidak ada hasil.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      {/* pagination */}
+      <div>
+        <Button variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanNextPage()}>
+          Previous
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
+          Next
+        </Button>
+      </div>
+    </div>
   );
 }
