@@ -1,0 +1,102 @@
+import { createClient } from "@/utils/supabase/server";
+import { notFound } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
+import { ChevronLeft, ShoppingCart, Check } from "lucide-react";
+
+import { Button } from "@/components/atoms/button";
+import { Badge } from "@/components/atoms/badge";
+import { Separator } from "@/components/atoms/separator";
+
+// Helper Format Rupiah
+const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+  }).format(amount);
+};
+
+interface ProductDetailPageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export default async function ProductDetailPage({ params }: ProductDetailPageProps) {
+  // 1. Ambil Slug dari URL (misal: "sepatu-keren")
+  const { slug } = await params;
+  const supabase = await createClient();
+
+  // 2. Cari Produk di Database yang slug-nya COCOK
+  const { data: product, error } = await supabase
+    .from("products")
+    .select("*")
+    .eq("slug", slug)
+    .single();
+
+  // 3. Kalau Gak Ketemu -> Lempar ke Halaman Not Found Next.js
+  if (error || !product) {
+    return notFound();
+  }
+
+  // 4. Kalau Ketemu -> Tampilkan HTML-nya
+  return (
+    <div className="container mx-auto px-4 py-10">
+      {/* Tombol Back */}
+      <div className="mb-6">
+        <Button variant="ghost" size="sm" asChild className="pl-0 hover:bg-transparent hover:text-blue-600">
+          <Link href="/" className="flex items-center gap-1">
+            <ChevronLeft className="h-4 w-4" />
+            Back to Store
+          </Link>
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16">
+        {/* KIRI: FOTO PRODUK */}
+        <div className="space-y-4">
+          <div className="aspect-square relative bg-gray-100 rounded-xl overflow-hidden border">
+            {product.image_url ? (
+              <Image src={product.image_url} alt={product.name} fill className="object-cover" priority />
+            ) : (
+              <div className="flex h-full items-center justify-center text-gray-400">No Image</div>
+            )}
+          </div>
+        </div>
+
+        {/* KANAN: DETAIL INFO */}
+        <div className="flex flex-col gap-6">
+          <div>
+            <Badge variant="secondary" className="mb-3">
+              {product.categories?.name || "Product"}
+            </Badge>
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">{product.name}</h1>
+            <p className="mt-4 text-2xl font-bold text-blue-600">{formatCurrency(product.price)}</p>
+          </div>
+
+          <Separator />
+
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium text-gray-900">Description</h3>
+            <div className="prose prose-sm text-gray-500 leading-relaxed">
+              {product.description || "Belum ada deskripsi."}
+            </div>
+          </div>
+
+          <div className="space-y-4 pt-6">
+            <div className="flex items-center gap-2 text-sm text-green-600 font-medium">
+              <Check className="h-4 w-4" />
+              Stock Available: {product.stock}
+            </div>
+
+            <div className="flex gap-4">
+              <Button size="lg" className="flex-1 gap-2">
+                <ShoppingCart className="h-5 w-5" />
+                Add to Cart
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
