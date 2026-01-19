@@ -65,7 +65,6 @@ export const adminNavConfig = {
       ],
     },
   ],
-  // Bisa dipakai untuk Quick Links / External Tools
   projects: [
     {
       name: "Payment Gateway",
