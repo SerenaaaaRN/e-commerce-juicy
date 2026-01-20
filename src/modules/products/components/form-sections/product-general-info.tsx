@@ -69,14 +69,7 @@ export function ProductGeneralInfo({ errors, initialData }: ProductGeneralInfoPr
 
           <div className="grid gap-3">
             <Label htmlFor="slug">Slug</Label>
-            <Input
-              id="slug"
-              name="slug"
-              type="text"
-              value={slug}
-              onChange={e=> setSlug(e.target.value)}
-              required
-            />
+            <Input id="slug" name="slug" type="text" value={slug} onChange={(e) => setSlug(e.target.value)} required />
             {errors?.slug && <p className="text-destructive text-sm">{errors.slug[0]}</p>}
           </div>
 

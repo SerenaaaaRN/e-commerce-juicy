@@ -4,7 +4,7 @@ import { useTransition } from "react";
 import Link from "next/link";
 import { MoreHorizontal, Pencil, Trash } from "lucide-react";
 
-import { deleteProduct } from "@/app/(admin)/dashboard/products/actions";
+import { deleteProduct } from "@/modules/products/actions";
 import { Button } from "@/components/atoms/button";
 import {
   DropdownMenu,

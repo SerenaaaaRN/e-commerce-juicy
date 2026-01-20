@@ -17,7 +17,7 @@ interface ProductSidebarProps {
  * Komponen sidebar form (Status Aktif & Upload Gambar).
  * Menggunakan state internal untuk URL gambar agar bisa dikirim via hidden input.
  */
-export function ProductFormSidebar({ initialData }: ProductSidebarProps) {
+export function ProductSidebar({ initialData }: ProductSidebarProps) {
   const [imageUrl, setImageUrl] = useState(initialData?.image_url ?? "");
 
   return (

@@ -2,22 +2,13 @@ import { createClient } from "@/utils/supabase/server";
 import { Button } from "@/components/atoms/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/atoms/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/atoms/tabs";
-import { CalendarDateRangePicker } from "@/components/admin/date-range-picker"; 
 import { OverviewChart } from "@/components/admin/overview-chart";
 import { RecentSales } from "@/components/admin/recents-sales";
 import { Activity, CreditCard, DollarSign, Download, Users } from "lucide-react";
-
-// Helper format IDR (sama seperti sebelumnya)
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    minimumFractionDigits: 0,
-  }).format(amount);
-};
+import { formatCurrency } from "@/lib/formatters";
 
 export default async function DashboardPage() {
-  // --- DATA FETCHING (Masih sama, ambil data real) ---
+  
   const supabase = await createClient();
 
   const [{ count: productCount }, { count: activeProductCount }] = await Promise.all([

@@ -4,9 +4,9 @@ import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
 import { Badge } from "@/components/atoms/badge";
 import { Button } from "@/components/atoms/button";
-import { ProductRowActions } from "@/components/admin/product-row-actions";
+import { ProductRowActions } from "./product-row-actions";
 import { formatCurrency, formatDate } from "@/lib/formatters";
-import { ProductWithCategory } from "@/lib/data/products";
+import { ProductWithCategory } from "../types";
 
 export const columns: ColumnDef<ProductWithCategory>[] = [
   {

@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  ColumnDef,
   ColumnFiltersState,
   SortingState,
   flexRender,
@@ -12,11 +11,8 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 
-import { Badge } from "@/components/atoms/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/atoms/table";
-import { ProductRowActions } from "@/components/admin/product-row-actions";
 import { Tables } from "@/types/supabase";
-import { formatCurrency, formatDate } from "@/lib/formatters";
 import { useState } from "react";
 
 import { columns } from "./columns";
