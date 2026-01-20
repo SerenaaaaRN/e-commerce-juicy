@@ -1,30 +1,27 @@
-import { createClient } from "@/utils/supabase/server";
 import { Button } from "@/components/atoms/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/atoms/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/atoms/tabs";
-import { OverviewChart } from "@/components/admin/overview-chart";
-import { RecentSales } from "@/components/admin/recents-sales";
 import { Activity, CreditCard, DollarSign, Download, Users } from "lucide-react";
 import { formatCurrency } from "@/lib/formatters";
+import { OverviewChart } from "@/modules/dashboard/components/overview-chart";
+import { RecentSales } from "@/modules/dashboard/components/recent-sales";
+import { dashboardService } from "@/modules/dashboard/services/dashboard-service";
 
 export default async function DashboardPage() {
-  
-  const supabase = await createClient();
-
-  const [{ count: productCount }, { count: activeProductCount }] = await Promise.all([
-    supabase.from("products").select("*", { count: "exact", head: true }),
-    supabase.from("products").select("*", { count: "exact", head: true }).eq("is_active", true),
+  const [{ productCount, activeProductCount }, overviewData, recentSales] = await Promise.all([
+    dashboardService.getProductCounts(),
+    dashboardService.getSalesOverview(),
+    dashboardService.getRecentSales(),
   ]);
-  // --------------------------------------------------
 
   return (
-    // Container utama dengan padding
+    // container utama dengan padding
     <div className="flex-1 space-y-4 p-4 pt-6">
       {/* HEADER + ACTIONS */}
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
         <div className="flex items-center space-x-2">
-          {/* Simulasi Date Picker (Tombol dulu biar gak error) */}
+          {/* Simulasi Date Picker */}
           <Button variant="outline" className="hidden md:flex">
             Aug 20, 2025 - Sep 20, 2025
           </Button>
@@ -108,7 +105,7 @@ export default async function DashboardPage() {
             {/* Kolom Kiri: Chart */}
             <div className="col-span-4">
               {/* Kita pakai komponen chart yang sudah kita buat sebelumnya */}
-              <OverviewChart />
+              <OverviewChart data={overviewData} />
             </div>
 
             {/* Kolom Kanan: Recent Sales */}
@@ -119,7 +116,7 @@ export default async function DashboardPage() {
               </CardHeader>
               <CardContent>
                 {/* Komponen Recent Sales yang baru dibuat */}
-                <RecentSales />
+                <RecentSales items={recentSales} />
               </CardContent>
             </Card>
           </div>

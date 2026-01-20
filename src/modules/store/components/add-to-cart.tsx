@@ -1,10 +1,11 @@
 "use client";
 
 import { useTransition } from "react";
-import { Button } from "../atoms/button";
 import { Loader2, ShoppingCart } from "lucide-react";
-import { addToCart } from "@/modules/cart/actions";
 import { toast } from "sonner";
+
+import { Button } from "@/components/atoms/button";
+import { addToCart } from "@/modules/cart/actions";
 
 interface AddToCartProps {
   productId: string;
@@ -12,7 +13,6 @@ interface AddToCartProps {
 }
 
 export const AddToCart = ({ productId, stock }: AddToCartProps) => {
-  // menggunakan useTransition agar UI tidak freeze saat menunggu server action
   const [isPending, startTransition] = useTransition();
   const isOutOfStock = stock <= 0;
 
@@ -28,11 +28,16 @@ export const AddToCart = ({ productId, stock }: AddToCartProps) => {
     });
   };
 
+  // Logic Text Button:
+  // 1. Kalau Loading -> "Menambahkan..."
+  // 2. Kalau Stok Habis -> "Stok Habis"
+  // 3. Normal -> "Add to Cart"
+  const buttonText = isPending ? "Menambahkan..." : isOutOfStock ? "Stok Habis" : "Add to Cart";
+
   return (
     <Button size="lg" className="w-full md:w-auto" onClick={handleAddToCart} disabled={isPending || isOutOfStock}>
       {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShoppingCart className="mr-2 h-4 w-4" />}
-      {isOutOfStock ? "Stok Habis" : isPending ? "Menambahkan..." : "Add to Cart"}
-      {isOutOfStock ? "Stok Habis" : "Add to Cart"}
+      {buttonText}
     </Button>
   );
 };

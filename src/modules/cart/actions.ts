@@ -12,7 +12,7 @@ import { cartService } from "./services/cart-service";
 export async function addToCart(productId: string) {
   try {
     await cartService.addItem(productId);
-    // Revalidate layout agar badge cart & header ikut ter-update
+    // Revalidate path agar UI cart terupdate realtime
     revalidatePath("/", "layout");
   } catch (error) {
     console.error("[addToCart] Error:", error);

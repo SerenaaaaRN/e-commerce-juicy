@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/atoms/card";
 import { Label } from "@/components/atoms/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/atoms/select";
-import { ImageUpload } from "@/components/admin/image-upload";
+import { ImageUpload } from "@/modules/products/components/image-upload";
 
 interface ProductSidebarProps {
   defaultValues?: {

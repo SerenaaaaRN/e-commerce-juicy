@@ -1,17 +1,18 @@
 import Link from "next/link";
-import { ShoppingCart, Search, Menu } from "lucide-react";
+import { Menu, Search, ShoppingCart } from "lucide-react";
+
+import { Badge } from "@/components/atoms/badge";
 import { Button } from "@/components/atoms/button";
 import { Input } from "@/components/atoms/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/atoms/sheet";
 import { cartService } from "@/modules/cart/services/cart-service";
-import { Badge } from "../atoms/badge";
 
 export async function SiteHeader() {
   const cart = await cartService.getCart();
   const cartCount = cart?.cart_items.reduce((acc, item) => acc + item.quantity, 0) || 0;
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
       <div className="container flex h-16 items-center mx-auto px-4">
         {/* MOBILE MENU */}
         <Sheet>

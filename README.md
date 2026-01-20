@@ -1,3 +1,22 @@
+# Juicy Game
+
+![Hero Screenshot](/public/hero_view.png)
+
+## Tech Stack
+
+- **Framework:** Next.js 16
+- **Language:** TypeScript
+- **Database & Auth:** Supabase
+- **Styling:** Tailwind CSS
+- **UI Components:** shadcn/ui
+- **Validation:** Zod
+
+## Screenshots
+
+|                Dashboard Admin                 |
+| :--------------------------------------------: |
+| ![Admin Dashboard](/public/dashboard_view.png) |
+
 # Struktur Project
 
 ```text

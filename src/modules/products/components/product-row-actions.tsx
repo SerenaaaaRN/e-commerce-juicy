@@ -23,15 +23,17 @@ export function ProductRowActions({ productId }: ProductRowActionsProps) {
   const [isPending, startTransition] = useTransition();
 
   const handleDelete = () => {
+    if (isPending) return;
     const confirmDelete = confirm("Apakah anda yakin ingin menghapus produk ini?");
     if (!confirmDelete) return;
 
     startTransition(async () => {
       try {
         await deleteProduct(productId);
-        toast.success("Produk berhasil dihapus"); // Notifikasi sukses
+        toast.success("Produk berhasil dihapus");
       } catch (error) {
-        toast.error("Gagal menghapus produk" + error); // Notifikasi error
+        const message = error instanceof Error ? error.message : "Unknown error";
+        toast.error(`Gagal menghapus produk: ${message}`);
       }
     });
   };

@@ -28,7 +28,7 @@ export const CartItemActions = ({ itemId, quantity, className }: CartItemActions
         await updateCartItemQuantity(itemId, newQty);
       } catch (error) {
         toast.error("Gagal mengubah jumlah.");
-        console.log(error);
+        console.error(error);
       }
     });
   };
@@ -40,7 +40,7 @@ export const CartItemActions = ({ itemId, quantity, className }: CartItemActions
         toast.success("Item dihapus dari keranjang.");
       } catch (error) {
         toast.error("Gagal menghapus item.");
-        console.log(error);
+        console.error(error);
       }
     });
   };

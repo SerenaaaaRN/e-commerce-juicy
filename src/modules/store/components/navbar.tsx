@@ -1,11 +1,13 @@
+"use client";
+
 import Link from "next/link";
 import { Menu, Search, ShoppingBag, User } from "lucide-react";
 
 import { Button } from "@/components/atoms/button";
 import { Input } from "@/components/atoms/input";
-import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/atoms/sheet";
+import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/atoms/sheet";
 
-const Navbar = () => {
+export default function Navbar() {
   const routes = [
     { href: "/", label: "Home" },
     { href: "/catalog", label: "Catalog" },
@@ -28,7 +30,7 @@ const Navbar = () => {
             <nav className="grid gap-6 text-lg font-medium mt-6">
               <Link href="/" className="flex items-center gap-2 text-lg font-semibold">
                 <ShoppingBag className="h-6 w-6" />
-                <span>TokoSerena</span>
+                <span>Juicy Game</span>
               </Link>
               {routes.map((route) => (
                 <Link
@@ -46,7 +48,7 @@ const Navbar = () => {
         {/* LOGO DESKTOP */}
         <Link href="/" className="mr-6 hidden md:flex items-center gap-2 font-bold text-xl">
           <ShoppingBag className="h-6 w-6" />
-          <span>TokoSerena</span>
+          <span>Juicy Game</span>
         </Link>
 
         {/* NAVIGATION DESKTOP */}
@@ -88,6 +90,4 @@ const Navbar = () => {
       </div>
     </header>
   );
-};
-
-export default Navbar;
+}

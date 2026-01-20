@@ -7,7 +7,7 @@ import { Button } from "@/components/atoms/button";
 import { Badge } from "@/components/atoms/badge";
 import { Separator } from "@/components/atoms/separator";
 import { formatCurrency } from "@/lib/formatters";
-import { AddToCart } from "@/components/store/add-to-cart";
+import { AddToCart } from "@/modules/store/components/add-to-cart";
 import { productService } from "@/modules/products/services/product-service";
 
 interface ProductDetailPageProps {
@@ -15,21 +15,17 @@ interface ProductDetailPageProps {
 }
 
 export default async function ProductDetailPage({ params }: ProductDetailPageProps) {
-  // 1. Ambil Slug dari URL (misal: "sepatu-keren")
   const { slug } = await params;
 
-  // 2. Ambil detail produk via Service Layer
   const product = await productService.getBySlug(slug);
 
-  // 3. Kalau Gak Ketemu -> Lempar ke Halaman Not Found Next.js
   if (!product) {
     return notFound();
   }
 
-  // 4. Kalau Ketemu -> Tampilkan HTML-nya
   return (
     <div className="container mx-auto px-4 py-10">
-      {/* Tombol Back */}
+
       <div className="mb-6">
         <Button variant="ghost" size="sm" asChild className="pl-0 hover:bg-transparent hover:text-blue-600">
           <Link href="/" className="flex items-center gap-1">

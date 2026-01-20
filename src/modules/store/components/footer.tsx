@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { ShoppingBag, Facebook, Twitter, Instagram } from "lucide-react";
+import { Facebook, Instagram, ShoppingBag, Twitter } from "lucide-react";
 
-const Footer = () => {
+export default function Footer() {
   return (
     <footer className="w-full border-t bg-background">
       <div className="px-4 md:px-6 py-10 md:py-16">
@@ -98,6 +98,4 @@ const Footer = () => {
       </div>
     </footer>
   );
-};
-
-export default Footer;
+}

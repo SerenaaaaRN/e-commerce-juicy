@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader } from "@/components/atoms/card";
 
 /**
  * Halaman loading otomatis untuk Dashboard Products.
- * Memberikan feedback visual instan saat data sedang diambil.
  */
 export default function ProductsLoading() {
   return (

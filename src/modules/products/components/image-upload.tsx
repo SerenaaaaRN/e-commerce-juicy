@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import { createClient } from "@/utils/supabase/client"; 
-import { ImagePlus, Loader2, X } from "lucide-react";
 import Image from "next/image";
+import { useState } from "react";
+import { ImagePlus, Loader2, X } from "lucide-react";
+
 import { Button } from "@/components/atoms/button";
-import { Input } from "@/components/atoms/input"; 
+import { Input } from "@/components/atoms/input";
+import { createClient } from "@/utils/supabase/client";
+import { toast } from "sonner";
 
 interface ImageUploadProps {
   defaultValue?: string | null;
-  onOnChange: (url: string) => void; 
+  onOnChange: (url: string) => void;
 }
 
 export function ImageUpload({ defaultValue, onOnChange }: ImageUploadProps) {
@@ -24,34 +26,34 @@ export function ImageUpload({ defaultValue, onOnChange }: ImageUploadProps) {
 
     // validasi kalo file kurang dari 2mb
     if (file.size > 2 * 1024 * 1024) {
-      alert("File terlalu besar (Max 2MB)");
+      toast.error("File terlalu besar (Max 2MB)");
       return;
     }
 
     try {
       setIsUploading(true);
 
-      // 1. Buat nama file unik (timestamp-namafile)
       const fileExt = file.name.split(".").pop();
       const fileName = `${Date.now()}-${Math.random()}.${fileExt}`;
       const filePath = `${fileName}`;
 
-      // 2. Upload ke Supabase Storage
+      // upload ke Supabase Storage
       const { error: uploadError } = await supabase.storage.from("products").upload(filePath, file);
 
       if (uploadError) {
         throw uploadError;
       }
 
-      // 3. Ambil Public URL
+      // menambil Public URL
       const { data } = supabase.storage.from("products").getPublicUrl(filePath);
 
-      // 4. Update State & Parent Form
+      // update State & Parent Form
       setPreview(data.publicUrl);
       onOnChange(data.publicUrl);
     } catch (error) {
       console.error("Upload error:", error);
-      alert("Gagal mengupload gambar");
+
+      toast.error("Gagal mengupload gambar");
     } finally {
       setIsUploading(false);
     }
@@ -59,7 +61,7 @@ export function ImageUpload({ defaultValue, onOnChange }: ImageUploadProps) {
 
   const handleRemove = () => {
     setPreview(null);
-    onOnChange(""); 
+    onOnChange("");
   };
 
   return (

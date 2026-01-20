@@ -2,8 +2,8 @@
 
 import { useActionState, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/atoms/button";
 import {
@@ -16,7 +16,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/atoms/alert-dialog"; 
+} from "@/components/atoms/alert-dialog";
 import { Tables } from "@/types/supabase";
 
 import { updateProduct, deleteProduct } from "../actions";
@@ -35,15 +35,16 @@ export function EditProductForm({ product, categories }: EditProductFormProps) {
   const [state, formAction, isPending] = useActionState(updateProductWithId, null);
 
   const [isDeleting, setIsDeleting] = useState(false);
-  const router = useRouter();
 
   async function handleDelete() {
+    if (isDeleting) return;
     setIsDeleting(true);
     try {
       await deleteProduct(product.id);
-      // Redirect ditangani di server action, tapi kadang butuh refresh client side
+      toast.success("Produk berhasil dihapus");
     } catch (error) {
-      alert("Gagal menghapus produk");
+      const message = error instanceof Error ? error.message : "Unknown error";
+      toast.error(`Gagal menghapus produk: ${message}`);
       setIsDeleting(false);
     }
   }
@@ -108,6 +109,7 @@ export function EditProductForm({ product, categories }: EditProductFormProps) {
                   <AlertDialogAction
                     onClick={handleDelete}
                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    disabled={isDeleting}
                   >
                     {isDeleting ? "Deleting..." : "Delete"}
                   </AlertDialogAction>

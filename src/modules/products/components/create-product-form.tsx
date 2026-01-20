@@ -13,7 +13,13 @@ import { ProductSidebar } from "./form-sections/product-sidebar";
 interface CreateProductFormProps {
   categories: Tables<"categories">[];
 }
-
+/**
+ * Form utama pembuatan produk baru.
+ * Menggunakan Server Actions untuk submit data.
+ * * Struktur layout:
+ * - Kiri (2 kolom): Detail Produk & Inventaris
+ * - Kanan (1 kolom): Status & Gambar
+ */
 export function CreateProductForm({ categories }: CreateProductFormProps) {
   
   const [state, formAction, isPending] = useActionState(createProduct, null);
