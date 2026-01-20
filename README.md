@@ -20,7 +20,6 @@
 # Struktur Project
 
 ```text
-src/
 ├───app
 │   ├───(admin)
 │   │   └───dashboard
@@ -33,19 +32,31 @@ src/
 │   │   │   └───callback
 │   │   └───login
 │   └───(store)
+│       ├───cart
 │       └───products
 │           └───[slug]
 ├───components
 │   ├───admin
-│   │   └───products
-│   │       └───form-sections
 │   ├───atoms
-│   ├───layout
-│   └───store
+│   └───layout
 ├───hooks
 ├───lib
-│   ├───data
 │   └───validation
+├───modules
+│   ├───auth
+│   │   └───components
+│   ├───cart
+│   │   ├───components
+│   │   └───services
+│   ├───dashboard
+│   │   ├───components
+│   │   └───services
+│   ├───products
+│   │   ├───components
+│   │   │   └───form-sections
+│   │   └───services
+│   └───store
+│       └───components
 ├───types
 └───utils
     └───supabase
