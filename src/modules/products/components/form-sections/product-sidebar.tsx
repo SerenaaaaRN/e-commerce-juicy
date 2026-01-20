@@ -1,47 +1,70 @@
-"use client";
-
-import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/atoms/card";
 import { Label } from "@/components/atoms/label";
-import { Switch } from "@/components/atoms/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/atoms/select";
 import { ImageUpload } from "@/components/admin/image-upload";
 
 interface ProductSidebarProps {
-  initialData?: {
-    is_active: boolean | null;
-    image_url: string | null;
+  defaultValues?: {
+    is_active?: boolean;
+    image_url?: string | null;
   };
 }
 
-/**
- * Komponen sidebar form (Status Aktif & Upload Gambar).
- * Menggunakan state internal untuk URL gambar agar bisa dikirim via hidden input.
- */
-export function ProductSidebar({ initialData }: ProductSidebarProps) {
-  const [imageUrl, setImageUrl] = useState(initialData?.image_url ?? "");
-
+export function ProductSidebar({ defaultValues }: ProductSidebarProps) {
   return (
-    <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
+    <div className="grid gap-4">
+      {/* Status Card */}
       <Card>
         <CardHeader>
-          <CardTitle>Status</CardTitle>
+          <CardTitle>Product Status</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-2">
-            <Switch id="is_active" name="is_active" value="true" defaultChecked={initialData?.is_active ?? true} />
-            <Label htmlFor="is_active">Active Status</Label>
+          <div className="grid gap-6">
+            <div className="grid gap-3">
+              <Label htmlFor="status">Status</Label>
+              {/* Name "status" ini yang akan ditangkap di Action */}
+              <Select name="status" defaultValue={defaultValues?.is_active ? "active" : "draft"}>
+                <SelectTrigger id="status" aria-label="Select status">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      <Card>
+      {/* Image Upload Card */}
+      <Card className="overflow-hidden">
         <CardHeader>
-          <CardTitle>Product Image</CardTitle>
+          <CardTitle>Product Images</CardTitle>
         </CardHeader>
         <CardContent>
-          <ImageUpload defaultValue={imageUrl} onOnChange={setImageUrl} />
-          {/* Hidden Input untuk mengirim URL ke server action */}
-          <input type="hidden" name="image_url" value={imageUrl} />
+          <div className="grid gap-2">
+            {/* PR PENTING:
+               Component ImageUpload kamu harus bisa mengirim URL balik.
+               Cara paling simpel (sementara) kalau ImageUpload belum support return value:
+               Tambahkan input text biasa untuk URL image manual
+            */}
+
+            {/* Opsi 1: Jika ImageUpload cuma UI upload, kita butuh input text buat nampung URL (hidden atau visible) */}
+            <div className="text-xs text-muted-foreground mb-2">
+              *Upload belum terintegrasi sempurna, masukkan URL manual jika perlu.
+            </div>
+            <input
+              type="text"
+              name="image_url"
+              placeholder="https://..."
+              className="w-full border rounded p-2 text-sm"
+              defaultValue={defaultValues?.image_url || ""}
+            />
+
+            {/* Component Image Upload (Visual Only dulu sampai diperbaiki) */}
+            <ImageUpload initialImage={defaultValues?.image_url} />
+          </div>
         </CardContent>
       </Card>
     </div>

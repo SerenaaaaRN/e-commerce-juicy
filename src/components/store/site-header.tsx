@@ -3,11 +3,11 @@ import { ShoppingCart, Search, Menu } from "lucide-react";
 import { Button } from "@/components/atoms/button";
 import { Input } from "@/components/atoms/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/atoms/sheet";
-import { getCart } from "@/lib/cart";
+import { cartService } from "@/modules/cart/services/cart-service";
 import { Badge } from "../atoms/badge";
 
 export async function SiteHeader() {
-  const cart = await getCart();
+  const cart = await cartService.getCart();
   const cartCount = cart?.cart_items.reduce((acc, item) => acc + item.quantity, 0) || 0;
 
   return (

@@ -1,15 +1,15 @@
-import { getCart } from "@/lib/cart";
+import { cartService } from "@/modules/cart/services/cart-service";
 import { formatCurrency } from "@/lib/formatters";
 import { Button } from "@/components/atoms/button";
 import { Card, CardContent } from "@/components/atoms/card";
 import { Separator } from "@/components/atoms/separator";
 import { ShoppingBag } from "lucide-react";
-import { CartItemActions } from "@/lib/cart-item-actions";
+import { CartItemActions } from "@/modules/cart/components/cart-item-actions";
 import Image from "next/image";
 import Link from "next/link";
 
 const CartPage = async () => {
-  const cart = await getCart();
+  const cart = await cartService.getCart();
 
   const items = cart?.cart_items.sort((a, b) => a.id.localeCompare(b.id)) || [];
 

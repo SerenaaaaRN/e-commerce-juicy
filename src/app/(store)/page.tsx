@@ -1,4 +1,4 @@
-import { createClient } from "@/utils/supabase/server";
+import { productService } from "@/modules/products/services/product-service";
 import Link from "next/link";
 import Image from "next/image";
 import { Badge } from "@/components/atoms/badge";
@@ -7,14 +7,7 @@ import { Card, CardContent, CardFooter } from "@/components/atoms/card";
 import { formatCurrency } from "@/lib/formatters";
 
 export default async function StorePage() {
-  const supabase = await createClient();
-
-  const { data: products } = await supabase
-    .from("products")
-    .select("*, categories(name)")
-    .eq("is_active", true)
-    .order("created_at", { ascending: false })
-    .limit(8);
+  const products = await productService.getFeatured(8);
 
   return (
     <div className="flex flex-col gap-8 pb-10">

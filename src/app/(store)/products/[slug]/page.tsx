@@ -1,14 +1,14 @@
-import { createClient } from "@/utils/supabase/server";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronLeft, ShoppingCart, Check } from "lucide-react";
+import { ChevronLeft, Check } from "lucide-react";
 
 import { Button } from "@/components/atoms/button";
 import { Badge } from "@/components/atoms/badge";
 import { Separator } from "@/components/atoms/separator";
 import { formatCurrency } from "@/lib/formatters";
 import { AddToCart } from "@/components/store/add-to-cart";
+import { productService } from "@/modules/products/services/product-service";
 
 interface ProductDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -17,13 +17,12 @@ interface ProductDetailPageProps {
 export default async function ProductDetailPage({ params }: ProductDetailPageProps) {
   // 1. Ambil Slug dari URL (misal: "sepatu-keren")
   const { slug } = await params;
-  const supabase = await createClient();
 
-  // 2. Cari Produk di Database yang slug-nya COCOK
-  const { data: product, error } = await supabase.from("products").select("*").eq("slug", slug).single();
+  // 2. Ambil detail produk via Service Layer
+  const product = await productService.getBySlug(slug);
 
   // 3. Kalau Gak Ketemu -> Lempar ke Halaman Not Found Next.js
-  if (error || !product) {
+  if (!product) {
     return notFound();
   }
 
@@ -78,7 +77,7 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
             </div>
 
             <div className="flex gap-4">
-              <AddToCart productId={product.id} stock={product.stock} />
+              <AddToCart productId={product.id} stock={product.stock ?? 0} />
             </div>
           </div>
         </div>

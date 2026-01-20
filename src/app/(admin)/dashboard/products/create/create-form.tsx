@@ -5,9 +5,10 @@ import Link from "next/link";
 import { createProduct } from "./actions";
 import { Tables } from "@/types/supabase";
 import { Button } from "@/components/atoms/button";
-import { ProductGeneralInfo } from "@/components/admin/products/form-sections/product-general-info";
-import { ProductInventory } from "@/components/admin/products/form-sections/product-inventory";
-import { ProductFormSidebar } from "@/components/admin/products/form-sections/product-sidebar";
+
+import { ProductGeneralInfo } from "@/modules/products/components/form-sections/product-general-info";
+import { ProductInventory } from "@/modules/products/components/form-sections/product-inventory";
+import { ProductSidebar } from "@/modules/products/components/form-sections/product-sidebar";
 
 /**
  * Props untuk halaman CreateProductForm.
@@ -39,7 +40,7 @@ export function CreateProductForm({ categories }: CreateProductFormProps) {
 
         {/* KOLOM KANAN (Sidebar) */}
         <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
-          <ProductFormSidebar />
+          <ProductSidebar />
 
           {/* Action Buttons */}
           <div className="flex flex-col gap-2">

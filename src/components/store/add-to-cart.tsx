@@ -3,7 +3,7 @@
 import { useTransition } from "react";
 import { Button } from "../atoms/button";
 import { Loader2, ShoppingCart } from "lucide-react";
-import { addToCart } from "@/lib/cart";
+import { addToCart } from "@/modules/cart/actions";
 import { toast } from "sonner";
 
 interface AddToCartProps {

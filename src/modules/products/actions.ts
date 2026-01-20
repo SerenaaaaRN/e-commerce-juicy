@@ -5,28 +5,45 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { productSchema } from "@/lib/validation/product";
 
+// Helper function untuk bikin slug (misal: "Ayam Goreng" -> "ayam-goreng")
+function generateSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-") // Ganti karakter aneh dengan strip
+    .replace(/^-+|-+$/g, ""); // Hapus strip di awal/akhir
+}
+
 export type ActionState = {
   error?: string;
   fieldErrors?: Record<string, string[]>;
-  timestamp?: number; 
+  timestamp?: number;
 } | null;
 
 /**
- * Server Action untuk membuat produk baru.
+ * CREATE PRODUCT
  */
 export async function createProduct(prevState: ActionState, formData: FormData): Promise<ActionState> {
   const supabase = await createClient();
-
-  // validasi input dengan Zod
   const rawData = Object.fromEntries(formData.entries());
 
-  // konversi checkbox "is_active" & "is_featured" dari string "on" ke boolean
-  const validatedFields = productSchema.safeParse({
+  // 1. PRE-PROCESSING
+  // Ambil status dari Select dengan name="status"
+  // Jika value="active" -> true, selain itu false
+  const isActive = rawData.status === "active";
+
+  // Auto-generate slug dari name
+  const generatedSlug = generateSlug(rawData.name as string);
+
+  const payload = {
     ...rawData,
-    price: Number(rawData.price),
-    stock: Number(rawData.stock),
-    is_active: rawData.is_active === "on",
-  });
+    slug: generatedSlug, // Masukkan slug otomatis
+    is_active: isActive,
+    price: rawData.price === "" ? undefined : rawData.price,
+    stock: rawData.stock === "" ? undefined : rawData.stock,
+  };
+
+  // 2. VALIDASI
+  const validatedFields = productSchema.safeParse(payload);
 
   if (!validatedFields.success) {
     return {
@@ -38,54 +55,52 @@ export async function createProduct(prevState: ActionState, formData: FormData):
 
   const { data } = validatedFields;
 
-  // insert ke Database (Supabase)
+  // 3. INSERT DB
   const { error } = await supabase.from("products").insert({
     name: data.name,
-    slug: data.slug, // Pastikan slug digenerate di client atau di sini
+    slug: data.slug!, // Pasti ada karena udah digenerate
     description: data.description,
     price: data.price,
     stock: data.stock,
     category_id: data.category_id,
-    image_url: data.images?.[0] || null, 
+    image_url: data.image_url || null, // Pake key yang benar (image_url)
     is_active: data.is_active,
   });
 
   if (error) {
     console.error("[createProduct] DB Error:", error.message);
-    return {
-      error: "Gagal menyimpan produk ke database. Coba lagi nanti.",
-      timestamp: Date.now(),
-    };
+    return { error: `Gagal menyimpan: ${error.message}`, timestamp: Date.now() };
   }
 
-  // revalidate & Redirect
   revalidatePath("/dashboard/products");
-  revalidatePath("/"); 
+  revalidatePath("/");
   redirect("/dashboard/products");
 }
 
 /**
- * Server Action untuk mengupdate produk.
+ * UPDATE PRODUCT
  */
-export async function updateProduct(
-  id: string,
-  prevState: ActionState,
-  formData: FormData
-): Promise<ActionState> {
+export async function updateProduct(id: string, prevState: ActionState, formData: FormData): Promise<ActionState> {
   const supabase = await createClient();
   const rawData = Object.fromEntries(formData.entries());
 
-  // 1. Validasi Input (Reuse Schema yang sama)
-  const validatedFields = productSchema.safeParse({
+  // Logic Status & Slug (Slug bisa diupdate kalau nama berubah, atau biarkan tetap)
+  const isActive = rawData.status === "active";
+  const generatedSlug = generateSlug(rawData.name as string);
+
+  const payload = {
     ...rawData,
-    price: Number(rawData.price),
-    stock: Number(rawData.stock),
-    is_active: rawData.is_active === "on",
-  });
+    slug: generatedSlug,
+    is_active: isActive,
+    price: rawData.price === "" ? undefined : rawData.price,
+    stock: rawData.stock === "" ? undefined : rawData.stock,
+  };
+
+  const validatedFields = productSchema.safeParse(payload);
 
   if (!validatedFields.success) {
     return {
-      error: "Validasi gagal. Periksa input anda.",
+      error: "Validasi gagal.",
       fieldErrors: validatedFields.error.flatten().fieldErrors,
       timestamp: Date.now(),
     };
@@ -93,45 +108,39 @@ export async function updateProduct(
 
   const { data } = validatedFields;
 
-  // 2. Update ke Database
+  // Logic Gambar: Prioritas upload baru > existing
+  const finalImageUrl = data.image_url || (rawData.existing_image_url as string) || null;
+
   const { error } = await supabase
     .from("products")
     .update({
       name: data.name,
-      slug: data.slug,
+      slug: data.slug!,
       description: data.description,
       price: data.price,
       stock: data.stock,
       category_id: data.category_id,
-      image_url: data.images?.[0] || rawData.existing_image_url, // Handle logic gambar
+      image_url: finalImageUrl,
       is_active: data.is_active,
     })
     .eq("id", id);
 
   if (error) {
     console.error("[updateProduct] DB Error:", error.message);
-    return { error: "Gagal mengupdate produk.", timestamp: Date.now() };
+    return { error: `Gagal update: ${error.message}`, timestamp: Date.now() };
   }
 
-  // 3. Revalidate & Redirect
   revalidatePath("/dashboard/products");
   revalidatePath("/");
   redirect("/dashboard/products");
 }
 
 /**
- * Server Action untuk menghapus produk.
+ * DELETE PRODUCT
  */
 export async function deleteProduct(id: string) {
   const supabase = await createClient();
-
   const { error } = await supabase.from("products").delete().eq("id", id);
-
-  if (error) {
-    console.error("[deleteProduct] DB Error:", error.message);
-    // Di real app, sebaiknya return state error ke UI, tapi untuk simpelnya kita log dulu
-    throw new Error("Gagal menghapus produk");
-  }
-
+  if (error) throw new Error("Gagal menghapus produk");
   revalidatePath("/dashboard/products");
 }
