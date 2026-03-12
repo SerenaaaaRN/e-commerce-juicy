@@ -1,5 +1,5 @@
-import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { ArrowRightIcon, SparkleIcon } from "lucide-react";
 
 const Home = () => {

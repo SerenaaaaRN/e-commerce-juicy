@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 
 export function SonnerDemo() {
   return (

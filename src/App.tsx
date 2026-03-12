@@ -1,9 +1,8 @@
 import { Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/provider/theme-provider";
-import { Toaster } from "@/components/ui/Sonner";
+import { Toaster } from "@/components/ui/sonner";
 import Home from "@/pages/Home";
 import NotFound from "@/pages/NotFound";
-import DemoPage from "@/pages/DemoPage";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 
@@ -15,7 +14,6 @@ const App = () => {
         <main className="flex-1">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/DemoPage" element={<DemoPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>
