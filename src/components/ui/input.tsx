@@ -1,17 +1,13 @@
 import { cn } from "@/lib/utils";
 import type { ComponentProps } from "react";
 
-const Input = ({ className, ...props }: ComponentProps<"input">) => {
+type InputProps = ComponentProps<"input">;
+
+const Input = ({ className, ...props }: InputProps) => {
   return (
     <input
       className={cn(
-        "border-border focus-visible:border-ring focus-visible:ring-ring/50",
-        "text-foreground placeholder:text-muted-foreground bg-background",
-        "file:text-foreground file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium",
-        "disabled:bg-muted/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
-        "aria-invalid:border-destructive aria-invalid:ring-destructive/20",
-        "h-8 w-full min-w-0 rounded-lg border px-2.5 py-1 text-base transition-colors outline-none focus-visible:ring-3 aria-invalid:ring-3",
-        "md:text-sm",
+        "w-full h-12 bg-chalk border border-sand rounded-[4px] px-4 font-dm-sans text-sm text-soil placeholder:text-dust/60 transition-all duration-300 outline-none focus:border-terracotta focus:ring-1 focus:ring-terracotta/40 disabled:opacity-40 disabled:cursor-not-allowed",
         className
       )}
       {...props}

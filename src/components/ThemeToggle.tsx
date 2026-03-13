@@ -1,5 +1,5 @@
 import { useTheme } from "next-themes";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { SunIcon, MoonIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 

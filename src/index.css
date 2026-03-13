@@ -1,60 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
-
 @theme {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-chalk: #faf7f2;
+  --color-cream: #f5efe6;
+  --color-sand: #c9b99a;
+  --color-dust: #8c7b6b;
+  --color-soil: #3d2e22;
+  --color-terracotta: #b5633a;
+  --color-terracotta-light: #e8c4b0;
 
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
+  --color-background: var(--color-chalk);
+  --color-foreground: var(--color-soil);
+  --color-border: var(--color-sand);
+  --color-primary: var(--color-terracotta);
+  --color-primary-foreground: var(--color-chalk);
+  --color-secondary: var(--color-cream);
+  --color-secondary-foreground: var(--color-soil);
+  --color-muted: var(--color-cream);
+  --color-muted-foreground: var(--color-dust);
+  --color-ring: var(--color-terracotta);
 
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
+  --font-playfair: 'Playfair Display', Georgia, serif;
+  --font-dm-sans: 'DM Sans', Inter, ui-sans-serif, system-ui, sans-serif;
 
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
+  --text-label-xs: 11px;
+  --text-caption: 12px;
+  --text-body-sm: 13px;
+  --text-body: 14px;
+  --text-body-lg: 15px;
+  --text-heading-xs: 32px;
+  --text-heading-sm: 48px;
+  --text-heading: 72px;
+  --text-display: 96px;
+  --text-hero: 140px;
 
-  --color-border: var(--border);
-  --color-ring: var(--ring);
-
-  --radius: var(--radius);
+  --radius-btn: 2px;
+  --radius-input: 4px;
+  --radius-badge: 2px;
 }
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --primary: #333336;
-  --primary-foreground: #fafafa;
-  --secondary: #f4f4f5;
-  --secondary-foreground: #333336;
-  --muted: #f4f4f5;
-  --muted-foreground: #818185;
-  --border: #e4e4e7;
-  --ring: #a1a1aa;
-  --radius: 0.625rem;
-}
-
-.dark {
-  --background: #0a0a0a;
-  --foreground: #fafafa;
-  --primary: #e4e4e7;
-  --primary-foreground: #333336;
-  --secondary: #434347;
-  --secondary-foreground: #fafafa;
-  --muted: #434347;
-  --muted-foreground: #a1a1aa;
-  --border: #ffffff1a;
-  --ring: #818185;
+  background-color: var(--color-chalk);
+  color: var(--color-soil);
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-sand outline-terracotta/50;
   }
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-background text-foreground font-dm-sans antialiased;
   }
   html {
     @apply scroll-smooth;

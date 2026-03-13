@@ -5,7 +5,7 @@ const Card = ({ className, ...props }: ComponentProps<"div">) => {
   return (
     <div
       className={cn(
-        "group/card bg-background text-foreground ring-border relative flex flex-col gap-4 overflow-hidden rounded-xl py-4 text-sm ring-1 has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:gap-3 data-[size=sm]:py-3 data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+        "group/card bg-transparent text-foreground relative flex flex-col gap-3 overflow-hidden rounded-none border-0 shadow-none text-sm",
         className
       )}
       {...props}
@@ -17,7 +17,7 @@ const CardHeader = ({ className, ...props }: ComponentProps<"header">) => {
   return (
     <header
       className={cn(
-        "group/card-header border-border @container/card-header grid auto-rows-min items-start gap-1 rounded-t-xl px-4 group-data-[size=sm]/card:px-3 has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto] [.border-b]:pb-4 group-data-[size=sm]/card:[.border-b]:pb-3",
+        "group/card-header flex flex-col gap-1 rounded-none px-0 pb-2",
         className
       )}
       {...props}
@@ -29,7 +29,7 @@ const CardTitle = ({ className, ...props }: ComponentProps<"h3">) => {
   return (
     <h3
       className={cn(
-        "font-heading text-foreground text-base leading-snug font-medium group-data-[size=sm]/card:text-sm",
+        "font-playfair text-soil text-xl font-normal leading-snug tracking-tight",
         className
       )}
       {...props}
@@ -38,22 +38,18 @@ const CardTitle = ({ className, ...props }: ComponentProps<"h3">) => {
 };
 
 const CardDescription = ({ className, ...props }: ComponentProps<"p">) => {
-  return <p className={cn("text-muted-foreground text-sm", className)} {...props} />;
-};
-
-const CardAction = ({ className, ...props }: ComponentProps<"div">) => {
-  return <div className={cn("col-start-2 row-span-2 row-start-1 self-start justify-self-end", className)} {...props} />;
+  return <p className={cn("text-dust font-dm-sans text-xs font-normal leading-relaxed", className)} {...props} />;
 };
 
 const CardContent = ({ className, ...props }: ComponentProps<"div">) => {
-  return <div className={cn("px-4 group-data-[size=sm]/card:px-3", className)} {...props} />;
+  return <div className={cn("px-0", className)} {...props} />;
 };
 
 const CardFooter = ({ className, ...props }: ComponentProps<"footer">) => {
   return (
     <footer
       className={cn(
-        "bg-muted/50 border-border flex items-center rounded-b-xl border-t p-4 group-data-[size=sm]/card:p-3",
+        "border-t border-sand/30 flex items-center justify-between pt-3 px-0",
         className
       )}
       {...props}
@@ -61,4 +57,4 @@ const CardFooter = ({ className, ...props }: ComponentProps<"footer">) => {
   );
 };
 
-export { Card, CardHeader, CardTitle, CardDescription, CardAction, CardContent, CardFooter };
+export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter };
