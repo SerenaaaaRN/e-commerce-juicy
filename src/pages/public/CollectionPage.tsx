@@ -25,7 +25,7 @@ const CollectionPage = () => {
 
   // Simulate loading state on category or page changes to show beautiful skeletons
   useEffect(() => {
-    setLoading(true);
+    const raf = requestAnimationFrame(() => setLoading(true));
     const timer = setTimeout(() => {
       setLoading(false);
       // Re-trigger staggers after skeletons disappear
@@ -34,7 +34,10 @@ const CollectionPage = () => {
       }, 50);
     }, 450);
 
-    return () => clearTimeout(timer);
+    return () => {
+      cancelAnimationFrame(raf);
+      clearTimeout(timer);
+    };
   }, [activeCategory, sortBy, currentPage]);
 
   // Handle Category tab change

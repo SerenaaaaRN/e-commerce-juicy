@@ -14,10 +14,64 @@ import { ShieldCheck, Truck, RefreshCw } from "lucide-react";
 const ProductPage = () => {
   const { slug } = useParams<{ slug: string }>();
 
+  // Smooth scroll
+  useEffect(() => {
+    const lenis = initLenis();
+    window.scrollTo(0, 0);
+    lenis?.scrollTo(0, { immediate: true });
+  }, [slug]);
+
   // Find product from mock database
   const product = useMemo(() => {
     return MOCK_PRODUCTS.find((p) => p.slug === slug);
   }, [slug]);
+
+  // Add to cart store hook
+  const addItem = useCartStore((state) => state.addItem);
+
+  // Gallery states
+  const [activeImage, setActiveImage] = useState(product?.primary_image || "");
+
+  // Variant selections
+  const [selectedColor, setSelectedColor] = useState<string>(product?.variants[0]?.color || "");
+  const [selectedSize, setSelectedSize] = useState<"XS" | "S" | "M" | "L">("S");
+  const [quantity, setQuantity] = useState(1);
+
+  // Filter sizes based on selected color
+  const colorVariants = useMemo(() => {
+    if (!product) return [];
+    return product.variants.filter((v) => v.color === selectedColor);
+  }, [product, selectedColor]);
+
+  // Active selected variant
+  const activeVariant = useMemo(() => {
+    if (!product) return undefined;
+    return product.variants.find(
+      (v) => v.color === selectedColor && v.size === selectedSize
+    );
+  }, [product, selectedColor, selectedSize]);
+
+  // Unique colors in variants
+  const uniqueColors = useMemo(() => {
+    if (!product) return [];
+    const seen = new Set();
+    return product.variants.filter((v) => {
+      const duplicate = seen.has(v.color);
+      seen.add(v.color);
+      return !duplicate;
+    });
+  }, [product]);
+
+  // Review states
+  const [reviews, setReviews] = useState(product?.reviews || []);
+  const [reviewName, setReviewName] = useState("");
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewBody, setReviewBody] = useState("");
+
+  const avgRating = useMemo(() => {
+    if (reviews.length === 0) return 0;
+    return Number((reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1));
+  }, [reviews]);
 
   if (!product) {
     return (
@@ -31,44 +85,20 @@ const ProductPage = () => {
     );
   }
 
-  // Smooth scroll
-  useEffect(() => {
-    const lenis = initLenis();
-    window.scrollTo(0, 0);
-    lenis?.scrollTo(0, { immediate: true });
-  }, [slug]);
+  // Handlers
 
-  // Gallery states
-  const [activeImage, setActiveImage] = useState(product.primary_image);
-
-  // Variant selections
-  const [selectedColor, setSelectedColor] = useState<string>(product.variants[0]?.color || "");
-  const [selectedSize, setSelectedSize] = useState<"XS" | "S" | "M" | "L">("S");
-  const [quantity, setQuantity] = useState(1);
-
-  // Filter sizes based on selected color
-  const colorVariants = useMemo(() => {
-    return product.variants.filter((v) => v.color === selectedColor);
-  }, [product, selectedColor]);
-
-  // Active selected variant
-  const activeVariant = useMemo(() => {
-    return product.variants.find(
-      (v) => v.color === selectedColor && v.size === selectedSize
-    );
-  }, [product, selectedColor, selectedSize]);
-
-  // If active variant is out of stock, auto-select first available size
-  useEffect(() => {
-    if (colorVariants.length > 0 && (!activeVariant || activeVariant.stock === 0)) {
-      const firstAvailable = colorVariants.find((v) => v.stock > 0);
-      if (firstAvailable) {
-        setSelectedSize(firstAvailable.size);
-      } else {
-        setSelectedSize(colorVariants[0].size);
-      }
+  const handleColorChange = (color: string) => {
+    setSelectedColor(color);
+    const variants = product.variants.filter((v) => v.color === color);
+    if (variants.length > 0) {
+      const firstAvailable = variants.find((v) => v.stock > 0);
+      setSelectedSize(firstAvailable ? firstAvailable.size : variants[0].size as "XS" | "S" | "M" | "L");
     }
-  }, [selectedColor, colorVariants, activeVariant]);
+  };
+
+  const handleSizeChange = (size: "XS" | "S" | "M" | "L") => {
+    setSelectedSize(size);
+  };
 
   // Quantity controllers
   const handleQuantityIncrease = () => {
@@ -84,18 +114,6 @@ const ProductPage = () => {
     if (quantity > 1) setQuantity(quantity - 1);
   };
 
-  // Unique colors in variants
-  const uniqueColors = useMemo(() => {
-    const seen = new Set();
-    return product.variants.filter((v) => {
-      const duplicate = seen.has(v.color);
-      seen.add(v.color);
-      return !duplicate;
-    });
-  }, [product]);
-
-  // Add to cart handler
-  const addItem = useCartStore((state) => state.addItem);
   const handleAddToCart = () => {
     if (!activeVariant) return;
     if (activeVariant.stock === 0) {
@@ -107,17 +125,6 @@ const ProductPage = () => {
       setQuantity(1); // Reset stepper
     }
   };
-
-  // Review states
-  const [reviews, setReviews] = useState(product.reviews || []);
-  const [reviewName, setReviewName] = useState("");
-  const [reviewRating, setReviewRating] = useState(5);
-  const [reviewBody, setReviewBody] = useState("");
-
-  const avgRating = useMemo(() => {
-    if (reviews.length === 0) return 0;
-    return Number((reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1));
-  }, [reviews]);
 
   const handleReviewSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -134,25 +141,17 @@ const ProductPage = () => {
       created_at: new Date().toISOString().slice(0, 10),
     };
 
-    // Update reviews state
-    const updatedReviews = [newReview, ...reviews];
-    setReviews(updatedReviews);
-
-    // Update main object model for interactive PD page sync
-    product.reviews = updatedReviews;
-    product.avg_rating = Number((updatedReviews.reduce((sum, r) => sum + r.rating, 0) / updatedReviews.length).toFixed(1));
-    product.review_count = updatedReviews.length;
+    setReviews([newReview, ...reviews]);
 
     toast.success("Thank you! Your review has been added.");
-    
-    // Clear forms
+
     setReviewName("");
     setReviewRating(5);
     setReviewBody("");
   };
 
   const formatPrice = (value: number) => {
-    return new Intl.NumberFormat("id-IDR", {
+    return new Intl.NumberFormat("id-ID", {
       style: "currency",
       currency: "IDR",
       maximumFractionDigits: 0,
@@ -281,10 +280,7 @@ const ProductPage = () => {
                       return (
                         <button
                           key={v.id}
-                          onClick={() => {
-                            setSelectedColor(v.color);
-                            // Auto select corresponding image if any, or default
-                          }}
+                          onClick={() => handleColorChange(v.color)}
                           className={`size-8 rounded-full border flex items-center justify-center cursor-pointer transition-all ${
                             isActive ? "border-terracotta ring-1 ring-terracotta/40 scale-105" : "border-sand/40 hover:border-dust"
                           }`}
@@ -316,7 +312,7 @@ const ProductPage = () => {
                       <button
                         key={size}
                         disabled={!variantForSize}
-                        onClick={() => setSelectedSize(size)}
+                        onClick={() => handleSizeChange(size)}
                         className={`h-11 px-5 text-xs font-semibold rounded-[2px] transition-all flex items-center justify-center min-w-[50px] ${
                           !variantForSize
                             ? "bg-cream/20 text-dust/20 cursor-not-allowed border border-sand/10 line-through"

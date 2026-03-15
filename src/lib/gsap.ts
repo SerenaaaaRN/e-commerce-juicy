@@ -40,7 +40,7 @@ export const JuicyMotion = {
   imageDrift: (elementSelector: string) => {
     if (prefersReducedMotion()) return;
 
-    gsap.utils.toArray(elementSelector).forEach((img: any) => {
+    (gsap.utils.toArray(elementSelector) as HTMLElement[]).forEach((img) => {
       img.style.willChange = "transform";
       
       gsap.fromTo(
@@ -61,7 +61,7 @@ export const JuicyMotion = {
   },
 
   fadeUp: (elementSelector: string) => {
-    gsap.utils.toArray(elementSelector).forEach((el: any) => {
+    (gsap.utils.toArray(elementSelector) as HTMLElement[]).forEach((el) => {
       const isReduced = prefersReducedMotion();
 
       gsap.fromTo(

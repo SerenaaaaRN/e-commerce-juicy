@@ -50,13 +50,7 @@ const CheckoutPage = () => {
     return addresses.find((addr) => addr.is_default) || addresses[0] || null;
   }, [addresses]);
 
-  const [selectedAddressId, setSelectedAddressId] = useState<string>("");
-
-  useEffect(() => {
-    if (defaultAddress) {
-      setSelectedAddressId(defaultAddress.id);
-    }
-  }, [defaultAddress]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string>(defaultAddress?.id || "");
 
   const selectedAddress = useMemo(() => {
     return addresses.find((addr) => addr.id === selectedAddressId) || defaultAddress;
@@ -112,7 +106,7 @@ const CheckoutPage = () => {
   const [shippingNotes, setShippingNotes] = useState("");
 
   const formatPrice = (value: number) => {
-    return new Intl.NumberFormat("id-IDR", {
+    return new Intl.NumberFormat("id-ID", {
       style: "currency",
       currency: "IDR",
       maximumFractionDigits: 0,

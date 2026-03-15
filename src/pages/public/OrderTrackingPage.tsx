@@ -7,6 +7,14 @@ import { initLenis } from "@/lib/lenis";
 import { toast } from "sonner";
 import { Check, ClipboardList, Package, Truck, Home, Search, Star } from "lucide-react";
 
+const steps = [
+  { key: "pending", title: "Order Placed", desc: "Awaiting confirmation and payment verification.", icon: ClipboardList },
+  { key: "confirmed", title: "Order Confirmed", desc: "Your order is approved and locked for picking.", icon: Check },
+  { key: "processing", title: "Atelier Packing", desc: "Silhouettes are wrapped in custom canvas packaging.", icon: Package },
+  { key: "shipped", title: "In Transit", desc: "Dispatched via JNE Cargo Express (Tracking: JNE90284X)", icon: Truck },
+  { key: "delivered", title: "Delivered", desc: "Garments arrived and accepted at destination address.", icon: Home },
+] as const;
+
 const OrderTrackingPage = () => {
   const { orderNumber } = useParams<{ orderNumber: string }>();
   const getOrder = useOrderStore((state) => state.getOrder);
@@ -28,13 +36,6 @@ const OrderTrackingPage = () => {
     lenis?.scrollTo(0, { immediate: true });
   }, [currentOrderNumber]);
 
-  // Update input when param changes
-  useEffect(() => {
-    if (orderNumber) {
-      setCurrentOrderNumber(orderNumber);
-    }
-  }, [orderNumber]);
-
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -46,27 +47,18 @@ const OrderTrackingPage = () => {
   };
 
   const formatPrice = (value: number) => {
-    return new Intl.NumberFormat("id-IDR", {
+    return new Intl.NumberFormat("id-ID", {
       style: "currency",
       currency: "IDR",
       maximumFractionDigits: 0,
     }).format(value);
   };
 
-  // Define steps
-  const steps = [
-    { key: "pending", title: "Order Placed", desc: "Awaiting confirmation and payment verification.", icon: ClipboardList },
-    { key: "confirmed", title: "Order Confirmed", desc: "Your order is approved and locked for picking.", icon: Check },
-    { key: "processing", title: "Atelier Packing", desc: "Silhouettes are wrapped in custom canvas packaging.", icon: Package },
-    { key: "shipped", title: "In Transit", desc: "Dispatched via JNE Cargo Express (Tracking: JNE90284X)", icon: Truck },
-    { key: "delivered", title: "Delivered", desc: "Garments arrived and accepted at destination address.", icon: Home },
-  ] as const;
-
   const activeStepIdx = useMemo(() => {
     if (!order) return 0;
     const orderStatus = order.status;
     return steps.findIndex((step) => step.key === orderStatus);
-  }, [order, steps]);
+  }, [order]);
 
   return (
     <div className="bg-background min-h-screen py-12 sm:py-20 font-dm-sans text-soil transition-all duration-300">
