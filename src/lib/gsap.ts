@@ -10,31 +10,173 @@ export const prefersReducedMotion = (): boolean => {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 };
 
+type RevealPattern = "fade" | "scale" | "slide-left" | "slide-right" | "clip";
+
 export const JuicyMotion = {
-  heroReveal: (textElementsSelector: string, imageSelector: string) => {
-    if (prefersReducedMotion()) {
-      gsap.to([textElementsSelector, imageSelector], {
-        opacity: 1,
-        duration: 0.5,
-        stagger: 0.1,
-      });
+  scrollReveal: (
+    itemSelector: string,
+    pattern: RevealPattern | RevealPattern[] = "fade",
+    staggerAmount = 0.15
+  ) => {
+    const isReduced = prefersReducedMotion();
+    const items = gsap.utils.toArray(itemSelector) as HTMLElement[];
+
+    if (isReduced) {
+      gsap.set(items, { opacity: 1, clearProps: "y" });
       return;
     }
 
-    const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+    items.forEach((el, i) => {
+      const p = Array.isArray(pattern) ? pattern[i % pattern.length] : pattern;
+
+      el.style.willChange = "transform, opacity";
+
+      const fromVars: gsap.TweenVars = { opacity: 0 };
+      const toVars: gsap.TweenVars = {
+        opacity: 1,
+        duration: 1,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: el,
+          start: "top 88%",
+          toggleActions: "play none none none",
+        },
+      };
+
+      switch (p) {
+        case "scale":
+          fromVars.scale = 0.92;
+          fromVars.y = 30;
+          break;
+        case "slide-left":
+          fromVars.x = 80;
+          break;
+        case "slide-right":
+          fromVars.x = -80;
+          break;
+        case "clip":
+          fromVars.clipPath = "inset(0 100% 0 0)";
+          toVars.clipPath = "inset(0 0% 0 0)";
+          toVars.duration = 1.2;
+          toVars.ease = "power4.inOut";
+          break;
+        default:
+          fromVars.y = 40;
+          break;
+      }
+
+      toVars.delay = i * staggerAmount;
+      gsap.fromTo(el, fromVars, toVars);
+    });
+  },
+
+  parallaxTiles: (containerSelector: string, imgSelector: string) => {
+    if (prefersReducedMotion()) return;
+
+    const containers = gsap.utils.toArray(containerSelector) as HTMLElement[];
+    containers.forEach((container) => {
+      const img = container.querySelector(imgSelector) as HTMLElement;
+      if (!img) return;
+
+      img.style.willChange = "transform";
+
+      gsap.fromTo(
+        img,
+        { scale: 1.1, yPercent: -6 },
+        {
+          scale: 1,
+          yPercent: 6,
+          ease: "none",
+          scrollTrigger: {
+            trigger: container,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: 1.5,
+          },
+        }
+      );
+    });
+  },
+
+
+  heroParallax: (containerSelector: string) => {
+    const isReduced = prefersReducedMotion();
+
+    if (isReduced) {
+      gsap.set([".hero-stagger", ".hero-image"], {
+        opacity: 1,
+        clearProps: "y",
+      });
+      gsap.set(".hero-divider-line", { scaleX: 1 });
+      return;
+    }
+
+    const tl = gsap.timeline({ defaults: { ease: "power4.out" } });
+
+    tl.set(".hero-image", { willChange: "transform" });
+    tl.set(".hero-content", { willChange: "transform" });
 
     tl.fromTo(
-      imageSelector,
-      { opacity: 0, scale: 1.05 },
-      { opacity: 1, scale: 1, duration: 1.6 }
+      ".hero-image",
+      { scale: 1.1, opacity: 0 },
+      { scale: 1, opacity: 1, duration: 2 },
+      0
     );
 
     tl.fromTo(
-      textElementsSelector,
-      { y: 60, opacity: 0 },
-      { y: 0, opacity: 1, duration: 1.2, stagger: 0.08 },
+      ".hero-overlay",
+      { opacity: 0 },
+      { opacity: 1, duration: 1.2 },
+      0
+    );
+
+    tl.fromTo(
+      ".hero-stagger",
+      { y: 80, opacity: 0 },
+      { y: 0, opacity: 1, duration: 1.2, stagger: 0.1 },
       "-=1.0"
     );
+
+    tl.fromTo(
+      ".hero-divider-line",
+      { scaleX: 0, transformOrigin: "left center" },
+      { scaleX: 1, duration: 0.9, ease: "power3.inOut" },
+      "-=0.6"
+    );
+
+    gsap.to(".hero-image", {
+      yPercent: 18,
+      ease: "none",
+      scrollTrigger: {
+        trigger: containerSelector,
+        start: "top top",
+        end: "bottom top",
+        scrub: 1.5,
+      },
+    });
+
+    gsap.to(".hero-content", {
+      yPercent: -8,
+      ease: "none",
+      scrollTrigger: {
+        trigger: containerSelector,
+        start: "top top",
+        end: "bottom top",
+        scrub: 2,
+      },
+    });
+
+    gsap.to(".hero-scroll-indicator", {
+      opacity: 0,
+      y: 20,
+      ease: "power2.out",
+      scrollTrigger: {
+        trigger: containerSelector,
+        start: "top top",
+        end: "bottom 80%",
+        scrub: 1,
+      },
+    });
   },
 
   imageDrift: (elementSelector: string) => {
@@ -42,7 +184,7 @@ export const JuicyMotion = {
 
     (gsap.utils.toArray(elementSelector) as HTMLElement[]).forEach((img) => {
       img.style.willChange = "transform";
-      
+
       gsap.fromTo(
         img,
         { yPercent: -8 },
@@ -87,7 +229,7 @@ export const JuicyMotion = {
 
   gridStagger: (itemSelector: string) => {
     const isReduced = prefersReducedMotion();
-    
+
     ScrollTrigger.batch(itemSelector, {
       onEnter: (batch) => {
         gsap.fromTo(

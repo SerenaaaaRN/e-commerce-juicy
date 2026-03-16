@@ -1,79 +1,178 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ButtonLink } from "@/components/ui/button";
 import { JuicyMotion } from "@/lib/gsap";
+import { gsap } from "gsap";
+
+const HERO_IMAGES = [
+  {
+    src: "https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=2000&q=90",
+    alt: "Editorial sitting campaign",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=2000&q=90",
+    alt: "Luxury shopping campaign",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=2000&q=90",
+    alt: "Studio editorial portrait",
+  },
+  {
+    src: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=2000&q=90",
+    alt: "Sunlight dress campaign",
+  },
+];
 
 const HeroSection = () => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const titleRef = useRef<HTMLHeadingElement>(null);
-  const imageRef = useRef<HTMLDivElement>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const currentRef = useRef<HTMLDivElement>(null);
+  const nextRef = useRef<HTMLDivElement>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval>>(undefined);
 
   useEffect(() => {
-    // Stagger word reveal entry on mount
-    JuicyMotion.heroReveal(
-      ".hero-stagger",
-      ".hero-bg-img"
-    );
+    if (containerRef.current) {
+      JuicyMotion.heroParallax(`#${containerRef.current.id}`);
+    }
   }, []);
+
+  useEffect(() => {
+    intervalRef.current = setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % HERO_IMAGES.length);
+    }, 5000);
+
+    return () => clearInterval(intervalRef.current);
+  }, []);
+
+  useEffect(() => {
+    if (!currentRef.current || !nextRef.current) return;
+
+    const nextImg = nextRef.current.querySelector("img");
+    if (nextImg) {
+      nextImg.src = HERO_IMAGES[activeIndex].src;
+      nextImg.alt = HERO_IMAGES[activeIndex].alt;
+    }
+
+    const tl = gsap.timeline({
+      onComplete: () => {
+        const curImg = currentRef.current?.querySelector("img");
+        if (curImg) {
+          curImg.src = HERO_IMAGES[activeIndex].src;
+          curImg.alt = HERO_IMAGES[activeIndex].alt;
+        }
+        gsap.set(currentRef.current, { opacity: 1, scale: 1 });
+        gsap.set(nextRef.current, { opacity: 0, scale: 1.05 });
+      },
+    });
+
+    tl.to(currentRef.current, {
+      opacity: 0,
+      scale: 1.05,
+      duration: 1.2,
+      ease: "power2.inOut",
+    }, 0);
+
+    tl.fromTo(nextRef.current,
+      { opacity: 0, scale: 1.08 },
+      { opacity: 1, scale: 1, duration: 1.4, ease: "power3.out" },
+      0.3,
+    );
+  }, [activeIndex]);
 
   return (
     <section
+      id="hero-container"
       ref={containerRef}
-      className="hero-container relative h-[90vh] sm:h-screen w-full flex items-center justify-center overflow-hidden bg-cream font-dm-sans"
+      className="bg-soil font-dm-sans relative h-screen w-full overflow-hidden"
     >
-      {/* Background Image Layer */}
-      <div
-        ref={imageRef}
-        className="hero-bg-img absolute inset-0 size-full bg-cover bg-center origin-center select-none"
-        style={{
-          backgroundImage: `linear-gradient(to bottom, rgba(61,46,34,0.4), rgba(61,46,34,0.1)), url('https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=1600&q=80')`,
-        }}
-      />
+      <div ref={currentRef} className="hero-image absolute inset-0 size-full">
+        <img
+          src={HERO_IMAGES[0].src}
+          alt={HERO_IMAGES[0].alt}
+          className="size-full object-cover"
+          loading="eager"
+        />
+      </div>
 
-      {/* Hero Typography Content */}
-      <div className="relative z-10 text-center px-4 max-w-4xl flex flex-col items-center gap-6">
-        <span className="hero-stagger text-[11px] font-semibold uppercase tracking-[0.25em] text-chalk">
-          New Summer Drop
-        </span>
-        
-        <h1
-          ref={titleRef}
-          className="hero-stagger font-playfair text-5xl sm:text-7xl md:text-8xl lg:text-[110px] font-bold text-chalk leading-[0.9] tracking-tight max-w-3xl drop-shadow-sm select-none"
-        >
-          Sun-Soaked Luxury
-        </h1>
-        
-        <p className="hero-stagger text-sm sm:text-base text-chalk/90 leading-relaxed font-normal max-w-md">
-          A timeless collection designed in warm sand wool-blends and lightweight French linen. Moving with the natural cadence of warm coastal winds.
-        </p>
+      <div ref={nextRef} className="hero-image absolute inset-0 size-full opacity-0" style={{ scale: 1.05 }}>
+        <img
+          src={HERO_IMAGES[0].src}
+          alt={HERO_IMAGES[0].alt}
+          className="size-full object-cover"
+          loading="eager"
+        />
+      </div>
 
-        <div className="hero-stagger mt-4">
-          <ButtonLink
-            to="/collection"
-            variant="outline"
-            size="lg"
-            className="border-chalk text-chalk hover:bg-chalk hover:text-soil transition-all duration-300 font-semibold uppercase tracking-widest text-[11px]"
-          >
-            Explore Collection
-          </ButtonLink>
+      <div className="hero-overlay from-soil/90 via-soil/50 pointer-events-none absolute inset-0 z-[2] bg-gradient-to-r to-transparent" />
+
+      <div className="hero-content relative z-10 flex h-full items-center pt-64 lg:pt-80">
+        <div className="mx-auto w-full max-w-[1400px] px-6 sm:px-8 lg:px-12">
+          <div className="max-w-xl">
+            <div className="hero-stagger mb-6 flex items-center gap-4">
+              <span className="bg-terracotta h-px w-10" />
+              <span className="text-terracotta-light text-[10px] font-semibold tracking-[0.25em] uppercase">
+                New Summer Drop
+              </span>
+            </div>
+
+            <h1 className="hero-stagger font-playfair text-chalk text-6xl leading-[0.88] tracking-tight sm:text-7xl md:text-8xl lg:text-[110px]">
+              Sun-Soaked
+              <br />
+              <span className="from-terracotta-light to-chalk/80 bg-gradient-to-r bg-clip-text text-transparent">
+                Luxury
+              </span>
+            </h1>
+
+            <div className="hero-divider-line bg-terracotta my-8 h-[2px] w-24 origin-left" />
+
+            <div className="hero-stagger mt-10 flex items-center gap-5">
+              <ButtonLink
+                to="/collection"
+                variant="outline"
+                size="lg"
+                className="border-chalk/80 text-chalk hover:bg-chalk hover:text-soil text-[11px] font-semibold tracking-widest uppercase"
+              >
+                Explore Collection
+              </ButtonLink>
+              <ButtonLink
+                to="/collection?category=dresses"
+                variant="ghost"
+                size="lg"
+                className="text-chalk/60 hover:text-chalk text-[11px] font-semibold tracking-widest uppercase"
+              >
+                New Arrivals
+              </ButtonLink>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Decorative Warm Accent Light Indicator */}
-      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-10 text-chalk/60 animate-bounce">
-        <span className="text-[9px] uppercase tracking-widest font-semibold">Scroll</span>
-        <svg
-          className="size-4"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M19.5 8.25l-7.5 7.5-7.5-7.5"
-          />
-        </svg>
+      <div className="absolute bottom-12 right-6 z-10 flex flex-col items-center gap-4 sm:right-10">
+        <div className="flex flex-col items-center gap-3">
+          {HERO_IMAGES.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => {
+                clearInterval(intervalRef.current);
+                setActiveIndex(i);
+              }}
+              className={`rounded-full transition-all duration-700 ${
+                i === activeIndex
+                  ? "bg-chalk h-4 w-[2px]"
+                  : "bg-chalk/30 h-2.5 w-[2px] hover:bg-chalk/60"
+              }`}
+            />
+          ))}
+        </div>
+        <div className="from-chalk/40 h-10 w-px bg-gradient-to-b to-transparent" />
+        <span className="text-chalk/40 text-[9px] font-semibold tracking-[0.3em] uppercase [writing-mode:vertical-lr]">
+          Scroll
+        </span>
+      </div>
+
+      <div className="text-chalk/30 absolute right-8 bottom-10 z-10 hidden items-center gap-4 sm:flex">
+        <span className="text-[10px] font-semibold tracking-[0.25em] uppercase">Est. 2026</span>
+        <span className="bg-chalk/20 h-px w-6" />
+        <span className="text-[10px] font-semibold tracking-[0.25em] uppercase">Atelier</span>
       </div>
     </section>
   );
