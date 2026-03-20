@@ -4,9 +4,9 @@ import (
 	"context"
 	"strings"
 
+	"github.com/SerenaaaaRN/juicy/internal/model"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-	"github.com/SerenaaaaRN/juicy/internal/model"
 )
 
 type productRepo struct {
@@ -71,7 +71,6 @@ func (r *productRepo) FindAll(
 		query = query.Order("display_order ASC, created_at DESC")
 	}
 
-	// Pagination
 	offset := (page - 1) * perPage
 	err = query.Offset(offset).Limit(perPage).Find(&products).Error
 	if err != nil {
@@ -129,8 +128,6 @@ func (r *productRepo) Delete(ctx context.Context, id uuid.UUID) error {
 	return r.db.WithContext(ctx).Where("id = ?", id).Delete(&model.Product{}).Error
 }
 
-// Product Images
-
 func (r *productRepo) CreateImage(ctx context.Context, image *model.ProductImage) error {
 	return r.db.WithContext(ctx).Create(image).Error
 }
@@ -157,8 +154,6 @@ func (r *productRepo) SetPrimaryImage(ctx context.Context, id uuid.UUID, product
 		return tx.Model(&model.ProductImage{}).Where("id = ? AND product_id = ?", id, productID).Update("is_primary", true).Error
 	})
 }
-
-// Product Variants
 
 func (r *productRepo) FindVariantsByProductID(ctx context.Context, productID uuid.UUID) ([]model.ProductVariant, error) {
 	var variants []model.ProductVariant

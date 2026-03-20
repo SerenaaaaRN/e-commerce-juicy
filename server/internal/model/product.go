@@ -9,10 +9,8 @@ import (
 	"github.com/google/uuid"
 )
 
-// JSONStringArray is a custom type for JSONB string arrays.
 type JSONStringArray []string
 
-// Scan implements the sql.Scanner interface.
 func (j *JSONStringArray) Scan(value interface{}) error {
 	if value == nil {
 		*j = JSONStringArray{}
@@ -25,7 +23,6 @@ func (j *JSONStringArray) Scan(value interface{}) error {
 	return json.Unmarshal(bytes, j)
 }
 
-// Value implements the driver.Valuer interface.
 func (j JSONStringArray) Value() (driver.Value, error) {
 	if j == nil {
 		return "[]", nil
@@ -37,34 +34,30 @@ func (j JSONStringArray) Value() (driver.Value, error) {
 	return string(bytes), nil
 }
 
-// Product represents the products table.
 type Product struct {
-	ID              uuid.UUID       `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
-	CategoryID      uuid.UUID       `gorm:"type:uuid;not null;index" json:"category_id"`
-	Name            string          `gorm:"type:varchar(255);not null" json:"name"`
-	Slug            string          `gorm:"type:varchar(255);uniqueIndex;not null" json:"slug"`
-	Description     *string         `gorm:"type:text" json:"description"`
-	Price           float64         `gorm:"type:numeric(12,2);not null" json:"price"`
-	CompareAtPrice  *float64        `gorm:"type:numeric(12,2)" json:"compare_at_price"`
-	IsAvailable     bool            `gorm:"not null;default:true" json:"is_available"`
-	IsFeatured      bool            `gorm:"not null;default:false" json:"is_featured"`
-	Tags            JSONStringArray `gorm:"type:jsonb;not null;default:'[]'" json:"tags"`
-	DisplayOrder    int             `gorm:"not null;default:0" json:"display_order"`
-	CreatedAt       time.Time       `gorm:"not null;default:now()" json:"created_at"`
-	UpdatedAt       time.Time       `gorm:"not null;default:now()" json:"updated_at"`
+	ID             uuid.UUID       `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
+	CategoryID     uuid.UUID       `gorm:"type:uuid;not null;index" json:"category_id"`
+	Name           string          `gorm:"type:varchar(255);not null" json:"name"`
+	Slug           string          `gorm:"type:varchar(255);uniqueIndex;not null" json:"slug"`
+	Description    *string         `gorm:"type:text" json:"description"`
+	Price          float64         `gorm:"type:numeric(12,2);not null" json:"price"`
+	CompareAtPrice *float64        `gorm:"type:numeric(12,2)" json:"compare_at_price"`
+	IsAvailable    bool            `gorm:"not null;default:true" json:"is_available"`
+	IsFeatured     bool            `gorm:"not null;default:false" json:"is_featured"`
+	Tags           JSONStringArray `gorm:"type:jsonb;not null;default:'[]'" json:"tags"`
+	DisplayOrder   int             `gorm:"not null;default:0" json:"display_order"`
+	CreatedAt      time.Time       `gorm:"not null;default:now()" json:"created_at"`
+	UpdatedAt      time.Time       `gorm:"not null;default:now()" json:"updated_at"`
 
-	// Relations
-	Category Category        `gorm:"foreignKey:CategoryID" json:"category,omitempty"`
+	Category Category         `gorm:"foreignKey:CategoryID" json:"category,omitempty"`
 	Images   []ProductImage   `gorm:"foreignKey:ProductID" json:"images,omitempty"`
 	Variants []ProductVariant `gorm:"foreignKey:ProductID" json:"variants,omitempty"`
 }
 
-// TableName overrides the table name.
 func (Product) TableName() string {
 	return "products"
 }
 
-// ProductImage represents the product_images table.
 type ProductImage struct {
 	ID                 uuid.UUID `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
 	ProductID          uuid.UUID `gorm:"type:uuid;not null;index" json:"product_id"`
@@ -76,12 +69,10 @@ type ProductImage struct {
 	CreatedAt          time.Time `gorm:"not null;default:now()" json:"created_at"`
 }
 
-// TableName overrides the table name.
 func (ProductImage) TableName() string {
 	return "product_images"
 }
 
-// ProductVariant represents the product_variants table.
 type ProductVariant struct {
 	ID              uuid.UUID `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
 	ProductID       uuid.UUID `gorm:"type:uuid;not null;index" json:"product_id"`
@@ -96,7 +87,6 @@ type ProductVariant struct {
 	UpdatedAt       time.Time `gorm:"not null;default:now()" json:"updated_at"`
 }
 
-// TableName overrides the table name.
 func (ProductVariant) TableName() string {
 	return "product_variants"
 }

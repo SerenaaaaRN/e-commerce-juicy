@@ -1,10 +1,10 @@
 package router
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/SerenaaaaRN/juicy/internal/config"
 	"github.com/SerenaaaaRN/juicy/internal/handler"
 	"github.com/SerenaaaaRN/juicy/internal/middleware"
+	"github.com/gin-gonic/gin"
 )
 
 type Router struct {
@@ -134,7 +134,7 @@ func (r *Router) Setup(engine *gin.Engine) {
 		adminAuth.GET("/reviews", r.reviewHandler.ListAllReviews)
 		adminAuth.PUT("/reviews/:id/publish", r.reviewHandler.UpdateReviewPublishStatus)
 		adminAuth.DELETE("/reviews/:id", r.reviewHandler.DeleteReview)
-		
+
 		adminAuth.GET("/analytics/overview", r.analyticsHandler.GetOverview)
 		adminAuth.GET("/analytics/chart", r.analyticsHandler.GetOrdersChart)
 	}

@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/SerenaaaaRN/juicy/internal/dto"
 	"github.com/SerenaaaaRN/juicy/internal/repository"
 	"github.com/SerenaaaaRN/juicy/internal/service"
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type OrderHandler struct {
@@ -175,8 +175,6 @@ func (h *OrderHandler) GetCustomerOrderDetail(c *gin.Context) {
 		"data":    order,
 	})
 }
-
-// Admin order routes
 
 func (h *OrderHandler) ListAllOrders(c *gin.Context) {
 	status := c.Query("status")

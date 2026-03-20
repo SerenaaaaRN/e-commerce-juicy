@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/SerenaaaaRN/juicy/internal/dto"
 	"github.com/SerenaaaaRN/juicy/internal/service"
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type CustomerHandler struct {
@@ -240,8 +240,6 @@ func (h *CustomerHandler) ChangePassword(c *gin.Context) {
 		"message": "Password updated successfully",
 	})
 }
-
-// Admin customer management routes
 
 func (h *CustomerHandler) ListCustomers(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))

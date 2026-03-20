@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 
-	"github.com/google/uuid"
 	"github.com/SerenaaaaRN/juicy/internal/dto"
 	"github.com/SerenaaaaRN/juicy/internal/model"
+	"github.com/google/uuid"
 )
 
 var (
@@ -39,30 +39,26 @@ func NewReviewService(
 }
 
 func (s *reviewService) SubmitReview(ctx context.Context, customerID uuid.UUID, req dto.CreateReviewRequest) (*dto.ReviewResponse, error) {
-	// check if product exists
+
 	_, err := s.productRepo.FindByID(ctx, req.ProductID)
 	if err != nil {
 		return nil, ErrProductNotFound
 	}
 
-	// check if order exists and belongs to customer
 	order, err := s.orderRepo.FindByID(ctx, req.OrderID)
 	if err != nil || order.CustomerID != customerID {
 		return nil, ErrOrderNotFound
 	}
 
-	// check if order status is delivered
 	if order.Status != "delivered" {
 		return nil, ErrOrderNotDelivered
 	}
 
-	// validate if this specific order contains the product
 	purchased, err := s.orderRepo.IsProductReviewable(ctx, customerID, req.ProductID, req.OrderID)
 	if err != nil || !purchased {
 		return nil, ErrNotPurchased
 	}
 
-	// check duplicate review
 	exists, err := s.repo.Exists(ctx, customerID, req.ProductID, req.OrderID)
 	if err != nil {
 		return nil, err
@@ -71,7 +67,6 @@ func (s *reviewService) SubmitReview(ctx context.Context, customerID uuid.UUID, 
 		return nil, ErrAlreadyReviewed
 	}
 
-	// save review
 	review := &model.Review{
 		ProductID:   req.ProductID,
 		CustomerID:  customerID,

@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 
-	"github.com/google/uuid"
 	"github.com/SerenaaaaRN/juicy/internal/model"
+	"github.com/google/uuid"
 )
 
 type AdminRepository interface {
@@ -48,18 +48,16 @@ type ProductRepository interface {
 	Update(ctx context.Context, product *model.Product) error
 	Delete(ctx context.Context, id uuid.UUID) error
 
-	// Product Images
 	CreateImage(ctx context.Context, image *model.ProductImage) error
 	DeleteImage(ctx context.Context, id uuid.UUID, productID uuid.UUID) error
 	FindImageByID(ctx context.Context, id uuid.UUID) (*model.ProductImage, error)
 	SetPrimaryImage(ctx context.Context, id uuid.UUID, productID uuid.UUID) error
 
-	// Product Variants
 	FindVariantsByProductID(ctx context.Context, productID uuid.UUID) ([]model.ProductVariant, error)
 	FindVariantByID(ctx context.Context, id uuid.UUID) (*model.ProductVariant, error)
 	CreateVariant(ctx context.Context, variant *model.ProductVariant) error
 	UpdateVariant(ctx context.Context, variant *model.ProductVariant) error
-	DeleteVariant(ctx context.Context, id uuid.UUID, productID uuid.UUID) error // soft delete/deactivate
+	DeleteVariant(ctx context.Context, id uuid.UUID, productID uuid.UUID) error
 }
 
 type CartRepository interface {

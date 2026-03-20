@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/SerenaaaaRN/juicy/internal/model"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-	"github.com/SerenaaaaRN/juicy/internal/model"
 )
 
 var (

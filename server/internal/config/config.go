@@ -12,29 +12,29 @@ type Config struct {
 	AppPort string
 	AppEnv  string
 
-	DBHost     string
-	DBPort     string
-	DBName     string
-	DBUser     string
-	DBPassword string
-	DBSSLMode  string
+	DBHost      string
+	DBPort      string
+	DBName      string
+	DBUser      string
+	DBPassword  string
+	DBSSLMode   string
 	DatabaseURL string
 
-	JWTAdminSecret             string
+	JWTAdminSecret              string
 	JWTAdminAccessExpiryMinutes int
-	JWTAdminRefreshExpiryDays  int
-	JWTCustomerSecret      string
-	JWTCustomerExpiryDays  int
+	JWTAdminRefreshExpiryDays   int
+	JWTCustomerSecret           string
+	JWTCustomerExpiryDays       int
 
 	CloudinaryCloudName    string
 	CloudinaryAPIKey       string
 	CloudinaryAPISecret    string
 	CloudinaryUploadFolder string
 
-	ResendAPIKey     string
-	ResendFromEmail  string
-	AdminAlertEmail  string
-	AllowedOrigins string
+	ResendAPIKey    string
+	ResendFromEmail string
+	AdminAlertEmail string
+	AllowedOrigins  string
 }
 
 func Load() (*Config, error) {

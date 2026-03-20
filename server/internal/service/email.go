@@ -1,12 +1,13 @@
 package service
 
 import (
+	"context"
 	"fmt"
 	"log"
 
-	"github.com/resend/resend-go/v2"
 	"github.com/SerenaaaaRN/juicy/internal/config"
 	"github.com/SerenaaaaRN/juicy/internal/model"
+	"github.com/resend/resend-go/v2"
 )
 
 type EmailService struct {
@@ -31,9 +32,9 @@ func NewEmailService(cfg *config.Config) *EmailService {
 	}
 }
 
-func (s *EmailService) SendOrderConfirmation(customerEmail, customerName string, order *model.Order) {
+func (s *EmailService) SendOrderConfirmation(ctx context.Context, customerEmail, customerName string, order *model.Order) {
 	subject := fmt.Sprintf("Thank you for your order %s", order.OrderNumber)
-	
+
 	htmlContent := fmt.Sprintf(`
 		<h1>Juicy Storefront</h1>
 		<p>Hi %s,</p>
@@ -55,7 +56,7 @@ func (s *EmailService) SendOrderConfirmation(customerEmail, customerName string,
 		Html:    htmlContent,
 	}
 
-	_, err := s.client.Emails.Send(params)
+	_, err := s.client.Emails.SendWithContext(ctx, params)
 	if err != nil {
 		log.Printf("⚠️ Failed to send order confirmation email via Resend: %v", err)
 	} else {
@@ -63,9 +64,9 @@ func (s *EmailService) SendOrderConfirmation(customerEmail, customerName string,
 	}
 }
 
-func (s *EmailService) SendAdminOrderAlert(order *model.Order) {
+func (s *EmailService) SendAdminOrderAlert(ctx context.Context, order *model.Order) {
 	subject := fmt.Sprintf("[NEW ORDER] %s", order.OrderNumber)
-	
+
 	htmlContent := fmt.Sprintf(`
 		<h1>New Order Received</h1>
 		<p>Order Number: <strong>%s</strong></p>
@@ -86,7 +87,7 @@ func (s *EmailService) SendAdminOrderAlert(order *model.Order) {
 		Html:    htmlContent,
 	}
 
-	_, err := s.client.Emails.Send(params)
+	_, err := s.client.Emails.SendWithContext(ctx, params)
 	if err != nil {
 		log.Printf("⚠️ Failed to send admin order alert email via Resend: %v", err)
 	} else {
@@ -94,9 +95,9 @@ func (s *EmailService) SendAdminOrderAlert(order *model.Order) {
 	}
 }
 
-func (s *EmailService) SendShippingUpdate(customerEmail, customerName string, order *model.Order) {
+func (s *EmailService) SendShippingUpdate(ctx context.Context, customerEmail, customerName string, order *model.Order) {
 	subject := fmt.Sprintf("Your order %s has shipped!", order.OrderNumber)
-	
+
 	htmlContent := fmt.Sprintf(`
 		<h1>Juicy Storefront</h1>
 		<p>Hi %s,</p>
@@ -116,7 +117,7 @@ func (s *EmailService) SendShippingUpdate(customerEmail, customerName string, or
 		Html:    htmlContent,
 	}
 
-	_, err := s.client.Emails.Send(params)
+	_, err := s.client.Emails.SendWithContext(ctx, params)
 	if err != nil {
 		log.Printf("⚠️ Failed to send shipping update email via Resend: %v", err)
 	} else {

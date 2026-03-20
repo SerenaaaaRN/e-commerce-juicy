@@ -11,7 +11,6 @@ import (
 	"github.com/SerenaaaaRN/juicy/internal/config"
 )
 
-// Connect opens a GORM connection to PostgreSQL and verifies with a ping.
 func Connect(cfg *config.Config) (*gorm.DB, error) {
 	logLevel := logger.Warn
 	if cfg.IsDevelopment() {
@@ -31,11 +30,9 @@ func Connect(cfg *config.Config) (*gorm.DB, error) {
 		return nil, fmt.Errorf("failed to get underlying sql.DB: %w", err)
 	}
 
-	// Configure connection pool
 	sqlDB.SetMaxOpenConns(25)
 	sqlDB.SetMaxIdleConns(10)
 
-	// Ping to verify connection
 	if err := sqlDB.Ping(); err != nil {
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}

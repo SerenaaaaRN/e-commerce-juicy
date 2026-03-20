@@ -7,10 +7,10 @@ import (
 	"log"
 	"time"
 
-	"github.com/google/uuid"
-	"gorm.io/gorm"
 	"github.com/SerenaaaaRN/juicy/internal/dto"
 	"github.com/SerenaaaaRN/juicy/internal/model"
+	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 var (
@@ -22,7 +22,7 @@ var (
 type productService struct {
 	repo       ProductRepository
 	cldService *CloudinaryService
-	db         *gorm.DB // we can use raw db helper for stats queries
+	db         *gorm.DB
 }
 
 func NewProductService(repo ProductRepository, cldService *CloudinaryService, db *gorm.DB) *productService {
@@ -51,13 +51,11 @@ func (s *productService) ListProducts(
 		return []dto.ProductResponse{}, total, nil
 	}
 
-	// Gather product IDs
 	productIDs := make([]uuid.UUID, len(products))
 	for i, p := range products {
 		productIDs[i] = p.ID
 	}
 
-	// Fetch review statistics in a single batch query
 	type Stats struct {
 		ProductID   uuid.UUID
 		AvgRating   float64
@@ -73,7 +71,6 @@ func (s *productService) ListProducts(
 		log.Printf("Warning: failed to fetch review statistics: %v", err)
 	}
 
-	// Map stats
 	statsMap := make(map[uuid.UUID]Stats)
 	for _, s := range statsList {
 		statsMap[s.ProductID] = s
@@ -88,7 +85,7 @@ func (s *productService) ListProducts(
 				break
 			}
 		}
-		// Fallback to first image if no primary is specified
+
 		if primaryImg == "" && len(p.Images) > 0 {
 			primaryImg = p.Images[0].ImageURL
 		}
@@ -167,7 +164,6 @@ func (s *productService) DeleteProduct(ctx context.Context, id uuid.UUID) error 
 		return ErrProductNotFound
 	}
 
-	// Delete all product images from Cloudinary
 	for _, img := range product.Images {
 		if err := s.cldService.DeleteImage(ctx, img.CloudinaryPublicID); err != nil {
 			log.Printf("Warning: failed to delete cloudinary image: %v", err)
@@ -183,7 +179,6 @@ func (s *productService) AddProductImages(ctx context.Context, id uuid.UUID, fil
 		return ErrProductNotFound
 	}
 
-	// Determine next display order
 	maxOrder := -1
 	hasPrimary := false
 	for _, img := range product.Images {
@@ -197,7 +192,7 @@ func (s *productService) AddProductImages(ctx context.Context, id uuid.UUID, fil
 
 	for _, path := range filePaths {
 		maxOrder++
-		// Upload to Cloudinary
+
 		secureURL, publicID, err := s.cldService.UploadImage(ctx, path)
 		if err != nil {
 			return fmt.Errorf("failed to upload image: %w", err)
@@ -235,18 +230,15 @@ func (s *productService) DeleteProductImage(ctx context.Context, id uuid.UUID, i
 		return ErrImageNotFound
 	}
 
-	// Delete from Cloudinary
 	if err := s.cldService.DeleteImage(ctx, image.CloudinaryPublicID); err != nil {
 		log.Printf("Warning: failed to delete cloudinary image %s: %v", image.CloudinaryPublicID, err)
 	}
 
-	// Delete record
 	err = s.repo.DeleteImage(ctx, imageID, id)
 	if err != nil {
 		return err
 	}
 
-	// If the deleted image was primary, set another image as primary if exists
 	if image.IsPrimary {
 		var remain []model.ProductImage
 		err := s.db.WithContext(ctx).Where("product_id = ?", id).Order("display_order ASC").Find(&remain).Error
@@ -270,8 +262,6 @@ func (s *productService) SetPrimaryProductImage(ctx context.Context, id uuid.UUI
 
 	return s.repo.SetPrimaryImage(ctx, imageID, id)
 }
-
-// Variant Management
 
 func (s *productService) GetProductVariants(ctx context.Context, productID uuid.UUID) ([]dto.ProductVariantRes, error) {
 	variants, err := s.repo.FindVariantsByProductID(ctx, productID)
@@ -364,7 +354,7 @@ func (s *productService) DeleteProductVariant(ctx context.Context, productID uui
 }
 
 func (s *productService) mapToDetailResponse(ctx context.Context, p *model.Product) (*dto.ProductDetailResponse, error) {
-	// Query stats
+
 	var stats struct {
 		AvgRating   float64
 		ReviewCount int

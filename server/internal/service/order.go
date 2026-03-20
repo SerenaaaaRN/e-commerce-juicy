@@ -8,11 +8,11 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/google/uuid"
-	"gorm.io/gorm"
 	"github.com/SerenaaaaRN/juicy/internal/dto"
 	"github.com/SerenaaaaRN/juicy/internal/model"
 	"github.com/SerenaaaaRN/juicy/internal/repository"
+	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 var (
@@ -53,23 +53,23 @@ func NewOrderService(
 }
 
 func (s *orderService) Checkout(ctx context.Context, customerID uuid.UUID, req dto.CheckoutRequest) (*dto.OrderCheckoutResponse, error) {
-	// 1. Fetch and validate address
 	address, err := s.addressRepo.FindByID(ctx, req.AddressID)
-	if err != nil || address.CustomerID != customerID {
+	if err != nil {
+		return nil, fmt.Errorf("checkout find address: %w", err)
+	}
+	if address.CustomerID != customerID {
 		return nil, ErrAddressNotFound
 	}
 
-	// 2. Fetch cart items
 	cartItems, err := s.cartRepo.FindByCustomerID(ctx, customerID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("checkout find cart items: %w", err)
 	}
 
 	if len(cartItems) == 0 {
 		return nil, ErrCartEmpty
 	}
 
-	// 3. Compute pricing & map snapshot details
 	var orderItems []model.OrderItem
 	var subtotal float64 = 0
 
@@ -98,7 +98,6 @@ func (s *orderService) Checkout(ctx context.Context, customerID uuid.UUID, req d
 			imgURL = &primaryImg
 		}
 
-		// GORM order item struct mapping
 		vID := item.VariantID
 		orderItems = append(orderItems, model.OrderItem{
 			VariantID:    &vID,
@@ -111,11 +110,9 @@ func (s *orderService) Checkout(ctx context.Context, customerID uuid.UUID, req d
 		})
 	}
 
-	// Calculate total
-	var shippingFee float64 = 25000 // Default shipping fee Rp 25,000
+	var shippingFee float64 = 25000
 	total := subtotal + shippingFee
 
-	// 4. Generate unique order number
 	dateStr := time.Now().Format("20060102")
 	orderNumber := fmt.Sprintf("JUICY-%s-%s", dateStr, generateRandomAlphanumeric(6))
 
@@ -132,21 +129,19 @@ func (s *orderService) Checkout(ctx context.Context, customerID uuid.UUID, req d
 		Notes:         req.Notes,
 	}
 
-	// 5. Create order & items via transaction block in repository
 	err = s.repo.Create(ctx, order, orderItems)
 	if err != nil {
 		if errors.Is(err, repository.ErrOutOfStock) {
 			return nil, repository.ErrOutOfStock
 		}
-		return nil, err
+		return nil, fmt.Errorf("checkout create order: %w", err)
 	}
 
-	// 6. Trigger emails asynchronously via BackgroundWorker
 	customer, err := s.customerRepo.FindByID(ctx, customerID)
 	if err == nil && customer != nil {
-		s.worker.Submit(func() {
-			s.emailService.SendOrderConfirmation(customer.Email, customer.FullName, order)
-			s.emailService.SendAdminOrderAlert(order)
+		_ = s.worker.Submit(func(workerCtx context.Context) {
+			s.emailService.SendOrderConfirmation(workerCtx, customer.Email, customer.FullName, order)
+			s.emailService.SendAdminOrderAlert(workerCtx, order)
 		})
 	}
 
@@ -166,7 +161,6 @@ func (s *orderService) GetCustomerOrders(ctx context.Context, customerID uuid.UU
 
 	res := make([]dto.OrderResponse, len(orders))
 	for i, o := range orders {
-		// Calculate item count in order
 		var itemCount int64
 		s.db.WithContext(ctx).Model(&model.OrderItem{}).Where("order_id = ?", o.ID).Count(&itemCount)
 
@@ -189,7 +183,6 @@ func (s *orderService) GetCustomerOrderDetail(ctx context.Context, orderNumber s
 		return nil, ErrOrderNotFound
 	}
 
-	// Load address info manually if not preloaded
 	var address model.Address
 	if order.AddressID != nil {
 		s.db.WithContext(ctx).Where("id = ?", *order.AddressID).First(&address)
@@ -318,10 +311,9 @@ func (s *orderService) UpdateOrderStatus(ctx context.Context, id uuid.UUID, stat
 		return err
 	}
 
-	// Trigger shipping update email if status changed to 'shipped'
 	if status == "shipped" {
-		s.worker.Submit(func() {
-			s.emailService.SendShippingUpdate(order.Customer.Email, order.Customer.FullName, order)
+		_ = s.worker.Submit(func(workerCtx context.Context) {
+			s.emailService.SendShippingUpdate(workerCtx, order.Customer.Email, order.Customer.FullName, order)
 		})
 	}
 

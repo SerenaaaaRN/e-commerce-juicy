@@ -5,11 +5,11 @@ import (
 	"errors"
 	"time"
 
+	"github.com/SerenaaaaRN/juicy/internal/config"
+	"github.com/SerenaaaaRN/juicy/internal/dto"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
-	"github.com/SerenaaaaRN/juicy/internal/config"
-	"github.com/SerenaaaaRN/juicy/internal/dto"
 )
 
 var (
@@ -40,19 +40,16 @@ func (s *adminService) Login(ctx context.Context, req dto.AdminLoginRequest) (*d
 		return nil, "", ErrInvalidCredentials
 	}
 
-	// Compare password hash
 	err = bcrypt.CompareHashAndPassword([]byte(admin.PasswordHash), []byte(req.Password))
 	if err != nil {
 		return nil, "", ErrInvalidCredentials
 	}
 
-	// Generate access token (15 mins)
 	accessToken, err := s.generateToken(admin.ID.String(), time.Duration(s.config.JWTAdminAccessExpiryMinutes)*time.Minute)
 	if err != nil {
 		return nil, "", err
 	}
 
-	// Generate refresh token (7 days)
 	refreshToken, err := s.generateToken(admin.ID.String(), time.Duration(s.config.JWTAdminRefreshExpiryDays)*24*time.Hour)
 	if err != nil {
 		return nil, "", err
@@ -69,7 +66,7 @@ func (s *adminService) Login(ctx context.Context, req dto.AdminLoginRequest) (*d
 }
 
 func (s *adminService) Refresh(ctx context.Context, refreshToken string) (*dto.AdminLoginResponse, string, error) {
-	// Parse refresh token
+
 	token, err := jwt.ParseWithClaims(refreshToken, &AdminClaims{}, func(t *jwt.Token) (interface{}, error) {
 		return []byte(s.config.JWTAdminSecret), nil
 	})
@@ -92,13 +89,11 @@ func (s *adminService) Refresh(ctx context.Context, refreshToken string) (*dto.A
 		return nil, "", ErrUnauthorized
 	}
 
-	// Generate new access token
 	newAccessToken, err := s.generateToken(admin.ID.String(), time.Duration(s.config.JWTAdminAccessExpiryMinutes)*time.Minute)
 	if err != nil {
 		return nil, "", err
 	}
 
-	// Generate new refresh token
 	newRefreshToken, err := s.generateToken(admin.ID.String(), time.Duration(s.config.JWTAdminRefreshExpiryDays)*24*time.Hour)
 	if err != nil {
 		return nil, "", err

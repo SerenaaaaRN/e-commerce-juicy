@@ -7,11 +7,11 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/SerenaaaaRN/juicy/internal/dto"
 	"github.com/SerenaaaaRN/juicy/internal/model"
 	"github.com/SerenaaaaRN/juicy/internal/service"
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type ProductHandler struct {
@@ -35,7 +35,6 @@ func (h *ProductHandler) ListProducts(c *gin.Context) {
 		featured = true
 	}
 
-	// For admin listings, include unavailable products too
 	includeUnavailable := false
 	if c.Query("admin") == "true" {
 		includeUnavailable = true
@@ -309,8 +308,6 @@ func (h *ProductHandler) DeleteProduct(c *gin.Context) {
 	})
 }
 
-// Product Images Handler
-
 func (h *ProductHandler) AddProductImages(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
@@ -339,7 +336,7 @@ func (h *ProductHandler) AddProductImages(c *gin.Context) {
 
 	files := form.File["images"]
 	if len(files) == 0 {
-		// fallback to singular form
+
 		files = form.File["image"]
 	}
 
@@ -354,7 +351,6 @@ func (h *ProductHandler) AddProductImages(c *gin.Context) {
 		return
 	}
 
-	// Ensure temp uploads folder exists in workspace
 	tempDir := "./tmp_uploads"
 	if err := os.MkdirAll(tempDir, 0755); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -381,10 +377,8 @@ func (h *ProductHandler) AddProductImages(c *gin.Context) {
 		tempFilePaths = append(tempFilePaths, tempPath)
 	}
 
-	// Trigger service uploads
 	err = h.srv.AddProductImages(c.Request.Context(), id, tempFilePaths)
 
-	// Always cleanup temp files
 	for _, path := range tempFilePaths {
 		os.Remove(path)
 	}
@@ -522,8 +516,6 @@ func (h *ProductHandler) SetPrimaryProductImage(c *gin.Context) {
 		"message": "Product image set as primary successfully",
 	})
 }
-
-// Product Variant Handlers
 
 func (h *ProductHandler) GetProductVariants(c *gin.Context) {
 	productIDStr := c.Param("id")

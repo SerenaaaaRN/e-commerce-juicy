@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 
-	"github.com/google/uuid"
 	"github.com/SerenaaaaRN/juicy/internal/dto"
 	"github.com/SerenaaaaRN/juicy/internal/model"
+	"github.com/google/uuid"
 )
 
 var (
@@ -35,7 +35,7 @@ func (s *cartService) GetCart(ctx context.Context, customerID uuid.UUID) (*dto.C
 	var total float64 = 0
 
 	for _, item := range items {
-		// Fetch product metadata for names/images
+
 		product, err := s.productRepo.FindByID(ctx, item.Variant.ProductID)
 		if err != nil {
 			continue
@@ -94,7 +94,6 @@ func (s *cartService) AddCartItem(ctx context.Context, customerID uuid.UUID, req
 		return ErrVariantNotFound
 	}
 
-	// Fetch current cart items to see if the variant is already present
 	items, err := s.repo.FindByCustomerID(ctx, customerID)
 	if err != nil {
 		return err

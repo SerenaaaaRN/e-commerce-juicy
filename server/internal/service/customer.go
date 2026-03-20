@@ -5,12 +5,12 @@ import (
 	"errors"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
-	"golang.org/x/crypto/bcrypt"
 	"github.com/SerenaaaaRN/juicy/internal/config"
 	"github.com/SerenaaaaRN/juicy/internal/dto"
 	"github.com/SerenaaaaRN/juicy/internal/model"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var (
@@ -37,13 +37,12 @@ func NewCustomerService(repo CustomerRepository, cfg *config.Config) *customerSe
 }
 
 func (s *customerService) Register(ctx context.Context, req dto.CustomerRegisterRequest) (*dto.CustomerLoginResponse, error) {
-	// Check if email already registered
+
 	existing, err := s.repo.FindByEmail(ctx, req.Email)
 	if err == nil && existing != nil {
 		return nil, ErrEmailTaken
 	}
 
-	// Hash password
 	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
@@ -65,7 +64,6 @@ func (s *customerService) Register(ctx context.Context, req dto.CustomerRegister
 		return nil, err
 	}
 
-	// Generate customer token (7 days)
 	token, err := s.generateToken(customer.ID.String(), time.Duration(s.config.JWTCustomerExpiryDays)*24*time.Hour)
 	if err != nil {
 		return nil, err
@@ -91,13 +89,11 @@ func (s *customerService) Login(ctx context.Context, req dto.CustomerLoginReques
 		return nil, ErrInactiveUser
 	}
 
-	// Compare password
 	err = bcrypt.CompareHashAndPassword([]byte(customer.PasswordHash), []byte(req.Password))
 	if err != nil {
 		return nil, ErrInvalidCredentials
 	}
 
-	// Generate token
 	token, err := s.generateToken(customer.ID.String(), time.Duration(s.config.JWTCustomerExpiryDays)*24*time.Hour)
 	if err != nil {
 		return nil, err
@@ -158,13 +154,11 @@ func (s *customerService) ChangePassword(ctx context.Context, id uuid.UUID, req 
 		return err
 	}
 
-	// Verify current password
 	err = bcrypt.CompareHashAndPassword([]byte(customer.PasswordHash), []byte(req.CurrentPassword))
 	if err != nil {
 		return ErrWrongPassword
 	}
 
-	// Hash new password
 	hashedBytes, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
 	if err != nil {
 		return err

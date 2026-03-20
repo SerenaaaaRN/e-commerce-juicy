@@ -39,18 +39,18 @@ type ProductResponse struct {
 }
 
 type ProductDetailResponse struct {
-	ID             uuid.UUID               `json:"id"`
-	Name           string                  `json:"name"`
-	Slug           string                  `json:"slug"`
-	Description    *string                 `json:"description"`
-	Price          float64                 `json:"price"`
-	CompareAtPrice *float64                `json:"compare_at_price"`
-	Tags           []string                `json:"tags"`
-	Category       CategoryDetailInfo      `json:"category"`
-	Images         []ProductImageResponse  `json:"images"`
-	Variants       []ProductVariantRes     `json:"variants"`
-	AvgRating      float64                 `json:"avg_rating"`
-	ReviewCount    int                     `json:"review_count"`
+	ID             uuid.UUID              `json:"id"`
+	Name           string                 `json:"name"`
+	Slug           string                 `json:"slug"`
+	Description    *string                `json:"description"`
+	Price          float64                `json:"price"`
+	CompareAtPrice *float64               `json:"compare_at_price"`
+	Tags           []string               `json:"tags"`
+	Category       CategoryDetailInfo     `json:"category"`
+	Images         []ProductImageResponse `json:"images"`
+	Variants       []ProductVariantRes    `json:"variants"`
+	AvgRating      float64                `json:"avg_rating"`
+	ReviewCount    int                    `json:"review_count"`
 }
 
 type CategoryDetailInfo struct {

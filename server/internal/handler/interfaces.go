@@ -3,9 +3,9 @@ package handler
 import (
 	"context"
 
-	"github.com/google/uuid"
 	"github.com/SerenaaaaRN/juicy/internal/dto"
 	"github.com/SerenaaaaRN/juicy/internal/model"
+	"github.com/google/uuid"
 )
 
 type AdminService interface {
@@ -21,7 +21,6 @@ type CustomerService interface {
 	UpdateProfile(ctx context.Context, id uuid.UUID, req dto.UpdateProfileRequest) (*dto.CustomerProfileResponse, error)
 	ChangePassword(ctx context.Context, id uuid.UUID, req dto.ChangePasswordRequest) error
 
-	// Admin customer routes
 	ListCustomers(ctx context.Context, page, perPage int, search string) ([]dto.CustomerProfileResponse, int64, error)
 	UpdateCustomerStatus(ctx context.Context, id uuid.UUID, isActive bool) error
 	GetCustomerDetail(ctx context.Context, id uuid.UUID) (*dto.CustomerProfileResponse, error)
@@ -53,12 +52,10 @@ type ProductService interface {
 	UpdateProduct(ctx context.Context, id uuid.UUID, product *model.Product) (*model.Product, error)
 	DeleteProduct(ctx context.Context, id uuid.UUID) error
 
-	// Image uploads (Cloudinary integrated)
 	AddProductImages(ctx context.Context, id uuid.UUID, filePaths []string) error
 	DeleteProductImage(ctx context.Context, id uuid.UUID, imageID uuid.UUID) error
 	SetPrimaryProductImage(ctx context.Context, id uuid.UUID, imageID uuid.UUID) error
 
-	// Variant management
 	GetProductVariants(ctx context.Context, productID uuid.UUID) ([]dto.ProductVariantRes, error)
 	AddProductVariant(ctx context.Context, productID uuid.UUID, req dto.ProductVariantRequest) (*model.ProductVariant, error)
 	UpdateProductVariant(ctx context.Context, productID uuid.UUID, variantID uuid.UUID, req dto.ProductVariantRequest) (*model.ProductVariant, error)
@@ -77,8 +74,7 @@ type OrderService interface {
 	Checkout(ctx context.Context, customerID uuid.UUID, req dto.CheckoutRequest) (*dto.OrderCheckoutResponse, error)
 	GetCustomerOrders(ctx context.Context, customerID uuid.UUID, page, perPage int) ([]dto.OrderResponse, int64, error)
 	GetCustomerOrderDetail(ctx context.Context, orderNumber string, customerID uuid.UUID) (*dto.OrderDetailResponse, error)
-	
-	// Admin routes
+
 	ListAllOrders(ctx context.Context, status string, paymentStatus string, search string, page, perPage int) ([]dto.AdminOrderResponse, int64, error)
 	GetOrderDetail(ctx context.Context, id uuid.UUID) (*dto.OrderDetailResponse, error)
 	UpdateOrderStatus(ctx context.Context, id uuid.UUID, status string) error
@@ -88,8 +84,7 @@ type OrderService interface {
 type ReviewService interface {
 	SubmitReview(ctx context.Context, customerID uuid.UUID, req dto.CreateReviewRequest) (*dto.ReviewResponse, error)
 	GetProductReviews(ctx context.Context, productSlug string, page, perPage int) ([]dto.ProductReviewResponse, int64, error)
-	
-	// Admin routes
+
 	ListAllReviews(ctx context.Context, productID *uuid.UUID, published *bool, page, perPage int) ([]dto.AdminReviewResponse, int64, error)
 	UpdateReviewPublishStatus(ctx context.Context, id uuid.UUID, isPublished bool) error
 	DeleteReview(ctx context.Context, id uuid.UUID) error

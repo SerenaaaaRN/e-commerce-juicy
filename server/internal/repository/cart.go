@@ -3,10 +3,10 @@ package repository
 import (
 	"context"
 
+	"github.com/SerenaaaaRN/juicy/internal/model"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
-	"github.com/SerenaaaaRN/juicy/internal/model"
 )
 
 type cartRepo struct {
@@ -21,7 +21,7 @@ func (r *cartRepo) FindByCustomerID(ctx context.Context, customerID uuid.UUID) (
 	var items []model.CartItem
 	err := r.db.WithContext(ctx).
 		Preload("Variant").
-		Preload("Variant.ProductID"). // GORM can fetch product metadata through preloading nested associations or joins
+		Preload("Variant.ProductID").
 		Where("customer_id = ?", customerID).
 		Order("created_at DESC").
 		Find(&items).Error
@@ -38,7 +38,7 @@ func (r *cartRepo) FindItemByID(ctx context.Context, id uuid.UUID) (*model.CartI
 }
 
 func (r *cartRepo) UpsertItem(ctx context.Context, item *model.CartItem) error {
-	// GORM Clause OnConflict for customer_id + variant_id
+
 	return r.db.WithContext(ctx).Clauses(clause.OnConflict{
 		Columns: []clause.Column{{Name: "customer_id"}, {Name: "variant_id"}},
 		DoUpdates: clause.Assignments(map[string]interface{}{

@@ -4,11 +4,11 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/SerenaaaaRN/juicy/internal/config"
+	"github.com/SerenaaaaRN/juicy/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"github.com/SerenaaaaRN/juicy/internal/config"
-	"github.com/SerenaaaaRN/juicy/internal/service"
 )
 
 func CustomerAuth(cfg *config.Config) gin.HandlerFunc {

@@ -4,11 +4,11 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/SerenaaaaRN/juicy/internal/config"
 	"github.com/SerenaaaaRN/juicy/internal/dto"
 	"github.com/SerenaaaaRN/juicy/internal/service"
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type AdminHandler struct {
@@ -58,7 +58,6 @@ func (h *AdminHandler) Login(c *gin.Context) {
 		return
 	}
 
-	// Set HTTP-only Cookie for refresh token
 	secure := h.config.AppEnv == "production"
 	c.SetCookie(
 		"refresh_token",
@@ -101,7 +100,6 @@ func (h *AdminHandler) Refresh(c *gin.Context) {
 		return
 	}
 
-	// Set new HTTP-only Cookie for refresh token
 	secure := h.config.AppEnv == "production"
 	c.SetCookie(
 		"refresh_token",
@@ -120,7 +118,7 @@ func (h *AdminHandler) Refresh(c *gin.Context) {
 }
 
 func (h *AdminHandler) Logout(c *gin.Context) {
-	// Clear the refresh token cookie
+
 	secure := h.config.AppEnv == "production"
 	c.SetCookie(
 		"refresh_token",

@@ -3,9 +3,9 @@ package repository
 import (
 	"context"
 
+	"github.com/SerenaaaaRN/juicy/internal/model"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
-	"github.com/SerenaaaaRN/juicy/internal/model"
 )
 
 type categoryRepo struct {

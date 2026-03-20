@@ -5,9 +5,9 @@ import (
 	"errors"
 	"log"
 
+	"github.com/SerenaaaaRN/juicy/internal/config"
 	"github.com/cloudinary/cloudinary-go/v2"
 	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
-	"github.com/SerenaaaaRN/juicy/internal/config"
 )
 
 type CloudinaryService struct {

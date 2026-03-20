@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
+	"github.com/SerenaaaaRN/juicy/internal/model"
 	"golang.org/x/sync/errgroup"
 	"gorm.io/gorm"
-	"github.com/SerenaaaaRN/juicy/internal/model"
 )
 
 type analyticsService struct {
@@ -20,18 +20,16 @@ func NewAnalyticsService(db *gorm.DB) *analyticsService {
 func (s *analyticsService) GetOverview(ctx context.Context) (map[string]interface{}, error) {
 	g, ctx := errgroup.WithContext(ctx)
 
-	// Time boundaries
 	now := time.Now()
 	startOfMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
 
 	var (
 		ordersTotal, ordersPending, ordersProcessing, ordersThisMonth int64
-		revenueTotal, revenueThisMonth                                 float64
-		customersTotal, customersThisMonth                             int64
+		revenueTotal, revenueThisMonth                                float64
+		customersTotal, customersThisMonth                            int64
 		productsTotal, productsOutOfStock                             int64
 	)
 
-	// 1. Concurrent Orders Overview
 	g.Go(func() error {
 		db := s.db.WithContext(ctx)
 		if err := db.Model(&model.Order{}).Count(&ordersTotal).Error; err != nil {
@@ -49,10 +47,9 @@ func (s *analyticsService) GetOverview(ctx context.Context) (map[string]interfac
 		return nil
 	})
 
-	// 2. Concurrent Revenue Overview
 	g.Go(func() error {
 		db := s.db.WithContext(ctx)
-		// Total Revenue (where payment_status = 'paid')
+
 		var totalRev *float64
 		err := db.Model(&model.Order{}).
 			Select("SUM(total)").
@@ -65,7 +62,6 @@ func (s *analyticsService) GetOverview(ctx context.Context) (map[string]interfac
 			revenueTotal = *totalRev
 		}
 
-		// Revenue this month
 		var monthRev *float64
 		err = db.Model(&model.Order{}).
 			Select("SUM(total)").
@@ -81,7 +77,6 @@ func (s *analyticsService) GetOverview(ctx context.Context) (map[string]interfac
 		return nil
 	})
 
-	// 3. Concurrent Customers Overview
 	g.Go(func() error {
 		db := s.db.WithContext(ctx)
 		if err := db.Model(&model.Customer{}).Count(&customersTotal).Error; err != nil {
@@ -93,20 +88,18 @@ func (s *analyticsService) GetOverview(ctx context.Context) (map[string]interfac
 		return nil
 	})
 
-	// 4. Concurrent Products Overview
 	g.Go(func() error {
 		db := s.db.WithContext(ctx)
 		if err := db.Model(&model.Product{}).Count(&productsTotal).Error; err != nil {
 			return err
 		}
-		// Count products where all active variants have 0 stock
+
 		err := db.Model(&model.Product{}).
 			Where("id NOT IN (SELECT DISTINCT product_id FROM product_variants WHERE stock > 0 AND is_active = ?)", true).
 			Count(&productsOutOfStock).Error
 		return err
 	})
 
-	// Wait for all goroutines to complete
 	if err := g.Wait(); err != nil {
 		return nil, err
 	}
@@ -134,7 +127,7 @@ func (s *analyticsService) GetOverview(ctx context.Context) (map[string]interfac
 }
 
 func (s *analyticsService) GetOrdersChart(ctx context.Context) ([]map[string]interface{}, error) {
-	// Last 6 months order counts + revenue grouped by month
+
 	type MonthlyData struct {
 		Month      string  `gorm:"column:month"`
 		OrderCount int     `gorm:"column:order_count"`
@@ -142,7 +135,7 @@ func (s *analyticsService) GetOrdersChart(ctx context.Context) ([]map[string]int
 	}
 
 	var rawData []MonthlyData
-	// Query to group orders by YYYY-MM
+
 	err := s.db.WithContext(ctx).Model(&model.Order{}).
 		Select("TO_CHAR(created_at, 'YYYY-MM') as month, COUNT(*) as order_count, SUM(CASE WHEN payment_status = 'paid' THEN total ELSE 0 END) as revenue").
 		Where("created_at >= ?", time.Now().AddDate(0, -6, 0)).

@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/SerenaaaaRN/juicy/internal/dto"
 	"github.com/SerenaaaaRN/juicy/internal/service"
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type ReviewHandler struct {
@@ -149,8 +149,6 @@ func (h *ReviewHandler) GetProductReviews(c *gin.Context) {
 		},
 	})
 }
-
-// Admin review routes
 
 func (h *ReviewHandler) ListAllReviews(c *gin.Context) {
 	var productID *uuid.UUID
