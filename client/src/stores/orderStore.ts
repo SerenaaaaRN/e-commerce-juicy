@@ -3,6 +3,7 @@ import type { Address } from "./customerAuthStore";
 import type { CartItem } from "./cartStore";
 import { MOCK_PRODUCTS } from "@/lib/mockData";
 import { toast } from "sonner";
+import type { ProductVariant } from "@/features/shop/shop.types";
 
 export type OrderItem = {
   product_name: string;
@@ -95,7 +96,7 @@ export const useOrderStore = create<OrderState>((set, get) => ({
         toast.error(`Product ${item.product_name} not found.`);
         return null;
       }
-      const variant = product.variants.find((v) => v.id === item.variant_id);
+      const variant = product.variants.find((v: ProductVariant) => v.id === item.variant_id);
       if (!variant) {
         toast.error(`Variant for ${item.product_name} not found.`);
         return null;
@@ -109,7 +110,7 @@ export const useOrderStore = create<OrderState>((set, get) => ({
     // 2. Decrement the stocks locally in MOCK_PRODUCTS
     for (const item of items) {
       const product = MOCK_PRODUCTS.find((p) => p.id === item.product_id);
-      const variant = product!.variants.find((v) => v.id === item.variant_id);
+      const variant = product!.variants.find((v: ProductVariant) => v.id === item.variant_id);
       variant!.stock -= item.quantity;
     }
 

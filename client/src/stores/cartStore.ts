@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { Product, ProductVariant } from "@/features/shop/types/shop.types";
+import type { Product, ProductVariant } from "@/features/shop/shop.types";
 import { toast } from "sonner";
 
 export type CartItem = {

@@ -1,4 +1,4 @@
-import type { Product, Category } from "@/features/shop/types/shop.types";
+import type { Product, Category } from "@/features/shop/shop.types";
 
 export const MOCK_CATEGORIES: Category[] = [
   { id: "cat-1", name: "Tops", slug: "tops", display_order: 1, is_active: true },
