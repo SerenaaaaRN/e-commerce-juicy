@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { DollarSign, ShoppingCart, Users, AlertTriangle } from "lucide-react";
-import { adminApi, withFallback } from "@/lib/api";
-import type { AnalyticsOverview } from "@/lib/api/types";
+import { adminApi } from "@/lib/api";
 
 type Stat = {
   label: string;
@@ -16,22 +15,6 @@ type MonthlyData = {
   revenue: number;
 };
 
-const DEFAULT_OVERVIEW: AnalyticsOverview = {
-  orders: { total: 540, pending: 12, processing: 8, this_month: 145 },
-  revenue: { total: 675000000, this_month: 82500000 },
-  customers: { total: 320, new_this_month: 28 },
-  products: { total: 18, out_of_stock: 3 },
-};
-
-const DEFAULT_CHART: MonthlyData[] = [
-  { month: "Jan", orders: 72, revenue: 90000000 },
-  { month: "Feb", orders: 85, revenue: 106250000 },
-  { month: "Mar", orders: 98, revenue: 122500000 },
-  { month: "Apr", orders: 110, revenue: 137500000 },
-  { month: "May", orders: 130, revenue: 162500000 },
-  { month: "Jun", orders: 145, revenue: 181250000 },
-];
-
 const svgWidth = 700;
 const svgHeight = 280;
 const padding = 40;
@@ -45,15 +28,20 @@ const formatRupiah = (val: number) => {
 
 const DashboardPage = () => {
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
-  const [overview, setOverview] = useState<AnalyticsOverview>(DEFAULT_OVERVIEW);
-  const [chartData, setChartData] = useState<MonthlyData[]>(DEFAULT_CHART);
+  const [overview, setOverview] = useState<{
+    orders: { total: number; pending: number; processing: number; this_month: number };
+    revenue: { total: number; this_month: number };
+    customers: { total: number; new_this_month: number };
+    products: { total: number; out_of_stock: number };
+  } | null>(null);
+  const [chartData, setChartData] = useState<MonthlyData[]>([]);
 
   const chartWidth = svgWidth - padding * 2;
   const chartHeight = svgHeight - padding * 2;
 
-  const getBarX = (idx: number) => padding + idx * (chartWidth / (chartData.length - 1 + 0.8));
+  const getBarX = (idx: number) => padding + idx * (chartWidth / (Math.max(chartData.length, 1) - 1 + 0.8));
   const getBarY = (orders: number) => padding + chartHeight - (orders / maxOrders) * chartHeight;
-  const getLineX = (idx: number) => padding + idx * (chartWidth / (chartData.length - 1));
+  const getLineX = (idx: number) => padding + idx * (chartWidth / (Math.max(chartData.length, 1) - 1));
   const getLineY = (rev: number) => padding + chartHeight - (rev / maxRevenue) * chartHeight;
 
   const linePath = chartData
@@ -62,55 +50,56 @@ const DashboardPage = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const result = await withFallback(
-        () => adminApi.getAnalyticsOverview(),
-        () => DEFAULT_OVERVIEW,
-      );
-      setOverview(result);
-
-      const chartResult = await withFallback(
-        () => adminApi.getAnalyticsChart(),
-        () => DEFAULT_CHART,
-      );
-      if (chartResult.length > 0) {
-        setChartData(
-          chartResult.map((d) => ({
-            month: d.month.slice(-2).replace("-", ""),
-            orders: d.order_count,
-            revenue: d.revenue,
-          })),
-        );
+      try {
+        const [overviewResult, chartResult] = await Promise.all([
+          adminApi.getAnalyticsOverview(),
+          adminApi.getAnalyticsChart(),
+        ]);
+        setOverview(overviewResult);
+        if (chartResult.length > 0) {
+          setChartData(
+            chartResult.map((d) => ({
+              month: d.month.slice(-2).replace("-", ""),
+              orders: d.order_count,
+              revenue: d.revenue,
+            })),
+          );
+        }
+      } catch {
+        // server offline
       }
     };
     fetchData();
   }, []);
 
-  const stats: Stat[] = [
-    {
-      label: "Total Revenue",
-      value: `Rp ${overview.revenue.total.toLocaleString("id-ID")}`,
-      sub: `+Rp ${overview.revenue.this_month.toLocaleString("id-ID")} this month`,
-      icon: DollarSign,
-    },
-    {
-      label: "Total Orders",
-      value: `${overview.orders.total}`,
-      sub: `${overview.orders.pending} pending, ${overview.orders.processing} processing`,
-      icon: ShoppingCart,
-    },
-    {
-      label: "Active Customers",
-      value: `${overview.customers.total}`,
-      sub: `+${overview.customers.new_this_month} registered this month`,
-      icon: Users,
-    },
-    {
-      label: "Out of Stock",
-      value: `${overview.products.out_of_stock} Products`,
-      sub: "Requires immediate reorder",
-      icon: AlertTriangle,
-    },
-  ];
+  const stats: Stat[] = overview
+    ? [
+        {
+          label: "Total Revenue",
+          value: `Rp ${overview.revenue.total.toLocaleString("id-ID")}`,
+          sub: `+Rp ${overview.revenue.this_month.toLocaleString("id-ID")} this month`,
+          icon: DollarSign,
+        },
+        {
+          label: "Total Orders",
+          value: `${overview.orders.total}`,
+          sub: `${overview.orders.pending} pending, ${overview.orders.processing} processing`,
+          icon: ShoppingCart,
+        },
+        {
+          label: "Active Customers",
+          value: `${overview.customers.total}`,
+          sub: `+${overview.customers.new_this_month} registered this month`,
+          icon: Users,
+        },
+        {
+          label: "Out of Stock",
+          value: `${overview.products.out_of_stock} Products`,
+          sub: "Requires immediate reorder",
+          icon: AlertTriangle,
+        },
+      ]
+    : [];
 
   return (
     <div className="space-y-8 font-dm-sans text-soil">

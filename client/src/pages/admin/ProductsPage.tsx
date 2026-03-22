@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
-import { MOCK_PRODUCTS, MOCK_CATEGORIES } from "@/lib/mockData";
 import type { Product, ProductVariant, ProductImage } from "@/features/shop/shop.types";
 import { Search, Plus, Edit2, Trash2, X, Star, Upload } from "lucide-react";
 import { toast } from "sonner";
-import { adminApi, withFallback } from "@/lib/api";
+import { adminApi } from "@/lib/api";
+import type { Category } from "@/lib/api/types";
 
 const ProductsPage = () => {
-  const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [panelOpen, setPanelOpen] = useState(false);
@@ -17,7 +18,7 @@ const ProductsPage = () => {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState(0);
   const [compareAtPrice, setCompareAtPrice] = useState<number | null>(null);
-  const [categoryId, setCategoryId] = useState(MOCK_CATEGORIES[0].id);
+  const [categoryId, setCategoryId] = useState("");
   const [tags, setTags] = useState("");
   const [isFeatured, setIsFeatured] = useState(false);
   const [isAvailable, setIsAvailable] = useState(true);
@@ -33,10 +34,11 @@ const ProductsPage = () => {
   useEffect(() => {
     const fetch = async () => {
       try {
-        const data = await withFallback(
-          () => adminApi.listAdminProducts(),
-          () => MOCK_PRODUCTS,
-        );
+        const [data, cats] = await Promise.all([
+          adminApi.listAdminProducts(),
+          adminApi.listAdminCategories(),
+        ]);
+        setCategories(cats);
         if (data.length > 0) {
           setProducts(data.map((p) => ({
             id: p.id,
@@ -60,6 +62,9 @@ const ProductsPage = () => {
             created_at: "",
           })));
         }
+        if (cats.length > 0 && !categoryId) {
+          setCategoryId(cats[0].id);
+        }
       } catch {}
     };
     fetch();
@@ -72,7 +77,7 @@ const ProductsPage = () => {
     setDescription("");
     setPrice(0);
     setCompareAtPrice(null);
-    setCategoryId(MOCK_CATEGORIES[0].id);
+    setCategoryId(categories[0]?.id || "");
     setTags("");
     setIsFeatured(false);
     setIsAvailable(true);
@@ -88,7 +93,7 @@ const ProductsPage = () => {
     setDescription(product.description);
     setPrice(product.price);
     setCompareAtPrice(product.compare_at_price || null);
-    setCategoryId(product.category?.id || MOCK_CATEGORIES[0].id);
+    setCategoryId(product.category?.id || categories[0]?.id || "");
     setTags(product.tags?.join(", ") || "");
     setIsFeatured(product.is_featured || false);
     setIsAvailable(product.is_available);
@@ -99,12 +104,13 @@ const ProductsPage = () => {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this product?")) return;
-    await withFallback(
-      () => adminApi.deleteAdminProduct(id),
-      () => {},
-    );
-    setProducts(products.filter((p) => p.id !== id));
-    toast.success("Product deleted successfully.");
+    try {
+      await adminApi.deleteAdminProduct(id);
+      setProducts(products.filter((p) => p.id !== id));
+      toast.success("Product deleted successfully.");
+    } catch {
+      toast.error("Failed to delete product.");
+    }
   };
 
   const handleAddImage = () => {
@@ -162,13 +168,13 @@ const ProductsPage = () => {
       return;
     }
 
-    const categoryObj = MOCK_CATEGORIES.find((c) => c.id === categoryId) || MOCK_CATEGORIES[0];
+    const categoryObj = categories.find((c) => c.id === categoryId);
     const tagsArr = tags.split(",").map((t) => t.trim()).filter((t) => t.length > 0);
     const primaryImg = images.find((i) => i.is_primary)?.image_url || images[0]?.image_url || "";
 
     if (editingProduct) {
-      await withFallback(
-        () => adminApi.updateAdminProduct(editingProduct.id, {
+      try {
+        await adminApi.updateAdminProduct(editingProduct.id, {
           category_id: categoryId,
           name,
           slug,
@@ -178,17 +184,19 @@ const ProductsPage = () => {
           is_available: isAvailable,
           is_featured: isFeatured,
           tags: tagsArr,
-        }),
-        () => {},
-      );
+        });
+      } catch {
+        toast.error("Failed to update product.");
+        return;
+      }
       const updated = products.map((p) => {
         if (p.id === editingProduct.id) {
           return {
             ...p,
             name, slug, description, price,
             compare_at_price: compareAtPrice,
-            category: { id: categoryObj.id, name: categoryObj.name, slug: categoryObj.slug },
-            category_name: categoryObj.name,
+            category: { id: categoryId, name: categoryObj?.name || "", slug: categoryObj?.slug || "" },
+            category_name: categoryObj?.name || "",
             tags: tagsArr,
             is_featured: isFeatured,
             is_available: isAvailable,
@@ -201,8 +209,9 @@ const ProductsPage = () => {
       setProducts(updated);
       toast.success("Product updated successfully.");
     } else {
-      const created = await withFallback(
-        () => adminApi.createAdminProduct({
+      let createdId: string;
+      try {
+        const created = await adminApi.createAdminProduct({
           category_id: categoryId,
           name, slug,
           description: description || null,
@@ -211,15 +220,18 @@ const ProductsPage = () => {
           is_available: isAvailable,
           is_featured: isFeatured,
           tags: tagsArr,
-        }),
-        async () => ({ id: `prod-${Math.random().toString(36).substring(2, 9)}` }),
-      );
+        });
+        createdId = created.id;
+      } catch {
+        toast.error("Failed to create product.");
+        return;
+      }
       const newProd: Product = {
-        id: created.id,
+        id: createdId!,
         name, slug, description, price,
         compare_at_price: compareAtPrice,
-        category: { id: categoryObj.id, name: categoryObj.name, slug: categoryObj.slug },
-        category_name: categoryObj.name,
+        category: { id: categoryId, name: categoryObj?.name || "", slug: categoryObj?.slug || "" },
+        category_name: categoryObj?.name || "",
         tags: tagsArr,
         is_featured: isFeatured,
         is_available: isAvailable,
@@ -283,7 +295,7 @@ const ProductsPage = () => {
             className="bg-chalk border border-sand/50 rounded-xs px-3 py-1.5 text-xs focus:outline-none focus:border-terracotta cursor-pointer font-medium"
           >
             <option value="all">All Categories</option>
-            {MOCK_CATEGORIES.map((c) => (
+            {categories.map((c) => (
               <option key={c.id} value={c.slug}>
                 {c.name}
               </option>
@@ -477,7 +489,7 @@ const ProductsPage = () => {
                       onChange={(e) => setCategoryId(e.target.value)}
                       className="w-full bg-cream border border-sand/50 rounded-xs py-2 px-3 text-xs tracking-wide focus:outline-none focus:border-terracotta cursor-pointer font-medium"
                     >
-                      {MOCK_CATEGORIES.map((c) => (
+                      {categories.map((c) => (
                         <option key={c.id} value={c.id}>
                           {c.name}
                         </option>

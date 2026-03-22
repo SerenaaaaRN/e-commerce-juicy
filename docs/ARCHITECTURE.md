@@ -40,53 +40,6 @@ client/
 │   └── fonts/                    # Playfair Display, DM Sans (self-hosted)
 ├── src/
 │   ├── assets/                   # Static images, SVGs
-│   ├── features/                 # Feature-based modules grouped by domain
-│   │   ├── admin/                 # Admin dashboard features
-│   │   │   ├── auth/
-│   │   │   │   ├── auth.api.ts
-│   │   │   │   ├── auth.types.ts
-│   │   │   │   └── useAdminAuth.ts
-│   │   │   ├── products/
-│   │   │   │   ├── products.api.ts
-│   │   │   │   ├── products.types.ts
-│   │   │   │   └── useProducts.ts
-│   │   │   ├── orders/
-│   │   │   │   ├── orders.api.ts
-│   │   │   │   ├── orders.types.ts
-│   │   │   │   └── useOrders.ts
-│   │   │   ├── customers/
-│   │   │   │   ├── customers.api.ts
-│   │   │   │   ├── customers.types.ts
-│   │   │   │   └── useCustomers.ts
-│   │   │   └── dashboard/
-│   │   │       ├── dashboard.api.ts
-│   │   │       ├── dashboard.types.ts
-│   │   │       └── useDashboard.ts
-│   │   ├── customer/              # Customer-facing features
-│   │   │   ├── auth/
-│   │   │   │   ├── auth.api.ts
-│   │   │   │   ├── auth.types.ts
-│   │   │   │   └── useCustomerAuth.ts
-│   │   │   ├── cart/
-│   │   │   │   ├── cart.api.ts
-│   │   │   │   ├── cart.types.ts
-│   │   │   │   └── useCart.ts
-│   │   │   ├── orders/
-│   │   │   │   ├── orders.api.ts
-│   │   │   │   ├── orders.types.ts
-│   │   │   │   └── useCustomerOrders.ts
-│   │   │   ├── reviews/
-│   │   │   │   ├── reviews.api.ts
-│   │   │   │   ├── reviews.types.ts
-│   │   │   │   └── useReviews.ts
-│   │   │   └── profile/
-│   │   │       ├── profile.api.ts
-│   │   │       ├── profile.types.ts
-│   │   │       └── useProfile.ts
-│   │   └── shop/                  # Public shop features (catalog, PDP)
-│   │       ├── shop.api.ts
-│   │       ├── shop.types.ts
-│   │       └── useShop.ts
 │   ├── components/
 │   │   ├── ui/                   # Custom design system primitives
 │   │   │   ├── badge.tsx
@@ -143,17 +96,27 @@ client/
 │   │       ├── OrdersPage.tsx
 │   │       └── CustomersPage.tsx
 │   ├── lib/
-│   │   ├── api.ts                # Axios instance + admin JWT interceptor
-│   │   ├── customerApi.ts        # Axios instance + customer JWT interceptor
+│   │   ├── api/                  # API client layer
+│   │   │   ├── client.ts         # Admin Axios instance + JWT interceptor
+│   │   │   ├── customerClient.ts # Customer Axios instance + JWT interceptor
+│   │   │   ├── types.ts          # 25+ TypeScript interfaces matching backend DTOs
+│   │   │   ├── products.ts       # Public shop product API
+│   │   │   ├── customer.ts       # Customer auth, addresses, cart, orders, reviews
+│   │   │   ├── admin.ts          # Admin auth, CRUDs, analytics
+│   │   │   └── index.ts          # Re-exports
 │   │   ├── utils.ts              # cn() utility (clsx + tailwind-merge)
 │   │   ├── gsap.ts               # GSAP + ScrollTrigger init
 │   │   └── lenis.ts              # Lenis smooth scroll init
-│   ├── stores/
-│   │   ├── adminAuthStore.ts     # Zustand — admin JWT token, admin state
-│   │   ├── customerAuthStore.ts  # Zustand — customer JWT token, customer state
-│   │   └── uiStore.ts            # Zustand — sidebar open, loading overlay
-│   ├── provider/
-│   │   └── theme-provider.tsx
+│   ├── stores/                   # Zustand — API calls directly in async actions
+│   │   ├── adminAuthStore.ts     # Admin JWT token + profile
+│   │   ├── customerAuthStore.ts  # Customer JWT token + profile + addresses
+│   │   ├── cartStore.ts          # Cart items, fetchCart, addItem, etc.
+│   │   ├── orderStore.ts         # Orders, placeOrder, fetchOrders, etc.
+│   │   ├── productStore.ts       # Products + categories
+│   │   └── uiStore.ts            # Sidebar open, loading overlay
+│   ├── features/                 # Feature types (shop types only)
+│   │   └── shop/
+│   │       └── shop.types.ts
 │   ├── App.tsx
 │   ├── main.tsx
 │   └── index.css                 # Tailwind v4 @theme, font-face declarations
@@ -301,9 +264,10 @@ Order creation runs inside a PostgreSQL transaction:
 1. Customer reviews cart (CartPage)
 2. Selects shipping address
 3. React Hook Form validates via Zod
-4. TanStack Query mutation → POST /api/customer/orders
-5. Gin handler extracts context → OrderService.Create(ctx, req)
-6. BEGIN TRANSACTION
+4. Zustand store.action → customerApi.placeOrder()
+5. POST /api/customer/orders
+6. Gin handler extracts context → OrderService.Create(ctx, req)
+7. BEGIN TRANSACTION
    ├── Lock variants (SELECT FOR UPDATE)
    ├── Validate stock for each item
    ├── Decrement stock
@@ -311,9 +275,9 @@ Order creation runs inside a PostgreSQL transaction:
    ├── Insert orders row
    ├── Insert order_items rows (with price/name snapshots)
    └── COMMIT
-7. BackgroundWorker.Submit() → Resend: order confirmation email to customer
-8. BackgroundWorker.Submit() → Resend: new order alert to admin
-9. Response 201 → frontend clears cart, shows order confirmation
+8. BackgroundWorker.Submit() → Resend: order confirmation email to customer
+9. BackgroundWorker.Submit() → Resend: new order alert to admin
+10. Response 201 → frontend clears cart store, shows order confirmation
 ```
 
 ### Admin Updates Order Status to Shipped
@@ -322,7 +286,7 @@ Order creation runs inside a PostgreSQL transaction:
 2. OrderService.UpdateStatus(ctx, id, "shipped")
 3. Sets shipped_at = NOW()
 4. BackgroundWorker.Submit() → Resend: shipping update email to customer
-5. Response 200 → admin table updates via TanStack Query invalidation
+5. Response 200 → admin page updates local state
 ```
 
 ### Customer Submits Review
@@ -341,9 +305,9 @@ Order creation runs inside a PostgreSQL transaction:
 2. AdminService verifies bcrypt hash
 3. Returns signed JWT (access: 15min) + sets HttpOnly refresh_token cookie
 4. Frontend stores access token in adminAuthStore (Zustand, memory only)
-5. Axios interceptor (api.ts) attaches Bearer token to all /api/admin/* requests
-6. admin_auth.go middleware validates JWT on every protected route
-7. Silent refresh via POST /api/admin/refresh on 401
+5. Axios interceptor (client.ts) reads token from store, attaches Bearer to all /api/admin/* requests
+6. On 401, interceptor calls POST /api/admin/refresh; if that fails, clears store (auto-logout)
+7. admin_auth.go middleware validates JWT on every protected route
 ```
 
 ### Customer Auth Flow
@@ -352,8 +316,9 @@ Order creation runs inside a PostgreSQL transaction:
 2. CustomerService verifies bcrypt hash (login) or creates account (register)
 3. Returns signed customer JWT (access: 7d — longer since non-admin)
 4. Frontend stores token in customerAuthStore (Zustand, memory only)
-5. customerApi.ts Axios instance attaches Bearer token to all /api/customer/* requests
-6. customer_auth.go middleware validates JWT on protected customer routes
+5. customerClient.ts Axios interceptor reads token from store, attaches Bearer to all /api/customer/* requests
+6. On 401, interceptor clears store (auto-logout)
+7. customer_auth.go middleware validates JWT on protected customer routes
 ```
 
 ---
@@ -385,7 +350,9 @@ Order creation runs inside a PostgreSQL transaction:
 | Cart upsert | ON CONFLICT DO UPDATE | Idempotent add-to-cart without duplicates |
 | GORM over raw SQL | GORM | Development speed; migrations still use raw SQL |
 | golang-migrate over AutoMigrate | golang-migrate | Explicit, reversible, production-safe |
-| Zustand over Redux | Zustand | Minimal boilerplate; two small stores (admin + customer) |
-| TanStack Query | TanStack Query | Better DevTools, cache invalidation control |
-| JWT in memory | Memory (not localStorage) | XSS protection |
+| Zustand over Redux | Zustand | Minimal boilerplate; five stores (adminAuth, customerAuth, cart, order, product) |
+| Stores call API directly (no TanStack Query) | Zustand async actions | Simpler mental model; no extra cache layer needed for admin CRUD |
+| JWT in memory | Memory (not localStorage) | XSS protection; admin session lost on refresh (re-login required) |
 | Payment as stub | Service layer stub | Slot for Midtrans/Xendit/Stripe in post-MVP without architectural change |
+| No mock data | Server is single source of truth | All pages show empty states when server is offline |
+| Dual Axios instances | client.ts + customerClient.ts | Separate token sources (admin vs customer); separate 401 handling |

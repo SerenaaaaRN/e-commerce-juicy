@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Search, Eye, X, CreditCard, Box, Truck, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
-import { adminApi, withFallback } from "@/lib/api";
+import { adminApi } from "@/lib/api";
 import type { AdminOrderSummary, OrderDetail as ApiOrderDetail } from "@/lib/api/types";
 
 type OrderItem = {
@@ -39,112 +39,6 @@ type Order = {
   payment_method: string;
   created_at: string;
 };
-
-const MOCK_ORDERS: Order[] = [
-  {
-    id: "ord-1",
-    order_number: "JUICY-20260520-X8F2B9",
-    customer_name: "Jane Doe",
-    customer_email: "jane@example.com",
-    phone: "+62812345678",
-    status: "shipped",
-    payment_status: "paid",
-    subtotal: 2500000,
-    shipping_fee: 25000,
-    total: 2525000,
-    shipped_at: "2026-05-22T09:15:00Z",
-    delivered_at: null,
-    address: {
-      recipient_name: "Jane Doe",
-      phone: "+62812345678",
-      address_line: "Jl. Sudirman No. 24, Apartment 8A",
-      city: "Jakarta Selatan",
-      province: "DKI Jakarta",
-      postal_code: "12190",
-    },
-    items: [
-      {
-        product_name: "La Robe Bahia",
-        variant_size: "S",
-        variant_color: "Ivory",
-        image_url: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=300&q=80",
-        quantity: 2,
-        unit_price: 1250000,
-      },
-    ],
-    notes: "Leave with receptionist",
-    payment_method: "Credit Card",
-    created_at: "2026-05-20T08:15:22Z",
-  },
-  {
-    id: "ord-2",
-    order_number: "JUICY-20260524-K2J9W1",
-    customer_name: "Camille R.",
-    customer_email: "camille@example.com",
-    phone: "+62877665544",
-    status: "pending",
-    payment_status: "unpaid",
-    subtotal: 1100000,
-    shipping_fee: 25000,
-    total: 1125000,
-    shipped_at: null,
-    delivered_at: null,
-    address: {
-      recipient_name: "Camille R.",
-      phone: "+62877665544",
-      address_line: "Jl. Sunset Road No. 88",
-      city: "Kuta",
-      province: "Bali",
-      postal_code: "80361",
-    },
-    items: [
-      {
-        product_name: "Le Pantalon Sauge",
-        variant_size: "M",
-        variant_color: "Sand",
-        image_url: "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?auto=format&fit=crop&w=300&q=80",
-        quantity: 1,
-        unit_price: 1100000,
-      },
-    ],
-    payment_method: "Bank Transfer",
-    created_at: "2026-05-24T14:30:10Z",
-  },
-  {
-    id: "ord-3",
-    order_number: "JUICY-20260525-M3L7V2",
-    customer_name: "Isabella G.",
-    customer_email: "isabella@example.com",
-    phone: "+62899887766",
-    status: "delivered",
-    payment_status: "paid",
-    subtotal: 2100000,
-    shipping_fee: 0,
-    total: 2100000,
-    shipped_at: "2026-05-25T10:00:00Z",
-    delivered_at: "2026-05-25T11:45:00Z",
-    address: {
-      recipient_name: "Isabella G.",
-      phone: "+62899887766",
-      address_line: "Jl. Menteng Raya No. 4A",
-      city: "Jakarta Pusat",
-      province: "DKI Jakarta",
-      postal_code: "10310",
-    },
-    items: [
-      {
-        product_name: "Le Chiquito Bag",
-        variant_size: "S",
-        variant_color: "Terracotta",
-        image_url: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=300&q=80",
-        quantity: 1,
-        unit_price: 2100000,
-      },
-    ],
-    payment_method: "COD",
-    created_at: "2026-05-25T08:00:00Z",
-  },
-];
 
 const mapApiDetailToOrder = (d: ApiOrderDetail): Order => ({
   id: d.id,
@@ -192,7 +86,7 @@ const mapApiSummaryToOrder = (s: AdminOrderSummary): Order => ({
 });
 
 const OrdersPage = () => {
-  const [orders, setOrders] = useState<Order[]>(MOCK_ORDERS);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [detailOrder, setDetailOrder] = useState<Order | null>(null);
@@ -200,10 +94,7 @@ const OrdersPage = () => {
   useEffect(() => {
     const fetch = async () => {
       try {
-        const result = await withFallback(
-          () => adminApi.listAdminOrders(),
-          () => ({ orders: [], meta: { total: 0, page: 1, per_page: 10 } }),
-        );
+        const result = await adminApi.listAdminOrders();
         if (result.orders.length > 0) {
           setOrders(result.orders.map(mapApiSummaryToOrder));
         }
@@ -213,47 +104,49 @@ const OrdersPage = () => {
   }, []);
 
   const handleUpdateStatus = async (orderId: string, nextStatus: Order["status"]) => {
-    await withFallback(
-      () => adminApi.updateOrderStatus(orderId, nextStatus),
-      () => {},
-    );
-    const updated = orders.map((ord) => {
-      if (ord.id === orderId) {
-        return {
-          ...ord,
-          status: nextStatus,
-          shipped_at: nextStatus === "shipped" || nextStatus === "delivered" ? new Date().toISOString() : ord.shipped_at,
-          delivered_at: nextStatus === "delivered" ? new Date().toISOString() : ord.delivered_at,
-          payment_status: nextStatus === "delivered" ? ("paid" as const) : ord.payment_status,
-        };
+    try {
+      await adminApi.updateOrderStatus(orderId, nextStatus);
+      const updated = orders.map((ord) => {
+        if (ord.id === orderId) {
+          return {
+            ...ord,
+            status: nextStatus,
+            shipped_at: nextStatus === "shipped" || nextStatus === "delivered" ? new Date().toISOString() : ord.shipped_at,
+            delivered_at: nextStatus === "delivered" ? new Date().toISOString() : ord.delivered_at,
+            payment_status: nextStatus === "delivered" ? ("paid" as const) : ord.payment_status,
+          };
+        }
+        return ord;
+      });
+      setOrders(updated);
+      if (detailOrder && detailOrder.id === orderId) {
+        const match = updated.find((o) => o.id === orderId);
+        if (match) setDetailOrder(match);
       }
-      return ord;
-    });
-    setOrders(updated);
-    if (detailOrder && detailOrder.id === orderId) {
-      const match = updated.find((o) => o.id === orderId);
-      if (match) setDetailOrder(match);
+      toast.success(`Order status updated to ${nextStatus.toUpperCase()}.`);
+    } catch {
+      toast.error("Failed to update order status.");
     }
-    toast.success(`Order status updated to ${nextStatus.toUpperCase()}.`);
   };
 
   const handleUpdatePayment = async (orderId: string, nextPayment: Order["payment_status"]) => {
-    await withFallback(
-      () => adminApi.updateOrderPayment(orderId, nextPayment),
-      () => {},
-    );
-    const updated = orders.map((ord) => {
-      if (ord.id === orderId) {
-        return { ...ord, payment_status: nextPayment };
+    try {
+      await adminApi.updateOrderPayment(orderId, nextPayment);
+      const updated = orders.map((ord) => {
+        if (ord.id === orderId) {
+          return { ...ord, payment_status: nextPayment };
+        }
+        return ord;
+      });
+      setOrders(updated);
+      if (detailOrder && detailOrder.id === orderId) {
+        const match = updated.find((o) => o.id === orderId);
+        if (match) setDetailOrder(match);
       }
-      return ord;
-    });
-    setOrders(updated);
-    if (detailOrder && detailOrder.id === orderId) {
-      const match = updated.find((o) => o.id === orderId);
-      if (match) setDetailOrder(match);
+      toast.success(`Payment status marked as ${nextPayment.toUpperCase()}.`);
+    } catch {
+      toast.error("Failed to update payment status.");
     }
-    toast.success(`Payment status marked as ${nextPayment.toUpperCase()}.`);
   };
 
   const handleViewDetail = async (orderId: string) => {
@@ -261,10 +154,7 @@ const OrdersPage = () => {
     if (!local) return;
 
     try {
-      const detail = await withFallback(
-        () => adminApi.getAdminOrder(orderId),
-        () => local as any,
-      );
+      const detail = await adminApi.getAdminOrder(orderId);
       setDetailOrder(mapApiDetailToOrder(detail));
     } catch {
       setDetailOrder(local);

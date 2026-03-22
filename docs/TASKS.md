@@ -143,12 +143,14 @@
 
 ### 3.1 Project Setup
 - [x] `npm create vite@latest client -- --template react-ts`
-- [x] Install deps: `tailwindcss`, `gsap`, `lenis`, `zustand`, `@tanstack/react-query`, `react-hook-form`, `zod`, `@hookform/resolvers`, `axios`, `react-router-dom`, `hugeicons-react`, `sonner`
+- [x] Install deps: `tailwindcss`, `gsap`, `lenis`, `zustand`, `react-hook-form`, `zod`, `@hookform/resolvers`, `axios`, `react-router-dom`, `hugeicons-react`, `sonner`
 - [x] Setup Tailwind v4 + `DESIGN.md` tokens di `index.css`
 - [x] Self-host fonts (Playfair Display + DM Sans) di `public/fonts/`, `@font-face` di `index.css`
-- [x] `lib/api.ts` — Axios instance + admin JWT interceptor + silent refresh on 401
-- [x] `stores/adminAuthStore.ts` — Zustand (token, admin, setAuth, logout, checkAuth)
-- [x] TanStack Query provider di `main.tsx`
+- [x] `lib/api/client.ts` — Axios instance + admin JWT interceptor + auto-logout on 401
+- [x] `lib/api/customerClient.ts` — Axios instance + customer JWT interceptor + auto-logout on 401
+- [x] `lib/api/types.ts` — 25+ TypeScript interfaces matching backend DTOs
+- [x] `lib/api/products.ts`, `customer.ts`, `admin.ts` — API functions for all endpoints
+- [x] `stores/adminAuthStore.ts`, `customerAuthStore.ts`, `cartStore.ts`, `orderStore.ts`, `productStore.ts`
 
 ### 3.2 Admin Auth
 - [x] `pages/admin/LoginPage.tsx`
@@ -162,9 +164,9 @@
 - [x] `AdminLayout.tsx` wrapper
 
 ### 3.4 Dashboard Page
-- [x] `pages/admin/DashboardPage.tsx`
+- [x] `pages/admin/DashboardPage.tsx` — fetches from `/admin/analytics/*` (pure API, no fallback)
 - [x] `StatsCard.tsx` — 4 stat cards (orders, revenue, customers, out-of-stock)
-- [x] Bar chart: orders per month + revenue per month (dual axis or two charts)
+- [x] Bar chart: orders per month + revenue per month
 
 ### 3.5 Products Page
 - [x] `pages/admin/ProductsPage.tsx`
@@ -192,12 +194,19 @@
 - [x] Toggle publish/unpublish
 - [x] Delete with confirm
 
-### 3.9 React Best Practices
-- [x] Arrow function syntax for all components
-- [x] Replace `&&` renders with ternaries (`? : null`)
-- [x] Strict TypeScript — no `any`
-- [x] Feature-based folder structure: `features/admin/*/api`, `hooks`, `types`
-- [x] Raw axios calls in `api/` layer only — hooks orchestrate
+### 3.9 Frontend-Backend Integration (Mock Data Removal)
+- [x] Create `lib/api/` client layer (dual Axios instances, types, all API functions)
+- [x] Rewrite all stores to be pure-API (no mock fallbacks)
+- [x] Delete `lib/mockData.ts`
+- [x] Delete `lib/api/helpers.ts` (withFallback, isNetworkError removed)
+- [x] Rewrite `OrdersPage.tsx` — removed MOCK_ORDERS, pure API CRUD
+- [x] Rewrite `CustomersPage.tsx` — removed MOCK_CUSTOMERS, pure API CRUD
+- [x] Rewrite `ReviewsPage.tsx` — removed MOCK_REVIEWS, pure API CRUD
+- [x] Rewrite `ProductsPage.tsx` — removed MOCK_PRODUCTS/CATEGORIES, pure API CRUD + categories from server
+- [x] Fix `DashboardPage.tsx` — removed orphaned duplicate stats def
+- [x] Fix `OrderTrackingPage.tsx` — removed broken updateOrderStatus call
+- [x] Fix `Customer` type — `phone: string | null` to match API response
+- [x] Verify: `npm run build` + `go vet ./...` pass
 
 ---
 
@@ -212,66 +221,66 @@
 > - `TASKS.md` — Phase 4 checklist saja
 
 ### 4.1 Global Setup
-- [ ] `lib/lenis.ts` — init Lenis + integrate GSAP ticker
-- [ ] `lib/gsap.ts` — register ScrollTrigger + `JuicyMotion` presets
-- [ ] `components/layout/Navbar.tsx` — logo center, links left, cart icon + auth right
-- [ ] `components/layout/Footer.tsx`
-- [ ] `App.tsx` — router + Lenis init + ScrollToTop
+- [x] `lib/lenis.ts` — init Lenis + integrate GSAP ticker
+- [x] `lib/gsap.ts` — register ScrollTrigger + `JuicyMotion` presets
+- [x] `components/layout/Navbar.tsx` — logo center, links left, cart icon + auth right
+- [x] `components/layout/Footer.tsx`
+- [x] `App.tsx` — router + Lenis init + ScrollToTop
 
 ### 4.2 Custom UI Primitives
-- [ ] `Button.tsx` — `variant: primary | ghost | sand`
-- [ ] `Badge.tsx` — product tags + sale
-- [ ] `Input.tsx`, `Textarea.tsx`, `Select.tsx`
-- [ ] `Divider.tsx` — Sand divider
-- [ ] `StarRating.tsx` — display + interactive modes
+- [x] `Button.tsx` — `variant: primary | ghost | sand`
+- [x] `Badge.tsx` — product tags + sale
+- [x] `Input.tsx`, `Textarea.tsx`, `Select.tsx`
+- [x] `Divider.tsx` — Sand divider
+- [x] `StarRating.tsx` — display + interactive modes
 
 ### 4.3 Home Page
-- [ ] `HeroSection.tsx` — full-bleed, GSAP headline word reveal
-- [ ] `FeaturedSection.tsx` — featured products grid (3-col)
-- [ ] `CollectionPreview.tsx` — category tiles
-- [ ] `EditorialSection.tsx` — large image + text composition (asymmetric)
-- [ ] `CtaSection.tsx` — brand statement + shop CTA
-- [ ] GSAP ScrollTrigger: `fadeUp` + `gridStagger` + `imageDrift` on editorial image
+- [x] `HeroSection.tsx` — full-bleed, GSAP headline word reveal
+- [x] `FeaturedSection.tsx` — featured products grid (3-col)
+- [x] `CollectionPreview.tsx` — category tiles
+- [x] `EditorialSection.tsx` — large image + text composition (asymmetric)
+- [x] `CtaSection.tsx` — brand statement + shop CTA
+- [x] GSAP ScrollTrigger: `fadeUp` + `gridStagger` + `imageDrift` on editorial image
 
 ### 4.4 Collection Page
-- [ ] `CollectionPage.tsx` — product grid with category filter tabs + sort dropdown
-- [ ] `ProductGrid.tsx` + `ProductCard.tsx`
-- [ ] Pagination
-- [ ] Loading skeleton
-- [ ] Empty state
+- [x] `CollectionPage.tsx` — product grid with category filter tabs + sort dropdown
+- [x] `ProductGrid.tsx` + `ProductCard.tsx`
+- [x] Pagination
+- [x] Loading skeleton
+- [x] Empty state
 
 ### 4.5 Product Detail Page (PDP)
-- [ ] `ProductPage.tsx`
-- [ ] `ProductImageGallery.tsx` — thumbnail strip + main image (no lightbox needed)
-- [ ] `VariantSelector.tsx` — size pills + color swatches; out-of-stock indication
-- [ ] Add to cart button — stock check, loading state
-- [ ] Product info: name, price, compare_at_price (strikethrough), tags, description
-- [ ] Reviews section with `ReviewCard.tsx` + pagination
-- [ ] Average rating display with `StarRating.tsx`
+- [x] `ProductPage.tsx`
+- [x] `ProductImageGallery.tsx` — thumbnail strip + main image
+- [x] `VariantSelector.tsx` — size pills + color swatches; out-of-stock indication
+- [x] Add to cart button — stock check, loading state
+- [x] Product info: name, price, compare_at_price (strikethrough), tags, description
+- [x] Reviews section with `ReviewCard.tsx` + pagination
+- [x] Average rating display with `StarRating.tsx`
 
 ### 4.6 Cart Page
-- [ ] `CartPage.tsx`
-- [ ] Cart item list (image, name, variant, price, quantity stepper, remove)
-- [ ] Order summary sidebar (subtotal, shipping fee placeholder, total)
-- [ ] Proceed to checkout CTA (requires customer auth — redirect to login if not authenticated)
-- [ ] Empty cart state
+- [x] `CartPage.tsx`
+- [x] Cart item list (image, name, variant, price, quantity stepper, remove)
+- [x] Order summary sidebar (subtotal, shipping fee placeholder, total)
+- [x] Proceed to checkout CTA (requires customer auth — redirect to login if not authenticated)
+- [x] Empty cart state
 
 ### 4.7 Checkout Page (Protected — Customer)
-- [ ] `CheckoutPage.tsx`
-- [ ] Address selector (from saved addresses) + add new address inline
-- [ ] Order summary (read-only)
-- [ ] Payment method selector (COD for MVP; placeholder for gateway)
-- [ ] Notes field
-- [ ] Place order button + loading state
-- [ ] Success redirect to order detail
+- [x] `CheckoutPage.tsx`
+- [x] Address selector (from saved addresses) + add new address inline
+- [x] Order summary (read-only)
+- [x] Payment method selector (COD for MVP; placeholder for gateway)
+- [x] Notes field
+- [x] Place order button + loading state
+- [x] Success redirect to order detail
 
 ### 4.8 Order Tracking Page (Protected — Customer)
-- [ ] `OrderTrackingPage.tsx`
-- [ ] Access by order_number from URL param
-- [ ] Order status timeline (visual step indicator: Pending → Confirmed → Processing → Shipped → Delivered)
-- [ ] Order items list
-- [ ] Shipping address display
-- [ ] Review CTA on delivered items (links to review form if not yet reviewed)
+- [x] `OrderTrackingPage.tsx`
+- [x] Access by order_number from URL param
+- [x] Order status timeline (visual step indicator: Pending → Confirmed → Processing → Shipped → Delivered)
+- [x] Order items list
+- [x] Shipping address display
+- [x] Review CTA on delivered items (links to review form if not yet reviewed)
 
 ### 4.9 Public QA
 - [ ] Responsive mobile + desktop
@@ -290,20 +299,19 @@
 > - `ARCHITECTURE.md` — customer auth flow, customerApi.ts
 
 ### 5.1 Auth Pages
-- [ ] `lib/customerApi.ts` — separate Axios instance + customer JWT interceptor
-- [ ] `stores/customerAuthStore.ts` — Zustand (token, customer, setAuth, logout)
-- [ ] `pages/customer/RegisterPage.tsx` — form + Zod validation
-- [ ] `pages/customer/LoginPage.tsx`
-- [ ] `components/common/ProtectedRoute.tsx` — customer route guard
+- [x] `lib/api/customerClient.ts` — separate Axios instance + customer JWT interceptor
+- [x] `stores/customerAuthStore.ts` — Zustand (token, customer, addresses, login/register/logout/fetchProfile)
+- [x] `pages/customer/LoginPage.tsx` — form
+- [x] `components/common/ProtectedRoute.tsx` — customer route guard
 
 ### 5.2 Profile Page
-- [ ] `pages/customer/ProfilePage.tsx`
-- [ ] Edit profile form (name, phone)
-- [ ] Change password form (current + new)
-- [ ] Address management: list, add, edit, delete, set default
+- [x] `pages/customer/ProfilePage.tsx`
+- [x] Edit profile form (name, phone)
+- [x] Change password form (current + new)
+- [x] Address management: list, add, edit, delete, set default
 
 ### 5.3 Order History Page
-- [ ] `pages/customer/OrderHistoryPage.tsx`
+- [ ] `pages/customer/OrderHistoryPage.tsx` (not yet built)
 - [ ] Order list with status badges + total
 - [ ] Link to order tracking per order
 - [ ] "Write a Review" CTA for delivered orders without review

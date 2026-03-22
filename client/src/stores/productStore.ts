@@ -1,6 +1,5 @@
 import { create } from "zustand";
-import { productsApi, withFallback } from "@/lib/api";
-import { MOCK_PRODUCTS, MOCK_CATEGORIES } from "@/lib/mockData";
+import { productsApi } from "@/lib/api";
 import type { Product, Category } from "@/features/shop/shop.types";
 import type { ProductSummary } from "@/lib/api/types";
 
@@ -35,36 +34,14 @@ type ProductStoreState = {
 };
 
 export const useProductStore = create<ProductStoreState>((set) => ({
-  products: MOCK_PRODUCTS,
-  categories: MOCK_CATEGORIES,
+  products: [],
+  categories: [],
   loading: false,
 
   fetchProducts: async (params) => {
     set({ loading: true });
     try {
-      const data = await withFallback(
-        () => productsApi.listProducts(params),
-        () => {
-          let filtered = [...MOCK_PRODUCTS];
-          if (params?.category) {
-            filtered = filtered.filter((p) => p.category?.slug === params.category);
-          }
-          if (params?.featured === "true") {
-            filtered = filtered.filter((p) => p.is_featured);
-          }
-          if (params?.tag) {
-            filtered = filtered.filter((p) => p.tags?.includes(params.tag!));
-          }
-          if (params?.sort === "price_asc") {
-            filtered.sort((a, b) => a.price - b.price);
-          } else if (params?.sort === "price_desc") {
-            filtered.sort((a, b) => b.price - a.price);
-          } else if (params?.sort === "popular") {
-            filtered.sort((a, b) => (b.avg_rating || 0) - (a.avg_rating || 0));
-          }
-          return filtered;
-        },
-      );
+      const data = await productsApi.listProducts(params);
       set({ products: data.map(mapProductSummary), loading: false });
     } catch {
       set({ loading: false });
@@ -73,10 +50,7 @@ export const useProductStore = create<ProductStoreState>((set) => ({
 
   fetchCategories: async () => {
     try {
-      const data = await withFallback(
-        () => productsApi.listCategories(),
-        () => MOCK_CATEGORIES,
-      );
+      const data = await productsApi.listCategories();
       set({
         categories: data.map((c) => ({
           id: c.id,
@@ -88,7 +62,7 @@ export const useProductStore = create<ProductStoreState>((set) => ({
         })),
       });
     } catch {
-      // keep existing
+      // silent
     }
   },
 }));

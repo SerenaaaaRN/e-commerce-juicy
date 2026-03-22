@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Search, ToggleLeft, ToggleRight, X, UserCheck } from "lucide-react";
 import { toast } from "sonner";
-import { adminApi, withFallback } from "@/lib/api";
+import { adminApi } from "@/lib/api";
 
 type Customer = {
   id: string;
@@ -14,24 +14,15 @@ type Customer = {
   created_at: string;
 };
 
-const MOCK_CUSTOMERS: Customer[] = [
-  { id: "cust-1", full_name: "Jane Doe", email: "jane@example.com", phone: "+62812345678", order_count: 5, total_spent: 12500000, is_active: true, created_at: "2026-01-15" },
-  { id: "cust-2", full_name: "Camille R.", email: "camille@example.com", phone: "+62877665544", order_count: 2, total_spent: 2450000, is_active: true, created_at: "2026-03-10" },
-  { id: "cust-3", full_name: "Isabella G.", email: "isabella@example.com", phone: "+62899887766", order_count: 1, total_spent: 2100000, is_active: false, created_at: "2026-05-02" },
-];
-
 const CustomersPage = () => {
-  const [customers, setCustomers] = useState<Customer[]>(MOCK_CUSTOMERS);
+  const [customers, setCustomers] = useState<Customer[]>([]);
   const [search, setSearch] = useState("");
   const [selectedCust, setSelectedCust] = useState<Customer | null>(null);
 
   useEffect(() => {
     const fetch = async () => {
       try {
-        const result = await withFallback(
-          () => adminApi.listAdminCustomers(),
-          () => ({ customers: [], meta: { total: 0, page: 1, per_page: 10 } }),
-        );
+        const result = await adminApi.listAdminCustomers();
         if (result.customers.length > 0) {
           setCustomers(
             result.customers.map((c) => ({
@@ -55,21 +46,22 @@ const CustomersPage = () => {
     const target = customers.find((c) => c.id === id);
     if (!target) return;
     const nextState = !target.is_active;
-    await withFallback(
-      () => adminApi.updateCustomerStatus(id, nextState),
-      () => {},
-    );
-    const updated = customers.map((c) => {
-      if (c.id === id) {
-        toast.info(`Customer account ${nextState ? "activated" : "deactivated"}.`);
-        return { ...c, is_active: nextState };
+    try {
+      await adminApi.updateCustomerStatus(id, nextState);
+      const updated = customers.map((c) => {
+        if (c.id === id) {
+          toast.info(`Customer account ${nextState ? "activated" : "deactivated"}.`);
+          return { ...c, is_active: nextState };
+        }
+        return c;
+      });
+      setCustomers(updated);
+      if (selectedCust && selectedCust.id === id) {
+        const match = updated.find((c) => c.id === id);
+        if (match) setSelectedCust(match);
       }
-      return c;
-    });
-    setCustomers(updated);
-    if (selectedCust && selectedCust.id === id) {
-      const match = updated.find((c) => c.id === id);
-      if (match) setSelectedCust(match);
+    } catch {
+      toast.error("Failed to update customer status.");
     }
   };
 

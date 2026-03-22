@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Star, Trash2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
-import { adminApi, withFallback } from "@/lib/api";
+import { adminApi } from "@/lib/api";
 
 type Review = {
   id: string;
@@ -14,24 +14,15 @@ type Review = {
   created_at: string;
 };
 
-const MOCK_REVIEWS: Review[] = [
-  { id: "rev-1", product_id: "prod-bahia", product_name: "La Robe Bahia", customer_name: "Isabella G.", rating: 5, body: "Absolutely breathtaking. The drape is so flattering and the French linen is premium and heavy enough to hold the shape beautifully.", is_published: true, created_at: "2026-05-10" },
-  { id: "rev-2", product_id: "prod-bahia", product_name: "La Robe Bahia", customer_name: "Camille R.", rating: 4, body: "Beautiful dress. Make sure to size down if you are in between sizes, as the wrap is quite adjustable.", is_published: true, created_at: "2026-05-18" },
-  { id: "rev-3", product_id: "prod-sauge", product_name: "Le Pantalon Sauge", customer_name: "Sarah V.", rating: 5, body: "Unbelievable quality. The fluid drape of the linen-blend makes these the most elegant trousers I own.", is_published: false, created_at: "2026-05-14" },
-];
-
 const ReviewsPage = () => {
-  const [reviews, setReviews] = useState<Review[]>(MOCK_REVIEWS);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [publishedFilter, setPublishedFilter] = useState("all");
   const [productFilter, setProductFilter] = useState("all");
 
   useEffect(() => {
     const fetch = async () => {
       try {
-        const result = await withFallback(
-          () => adminApi.listAdminReviews(),
-          () => ({ reviews: [], meta: { total: 0, page: 1, per_page: 10 } }),
-        );
+        const result = await adminApi.listAdminReviews();
         if (result.reviews.length > 0) {
           setReviews(
             result.reviews.map((r) => ({
@@ -55,28 +46,30 @@ const ReviewsPage = () => {
     const target = reviews.find((r) => r.id === id);
     if (!target) return;
     const nextState = !target.is_published;
-    await withFallback(
-      () => adminApi.updateReviewPublishStatus(id, nextState),
-      () => {},
-    );
-    const updated = reviews.map((r) => {
-      if (r.id === id) {
-        toast.success(`Review ${nextState ? "published" : "hidden from storefront"}.`);
-        return { ...r, is_published: nextState };
-      }
-      return r;
-    });
-    setReviews(updated);
+    try {
+      await adminApi.updateReviewPublishStatus(id, nextState);
+      const updated = reviews.map((r) => {
+        if (r.id === id) {
+          toast.success(`Review ${nextState ? "published" : "hidden from storefront"}.`);
+          return { ...r, is_published: nextState };
+        }
+        return r;
+      });
+      setReviews(updated);
+    } catch {
+      toast.error("Failed to update review status.");
+    }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this review?")) return;
-    await withFallback(
-      () => adminApi.deleteAdminReview(id),
-      () => {},
-    );
-    setReviews(reviews.filter((r) => r.id !== id));
-    toast.success("Review deleted successfully.");
+    try {
+      await adminApi.deleteAdminReview(id);
+      setReviews(reviews.filter((r) => r.id !== id));
+      toast.success("Review deleted successfully.");
+    } catch {
+      toast.error("Failed to delete review.");
+    }
   };
 
   const filteredReviews = reviews.filter((r) => {
