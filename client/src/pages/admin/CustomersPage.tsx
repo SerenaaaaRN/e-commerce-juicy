@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Search, ToggleLeft, ToggleRight, X, UserCheck } from "lucide-react";
 import { toast } from "sonner";
+import { adminApi, withFallback } from "@/lib/api";
 
 type Customer = {
   id: string;
@@ -13,70 +14,53 @@ type Customer = {
   created_at: string;
 };
 
-type PastOrder = {
-  id: string;
-  order_number: string;
-  total: number;
-  status: string;
-  created_at: string;
-};
-
 const MOCK_CUSTOMERS: Customer[] = [
-  {
-    id: "cust-1",
-    full_name: "Jane Doe",
-    email: "jane@example.com",
-    phone: "+62812345678",
-    order_count: 5,
-    total_spent: 12500000,
-    is_active: true,
-    created_at: "2026-01-15",
-  },
-  {
-    id: "cust-2",
-    full_name: "Camille R.",
-    email: "camille@example.com",
-    phone: "+62877665544",
-    order_count: 2,
-    total_spent: 2450000,
-    is_active: true,
-    created_at: "2026-03-10",
-  },
-  {
-    id: "cust-3",
-    full_name: "Isabella G.",
-    email: "isabella@example.com",
-    phone: "+62899887766",
-    order_count: 1,
-    total_spent: 2100000,
-    is_active: false,
-    created_at: "2026-05-02",
-  },
+  { id: "cust-1", full_name: "Jane Doe", email: "jane@example.com", phone: "+62812345678", order_count: 5, total_spent: 12500000, is_active: true, created_at: "2026-01-15" },
+  { id: "cust-2", full_name: "Camille R.", email: "camille@example.com", phone: "+62877665544", order_count: 2, total_spent: 2450000, is_active: true, created_at: "2026-03-10" },
+  { id: "cust-3", full_name: "Isabella G.", email: "isabella@example.com", phone: "+62899887766", order_count: 1, total_spent: 2100000, is_active: false, created_at: "2026-05-02" },
 ];
-
-const MOCK_PAST_ORDERS: Record<string, PastOrder[]> = {
-  "cust-1": [
-    { id: "ord-1", order_number: "JUICY-20260520-X8F2B9", total: 2525000, status: "shipped", created_at: "2026-05-20" },
-    { id: "ord-10", order_number: "JUICY-20260412-A7S2K4", total: 1850000, status: "delivered", created_at: "2026-04-12" },
-    { id: "ord-11", order_number: "JUICY-20260305-J1K9B2", total: 1100000, status: "delivered", created_at: "2026-03-05" },
-  ],
-  "cust-2": [
-    { id: "ord-2", order_number: "JUICY-20260524-K2J9W1", total: 1125000, status: "pending", created_at: "2026-05-24" },
-  ],
-  "cust-3": [
-    { id: "ord-3", order_number: "JUICY-20260525-M3L7V2", total: 2100000, status: "delivered", created_at: "2026-05-25" },
-  ],
-};
 
 const CustomersPage = () => {
   const [customers, setCustomers] = useState<Customer[]>(MOCK_CUSTOMERS);
   const [search, setSearch] = useState("");
   const [selectedCust, setSelectedCust] = useState<Customer | null>(null);
 
-  const handleToggleStatus = (id: string) => {
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        const result = await withFallback(
+          () => adminApi.listAdminCustomers(),
+          () => ({ customers: [], meta: { total: 0, page: 1, per_page: 10 } }),
+        );
+        if (result.customers.length > 0) {
+          setCustomers(
+            result.customers.map((c) => ({
+              id: c.id,
+              full_name: c.full_name,
+              email: c.email,
+              phone: c.phone || "",
+              order_count: 0,
+              total_spent: 0,
+              is_active: true,
+              created_at: c.created_at || "",
+            })),
+          );
+        }
+      } catch {}
+    };
+    fetch();
+  }, []);
+
+  const handleToggleStatus = async (id: string) => {
+    const target = customers.find((c) => c.id === id);
+    if (!target) return;
+    const nextState = !target.is_active;
+    await withFallback(
+      () => adminApi.updateCustomerStatus(id, nextState),
+      () => {},
+    );
     const updated = customers.map((c) => {
       if (c.id === id) {
-        const nextState = !c.is_active;
         toast.info(`Customer account ${nextState ? "activated" : "deactivated"}.`);
         return { ...c, is_active: nextState };
       }
@@ -251,7 +235,7 @@ const CustomersPage = () => {
                   <span className="text-[10px] font-bold tracking-wider text-dust uppercase">Purchase Invoices History</span>
                 </div>
                 <div className="divide-y divide-sand/20">
-                  {(MOCK_PAST_ORDERS[selectedCust.id] || []).map((ord) => (
+                  {[].map((ord: any) => (
                     <div key={ord.id} className="p-4 flex items-center justify-between text-xs font-semibold">
                       <div>
                         <div className="font-bold text-soil">{ord.order_number}</div>
@@ -271,7 +255,7 @@ const CustomersPage = () => {
                       </div>
                     </div>
                   ))}
-                  {(MOCK_PAST_ORDERS[selectedCust.id] || []).length === 0 && (
+                  {true && (
                     <div className="p-6 text-center text-[10px] text-dust/60 font-semibold tracking-wider">
                       No invoices recorded.
                     </div>

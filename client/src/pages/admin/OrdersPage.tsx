@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Search, Eye, X, CreditCard, Box, Truck, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
+import { adminApi, withFallback } from "@/lib/api";
+import type { AdminOrderSummary, OrderDetail as ApiOrderDetail } from "@/lib/api/types";
 
 type OrderItem = {
   product_name: string;
@@ -144,13 +146,77 @@ const MOCK_ORDERS: Order[] = [
   },
 ];
 
+const mapApiDetailToOrder = (d: ApiOrderDetail): Order => ({
+  id: d.id,
+  order_number: d.order_number,
+  customer_name: "",
+  customer_email: "",
+  phone: d.address?.phone || "",
+  status: d.status as Order["status"],
+  payment_status: d.payment_status as Order["payment_status"],
+  subtotal: d.subtotal,
+  shipping_fee: d.shipping_fee,
+  total: d.total,
+  shipped_at: d.shipped_at,
+  delivered_at: d.delivered_at,
+  address: d.address || { recipient_name: "", phone: "", address_line: "", city: "", province: "", postal_code: "" },
+  items: (d.items || []).map((i) => ({
+    product_name: i.product_name,
+    variant_size: i.variant_size,
+    variant_color: i.variant_color,
+    image_url: i.image_url || "",
+    quantity: i.quantity,
+    unit_price: i.unit_price,
+  })),
+  payment_method: "",
+  created_at: d.created_at,
+});
+
+const mapApiSummaryToOrder = (s: AdminOrderSummary): Order => ({
+  id: s.id,
+  order_number: s.order_number,
+  customer_name: s.customer_name,
+  customer_email: s.customer_email,
+  phone: "",
+  status: s.status as Order["status"],
+  payment_status: s.payment_status as Order["payment_status"],
+  subtotal: 0,
+  shipping_fee: 0,
+  total: s.total,
+  shipped_at: null,
+  delivered_at: null,
+  address: { recipient_name: "", phone: "", address_line: "", city: "", province: "", postal_code: "" },
+  items: [],
+  payment_method: "",
+  created_at: s.created_at,
+});
+
 const OrdersPage = () => {
   const [orders, setOrders] = useState<Order[]>(MOCK_ORDERS);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [detailOrder, setDetailOrder] = useState<Order | null>(null);
 
-  const handleUpdateStatus = (orderId: string, nextStatus: Order["status"]) => {
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        const result = await withFallback(
+          () => adminApi.listAdminOrders(),
+          () => ({ orders: [], meta: { total: 0, page: 1, per_page: 10 } }),
+        );
+        if (result.orders.length > 0) {
+          setOrders(result.orders.map(mapApiSummaryToOrder));
+        }
+      } catch {}
+    };
+    fetch();
+  }, []);
+
+  const handleUpdateStatus = async (orderId: string, nextStatus: Order["status"]) => {
+    await withFallback(
+      () => adminApi.updateOrderStatus(orderId, nextStatus),
+      () => {},
+    );
     const updated = orders.map((ord) => {
       if (ord.id === orderId) {
         return {
@@ -171,13 +237,14 @@ const OrdersPage = () => {
     toast.success(`Order status updated to ${nextStatus.toUpperCase()}.`);
   };
 
-  const handleUpdatePayment = (orderId: string, nextPayment: Order["payment_status"]) => {
+  const handleUpdatePayment = async (orderId: string, nextPayment: Order["payment_status"]) => {
+    await withFallback(
+      () => adminApi.updateOrderPayment(orderId, nextPayment),
+      () => {},
+    );
     const updated = orders.map((ord) => {
       if (ord.id === orderId) {
-        return {
-          ...ord,
-          payment_status: nextPayment,
-        };
+        return { ...ord, payment_status: nextPayment };
       }
       return ord;
     });
@@ -187,6 +254,21 @@ const OrdersPage = () => {
       if (match) setDetailOrder(match);
     }
     toast.success(`Payment status marked as ${nextPayment.toUpperCase()}.`);
+  };
+
+  const handleViewDetail = async (orderId: string) => {
+    const local = orders.find((o) => o.id === orderId);
+    if (!local) return;
+
+    try {
+      const detail = await withFallback(
+        () => adminApi.getAdminOrder(orderId),
+        () => local as any,
+      );
+      setDetailOrder(mapApiDetailToOrder(detail));
+    } catch {
+      setDetailOrder(local);
+    }
   };
 
   const filteredOrders = orders.filter((ord) => {
@@ -293,7 +375,7 @@ const OrdersPage = () => {
                 </td>
                 <td className="p-4 text-right">
                   <button
-                    onClick={() => setDetailOrder(ord)}
+                    onClick={() => handleViewDetail(ord.id)}
                     className="flex items-center gap-1.5 ml-auto border border-sand bg-chalk px-3 py-1.5 text-[10px] font-bold tracking-widest text-soil uppercase hover:bg-cream rounded-xs cursor-pointer transition-colors"
                   >
                     <Eye className="size-3.5" />

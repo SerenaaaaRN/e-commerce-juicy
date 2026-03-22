@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Star, Trash2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
+import { adminApi, withFallback } from "@/lib/api";
 
 type Review = {
   id: string;
@@ -14,36 +15,9 @@ type Review = {
 };
 
 const MOCK_REVIEWS: Review[] = [
-  {
-    id: "rev-1",
-    product_id: "prod-bahia",
-    product_name: "La Robe Bahia",
-    customer_name: "Isabella G.",
-    rating: 5,
-    body: "Absolutely breathtaking. The drape is so flattering and the French linen is premium and heavy enough to hold the shape beautifully.",
-    is_published: true,
-    created_at: "2026-05-10",
-  },
-  {
-    id: "rev-2",
-    product_id: "prod-bahia",
-    product_name: "La Robe Bahia",
-    customer_name: "Camille R.",
-    rating: 4,
-    body: "Beautiful dress. Make sure to size down if you are in between sizes, as the wrap is quite adjustable.",
-    is_published: true,
-    created_at: "2026-05-18",
-  },
-  {
-    id: "rev-3",
-    product_id: "prod-sauge",
-    product_name: "Le Pantalon Sauge",
-    customer_name: "Sarah V.",
-    rating: 5,
-    body: "Unbelievable quality. The fluid drape of the linen-blend makes these the most elegant trousers I own.",
-    is_published: false,
-    created_at: "2026-05-14",
-  },
+  { id: "rev-1", product_id: "prod-bahia", product_name: "La Robe Bahia", customer_name: "Isabella G.", rating: 5, body: "Absolutely breathtaking. The drape is so flattering and the French linen is premium and heavy enough to hold the shape beautifully.", is_published: true, created_at: "2026-05-10" },
+  { id: "rev-2", product_id: "prod-bahia", product_name: "La Robe Bahia", customer_name: "Camille R.", rating: 4, body: "Beautiful dress. Make sure to size down if you are in between sizes, as the wrap is quite adjustable.", is_published: true, created_at: "2026-05-18" },
+  { id: "rev-3", product_id: "prod-sauge", product_name: "Le Pantalon Sauge", customer_name: "Sarah V.", rating: 5, body: "Unbelievable quality. The fluid drape of the linen-blend makes these the most elegant trousers I own.", is_published: false, created_at: "2026-05-14" },
 ];
 
 const ReviewsPage = () => {
@@ -51,10 +25,42 @@ const ReviewsPage = () => {
   const [publishedFilter, setPublishedFilter] = useState("all");
   const [productFilter, setProductFilter] = useState("all");
 
-  const handleTogglePublish = (id: string) => {
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        const result = await withFallback(
+          () => adminApi.listAdminReviews(),
+          () => ({ reviews: [], meta: { total: 0, page: 1, per_page: 10 } }),
+        );
+        if (result.reviews.length > 0) {
+          setReviews(
+            result.reviews.map((r) => ({
+              id: r.id,
+              product_id: r.product_id,
+              product_name: r.product_name,
+              customer_name: r.customer_name,
+              rating: r.rating,
+              body: r.body || "",
+              is_published: r.is_published,
+              created_at: r.created_at,
+            })),
+          );
+        }
+      } catch {}
+    };
+    fetch();
+  }, []);
+
+  const handleTogglePublish = async (id: string) => {
+    const target = reviews.find((r) => r.id === id);
+    if (!target) return;
+    const nextState = !target.is_published;
+    await withFallback(
+      () => adminApi.updateReviewPublishStatus(id, nextState),
+      () => {},
+    );
     const updated = reviews.map((r) => {
       if (r.id === id) {
-        const nextState = !r.is_published;
         toast.success(`Review ${nextState ? "published" : "hidden from storefront"}.`);
         return { ...r, is_published: nextState };
       }
@@ -63,11 +69,14 @@ const ReviewsPage = () => {
     setReviews(updated);
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this review?")) {
-      setReviews(reviews.filter((r) => r.id !== id));
-      toast.success("Review deleted successfully.");
-    }
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this review?")) return;
+    await withFallback(
+      () => adminApi.deleteAdminReview(id),
+      () => {},
+    );
+    setReviews(reviews.filter((r) => r.id !== id));
+    toast.success("Review deleted successfully.");
   };
 
   const filteredReviews = reviews.filter((r) => {

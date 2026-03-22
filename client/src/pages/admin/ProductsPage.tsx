@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MOCK_PRODUCTS, MOCK_CATEGORIES } from "@/lib/mockData";
 import type { Product, ProductVariant, ProductImage } from "@/features/shop/shop.types";
 import { Search, Plus, Edit2, Trash2, X, Star, Upload } from "lucide-react";
 import { toast } from "sonner";
+import { adminApi, withFallback } from "@/lib/api";
 
 const ProductsPage = () => {
   const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS);
@@ -28,6 +29,41 @@ const ProductsPage = () => {
   const [newColorHex, setNewColorHex] = useState("#FAF5E9");
   const [newSku, setNewSku] = useState("");
   const [newStock, setNewStock] = useState(10);
+
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        const data = await withFallback(
+          () => adminApi.listAdminProducts(),
+          () => MOCK_PRODUCTS,
+        );
+        if (data.length > 0) {
+          setProducts(data.map((p) => ({
+            id: p.id,
+            name: p.name,
+            slug: p.slug,
+            description: "",
+            price: p.price,
+            compare_at_price: p.compare_at_price,
+            is_featured: p.is_featured,
+            is_available: true,
+            tags: p.tags || [],
+            primary_image: p.primary_image || "",
+            category: { id: "", name: p.category_name, slug: "" },
+            category_name: p.category_name,
+            images: [],
+            variants: [],
+            reviews: [],
+            avg_rating: p.avg_rating || 0,
+            review_count: p.review_count || 0,
+            display_order: 0,
+            created_at: "",
+          })));
+        }
+      } catch {}
+    };
+    fetch();
+  }, []);
 
   const handleOpenAdd = () => {
     setEditingProduct(null);
@@ -61,11 +97,14 @@ const ProductsPage = () => {
     setPanelOpen(true);
   };
 
-  const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this product?")) {
-      setProducts(products.filter((p) => p.id !== id));
-      toast.success("Product deleted successfully.");
-    }
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this product?")) return;
+    await withFallback(
+      () => adminApi.deleteAdminProduct(id),
+      () => {},
+    );
+    setProducts(products.filter((p) => p.id !== id));
+    toast.success("Product deleted successfully.");
   };
 
   const handleAddImage = () => {
@@ -82,12 +121,7 @@ const ProductsPage = () => {
   };
 
   const handleSetPrimaryImage = (id: string) => {
-    setImages(
-      images.map((img) => ({
-        ...img,
-        is_primary: img.id === id,
-      }))
-    );
+    setImages(images.map((img) => ({ ...img, is_primary: img.id === id })));
   };
 
   const handleRemoveImage = (id: string) => {
@@ -114,16 +148,14 @@ const ProductsPage = () => {
   };
 
   const handleToggleVariantActive = (id: string) => {
-    setVariants(
-      variants.map((v) => (v.id === id ? { ...v, is_active: !v.is_active } : v))
-    );
+    setVariants(variants.map((v) => (v.id === id ? { ...v, is_active: !v.is_active } : v)));
   };
 
   const handleRemoveVariant = (id: string) => {
     setVariants(variants.filter((v) => v.id !== id));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !slug) {
       toast.error("Name and slug are required.");
@@ -131,22 +163,29 @@ const ProductsPage = () => {
     }
 
     const categoryObj = MOCK_CATEGORIES.find((c) => c.id === categoryId) || MOCK_CATEGORIES[0];
-    const tagsArr = tags
-      .split(",")
-      .map((t) => t.trim())
-      .filter((t) => t.length > 0);
-
+    const tagsArr = tags.split(",").map((t) => t.trim()).filter((t) => t.length > 0);
     const primaryImg = images.find((i) => i.is_primary)?.image_url || images[0]?.image_url || "";
 
     if (editingProduct) {
+      await withFallback(
+        () => adminApi.updateAdminProduct(editingProduct.id, {
+          category_id: categoryId,
+          name,
+          slug,
+          description: description || null,
+          price,
+          compare_at_price: compareAtPrice,
+          is_available: isAvailable,
+          is_featured: isFeatured,
+          tags: tagsArr,
+        }),
+        () => {},
+      );
       const updated = products.map((p) => {
         if (p.id === editingProduct.id) {
           return {
             ...p,
-            name,
-            slug,
-            description,
-            price,
+            name, slug, description, price,
             compare_at_price: compareAtPrice,
             category: { id: categoryObj.id, name: categoryObj.name, slug: categoryObj.slug },
             category_name: categoryObj.name,
@@ -154,8 +193,7 @@ const ProductsPage = () => {
             is_featured: isFeatured,
             is_available: isAvailable,
             primary_image: primaryImg,
-            images,
-            variants,
+            images, variants,
           };
         }
         return p;
@@ -163,12 +201,22 @@ const ProductsPage = () => {
       setProducts(updated);
       toast.success("Product updated successfully.");
     } else {
+      const created = await withFallback(
+        () => adminApi.createAdminProduct({
+          category_id: categoryId,
+          name, slug,
+          description: description || null,
+          price,
+          compare_at_price: compareAtPrice,
+          is_available: isAvailable,
+          is_featured: isFeatured,
+          tags: tagsArr,
+        }),
+        async () => ({ id: `prod-${Math.random().toString(36).substring(2, 9)}` }),
+      );
       const newProd: Product = {
-        id: `prod-${Math.random().toString(36).substring(2, 9)}`,
-        name,
-        slug,
-        description,
-        price,
+        id: created.id,
+        name, slug, description, price,
         compare_at_price: compareAtPrice,
         category: { id: categoryObj.id, name: categoryObj.name, slug: categoryObj.slug },
         category_name: categoryObj.name,
@@ -176,8 +224,7 @@ const ProductsPage = () => {
         is_featured: isFeatured,
         is_available: isAvailable,
         primary_image: primaryImg,
-        images,
-        variants,
+        images, variants,
         reviews: [],
         avg_rating: 0,
         review_count: 0,

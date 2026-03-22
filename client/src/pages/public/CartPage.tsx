@@ -9,12 +9,16 @@ import { ShoppingBag, Trash2, ArrowRight } from "lucide-react";
 
 const CartPage = () => {
   const navigate = useNavigate();
-  const { items, updateQuantity, removeItem, getSubtotal, getShippingFee, getTotal } = useCartStore();
+  const { items, updateQuantity, removeItem, getSubtotal, getShippingFee, getTotal, fetchCart } = useCartStore();
 
   useEffect(() => {
     const lenis = initLenis();
     window.scrollTo(0, 0);
     lenis?.scrollTo(0, { immediate: true });
+  }, []);
+
+  useEffect(() => {
+    fetchCart();
   }, []);
 
   const subtotal = getSubtotal();

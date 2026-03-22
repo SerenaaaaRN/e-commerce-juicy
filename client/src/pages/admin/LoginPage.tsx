@@ -15,7 +15,7 @@ const LoginPage = () => {
     e.preventDefault();
     setLoading(true);
     
-    const success = login(email, password);
+    const success = await login(email, password);
     setLoading(false);
     
     if (success) {

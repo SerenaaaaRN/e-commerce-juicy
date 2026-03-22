@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
-import { MOCK_PRODUCTS } from "@/lib/mockData";
+import { useProductStore } from "@/stores/productStore";
 import { useCartStore } from "@/stores/cartStore";
 import StarRating from "@/components/shop/StarRating";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import { ShieldCheck, Truck, RefreshCw } from "lucide-react";
 
 const ProductPage = () => {
   const { slug } = useParams<{ slug: string }>();
+  const { products, fetchProducts } = useProductStore();
 
   // Smooth scroll
   useEffect(() => {
@@ -21,10 +22,14 @@ const ProductPage = () => {
     lenis?.scrollTo(0, { immediate: true });
   }, [slug]);
 
-  // Find product from mock database
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  // Find product from store
   const product = useMemo(() => {
-    return MOCK_PRODUCTS.find((p) => p.slug === slug);
-  }, [slug]);
+    return products.find((p) => p.slug === slug);
+  }, [products, slug]);
 
   // Add to cart store hook
   const addItem = useCartStore((state) => state.addItem);
@@ -114,15 +119,15 @@ const ProductPage = () => {
     if (quantity > 1) setQuantity(quantity - 1);
   };
 
-  const handleAddToCart = () => {
-    if (!activeVariant) return;
+  const handleAddToCart = async () => {
+    if (!activeVariant || !product) return;
     if (activeVariant.stock === 0) {
       toast.error("This variant is currently out of stock.");
       return;
     }
-    const success = addItem(product, activeVariant, quantity);
+    const success = await addItem(product, activeVariant, quantity);
     if (success) {
-      setQuantity(1); // Reset stepper
+      setQuantity(1);
     }
   };
 
