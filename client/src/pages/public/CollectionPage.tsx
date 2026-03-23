@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import { MOCK_PRODUCTS, MOCK_CATEGORIES } from "@/lib/mockData";
+import { useProductStore } from "@/stores/productStore";
 import ProductCard from "@/components/shop/ProductCard";
 import { initLenis } from "@/lib/lenis";
 import { JuicyMotion } from "@/lib/gsap";
@@ -40,6 +40,13 @@ const CollectionPage = () => {
   const [sortBy, setSortBy] = useState("newest");
   const [currentPage, setCurrentPage] = useState(1);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+
+  const { products, categories, fetchProducts, fetchCategories } = useProductStore();
+
+  useEffect(() => {
+    fetchProducts();
+    fetchCategories();
+  }, []);
 
   const activeCategory = searchParams.get("category") || "all";
 
@@ -143,7 +150,7 @@ const CollectionPage = () => {
   }, [searchParams, sortBy, currentPage]);
 
   const filteredProducts = useMemo(() => {
-    return MOCK_PRODUCTS.filter((product) => {
+    return products.filter((product) => {
       if (selectedCategories.length > 0 && !selectedCategories.includes(product.category.slug))
         return false;
       if (
@@ -193,7 +200,7 @@ const CollectionPage = () => {
     return sortedProducts.slice(start, start + ITEMS_PER_PAGE);
   }, [sortedProducts, currentPage]);
 
-  const activeCategoryDetails = MOCK_CATEGORIES.find((c) => c.slug === activeCategory);
+  const activeCategoryDetails = categories.find((c) => c.slug === activeCategory);
 
   const FilterSidebar = () => (
     <div className="flex flex-col gap-8">
@@ -214,7 +221,7 @@ const CollectionPage = () => {
             />
             All Categories
           </label>
-          {MOCK_CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <label
               key={cat.slug}
               className="flex cursor-pointer items-center gap-2.5 text-xs text-dust hover:text-soil transition-colors"

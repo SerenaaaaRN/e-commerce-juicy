@@ -23,10 +23,18 @@ const CheckoutPage = () => {
   const placeOrder = useOrderStore((state) => state.placeOrder);
 
   // Smooth scroll
+  const fetchCart = useCartStore((state) => state.fetchCart);
+  const fetchAddresses = useCustomerAuthStore((state) => state.fetchAddresses);
+
   useEffect(() => {
     const lenis = initLenis();
     window.scrollTo(0, 0);
     lenis?.scrollTo(0, { immediate: true });
+  }, []);
+
+  useEffect(() => {
+    fetchCart();
+    if (customer) fetchAddresses();
   }, []);
 
   // Redirect if cart is empty

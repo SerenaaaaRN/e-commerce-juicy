@@ -70,8 +70,7 @@
 | Icons | Hugeicons |
 | Scroll | Lenis |
 | Animation | GSAP + ScrollTrigger |
-| Global State | Zustand |
-| Data Fetching | TanStack Query (React Query) |
+| Global State | Zustand (stores call API directly — no TanStack Query) |
 | Forms | React Hook Form + Zod |
 | Backend | Golang + Gin |
 | ORM | GORM |

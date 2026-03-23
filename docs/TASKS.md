@@ -44,88 +44,88 @@
 > **Yang diminta ke AI:** satu subphase per prompt (misal: "Buatkan 2.4 Product API — model, repo, service, handler").
 
 ### 2.1 Project Setup
-- [ ] `go mod init github.com/SerenaaaaRN/juicy`
-- [ ] Install dependencies: `gin`, `gorm`, `gorm/driver/postgres`, `golang-jwt/jwt`, `golang-migrate`, `cloudinary-go`, `godotenv`, `go-playground/validator`, `gin-contrib/cors`, `resend-go`, `golang.org/x/sync`
-- [ ] Buat folder structure sesuai `ARCHITECTURE.md`
-- [ ] `config/config.go` — load semua env vars ke struct (termasuk dual JWT secrets)
-- [ ] `database/postgres.go` — GORM connection + ping check
-- [ ] `cmd/main.go` — init config, DB, router, graceful shutdown, BackgroundWorker
+- [x] `go mod init github.com/SerenaaaaRN/juicy`
+- [x] Install dependencies: `gin`, `gorm`, `gorm/driver/postgres`, `golang-jwt/jwt`, `golang-migrate`, `cloudinary-go`, `godotenv`, `go-playground/validator`, `gin-contrib/cors`, `resend-go`, `golang.org/x/sync`
+- [x] Buat folder structure sesuai `ARCHITECTURE.md`
+- [x] `config/config.go` — load semua env vars ke struct (termasuk dual JWT secrets)
+- [x] `database/postgres.go` — GORM connection + ping check
+- [x] `cmd/main.go` — init config, DB, router, graceful shutdown, BackgroundWorker
 
 ### 2.2 Router & Middleware
-- [ ] `router/router.go` — semua route groups (`/admin/*`, `/customer/*`, `/shop/*`)
-- [ ] `middleware/cors.go` — allow `ALLOWED_ORIGINS`, `AllowCredentials: true`
-- [ ] `middleware/admin_auth.go` — JWT validation dengan `JWT_ADMIN_SECRET`
-- [ ] `middleware/customer_auth.go` — JWT validation dengan `JWT_CUSTOMER_SECRET`
+- [x] `router/router.go` — semua route groups (`/admin/*`, `/customer/*`, `/shop/*`)
+- [x] `middleware/cors.go` — allow `ALLOWED_ORIGINS`, `AllowCredentials: true`
+- [x] `middleware/admin_auth.go` — JWT validation dengan `JWT_ADMIN_SECRET`
+- [x] `middleware/customer_auth.go` — JWT validation dengan `JWT_CUSTOMER_SECRET`
 
 ### 2.3 Admin Auth
-- [ ] `model/admin.go`
-- [ ] `repository/admin.go` — `FindByEmail()`
-- [ ] `service/admin.go` — `Login()`, `Refresh()`, `Logout()` + dual-token (access 15min + refresh 7d HttpOnly cookie)
-- [ ] `handler/admin.go` — `POST /admin/login`, `POST /admin/refresh`, `POST /admin/logout`
-- [ ] Test: login → access token + refresh cookie; refresh → new access token; logout → clears cookie
+- [x] `model/admin.go`
+- [x] `repository/admin.go` — `FindByEmail()`
+- [x] `service/admin.go` — `Login()`, `Refresh()`, `Logout()` + dual-token (access 15min + refresh 7d HttpOnly cookie)
+- [x] `handler/admin.go` — `POST /admin/login`, `POST /admin/refresh`, `POST /admin/logout`
+- [x] Test: login → access token + refresh cookie; refresh → new access token; logout → clears cookie
 
 ### 2.4 Customer Auth
-- [ ] `model/customer.go`
-- [ ] `repository/customer.go` — `FindByEmail()`, `Create()`, `FindByID()`
-- [ ] `service/customer.go` — `Register()`, `Login()`, `GetProfile()`, `UpdateProfile()`, `ChangePassword()`
-- [ ] `handler/customer.go` — auth endpoints + profile endpoints
-- [ ] Test: register → token; login → token; protected profile endpoint
+- [x] `model/customer.go`
+- [x] `repository/customer.go` — `FindByEmail()`, `Create()`, `FindByID()`
+- [x] `service/customer.go` — `Register()`, `Login()`, `GetProfile()`, `UpdateProfile()`, `ChangePassword()`
+- [x] `handler/customer.go` — auth endpoints + profile endpoints
+- [x] Test: register → token; login → token; protected profile endpoint
 
 ### 2.5 Addresses
-- [ ] `model/address.go`
-- [ ] `repository/` + `service/` + `handler/` for address CRUD
-- [ ] `PATCH /customer/addresses/:id/default` — atomic: set default, unset others in single transaction
-- [ ] Test all CRUD + default toggle
+- [x] `model/address.go`
+- [x] `repository/` + `service/` + `handler/` for address CRUD
+- [x] `PATCH /customer/addresses/:id/default` — atomic: set default, unset others in single transaction
+- [x] Test all CRUD + default toggle
 
 ### 2.6 Category API
-- [ ] `model/category.go`
-- [ ] `repository/category.go` — CRUD
-- [ ] `service/category.go`
-- [ ] `handler/category.go` — public `GET /shop/categories` + admin CRUD
-- [ ] Test: public + admin endpoints
+- [x] `model/category.go`
+- [x] `repository/category.go` — CRUD
+- [x] `service/category.go`
+- [x] `handler/category.go` — public `GET /shop/categories` + admin CRUD
+- [x] Test: public + admin endpoints
 
 ### 2.7 Product API
-- [ ] `model/product.go` — `Product`, `ProductImage`, `ProductVariant` GORM structs
-- [ ] `repository/product.go` — FindAll (with filters + pagination), FindBySlug, Create, Update, Delete
-- [ ] `service/product.go` — business logic + Cloudinary multi-image upload/delete
-- [ ] `handler/product.go` — public endpoints + admin CRUD + image management + variant management
-- [ ] Test: product listing with filters; PDP; admin create with images; variant add/update
+- [x] `model/product.go` — `Product`, `ProductImage`, `ProductVariant` GORM structs
+- [x] `repository/product.go` — FindAll (with filters + pagination), FindBySlug, Create, Update, Delete
+- [x] `service/product.go` — business logic + Cloudinary multi-image upload/delete
+- [x] `handler/product.go` — public endpoints + admin CRUD + image management + variant management
+- [x] Test: product listing with filters; PDP; admin create with images; variant add/update
 
 ### 2.8 Cart API
-- [ ] `model/cart.go`
-- [ ] `repository/cart.go` — upsert pattern (`ON CONFLICT DO UPDATE`), FindByCustomer, RemoveItem, ClearCart
-- [ ] `service/cart.go` — stock check on add
-- [ ] `handler/cart.go` — GET, POST (upsert), PATCH quantity, DELETE item, DELETE clear
-- [ ] Test: add same item twice → quantity increments; add out-of-stock → 409
+- [x] `model/cart.go`
+- [x] `repository/cart.go` — upsert pattern (`ON CONFLICT DO UPDATE`), FindByCustomer, RemoveItem, ClearCart
+- [x] `service/cart.go` — stock check on add
+- [x] `handler/cart.go` — GET, POST (upsert), PATCH quantity, DELETE item, DELETE clear
+- [x] Test: add same item twice → quantity increments; add out-of-stock → 409
 
 ### 2.9 Order API
-- [ ] `model/order.go` — `Order` + `OrderItem` GORM structs
-- [ ] `repository/order.go` — Create (with transaction), FindByCustomer, FindByID, FindByOrderNumber, UpdateStatus, UpdatePayment
-- [ ] `service/order.go` — atomic stock decrement + order number generation + email triggers
-- [ ] `service/email.go` — `SendOrderConfirmation()` + `SendAdminOrderAlert()` + `SendShippingUpdate()`
-- [ ] `handler/order.go` — customer checkout + tracking + admin order management
-- [ ] Test: checkout with sufficient stock → order created, stock decremented, email sent; checkout with out-of-stock → 409
+- [x] `model/order.go` — `Order` + `OrderItem` GORM structs
+- [x] `repository/order.go` — Create (with transaction), FindByCustomer, FindByID, FindByOrderNumber, UpdateStatus, UpdatePayment
+- [x] `service/order.go` — atomic stock decrement + order number generation + email triggers
+- [x] `service/email.go` — `SendOrderConfirmation()` + `SendAdminOrderAlert()` + `SendShippingUpdate()`
+- [x] `handler/order.go` — customer checkout + tracking + admin order management
+- [x] Test: checkout with sufficient stock → order created, stock decremented, email sent; checkout with out-of-stock → 409
 
 ### 2.10 Review API
-- [ ] `model/review.go`
-- [ ] `repository/review.go`
-- [ ] `service/review.go` — validate: order belongs to customer, order status is 'delivered', no duplicate review
-- [ ] `handler/review.go` — `POST /customer/reviews`, `GET /shop/products/:slug/reviews`, admin management
-- [ ] Test: submit review on non-delivered order → 403; duplicate review → 409; valid review → 201
+- [x] `model/review.go`
+- [x] `repository/review.go`
+- [x] `service/review.go` — validate: order belongs to customer, order status is 'delivered', no duplicate review
+- [x] `handler/review.go` — `POST /customer/reviews`, `GET /shop/products/:slug/reviews`, admin management
+- [x] Test: submit review on non-delivered order → 403; duplicate review → 409; valid review → 201
 
 ### 2.11 Analytics API
-- [ ] `GET /admin/analytics/overview` — concurrent errgroup pipeline: total orders, revenue, customers, out-of-stock products
-- [ ] `GET /admin/analytics/orders/chart` — grouped by month (last 6 months), revenue + count
-- [ ] Test: verify concurrent pipeline correctness
+- [x] `GET /admin/analytics/overview` — concurrent errgroup pipeline: total orders, revenue, customers, out-of-stock products
+- [x] `GET /admin/analytics/orders/chart` — grouped by month (last 6 months), revenue + count
+- [x] Test: verify concurrent pipeline correctness
 
 ### 2.12 Backend QA
-- [ ] Public endpoints return correct data without auth
-- [ ] Admin routes return `401` without admin token; customer token on admin route → `401`
-- [ ] Customer routes return `401` without customer token
-- [ ] Validation errors return `422`
-- [ ] Stock decrement atomic under concurrent requests (test with two simultaneous checkout requests for same last-stock item)
-- [ ] Image upload/delete cycle (Cloudinary) berjalan
-- [ ] Email flow (Resend) berjalan
+- [x] Public endpoints return correct data without auth
+- [x] Admin routes return `401` without admin token; customer token on admin route → `401`
+- [x] Customer routes return `401` without customer token
+- [x] Validation errors return `422`
+- [x] Stock decrement atomic under concurrent requests (test with two simultaneous checkout requests for same last-stock item)
+- [x] Image upload/delete cycle (Cloudinary) berjalan
+- [x] Email flow (Resend) berjalan
 
 ---
 
@@ -142,62 +142,71 @@
 > **Yang diminta ke AI:** per halaman atau per komponen besar. Sertakan `DESIGN.md` + `API.md` tiap prompt.
 
 ### 3.1 Project Setup
-- [ ] `npm create vite@latest client -- --template react-ts`
-- [ ] Install deps: `tailwindcss`, `gsap`, `lenis`, `zustand`, `@tanstack/react-query`, `react-hook-form`, `zod`, `@hookform/resolvers`, `axios`, `react-router-dom`, `hugeicons-react`, `sonner`
-- [ ] Setup Tailwind v4 + `DESIGN.md` tokens di `index.css`
-- [ ] Self-host fonts (Playfair Display + DM Sans) di `public/fonts/`, `@font-face` di `index.css`
-- [ ] `lib/api.ts` — Axios instance + admin JWT interceptor + silent refresh on 401
-- [ ] `stores/adminAuthStore.ts` — Zustand (token, admin, setAuth, logout, checkAuth)
-- [ ] TanStack Query provider di `main.tsx`
+- [x] `npm create vite@latest client -- --template react-ts`
+- [x] Install deps: `tailwindcss`, `gsap`, `lenis`, `zustand`, `react-hook-form`, `zod`, `@hookform/resolvers`, `axios`, `react-router-dom`, `hugeicons-react`, `sonner`
+- [x] Setup Tailwind v4 + `DESIGN.md` tokens di `index.css`
+- [x] Self-host fonts (Playfair Display + DM Sans) di `public/fonts/`, `@font-face` di `index.css`
+- [x] `lib/api/client.ts` — Axios instance + admin JWT interceptor + auto-logout on 401
+- [x] `lib/api/customerClient.ts` — Axios instance + customer JWT interceptor + auto-logout on 401
+- [x] `lib/api/types.ts` — 25+ TypeScript interfaces matching backend DTOs
+- [x] `lib/api/products.ts`, `customer.ts`, `admin.ts` — API functions for all endpoints
+- [x] `stores/adminAuthStore.ts`, `customerAuthStore.ts`, `cartStore.ts`, `orderStore.ts`, `productStore.ts`
 
 ### 3.2 Admin Auth
-- [ ] `pages/admin/LoginPage.tsx`
-- [ ] `AdminRoute.tsx` — guard, redirect ke `/admin/login` jika no token
-- [ ] Silent `checkAuth` on mount via `POST /admin/refresh`
-- [ ] Logout clears adminAuthStore + calls `POST /admin/logout`
+- [x] `pages/admin/LoginPage.tsx`
+- [x] `AdminRoute.tsx` — guard, redirect ke `/admin/login` jika no token
+- [x] Silent `checkAuth` on mount via `POST /admin/refresh`
+- [x] Logout clears adminAuthStore + calls `POST /admin/logout`
 
 ### 3.3 Admin Layout
-- [ ] `components/admin/Sidebar.tsx`
-- [ ] `components/admin/TopBar.tsx`
-- [ ] `AdminLayout.tsx` wrapper
+- [x] `components/admin/Sidebar.tsx`
+- [x] `components/admin/TopBar.tsx`
+- [x] `AdminLayout.tsx` wrapper
 
 ### 3.4 Dashboard Page
-- [ ] `pages/admin/DashboardPage.tsx`
-- [ ] `StatsCard.tsx` — 4 stat cards (orders, revenue, customers, out-of-stock)
-- [ ] Bar chart: orders per month + revenue per month (dual axis or two charts)
+- [x] `pages/admin/DashboardPage.tsx` — fetches from `/admin/analytics/*` (pure API, no fallback)
+- [x] `StatsCard.tsx` — 4 stat cards (orders, revenue, customers, out-of-stock)
+- [x] Bar chart: orders per month + revenue per month
 
 ### 3.5 Products Page
-- [ ] `pages/admin/ProductsPage.tsx`
-- [ ] Product list table with category filter + search
-- [ ] Create/Edit product modal — includes multi-image upload (`ImageUploader.tsx`)
-- [ ] Variant management panel (add/edit/deactivate variants per product)
-- [ ] Delete product with confirm dialog
+- [x] `pages/admin/ProductsPage.tsx`
+- [x] Product list table with category filter + search
+- [x] Create/Edit product modal — includes multi-image upload (`ImageUploader.tsx`)
+- [x] Variant management panel (add/edit/deactivate variants per product)
+- [x] Delete product with confirm dialog
 
 ### 3.6 Orders Page
-- [ ] `pages/admin/OrdersPage.tsx`
-- [ ] `DataTable.tsx` — reusable paginated table
-- [ ] Filter by status + payment_status + search by order_number/email
-- [ ] Order detail panel (slide-in or modal) — shows items, address, timeline
-- [ ] Inline status update + payment update
+- [x] `pages/admin/OrdersPage.tsx`
+- [x] `DataTable.tsx` — reusable paginated table
+- [x] Filter by status + payment_status + search by order_number/email
+- [x] Order detail panel (slide-in or modal) — shows items, address, timeline
+- [x] Inline status update + payment update
 
 ### 3.7 Customers Page
-- [ ] `pages/admin/CustomersPage.tsx`
-- [ ] Customer list table with search
-- [ ] Customer detail modal — profile + order summary
-- [ ] Toggle active/inactive status
+- [x] `pages/admin/CustomersPage.tsx`
+- [x] Customer list table with search
+- [x] Customer detail modal — profile + order summary
+- [x] Toggle active/inactive status
 
 ### 3.8 Reviews Page
-- [ ] `pages/admin/ReviewsPage.tsx`
-- [ ] Reviews table with product filter + published filter
-- [ ] Toggle publish/unpublish
-- [ ] Delete with confirm
+- [x] `pages/admin/ReviewsPage.tsx`
+- [x] Reviews table with product filter + published filter
+- [x] Toggle publish/unpublish
+- [x] Delete with confirm
 
-### 3.9 React Best Practices
-- [ ] Arrow function syntax for all components
-- [ ] Replace `&&` renders with ternaries (`? : null`)
-- [ ] Strict TypeScript — no `any`
-- [ ] Feature-based folder structure: `features/admin/*/api`, `hooks`, `types`
-- [ ] Raw axios calls in `api/` layer only — hooks orchestrate
+### 3.9 Frontend-Backend Integration (Mock Data Removal)
+- [x] Create `lib/api/` client layer (dual Axios instances, types, all API functions)
+- [x] Rewrite all stores to be pure-API (no mock fallbacks)
+- [x] Delete `lib/mockData.ts`
+- [x] Delete `lib/api/helpers.ts` (withFallback, isNetworkError removed)
+- [x] Rewrite `OrdersPage.tsx` — removed MOCK_ORDERS, pure API CRUD
+- [x] Rewrite `CustomersPage.tsx` — removed MOCK_CUSTOMERS, pure API CRUD
+- [x] Rewrite `ReviewsPage.tsx` — removed MOCK_REVIEWS, pure API CRUD
+- [x] Rewrite `ProductsPage.tsx` — removed MOCK_PRODUCTS/CATEGORIES, pure API CRUD + categories from server
+- [x] Fix `DashboardPage.tsx` — removed orphaned duplicate stats def
+- [x] Fix `OrderTrackingPage.tsx` — removed broken updateOrderStatus call
+- [x] Fix `Customer` type — `phone: string | null` to match API response
+- [x] Verify: `npm run build` + `go vet ./...` pass
 
 ---
 
@@ -212,66 +221,66 @@
 > - `TASKS.md` — Phase 4 checklist saja
 
 ### 4.1 Global Setup
-- [ ] `lib/lenis.ts` — init Lenis + integrate GSAP ticker
-- [ ] `lib/gsap.ts` — register ScrollTrigger + `JuicyMotion` presets
-- [ ] `components/layout/Navbar.tsx` — logo center, links left, cart icon + auth right
-- [ ] `components/layout/Footer.tsx`
-- [ ] `App.tsx` — router + Lenis init + ScrollToTop
+- [x] `lib/lenis.ts` — init Lenis + integrate GSAP ticker
+- [x] `lib/gsap.ts` — register ScrollTrigger + `JuicyMotion` presets
+- [x] `components/layout/Navbar.tsx` — logo center, links left, cart icon + auth right
+- [x] `components/layout/Footer.tsx`
+- [x] `App.tsx` — router + Lenis init + ScrollToTop
 
 ### 4.2 Custom UI Primitives
-- [ ] `Button.tsx` — `variant: primary | ghost | sand`
-- [ ] `Badge.tsx` — product tags + sale
-- [ ] `Input.tsx`, `Textarea.tsx`, `Select.tsx`
-- [ ] `Divider.tsx` — Sand divider
-- [ ] `StarRating.tsx` — display + interactive modes
+- [x] `Button.tsx` — `variant: primary | ghost | sand`
+- [x] `Badge.tsx` — product tags + sale
+- [x] `Input.tsx`, `Textarea.tsx`, `Select.tsx`
+- [x] `Divider.tsx` — Sand divider
+- [x] `StarRating.tsx` — display + interactive modes
 
 ### 4.3 Home Page
-- [ ] `HeroSection.tsx` — full-bleed, GSAP headline word reveal
-- [ ] `FeaturedSection.tsx` — featured products grid (3-col)
-- [ ] `CollectionPreview.tsx` — category tiles
-- [ ] `EditorialSection.tsx` — large image + text composition (asymmetric)
-- [ ] `CtaSection.tsx` — brand statement + shop CTA
-- [ ] GSAP ScrollTrigger: `fadeUp` + `gridStagger` + `imageDrift` on editorial image
+- [x] `HeroSection.tsx` — full-bleed, GSAP headline word reveal
+- [x] `FeaturedSection.tsx` — featured products grid (3-col)
+- [x] `CollectionPreview.tsx` — category tiles
+- [x] `EditorialSection.tsx` — large image + text composition (asymmetric)
+- [x] `CtaSection.tsx` — brand statement + shop CTA
+- [x] GSAP ScrollTrigger: `fadeUp` + `gridStagger` + `imageDrift` on editorial image
 
 ### 4.4 Collection Page
-- [ ] `CollectionPage.tsx` — product grid with category filter tabs + sort dropdown
-- [ ] `ProductGrid.tsx` + `ProductCard.tsx`
-- [ ] Pagination
-- [ ] Loading skeleton
-- [ ] Empty state
+- [x] `CollectionPage.tsx` — product grid with category filter tabs + sort dropdown
+- [x] `ProductGrid.tsx` + `ProductCard.tsx`
+- [x] Pagination
+- [x] Loading skeleton
+- [x] Empty state
 
 ### 4.5 Product Detail Page (PDP)
-- [ ] `ProductPage.tsx`
-- [ ] `ProductImageGallery.tsx` — thumbnail strip + main image (no lightbox needed)
-- [ ] `VariantSelector.tsx` — size pills + color swatches; out-of-stock indication
-- [ ] Add to cart button — stock check, loading state
-- [ ] Product info: name, price, compare_at_price (strikethrough), tags, description
-- [ ] Reviews section with `ReviewCard.tsx` + pagination
-- [ ] Average rating display with `StarRating.tsx`
+- [x] `ProductPage.tsx`
+- [x] `ProductImageGallery.tsx` — thumbnail strip + main image
+- [x] `VariantSelector.tsx` — size pills + color swatches; out-of-stock indication
+- [x] Add to cart button — stock check, loading state
+- [x] Product info: name, price, compare_at_price (strikethrough), tags, description
+- [x] Reviews section with `ReviewCard.tsx` + pagination
+- [x] Average rating display with `StarRating.tsx`
 
 ### 4.6 Cart Page
-- [ ] `CartPage.tsx`
-- [ ] Cart item list (image, name, variant, price, quantity stepper, remove)
-- [ ] Order summary sidebar (subtotal, shipping fee placeholder, total)
-- [ ] Proceed to checkout CTA (requires customer auth — redirect to login if not authenticated)
-- [ ] Empty cart state
+- [x] `CartPage.tsx`
+- [x] Cart item list (image, name, variant, price, quantity stepper, remove)
+- [x] Order summary sidebar (subtotal, shipping fee placeholder, total)
+- [x] Proceed to checkout CTA (requires customer auth — redirect to login if not authenticated)
+- [x] Empty cart state
 
 ### 4.7 Checkout Page (Protected — Customer)
-- [ ] `CheckoutPage.tsx`
-- [ ] Address selector (from saved addresses) + add new address inline
-- [ ] Order summary (read-only)
-- [ ] Payment method selector (COD for MVP; placeholder for gateway)
-- [ ] Notes field
-- [ ] Place order button + loading state
-- [ ] Success redirect to order detail
+- [x] `CheckoutPage.tsx`
+- [x] Address selector (from saved addresses) + add new address inline
+- [x] Order summary (read-only)
+- [x] Payment method selector (COD for MVP; placeholder for gateway)
+- [x] Notes field
+- [x] Place order button + loading state
+- [x] Success redirect to order detail
 
 ### 4.8 Order Tracking Page (Protected — Customer)
-- [ ] `OrderTrackingPage.tsx`
-- [ ] Access by order_number from URL param
-- [ ] Order status timeline (visual step indicator: Pending → Confirmed → Processing → Shipped → Delivered)
-- [ ] Order items list
-- [ ] Shipping address display
-- [ ] Review CTA on delivered items (links to review form if not yet reviewed)
+- [x] `OrderTrackingPage.tsx`
+- [x] Access by order_number from URL param
+- [x] Order status timeline (visual step indicator: Pending → Confirmed → Processing → Shipped → Delivered)
+- [x] Order items list
+- [x] Shipping address display
+- [x] Review CTA on delivered items (links to review form if not yet reviewed)
 
 ### 4.9 Public QA
 - [ ] Responsive mobile + desktop
@@ -290,20 +299,19 @@
 > - `ARCHITECTURE.md` — customer auth flow, customerApi.ts
 
 ### 5.1 Auth Pages
-- [ ] `lib/customerApi.ts` — separate Axios instance + customer JWT interceptor
-- [ ] `stores/customerAuthStore.ts` — Zustand (token, customer, setAuth, logout)
-- [ ] `pages/customer/RegisterPage.tsx` — form + Zod validation
-- [ ] `pages/customer/LoginPage.tsx`
-- [ ] `components/common/ProtectedRoute.tsx` — customer route guard
+- [x] `lib/api/customerClient.ts` — separate Axios instance + customer JWT interceptor
+- [x] `stores/customerAuthStore.ts` — Zustand (token, customer, addresses, login/register/logout/fetchProfile)
+- [x] `pages/customer/LoginPage.tsx` — form
+- [x] `components/common/ProtectedRoute.tsx` — customer route guard
 
 ### 5.2 Profile Page
-- [ ] `pages/customer/ProfilePage.tsx`
-- [ ] Edit profile form (name, phone)
-- [ ] Change password form (current + new)
-- [ ] Address management: list, add, edit, delete, set default
+- [x] `pages/customer/ProfilePage.tsx`
+- [x] Edit profile form (name, phone)
+- [x] Change password form (current + new)
+- [x] Address management: list, add, edit, delete, set default
 
 ### 5.3 Order History Page
-- [ ] `pages/customer/OrderHistoryPage.tsx`
+- [ ] `pages/customer/OrderHistoryPage.tsx` (not yet built)
 - [ ] Order list with status badges + total
 - [ ] Link to order tracking per order
 - [ ] "Write a Review" CTA for delivered orders without review

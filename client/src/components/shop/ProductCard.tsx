@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import type { Product } from "@/features/shop/types/shop.types";
+import type { Product } from "@/features/shop/shop.types";
 import { Badge } from "@/components/ui/badge";
 import StarRating from "./StarRating";
 
@@ -34,7 +34,7 @@ const ProductCard = ({ product, className }: ProductCardProps) => {
 
         {/* Badges Overlay */}
         <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5">
-          {product.tags.map((tag) => {
+          {product.tags.map((tag: string) => {
             if (tag === "sale" && hasSale) {
               return (
                 <Badge key={tag} variant="sale">

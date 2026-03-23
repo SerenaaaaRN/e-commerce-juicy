@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { toast } from "sonner";
+import { customerApi } from "@/lib/api";
 
 export type Address = {
   id: string;
@@ -17,154 +18,161 @@ export type Customer = {
   id: string;
   full_name: string;
   email: string;
-  phone: string;
+  phone: string | null;
 };
 
 type CustomerAuthState = {
   token: string | null;
   customer: Customer | null;
   addresses: Address[];
-  login: (email: string, password: string) => boolean;
-  register: (fullName: string, email: string, phone: string, password: string) => boolean;
+  loading: boolean;
+
+  login: (email: string, password: string) => Promise<boolean>;
+  register: (fullName: string, email: string, phone: string, password: string) => Promise<boolean>;
   logout: () => void;
-  addAddress: (address: Omit<Address, "id">) => void;
-  updateAddress: (id: string, address: Partial<Address>) => void;
-  deleteAddress: (id: string) => void;
-  setDefaultAddress: (id: string) => void;
+  fetchProfile: () => Promise<void>;
+  fetchAddresses: () => Promise<void>;
+  addAddress: (address: Omit<Address, "id">) => Promise<void>;
+  updateAddress: (id: string, address: Partial<Address>) => Promise<void>;
+  deleteAddress: (id: string) => Promise<void>;
+  setDefaultAddress: (id: string) => Promise<void>;
 };
-
-const DEFAULT_MOCK_CUSTOMER: Customer = {
-  id: "cust-jane",
-  full_name: "Jane Doe",
-  email: "jane@example.com",
-  phone: "+62812345678",
-};
-
-const DEFAULT_MOCK_ADDRESSES: Address[] = [
-  {
-    id: "addr-1",
-    label: "Home",
-    recipient_name: "Jane Doe",
-    phone: "+62812345678",
-    address_line: "Jl. Sudirman No. 24, Apartment 8A",
-    city: "Jakarta Selatan",
-    province: "DKI Jakarta",
-    postal_code: "12190",
-    is_default: true,
-  },
-  {
-    id: "addr-2",
-    label: "Office",
-    recipient_name: "Jane Doe",
-    phone: "+62812345678",
-    address_line: "Sudirman Central Business District, Treasury Tower Lt. 42",
-    city: "Jakarta Selatan",
-    province: "DKI Jakarta",
-    postal_code: "12190",
-    is_default: false,
-  },
-];
 
 export const useCustomerAuthStore = create<CustomerAuthState>((set, get) => ({
-  // Initialize with a mock logged in user for immediate beautiful evaluation, but support logout/login!
-  token: "mock-customer-token",
-  customer: DEFAULT_MOCK_CUSTOMER,
-  addresses: DEFAULT_MOCK_ADDRESSES,
+  token: null,
+  customer: null,
+  addresses: [],
+  loading: false,
 
-  login: (email: string, password: string) => {
-    // Basic mock validator
-    if (email.includes("@") && password.length > 0) {
-      set({
-        token: "mock-customer-token",
-        customer: {
-          id: "cust-jane",
-          full_name: email.split("@")[0].split(".").map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(" ") || "Jane Doe",
-          email: email,
-          phone: "+62812345678",
-        },
-      });
+  login: async (email: string, password: string) => {
+    try {
+      const result = await customerApi.customerLogin(email, password);
+      set({ token: result.token, customer: { ...result.customer, phone: null } });
       toast.success("Successfully logged in.");
       return true;
+    } catch {
+      toast.error("Invalid email or password.");
+      return false;
     }
-    toast.error("Please enter a valid email and password.");
-    return false;
   },
 
-  register: (fullName: string, email: string, phone: string, password: string) => {
-    if (fullName && email && phone && password.length >= 4) {
-      set({
-        token: "mock-customer-token",
-        customer: {
-          id: `cust-${Math.random().toString(36).substring(2, 9)}`,
-          full_name: fullName,
-          email,
-          phone,
-        },
+  register: async (fullName: string, email: string, phone: string, password: string) => {
+    try {
+      const result = await customerApi.customerRegister({
+        full_name: fullName,
+        email,
+        password,
+        phone,
       });
+      set({ token: result.token, customer: { ...result.customer, phone: null } });
       toast.success("Account created successfully!");
       return true;
+    } catch {
+      toast.error("Registration failed. Please try again.");
+      return false;
     }
-    toast.error("Please fill all fields. Password must be at least 4 characters.");
-    return false;
   },
 
   logout: () => {
-    set({ token: null, customer: null });
+    set({ token: null, customer: null, addresses: [] });
     toast.success("Logged out successfully.");
   },
 
-  addAddress: (address: Omit<Address, "id">) => {
-    const { addresses } = get();
-    const newId = `addr-${Math.random().toString(36).substring(2, 9)}`;
-    const newAddress: Address = { ...address, id: newId };
-
-    let updatedAddresses = [...addresses];
-    if (newAddress.is_default) {
-      // Unset previous defaults
-      updatedAddresses = updatedAddresses.map(addr =>
-        addr.is_default ? { ...addr, is_default: false } : addr
-      );
+  fetchProfile: async () => {
+    if (!get().token) return;
+    try {
+      const profile = await customerApi.getCustomerProfile();
+      set({
+        customer: {
+          id: profile.id,
+          full_name: profile.full_name,
+          email: profile.email,
+          phone: profile.phone,
+        },
+      });
+    } catch {
+      // silent
     }
-
-    set({ addresses: [...updatedAddresses, newAddress] });
-    toast.success("New address added successfully.");
   },
 
-  updateAddress: (id: string, updatedFields: Partial<Address>) => {
-    const { addresses } = get();
-    let updatedAddresses = addresses.map((addr) =>
-      addr.id === id ? { ...addr, ...updatedFields } : addr
-    );
-
-    if (updatedFields.is_default) {
-      // Unset others
-      updatedAddresses = updatedAddresses.map((addr) =>
-        addr.id !== id && addr.is_default ? { ...addr, is_default: false } : addr
-      );
+  fetchAddresses: async () => {
+    if (!get().token) return;
+    try {
+      const apiAddresses = await customerApi.listAddresses();
+      set({
+        addresses: apiAddresses.map((a) => ({
+          id: a.id,
+          label: a.label || "",
+          recipient_name: a.recipient_name,
+          phone: a.phone,
+          address_line: a.address_line,
+          city: a.city,
+          province: a.province,
+          postal_code: a.postal_code,
+          is_default: a.is_default,
+        })),
+      });
+    } catch {
+      // silent
     }
-
-    set({ addresses: updatedAddresses });
-    toast.success("Address updated successfully.");
   },
 
-  deleteAddress: (id: string) => {
-    const { addresses } = get();
-    const addressToDelete = addresses.find((addr) => addr.id === id);
-    if (addressToDelete?.is_default) {
-      toast.warning("Cannot delete default address. Set another address as default first.");
-      return;
+  addAddress: async (address) => {
+    try {
+      await customerApi.createAddress({
+        label: address.label,
+        recipient_name: address.recipient_name,
+        phone: address.phone,
+        address_line: address.address_line,
+        city: address.city,
+        province: address.province,
+        postal_code: address.postal_code,
+        is_default: address.is_default,
+      });
+      await get().fetchAddresses();
+      toast.success("New address added successfully.");
+    } catch {
+      toast.error("Failed to add address.");
     }
-    set({ addresses: addresses.filter((addr) => addr.id !== id) });
-    toast.success("Address deleted successfully.");
   },
 
-  setDefaultAddress: (id: string) => {
-    const { addresses } = get();
-    const updated = addresses.map((addr) => ({
-      ...addr,
-      is_default: addr.id === id,
-    }));
-    set({ addresses: updated });
-    toast.success("Default address updated.");
+  updateAddress: async (id, updatedFields) => {
+    try {
+      const addr = get().addresses.find((a) => a.id === id);
+      await customerApi.updateAddress(id, {
+        label: updatedFields.label ?? addr?.label ?? null,
+        recipient_name: updatedFields.recipient_name ?? addr?.recipient_name ?? "",
+        phone: updatedFields.phone ?? addr?.phone ?? "",
+        address_line: updatedFields.address_line ?? addr?.address_line ?? "",
+        city: updatedFields.city ?? addr?.city ?? "",
+        province: updatedFields.province ?? addr?.province ?? "",
+        postal_code: updatedFields.postal_code ?? addr?.postal_code ?? "",
+        is_default: updatedFields.is_default ?? addr?.is_default ?? false,
+      });
+      await get().fetchAddresses();
+      toast.success("Address updated successfully.");
+    } catch {
+      toast.error("Failed to update address.");
+    }
+  },
+
+  deleteAddress: async (id) => {
+    try {
+      await customerApi.deleteAddress(id);
+      await get().fetchAddresses();
+      toast.success("Address deleted successfully.");
+    } catch {
+      toast.error("Failed to delete address.");
+    }
+  },
+
+  setDefaultAddress: async (id) => {
+    try {
+      await customerApi.setDefaultAddress(id);
+      await get().fetchAddresses();
+      toast.success("Default address updated.");
+    } catch {
+      toast.error("Failed to set default address.");
+    }
   },
 }));

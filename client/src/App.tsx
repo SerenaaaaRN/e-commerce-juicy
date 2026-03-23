@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import { ThemeProvider } from "@/provider/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import Navbar from "@/components/layout/Navbar";
@@ -14,7 +14,49 @@ import LoginPage from "@/pages/public/LoginPage";
 import ProfilePage from "@/pages/public/ProfilePage";
 import NotFound from "@/pages/NotFound";
 
+import AdminRoute from "@/components/admin/AdminRoute";
+import AdminLayout from "@/components/layout/AdminLayout";
+import AdminLoginPage from "@/pages/admin/LoginPage";
+import AdminDashboardPage from "@/pages/admin/DashboardPage";
+import AdminProductsPage from "@/pages/admin/ProductsPage";
+import AdminOrdersPage from "@/pages/admin/OrdersPage";
+import AdminCustomersPage from "@/pages/admin/CustomersPage";
+import AdminReviewsPage from "@/pages/admin/ReviewsPage";
+
 const App = () => {
+  const { pathname } = useLocation();
+  const isAdmin = pathname.startsWith("/admin");
+
+  if (isAdmin) {
+    return (
+      <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+        <div className="bg-background text-foreground flex min-h-screen flex-col font-dm-sans selection:bg-terracotta/25 selection:text-soil">
+          <main className="flex-1">
+            <Routes>
+              <Route path="/admin/login" element={<AdminLoginPage />} />
+              <Route
+                path="/admin"
+                element={
+                  <AdminRoute>
+                    <AdminLayout />
+                  </AdminRoute>
+                }
+              >
+                <Route index element={<AdminDashboardPage />} />
+                <Route path="products" element={<AdminProductsPage />} />
+                <Route path="orders" element={<AdminOrdersPage />} />
+                <Route path="customers" element={<AdminCustomersPage />} />
+                <Route path="reviews" element={<AdminReviewsPage />} />
+              </Route>
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </main>
+        </div>
+        <Toaster position="bottom-right" richColors closeButton />
+      </ThemeProvider>
+    );
+  }
+
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
       <div className="bg-background text-foreground flex min-h-screen flex-col font-dm-sans selection:bg-terracotta/25 selection:text-soil">
@@ -41,3 +83,4 @@ const App = () => {
 };
 
 export default App;
+

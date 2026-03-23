@@ -10,14 +10,23 @@ import { Plus, Trash2, BookOpen, Clock, LogOut } from "lucide-react";
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const { customer, addresses, addAddress, deleteAddress, setDefaultAddress, logout } = useCustomerAuthStore();
+  const { customer, addresses, addAddress, deleteAddress, setDefaultAddress, logout, fetchProfile, fetchAddresses } = useCustomerAuthStore();
   const orders = useOrderStore((state) => state.orders);
+  const fetchOrders = useOrderStore((state) => state.fetchOrders);
 
   // Smooth scroll
   useEffect(() => {
     const lenis = initLenis();
     window.scrollTo(0, 0);
     lenis?.scrollTo(0, { immediate: true });
+  }, []);
+
+  useEffect(() => {
+    if (customer) {
+      fetchProfile();
+      fetchAddresses();
+      fetchOrders();
+    }
   }, []);
 
   // Redirect if not logged in

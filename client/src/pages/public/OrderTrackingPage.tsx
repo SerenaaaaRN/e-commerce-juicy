@@ -18,8 +18,6 @@ const steps = [
 const OrderTrackingPage = () => {
   const { orderNumber } = useParams<{ orderNumber: string }>();
   const getOrder = useOrderStore((state) => state.getOrder);
-  const updateOrderStatus = useOrderStore((state) => state.updateOrderStatus);
-
   // Search input state if looking up a different order
   const [searchQuery, setSearchQuery] = useState("");
   const [currentOrderNumber, setCurrentOrderNumber] = useState(orderNumber || "");
@@ -134,33 +132,6 @@ const OrderTrackingPage = () => {
 
             {/* LIVE SIMULATOR DASHBOARD */}
             <div className="bg-chalk border border-terracotta/40 p-5 rounded-[2px] flex flex-col gap-4">
-              <div className="flex items-center gap-2">
-                <span className="size-2 rounded-full bg-terracotta animate-ping" />
-                <h4 className="font-playfair text-sm font-semibold text-soil uppercase tracking-wide">
-                  Developer Live Simulation Panel
-                </h4>
-              </div>
-              <p className="text-[11px] text-dust font-normal leading-normal">
-                Use the toggles below to instantly cycle through shipping logistics and watch the vertical timeline updates and delivery hooks react immediately in real time.
-              </p>
-              <div className="flex flex-wrap gap-2.5 mt-1">
-                {(["pending", "confirmed", "processing", "shipped", "delivered"] as const).map((status) => {
-                  const isActive = order.status === status;
-                  return (
-                    <button
-                      key={status}
-                      onClick={() => updateOrderStatus(order.id, status)}
-                      className={`h-9 px-4 text-[10px] font-bold uppercase rounded-[2px] cursor-pointer transition-all ${
-                        isActive
-                          ? "bg-terracotta text-chalk border border-transparent shadow-sm scale-102"
-                          : "bg-transparent text-dust border border-sand hover:border-soil"
-                      }`}
-                    >
-                      {status}
-                    </button>
-                  );
-                })}
-              </div>
             </div>
 
             {/* PDP REVIEW TRIGGER (SHOWN ONLY IF DELIVERED) */}

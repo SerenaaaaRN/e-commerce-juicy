@@ -1,19 +1,26 @@
-import { useEffect } from "react";
-import { MOCK_PRODUCTS } from "@/lib/mockData";
+import { useEffect, useState } from "react";
+import { useProductStore } from "@/stores/productStore";
 import ProductCard from "@/components/shop/ProductCard";
 import { JuicyMotion } from "@/lib/gsap";
 import { ButtonLink } from "@/components/ui/button";
 
 const FeaturedSection = () => {
-  // Grab up to 3 featured products
-  const featuredProducts = MOCK_PRODUCTS.filter((p) => p.is_featured).slice(0, 3);
+  const [loaded, setLoaded] = useState(false);
+  const products = useProductStore((s) => s.products);
+  const fetchProducts = useProductStore((s) => s.fetchProducts);
+  const featuredProducts = products.filter((p) => p.is_featured).slice(0, 3);
 
   useEffect(() => {
-    // Fade up heading
-    JuicyMotion.fadeUp(".featured-fade");
-    // Stagger grid items drop-in
-    JuicyMotion.gridStagger(".featured-item");
+    fetchProducts();
   }, []);
+
+  useEffect(() => {
+    if (featuredProducts.length > 0 && !loaded) {
+      setLoaded(true);
+      JuicyMotion.fadeUp(".featured-fade");
+      JuicyMotion.gridStagger(".featured-item");
+    }
+  }, [featuredProducts, loaded]);
 
   return (
     <section className="py-20 sm:py-28 px-4 max-w-[1400px] mx-auto font-dm-sans bg-transparent">

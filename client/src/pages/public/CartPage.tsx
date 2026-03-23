@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCartStore } from "@/stores/cartStore";
-import { MOCK_PRODUCTS } from "@/lib/mockData";
 import { Button } from "@/components/ui/button";
 import Divider from "@/components/ui/Divider";
 import { initLenis } from "@/lib/lenis";
@@ -9,12 +8,16 @@ import { ShoppingBag, Trash2, ArrowRight } from "lucide-react";
 
 const CartPage = () => {
   const navigate = useNavigate();
-  const { items, updateQuantity, removeItem, getSubtotal, getShippingFee, getTotal } = useCartStore();
+  const { items, updateQuantity, removeItem, getSubtotal, getShippingFee, getTotal, fetchCart } = useCartStore();
 
   useEffect(() => {
     const lenis = initLenis();
     window.scrollTo(0, 0);
     lenis?.scrollTo(0, { immediate: true });
+  }, []);
+
+  useEffect(() => {
+    fetchCart();
   }, []);
 
   const subtotal = getSubtotal();
@@ -32,13 +35,6 @@ const CartPage = () => {
       currency: "IDR",
       maximumFractionDigits: 0,
     }).format(value);
-  };
-
-  // Helper to fetch remaining stock for a variant
-  const getVariantMaxStock = (productId: string, variantId: string) => {
-    const product = MOCK_PRODUCTS.find((p) => p.id === productId);
-    const variant = product?.variants.find((v) => v.id === variantId);
-    return variant ? variant.stock : 10;
   };
 
   return (
@@ -112,7 +108,7 @@ const CartPage = () => {
               {/* Items Table */}
               <div className="flex flex-col gap-6 mt-4">
                 {items.map((item) => {
-                  const maxStock = getVariantMaxStock(item.product_id, item.variant_id);
+                  const maxStock = item.quantity + 5;
                   return (
                     <div
                       key={item.id}

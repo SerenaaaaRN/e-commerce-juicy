@@ -35,14 +35,14 @@ const LoginPage = () => {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isRegister) {
       if (!fullName || !email || !phone || !password) {
         toast.error("Please fill in all registration fields.");
         return;
       }
-      const success = register(fullName, email, phone, password);
+      const success = await register(fullName, email, phone, password);
       if (success) {
         navigate(redirectPath);
       }
@@ -51,7 +51,7 @@ const LoginPage = () => {
         toast.error("Please fill in both email and password.");
         return;
       }
-      const success = login(email, password);
+      const success = await login(email, password);
       if (success) {
         navigate(redirectPath);
       }
