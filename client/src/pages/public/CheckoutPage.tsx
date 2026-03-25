@@ -121,26 +121,35 @@ const CheckoutPage = () => {
     }).format(value);
   };
 
-  const handlePlaceOrderSubmit = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handlePlaceOrderSubmit = async () => {
     if (!selectedAddress) {
       toast.error("Please select a shipping address.");
       return;
     }
 
-    // Call order placing action (performs stock checks & decrement updates)
-    const orderNumber = placeOrder(
-      cartItems,
-      selectedAddress,
-      shippingNotes,
-      paymentMethod
-    );
+    setIsSubmitting(true);
+    try {
+      // Call order placing action (performs stock checks & decrement updates)
+      const orderNumber = await placeOrder(
+        cartItems,
+        selectedAddress,
+        shippingNotes,
+        paymentMethod
+      );
 
-    if (orderNumber) {
-      // Clear shopping bag
-      clearCart();
-      toast.success("Order placed successfully! Thank you for shopping with Juicy.");
-      // Redirect to Order tracking screen
-      navigate(`/order-tracking/${orderNumber}`);
+      if (orderNumber) {
+        // Clear shopping bag
+        clearCart();
+        toast.success("Order placed successfully! Thank you for shopping with Juicy.");
+        // Redirect to Order tracking screen
+        navigate(`/order-tracking/${orderNumber}`);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -485,12 +494,13 @@ const CheckoutPage = () => {
             {/* Place Order Action */}
             <Button
               onClick={handlePlaceOrderSubmit}
+              disabled={isSubmitting}
               variant="primary"
               size="default"
               className="w-full uppercase tracking-widest text-[11px] font-bold h-12 flex items-center justify-center gap-2 cursor-pointer mt-4"
             >
               <ShieldCheck className="size-4" />
-              <span>Authorize Payment & Place Order</span>
+              <span>{isSubmitting ? "Authorizing..." : "Authorize Payment & Place Order"}</span>
             </Button>
 
             <p className="text-[9px] text-dust text-center leading-normal max-w-xs mx-auto">

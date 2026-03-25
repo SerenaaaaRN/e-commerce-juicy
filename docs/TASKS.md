@@ -283,11 +283,11 @@
 - [x] Review CTA on delivered items (links to review form if not yet reviewed)
 
 ### 4.9 Public QA
-- [ ] Responsive mobile + desktop
-- [ ] `prefers-reduced-motion` untuk GSAP
-- [ ] Error + loading + empty states semua terpenuhi
-- [ ] No FOUT (font flash)
-- [ ] 0 ESLint errors/warnings in production build
+- [x] Responsive mobile + desktop
+- [x] `prefers-reduced-motion` untuk GSAP
+- [x] Error + loading + empty states semua terpenuhi
+- [x] No FOUT (font flash)
+- [x] 0 ESLint errors/warnings in production build
 
 ---
 
@@ -311,10 +311,10 @@
 - [x] Address management: list, add, edit, delete, set default
 
 ### 5.3 Order History Page
-- [ ] `pages/customer/OrderHistoryPage.tsx` (not yet built)
-- [ ] Order list with status badges + total
-- [ ] Link to order tracking per order
-- [ ] "Write a Review" CTA for delivered orders without review
+- [x] `pages/customer/OrderHistoryPage.tsx` (not yet built)
+- [x] Order list with status badges + total
+- [x] Link to order tracking per order
+- [x] "Write a Review" CTA for delivered orders without review
 
 ---
 

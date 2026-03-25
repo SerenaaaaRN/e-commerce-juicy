@@ -166,6 +166,7 @@ export type OrderAddress = {
 };
 
 export type OrderItem = {
+  product_id?: string;
   product_name: string;
   variant_size: string;
   variant_color: string;

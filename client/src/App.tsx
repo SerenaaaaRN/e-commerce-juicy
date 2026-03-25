@@ -12,6 +12,8 @@ import CheckoutPage from "@/pages/public/CheckoutPage";
 import OrderTrackingPage from "@/pages/public/OrderTrackingPage";
 import LoginPage from "@/pages/public/LoginPage";
 import ProfilePage from "@/pages/public/ProfilePage";
+import OrderHistoryPage from "@/pages/public/OrderHistoryPage";
+import ProtectedRoute from "@/components/common/ProtectedRoute";
 import NotFound from "@/pages/NotFound";
 
 import AdminRoute from "@/components/admin/AdminRoute";
@@ -67,11 +69,24 @@ const App = () => {
             <Route path="/collection" element={<CollectionPage />} />
             <Route path="/product/:slug" element={<ProductPage />} />
             <Route path="/cart" element={<CartPage />} />
-            <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/checkout" element={
+              <ProtectedRoute>
+                <CheckoutPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/orders" element={
+              <ProtectedRoute>
+                <OrderHistoryPage />
+              </ProtectedRoute>
+            } />
             <Route path="/order-tracking" element={<OrderTrackingPage />} />
             <Route path="/order-tracking/:orderNumber" element={<OrderTrackingPage />} />
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/profile" element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            } />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </main>

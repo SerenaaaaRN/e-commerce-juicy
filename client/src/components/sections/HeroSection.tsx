@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ButtonLink } from "@/components/ui/button";
-import { JuicyMotion } from "@/lib/gsap";
+import { JuicyMotion, prefersReducedMotion } from "@/lib/gsap";
 import { gsap } from "gsap";
 
 const HERO_IMAGES = [
@@ -52,6 +52,8 @@ const HeroSection = () => {
       nextImg.alt = HERO_IMAGES[activeIndex].alt;
     }
 
+    const isReduced = prefersReducedMotion();
+
     const tl = gsap.timeline({
       onComplete: () => {
         const curImg = currentRef.current?.querySelector("img");
@@ -60,22 +62,36 @@ const HeroSection = () => {
           curImg.alt = HERO_IMAGES[activeIndex].alt;
         }
         gsap.set(currentRef.current, { opacity: 1, scale: 1 });
-        gsap.set(nextRef.current, { opacity: 0, scale: 1.05 });
+        gsap.set(nextRef.current, { opacity: 0, scale: isReduced ? 1 : 1.05 });
       },
     });
 
-    tl.to(currentRef.current, {
-      opacity: 0,
-      scale: 1.05,
-      duration: 1.2,
-      ease: "power2.inOut",
-    }, 0);
+    if (isReduced) {
+      tl.to(currentRef.current, {
+        opacity: 0,
+        duration: 0.5,
+        ease: "power1.inOut",
+      }, 0);
 
-    tl.fromTo(nextRef.current,
-      { opacity: 0, scale: 1.08 },
-      { opacity: 1, scale: 1, duration: 1.4, ease: "power3.out" },
-      0.3,
-    );
+      tl.fromTo(nextRef.current,
+        { opacity: 0 },
+        { opacity: 1, duration: 0.5, ease: "power1.inOut" },
+        0
+      );
+    } else {
+      tl.to(currentRef.current, {
+        opacity: 0,
+        scale: 1.05,
+        duration: 1.2,
+        ease: "power2.inOut",
+      }, 0);
+
+      tl.fromTo(nextRef.current,
+        { opacity: 0, scale: 1.08 },
+        { opacity: 1, scale: 1, duration: 1.4, ease: "power3.out" },
+        0.3,
+      );
+    }
   }, [activeIndex]);
 
   return (

@@ -29,12 +29,13 @@ type OrderResponse struct {
 }
 
 type OrderItemResponse struct {
-	ProductName  string  `json:"product_name"`
-	VariantSize  string  `json:"variant_size"`
-	VariantColor string  `json:"variant_color"`
-	ImageURL     *string `json:"image_url"`
-	Quantity     int     `json:"quantity"`
-	UnitPrice    float64 `json:"unit_price"`
+	ProductID    *uuid.UUID `json:"product_id,omitempty"`
+	ProductName  string     `json:"product_name"`
+	VariantSize  string     `json:"variant_size"`
+	VariantColor string     `json:"variant_color"`
+	ImageURL     *string    `json:"image_url"`
+	Quantity     int        `json:"quantity"`
+	UnitPrice    float64    `json:"unit_price"`
 }
 
 type OrderDetailResponse struct {

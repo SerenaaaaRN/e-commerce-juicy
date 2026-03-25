@@ -190,7 +190,16 @@ func (s *orderService) GetCustomerOrderDetail(ctx context.Context, orderNumber s
 
 	itemsRes := make([]dto.OrderItemResponse, len(order.Items))
 	for i, item := range order.Items {
+		var pID *uuid.UUID
+		if item.VariantID != nil {
+			var variant model.ProductVariant
+			if err := s.db.WithContext(ctx).Select("product_id").Where("id = ?", *item.VariantID).First(&variant).Error; err == nil {
+				pID = &variant.ProductID
+			}
+		}
+
 		itemsRes[i] = dto.OrderItemResponse{
+			ProductID:    pID,
 			ProductName:  item.ProductName,
 			VariantSize:  item.VariantSize,
 			VariantColor: item.VariantColor,
@@ -263,7 +272,16 @@ func (s *orderService) GetOrderDetail(ctx context.Context, id uuid.UUID) (*dto.O
 
 	itemsRes := make([]dto.OrderItemResponse, len(order.Items))
 	for i, item := range order.Items {
+		var pID *uuid.UUID
+		if item.VariantID != nil {
+			var variant model.ProductVariant
+			if err := s.db.WithContext(ctx).Select("product_id").Where("id = ?", *item.VariantID).First(&variant).Error; err == nil {
+				pID = &variant.ProductID
+			}
+		}
+
 		itemsRes[i] = dto.OrderItemResponse{
+			ProductID:    pID,
 			ProductName:  item.ProductName,
 			VariantSize:  item.VariantSize,
 			VariantColor: item.VariantColor,

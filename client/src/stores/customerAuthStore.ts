@@ -36,6 +36,8 @@ type CustomerAuthState = {
   updateAddress: (id: string, address: Partial<Address>) => Promise<void>;
   deleteAddress: (id: string) => Promise<void>;
   setDefaultAddress: (id: string) => Promise<void>;
+  updateProfile: (fullName: string, phone: string | null) => Promise<boolean>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
 };
 
 export const useCustomerAuthStore = create<CustomerAuthState>((set, get) => ({
@@ -173,6 +175,39 @@ export const useCustomerAuthStore = create<CustomerAuthState>((set, get) => ({
       toast.success("Default address updated.");
     } catch {
       toast.error("Failed to set default address.");
+    }
+  },
+
+  updateProfile: async (fullName, phone) => {
+    try {
+      const profile = await customerApi.updateCustomerProfile({
+        full_name: fullName,
+        phone,
+      });
+      set({
+        customer: {
+          id: profile.id,
+          full_name: profile.full_name,
+          email: profile.email,
+          phone: profile.phone,
+        },
+      });
+      toast.success("Profile updated successfully.");
+      return true;
+    } catch {
+      toast.error("Failed to update profile.");
+      return false;
+    }
+  },
+
+  changePassword: async (currentPassword, newPassword) => {
+    try {
+      await customerApi.changePassword(currentPassword, newPassword);
+      toast.success("Password updated successfully.");
+      return true;
+    } catch {
+      toast.error("Failed to update password. Verify your current password is correct.");
+      return false;
     }
   },
 }));

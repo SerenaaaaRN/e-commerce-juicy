@@ -30,6 +30,7 @@ export type Order = {
   notes?: string;
   payment_method: string;
   created_at: string;
+  item_count?: number;
 };
 
 type OrderState = {
@@ -77,6 +78,7 @@ const mapApiOrder = (apiOrder: any): Order => ({
   notes: apiOrder.notes,
   payment_method: apiOrder.payment_method || "",
   created_at: apiOrder.created_at || "",
+  item_count: apiOrder.item_count || (apiOrder.items ? apiOrder.items.length : 0),
 });
 
 export const useOrderStore = create<OrderState>((set, get) => ({
