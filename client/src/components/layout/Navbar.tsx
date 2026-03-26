@@ -42,21 +42,21 @@ const Navbar = () => {
         <nav className="hidden w-1/3 items-center gap-8 md:flex">
           <Link
             to="/collection"
-            className={`${textColor} ${hoverColor} text-xs font-semibold tracking-widest uppercase transition-colors duration-300`}
+            className={`${textColor} ${hoverColor} text-[11px] font-semibold tracking-widest uppercase transition-colors duration-300`}
           >
-            Shop All
+            Catalog
           </Link>
           <Link
-            to="/collection?category=dresses"
-            className={`${textColor} ${hoverColor} text-xs font-semibold tracking-widest uppercase transition-colors duration-300`}
+            to="/showroom"
+            className={`${textColor} ${hoverColor} text-[11px] font-semibold tracking-widest uppercase transition-colors duration-300`}
           >
-            Dresses
+            Showroom
           </Link>
           <Link
-            to="/collection?category=accessories"
-            className={`${textColor} ${hoverColor} text-xs font-semibold tracking-widest uppercase transition-colors duration-300`}
+            to="/atelier"
+            className={`${textColor} ${hoverColor} text-[11px] font-semibold tracking-widest uppercase transition-colors duration-300`}
           >
-            Accessories
+            Atelier
           </Link>
         </nav>
 
@@ -142,21 +142,21 @@ const Navbar = () => {
               onClick={toggleMobileMenu}
               className="text-soil border-sand/10 border-b py-2 text-sm font-semibold tracking-widest uppercase"
             >
-              Shop All
+              Catalog
             </Link>
             <Link
-              to="/collection?category=dresses"
+              to="/showroom"
               onClick={toggleMobileMenu}
               className="text-soil border-sand/10 border-b py-2 text-sm font-semibold tracking-widest uppercase"
             >
-              Dresses
+              Showroom
             </Link>
             <Link
-              to="/collection?category=accessories"
+              to="/atelier"
               onClick={toggleMobileMenu}
               className="text-soil border-sand/10 border-b py-2 text-sm font-semibold tracking-widest uppercase"
             >
-              Accessories
+              Atelier
             </Link>
             {customer ? (
               <>

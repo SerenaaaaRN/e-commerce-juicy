@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { productsApi } from "@/lib/api";
-import type { Product, Category } from "@/features/shop/shop.types";
+import type { Product, Category } from "@/types/shop.types";
 import type { ProductSummary } from "@/lib/api/types";
 
 const mapProductSummary = (p: ProductSummary): Product => ({

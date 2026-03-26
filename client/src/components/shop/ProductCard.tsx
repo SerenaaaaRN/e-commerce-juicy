@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import type { Product } from "@/features/shop/shop.types";
+import type { Product } from "@/types/shop.types";
 import { Badge } from "@/components/ui/badge";
 import StarRating from "./StarRating";
 

@@ -13,6 +13,8 @@ import OrderTrackingPage from "@/pages/public/OrderTrackingPage";
 import LoginPage from "@/pages/public/LoginPage";
 import ProfilePage from "@/pages/public/ProfilePage";
 import OrderHistoryPage from "@/pages/public/OrderHistoryPage";
+import AtelierPage from "@/pages/public/AtelierPage";
+import ShowroomPage from "@/pages/public/ShowroomPage";
 import ProtectedRoute from "@/components/common/ProtectedRoute";
 import NotFound from "@/pages/NotFound";
 
@@ -67,6 +69,8 @@ const App = () => {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/collection" element={<CollectionPage />} />
+            <Route path="/showroom" element={<ShowroomPage />} />
+            <Route path="/atelier" element={<AtelierPage />} />
             <Route path="/product/:slug" element={<ProductPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/checkout" element={

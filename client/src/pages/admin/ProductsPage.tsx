@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { Product, ProductVariant, ProductImage } from "@/features/shop/shop.types";
+import type { Product, ProductVariant, ProductImage } from "@/types/shop.types";
 import { Search, Plus, Edit2, Trash2, X, Star, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { adminApi } from "@/lib/api";
