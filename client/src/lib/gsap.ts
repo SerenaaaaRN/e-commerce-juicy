@@ -250,4 +250,48 @@ export const JuicyMotion = {
       },
     });
   },
+
+  gridLift3D: (itemSelector: string) => {
+    const isReduced = prefersReducedMotion();
+    const items = gsap.utils.toArray(itemSelector) as HTMLElement[];
+    if (items.length === 0) return;
+
+    if (isReduced) {
+      gsap.set(items, { opacity: 1, y: 0, scale: 1, rotateX: 0 });
+      return;
+    }
+
+    items.forEach((item) => {
+      const parent = item.parentElement;
+      if (parent) {
+        parent.style.perspective = "1200px";
+        parent.style.transformStyle = "preserve-3d";
+      }
+    });
+
+    ScrollTrigger.batch(items, {
+      onEnter: (batch) => {
+        gsap.fromTo(
+          batch,
+          {
+            opacity: 0,
+            y: 65,
+            scale: 0.94,
+            rotateX: 12,
+            transformOrigin: "center bottom",
+          },
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            rotateX: 0,
+            duration: 0.9,
+            stagger: 0.08,
+            ease: "power3.out",
+            overwrite: "auto",
+          }
+        );
+      },
+    });
+  },
 };

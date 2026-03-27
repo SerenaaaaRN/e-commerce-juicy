@@ -140,7 +140,7 @@ const CollectionPage = () => {
     const timer = setTimeout(() => {
       setLoading(false);
       setTimeout(() => {
-        JuicyMotion.gridStagger(".collection-item");
+        JuicyMotion.gridLift3D(".collection-item");
       }, 50);
     }, 450);
     return () => {

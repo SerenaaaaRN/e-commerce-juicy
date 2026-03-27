@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { JuicyMotion } from "@/lib/gsap";
 import { ButtonLink } from "@/components/ui/button";
+import { TextRoll } from "@/components/ui/TextRoll";
 
 const EditorialSection = () => {
   useEffect(() => {
@@ -35,7 +36,7 @@ const EditorialSection = () => {
               Brand Philosophy
             </span>
             <h2 className="font-playfair text-4xl sm:text-5xl font-normal leading-[1.1] tracking-tight max-w-md">
-              Crafted for Warm Solstices
+              <TextRoll text="Crafted for Warm Solstices" />
             </h2>
           </div>
 

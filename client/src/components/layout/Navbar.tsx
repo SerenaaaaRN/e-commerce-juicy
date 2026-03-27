@@ -52,6 +52,13 @@ const Navbar = () => {
           >
             Showroom
           </Link>
+
+          <Link
+            to="/materials"
+            className={`${textColor} ${hoverColor} text-[11px] font-semibold tracking-widest uppercase transition-colors duration-300`}
+          >
+            Materials
+          </Link>
           <Link
             to="/atelier"
             className={`${textColor} ${hoverColor} text-[11px] font-semibold tracking-widest uppercase transition-colors duration-300`}
@@ -150,6 +157,14 @@ const Navbar = () => {
               className="text-soil border-sand/10 border-b py-2 text-sm font-semibold tracking-widest uppercase"
             >
               Showroom
+            </Link>
+
+            <Link
+              to="/materials"
+              onClick={toggleMobileMenu}
+              className="text-soil border-sand/10 border-b py-2 text-sm font-semibold tracking-widest uppercase"
+            >
+              Materials
             </Link>
             <Link
               to="/atelier"

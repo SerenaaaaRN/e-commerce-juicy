@@ -15,6 +15,7 @@ import ProfilePage from "@/pages/public/ProfilePage";
 import OrderHistoryPage from "@/pages/public/OrderHistoryPage";
 import AtelierPage from "@/pages/public/AtelierPage";
 import ShowroomPage from "@/pages/public/ShowroomPage";
+import MaterialPage from "@/pages/public/MaterialPage";
 import ProtectedRoute from "@/components/common/ProtectedRoute";
 import NotFound from "@/pages/NotFound";
 
@@ -70,6 +71,7 @@ const App = () => {
             <Route path="/" element={<HomePage />} />
             <Route path="/collection" element={<CollectionPage />} />
             <Route path="/showroom" element={<ShowroomPage />} />
+            <Route path="/materials" element={<MaterialPage />} />
             <Route path="/atelier" element={<AtelierPage />} />
             <Route path="/product/:slug" element={<ProductPage />} />
             <Route path="/cart" element={<CartPage />} />
