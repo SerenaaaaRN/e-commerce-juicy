@@ -55,7 +55,11 @@ client/
 │   │   │   ├── Navbar.tsx            # Public nav (logo + links + cart icon + auth)
 │   │   │   ├── Footer.tsx
 │   │   │   └── AdminLayout.tsx
-│   │   ├── sections/             # Public page sections (Phase 4)
+│   │   ├── animations/           # Reusable GSAP cinematic animations
+│   │   │   ├── AsymmetricParallaxSection.tsx
+│   │   │   ├── OrigamiSplitSection.tsx
+│   │   │   └── DioramaSection.tsx    # Box-to-Fullscreen Zoom Portal
+│   │   ├── sections/             # Public page sections
 │   │   │   ├── HeroSection.tsx
 │   │   │   ├── FeaturedSection.tsx
 │   │   │   ├── CollectionPreview.tsx
@@ -350,9 +354,9 @@ Order creation runs inside a PostgreSQL transaction:
 | Cart upsert | ON CONFLICT DO UPDATE | Idempotent add-to-cart without duplicates |
 | GORM over raw SQL | GORM | Development speed; migrations still use raw SQL |
 | golang-migrate over AutoMigrate | golang-migrate | Explicit, reversible, production-safe |
-| Zustand over Redux | Zustand | Minimal boilerplate; five stores (adminAuth, customerAuth, cart, order, product) |
-| Stores call API directly (no TanStack Query) | Zustand async actions | Simpler mental model; no extra cache layer needed for admin CRUD |
+| stores call API directly (no TanStack Query) | Zustand async actions | Simpler mental model; no extra cache layer needed for admin CRUD |
 | JWT in memory | Memory (not localStorage) | XSS protection; admin session lost on refresh (re-login required) |
 | Payment as stub | Service layer stub | Slot for Midtrans/Xendit/Stripe in post-MVP without architectural change |
 | No mock data | Server is single source of truth | All pages show empty states when server is offline |
 | Dual Axios instances | client.ts + customerClient.ts | Separate token sources (admin vs customer); separate 401 handling |
+| Reusable Animations Folder | components/animations/ | Pure visual GSAP wrapper components (AsymmetricParallax, OrigamiSplit) isolated to prevent redundant math code and preserve prop typing rules |

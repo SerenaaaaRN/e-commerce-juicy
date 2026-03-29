@@ -4,14 +4,14 @@ import CollectionPreview from "@/components/sections/CollectionPreview";
 import FeaturedSection from "@/components/sections/FeaturedSection";
 import EditorialSection from "@/components/sections/EditorialSection";
 import CtaSection from "@/components/sections/CtaSection";
-import { DioramaSection } from "@/components/sections/DioramaSection";
+import { DioramaSection } from "@/components/animations/DioramaSection";
 import { initLenis } from "@/lib/lenis";
 
 const HomePage = () => {
   useEffect(() => {
     // Initialize Lenis smooth scroll on mount
     const lenis = initLenis();
-    
+
     // Scroll to top when arriving on Home
     window.scrollTo(0, 0);
     lenis?.scrollTo(0, { immediate: true });

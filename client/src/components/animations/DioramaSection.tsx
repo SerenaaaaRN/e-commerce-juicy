@@ -14,7 +14,7 @@ type DioramaSectionProps = {
   description: string;
   ctaText?: string;
   ctaHref?: string;
-  foregroundImg?: string; // Kept for backward compatibility but hidden for this layout style
+  foregroundImg?: string; // Kept for backward compatibility
   backgroundImg: string;
 };
 
@@ -41,7 +41,7 @@ export const DioramaSection = ({
 
     if (!container || !card || !img || !overlay || !text) return;
 
-    // AMRIT PALACE STYLE: BOX-TO-FULLSCREEN PARALLAX REVEAL
+    // BOX-TO-FULLSCREEN PARALLAX REVEAL
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: container,
@@ -53,8 +53,8 @@ export const DioramaSection = ({
       },
     });
 
-    // Reset initial states before animation
-    gsap.set(card, { width: "70%", height: "70vh", borderRadius: "24px" });
+    // Reset initial states before animation (sharp edges, no border-radius)
+    gsap.set(card, { width: "70%", height: "70vh" });
     gsap.set(img, { scale: 1.35 });
     gsap.set(overlay, { opacity: 0 });
     gsap.set(text, { opacity: 0, y: 60 });
@@ -64,7 +64,6 @@ export const DioramaSection = ({
       {
         width: "100%",
         height: "100vh",
-        borderRadius: "0px",
         ease: "power2.inOut",
       },
       0
@@ -124,7 +123,7 @@ export const DioramaSection = ({
       <div
         ref={cardRef}
         className="relative overflow-hidden shadow-[0_30px_70px_rgba(0,0,0,0.25)] flex items-center justify-center transition-all duration-100"
-        style={{ willChange: "width, height, border-radius" }}
+        style={{ willChange: "width, height" }}
       >
         {/* Parallax Background Image */}
         <img

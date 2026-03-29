@@ -1,309 +1,179 @@
 # skill.gsap — GSAP Cinematic Reference for Juicy 🍊
 
-Panduan ini berisi **5 opsi animasi GSAP premium dan cinematic** yang dikurasi khusus untuk estetika mewah, hangat, dan editorial ala **Juicy** (terinspirasi dari *Jacquemus*). 
+Panduan ini berisi teknik dan arsitektur **animasi GSAP premium dan cinematic** yang diimplementasikan khusus untuk estetika mewah, hangat, dan editorial ala **Juicy**.
 
-Semua opsi di bawah ini memprioritaskan kontrol scroll (**scrub**), kedalaman **3D**, timing **organik**, serta standar visual tingkat tinggi yang sering memenangkan penghargaan di **Awwwards** dan **FWA**.
+Semua teknik di bawah ini memprioritaskan kontrol scroll (**scrub**), kedalaman **3D**, timing **organik**, serta standar visual tingkat tinggi yang terisolasi dalam folder modul animasi khusus.
 
 ---
 
-## Ringkasan 5 Opsi Animasi
+## 📂 Struktur Modul Animasi (`@/components/animations/`)
 
-| Opsi | Nama Teknik GSAP | Wow Factor | Kompleksitas |
+Untuk menghindari kekakuan serta menjaga *reusability* basis kode, semua animasi GSAP premium Juicy diisolasi ke dalam folder `@/components/animations/`. Folder ini menyimpan visual components murni tanpa bercampur dengan logika bisnis:
+
+| Nama Komponen | File Path | Teknik Utama | Efek Visual |
 | :--- | :--- | :--- | :--- |
-| **1** | **Diorama Z-Depth Dolly-In** | Menembus bidang kedalaman foto 3D (*immersive lens*) | **Hard** |
-| **2** | **Origami Split-Fold Reveal** | Efek lipatan taktil 3D seperti membuka buku fisik premium | **Expert** |
-| **3** | **Monolithic Typographic Roll** | Huruf monolitik berputar tegak 90° dari lantai 3D | **Medium** |
-| **4** | **Floating Postcard Deck Scatter** | Hamburan kartu pos 3D yang menyatu menjadi hero spread | **Expert** |
-| **5** | **Horizon Silk Curtain Warp** | Simulasi kelengkungan silinder sutra/kanvas teater melengkung | **Hard** |
+| **DioramaSection** | `.../sections/DioramaSection.tsx` | Box-to-Fullscreen Mask Zoom | Pembukaan portal dari kartu kecil melayang ke tampilan layar penuh (*full-bleed*) dengan tepi tajam minimalis. |
+| **AsymmetricParallaxSection** | `.../animations/AsymmetricParallaxSection.tsx` | Vertical Scroll Parallax | Lembaran ubin foto bergaya editorial yang meluncur naik sumbu Y secara asimetris dengan panel teks mengambang. |
+| **OrigamiSplitSection** | `.../animations/OrigamiSplitSection.tsx` | Dual-Axis 3D Flipping | Transisi teaterikal di mana satu sisi melipat ke belakang sumbu Y, dan sisi teks turun dari sumbu X. |
 
 ---
 
-### 1. Diorama Z-Depth Dolly-In (Scroll-Linked Z-Axis Depth Parallax)
+## 🏛️ Detail Teknik & Director Styles
 
-```mermaid
-graph TD
-    A[Scroll Start: Pin Section] --> B[Layer 1: Foreground Fabric Slides & Fades Out]
-    A --> C[Layer 2: Subject Midground Scales Up Slowly]
-    A --> D[Layer 3: Background Landscape Stays Anchored]
-    B & C & D --> E[Scroll End: Unpin & Transition]
-```
-
-*   **Teknik GSAP:** `ScrollTrigger Pinning` + `Staggered Z-Axis Dolly Translation (z / scale)` + `CSS Perspective`
+### 1. Box-to-Fullscreen Zoom Portal (Diorama)
+*   **Komponen:** `DioramaSection.tsx`
+*   **Teknik GSAP:** `ScrollTrigger Pinning` + `Dual-Direction scale` + `container scale exit`
 *   **Efek Visual (Director Style):**
-    > *"Bayangkan kamera format medium Arri Alexa melakukan gerakan dolly-in (maju ke depan) yang sangat lambat menembus kedalaman lookbook. Ketika section terkunci di layar (pinned), frame terbagi menjadi 3 bidang kedalaman. Foreground (misal: helaian kain linen bertekstur terracotta blur) terdorong cepat ke kiri-kanan layar seolah kamera melewatinya. Midground (model bergaun cream) membesar secara perlahan ke arah mata penonton. Background (villa terracotta di Gordes yang sun-drenched) tetap tenang di kejauhan dengan pergerakan minimal. Kedalaman 3D terasa nyata."*
-*   **Wow Factor:** Mengubah foto 2D datar menjadi ruang diorama multi-dimensi. Perubahan kedalaman Z-axis yang organik memberi ilusi fisik yang sangat mahal, membawa user menjelajahi dimensi foto alih-alih hanya melihatnya.
-*   **Plugin GSAP:** `ScrollTrigger`
-*   **Tingkat Kompleksitas:** **Hard** (memerlukan setup `perspective`, `transform-style: preserve-3d` pada CSS, dan kalkulasi rasio translasi Z yang halus).
+    > *"Kanvas dimulai dengan sebuah kartu tajam minimalis berukuran 70% viewport yang melayang anggun di tengah layar. Di dalam kartu, foto lanskap luar terlihat dizoom dalam (scale: 1.35). Begitu user menscroll, kartu tersebut mekar perlahan memenuhi seluruh layar (100vw, 100vh). Secara simultan, foto di dalamnya ber-zoom mundur berlawanan arah ke 1.05, memberikan ilusi topeng lubang kunci (keyhole mask parallax) yang sangat taktil. Di akhir scroll, wadah diorama menyusut tipis dan memudar halus (fade-out) sebelum pin terlepas."*
+*   **Wow Factor:** Membongkar batasan frame foto linier statis. Gerakan berlawanan (*differential zooming*) menyihir mata user seakan sedang menatap teropong arsitektural yang terbuka lebar.
 
----
-
-### 2. Origami Split-Fold Reveal (Dual-Axis 3D Canvas Flipping)
-
-```mermaid
-graph LR
-    A[Split Screen] --> B[Sisi Kiri: rotateY -90deg ke Belakang]
-    A --> C[Sisi Kanan: rotateX 90deg turun ke 0deg]
-    B & C --> D[Latar Cream ke Sand Terbuka Mulus]
-```
-
-*   **Teknik GSAP:** `ScrollTrigger Pinning` + `Dual-Axis 3D Rotations (rotateX / rotateY)` + `Dynamic transformOrigin`
+### 2. Asymmetric Parallax Section
+*   **Komponen:** `AsymmetricParallaxSection.tsx`
+*   **Teknik GSAP:** `ScrollTrigger` + `Relative yPercent offset`
 *   **Efek Visual (Director Style):**
-    > *"Kamera menatap split-screen asimetris yang elegan. Saat user menscroll, separuh layar bagian kiri (berisi foto campaign Provence) berputar 90 derajat ke belakang pada sumbu Y (rotateY: -90deg) seakan halaman buku tebal yang tertutup secara anggun. Secara simultan, separuh layar kanan (berisi nama koleksi dan deskripsi dalam Playfair Display) berputar turun dari sumbu X atas (rotateX: 90deg ke 0deg) seperti penutup kotak kado Hermes yang terbuka secara teaterikal."*
-*   **Wow Factor:** Melanggar hukum scroll vertikal standar dengan transisi lipatan fisik (*physical folding*). Resistansi scroll melahirkan interaksi taktil yang kokoh, membuat website terasa seperti portofolio fisik eksklusif.
-*   **Plugin GSAP:** `ScrollTrigger`
-*   **Tingkat Kompleksitas:** **Expert** (membutuhkan presisi tinggi pada `transform-origin` dan koordinasi sumbu rotasi agar transisi terasa mulus tanpa cela/patah).
+    > *"Sebuah ubin kanvas foto bergaya editorial format medium (aspect-ratio 4:5) meluncur tenang secara vertikal. Ketika user melakukan scroll ke bawah, wadah foto luar bergerak statis mengikuti scroll normal, namun gambar foto di dalam wadah meluncur perlahan dengan kecepatan berbeda (yPercent: -12% ke 12%). Ini menghasilkan sapuan kedalaman berpasir yang sangat anggun melintasi panel teks bergaya tipografi serif di sebelahnya."*
+*   **Wow Factor:** Sangat ramah performa (60 FPS murni menggunakan translasi GPU), memberikan kesan kemewahan editorial majalah cetak kelas atas yang hidup secara digital.
 
----
-
-### 3. Monolithic Typographic Roll (3D Letter Projection)
-
-*   **Teknik GSAP:** `SplitText` + `3D Letter Pivot (rotateX & translateZ)` + `ScrollTrigger scrub`
+### 3. Origami Split-Fold Reveal
+*   **Komponen:** `OrigamiSplitSection.tsx`
+*   **Teknik GSAP:** `ScrollTrigger` + `rotateX / rotateY 3D rotations` + `transformOrigin adjustment`
 *   **Efek Visual (Director Style):**
-    > *"Kamera menatap kanvas cream yang kosong dan berpasir halus. Begitu scroll dimulai, huruf-huruf tipografi editorial raksasa (Playfair Display) mulai bermunculan satu per satu dengan stagger organik. Setiap huruf tidak sekadar memudar, melainkan terbaring rata di lantai 3D virtual lalu berputar tegak 90 derajat ke depan (rotateX: 90deg ke 0deg) sekaligus terdorong keluar dari kedalaman (translateZ: -150px ke 0px). Bayangan tipis di bawah setiap huruf memudar seiring tegaknya huruf."*
-*   **Wow Factor:** Tipografi terasa seperti monumen arsitektural yang didirikan secara fisik di atas pasir. Efek staggered 3D pada tiap karakter memicu ketegangan sinematik yang membuat user penasaran untuk menyelesaikan kata tersebut.
-*   **Plugin GSAP:** `ScrollTrigger` + `SplitText` (atau pemisahan span manual di React)
-*   **Tingkat Kompleksitas:** **Medium** (setup CSS `perspective` yang bersih, memberikan dampak visual yang sangat premium dengan baris kode yang relatif ringkas).
+    > *"Split screen asimetris di mana saat scroll dimulai, separuh layar bagian gambar melipat 45 derajat ke belakang pada sumbu Y (rotateY) seakan halaman jurnal kulit tebal yang tertutup. Secara simultan, separuh layar bagian teks berputar turun dari langit-langit virtual (rotateX: 90deg ke 0deg) seolah penutup kotak kado tebal yang terbuka mulus tanpa hambatan."*
+*   **Wow Factor:** Transisi 3D taktil non-linear yang mematahkan kebiasaan mata manusia yang terbiasa melihat pergerakan scroll vertikal flat.
 
 ---
 
-### 4. Floating Postcard Deck Scatter (Perspective Fan-Out & Morph)
+## 🛠️ Blueprint Implementasi
 
-*   **Teknik GSAP:** `ScrollTrigger scrub` + `3D Perspective Scatter` + `GSAP Flip (Optional)`
-*   **Efek Visual (Director Style):**
-    > *"Di awal section, tumpukan kartu foto campaign bertumpuk acak di sudut bawah layar seperti tumpukan kartu pos tua di atas meja villa. Seiring scroll berjalan ke bawah, kartu-kartu tersebut melayang naik secara organik dan berhamburan (scatter) di ruang 3D, berputar perlahan di semua sumbu (rotateX, rotateY, rotateZ). Satu kartu utama (hero look) memisahkan diri dari rombongan, berputar mulus meluruskan diri ke arah kamera, dan perlahan membesar mengisi seluruh layar (morphing) menjadi background hero penuh di section berikutnya."*
-*   **Wow Factor:** Efek hamburan acak dalam ruang 3D yang berubah menjadi layout presisi nan simetris. Ini merusak batas layout grid kaku tradisional dan memberikan transisi mulus dari elemen dinamis menjadi struktur halaman statis.
-*   **Plugin GSAP:** `ScrollTrigger` + `Flip` (untuk interpolasi layout dari tumpukan absolut ke full-screen grid)
-*   **Tingkat Kompleksitas:** **Expert** (membutuhkan interpolasi rotasi multi-axis dan pencocokan koordinat global agar tidak terjadi flicker/patah saat morphing).
-
----
-
-### 5. Horizon Silk Curtain Warp (3D Curvature & Mesh Warp)
-
-*   **Teknik GSAP:** `ScrollTrigger scrub` + `3D Spherical Distortion (rotateY, skewX & scale)` + `Canvas Depth Shadow`
-*   **Efek Visual (Director Style):**
-    > *"Section baru tidak sekadar menutupi section sebelumnya; ia muncul dari bawah layar dengan kelengkungan silindris cembung layaknya lembaran tirai sutra tebal yang ditarik melengkung melintasi panggung teater (rotateY: 15deg, skewX: -5deg melurus ke 0). Tepi-tepi gambar memiliki bayangan gradien gelap yang perlahan memudar menjadi terang benderang saat lembaran tersebut sejajar lurus dengan mata penonton."*
-*   **Wow Factor:** Memberi ilusi kelengkungan fisik (*physical curvature*) pada permukaan layar datar. Keberadaan bayangan kedalaman (*depth shadow*) dinamis di tepi kanvas menyulap piksel menjadi material fisik yang bergerak lentur.
-*   **Plugin GSAP:** `ScrollTrigger`
-*   **Tingkat Kompleksitas:** **Hard** (memerlukan sinkronisasi opacity gradien bayangan dengan derajat rotasi/skew 3D secara bersamaan saat scroll di-scrub).
-
----
-
-## 🛠️ Blueprint Implementasi: Diorama Z-Depth Dolly-In
-
-Berikut adalah blueprint kode komponen React (TypeScript) untuk **Diorama Z-Depth Dolly-In** yang terintegrasi sempurna dengan setup Next.js + GSAP + ScrollTrigger Anda, serta mematuhi aturan ketat arsitektur Anda (Arrow Component, Props Type, absolute imports, no raw HTML, and type-safety).
-
-### `@/components/sections/DioramaSection.tsx`
+### A. Asymmetric Parallax Section
+Digunakan secara konsisten pada halaman **Atelier** (`/atelier`) untuk menyelimuti 4 section editorial utamanya:
 
 ```tsx
-"use client";
-
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
-import { Button } from "@/components/ui/button"; // Menggunakan UI Component bawaan project Anda
-import { Sparkles } from "lucide-react";
 
-// Registrasi ScrollTrigger secara aman di Next.js (Client-Side)
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger);
-}
-
-// Props Type definition (Menggunakan type, bukan interface sesuai aturan Anda)
-type DioramaSectionProps = {
-  subtitle?: string;
-  title: string;
-  description: string;
-  ctaText?: string;
-  ctaHref?: string;
-  foregroundImg: string;
-  midgroundImg: string;
-  backgroundImg: string;
-};
-
-export const DioramaSection = ({
-  subtitle = "Atelier Collection",
+export const AsymmetricParallaxSection = ({
+  imgSrc,
+  imgAlt,
+  badgeText,
+  label,
   title,
-  description,
-  ctaText = "Acquire Dynamic Piece",
-  ctaHref = "#",
-  foregroundImg,
-  midgroundImg,
-  backgroundImg,
-}: DioramaSectionProps) => {
+  paragraphs,
+  reverse = false,
+}) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const dioramaRef = useRef<HTMLDivElement>(null);
-  const fgRef = useRef<HTMLDivElement>(null);
-  const mgRef = useRef<HTMLDivElement>(null);
-  const bgRef = useRef<HTMLDivElement>(null);
-  const textRef = useRef<HTMLDivElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
     const container = containerRef.current;
-    const diorama = dioramaRef.current;
-    const fg = fgRef.current;
-    const mg = mgRef.current;
-    const bg = bgRef.current;
-    const text = textRef.current;
+    const img = imgRef.current;
+    if (!container || !img) return;
 
-    if (!container || !diorama || !fg || !mg || !bg || !text) return;
-
-    // Timeline GSAP dengan ScrollTrigger Scrub
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: container,
-        start: "top top",
-        end: "+=150%", // Menentukan panjang durasi scroll scrubbing
-        scrub: 1.2,    // Memberikan kelembutan interpolasi gerakan (smooth lag)
-        pin: true,     // Mengunci section saat scroll sedang berlangsung
-        anticipatePin: 1,
+        start: "top bottom",
+        end: "bottom top",
+        scrub: 1.2,
       },
     });
 
-    // Animasi Diorama Z-depth
-    tl.to(
-      fg,
-      {
-        z: 400,            // Mendorong foreground melintasi kamera 3D
-        opacity: 0,        // Memudarkan foreground saat ia sangat dekat dengan kamera
-        ease: "power2.inOut",
-      },
-      0
-    )
-      .to(
-        mg,
-        {
-          z: 80,           // Sedikit mencondongkan subjek ke depan kamera (dolly-in)
-          scale: 1.05,
-          ease: "power2.inOut",
-        },
-        0
-      )
-      .to(
-        bg,
-        {
-          scale: 1.08,     // Background membesar tipis untuk mengimbangi paralaks
-          ease: "power2.inOut",
-        },
-        0
-      )
-      .fromTo(
-        text,
-        {
-          y: 60,
-          opacity: 0,
-        },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 0.6,
-          ease: "power3.out",
-        },
-        "-=0.4" // Muncul sedikit sebelum gerakan 3D selesai
-      );
+    // Menghasilkan pergerakan parallax asimetris sumbu Y yang presisi
+    tl.fromTo(img, { yPercent: -12 }, { yPercent: 12, ease: "none" });
 
     return () => {
-      // Membersihkan instance ScrollTrigger untuk menghindari memory leak saat unmount
-      ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+      ScrollTrigger.getAll().forEach((t) => {
+        if (t.vars.trigger === container) t.kill();
+      });
     };
   }, []);
 
   return (
-    <div
-      ref={containerRef}
-      className="relative w-full h-screen overflow-hidden bg-background select-none"
-      style={{ perspective: "1000px" }} // Memberikan kedalaman 3D perspective pada parent container
-    >
-      {/* 3D Diorama Stage */}
-      <div
-        ref={dioramaRef}
-        className="absolute inset-0 w-full h-full transform-gpu"
-        style={{ transformStyle: "preserve-3d" }}
-      >
-        {/* Layer 3: Background (Paling Belakang) */}
-        <div
-          ref={bgRef}
-          className="absolute inset-0 w-full h-full transform-gpu origin-center scale-100"
-          style={{ transform: "translateZ(-150px)" }}
-        >
-          <img
-            src={backgroundImg}
-            alt="Atelier Background"
-            className="w-full h-full object-cover brightness-[0.85]"
-            loading="lazy"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-soil/45 via-transparent to-transparent" />
-        </div>
-
-        {/* Layer 2: Midground (Model Utama) */}
-        <div
-          ref={mgRef}
-          className="absolute inset-0 w-full h-full flex items-center justify-center transform-gpu"
-          style={{ transform: "translateZ(0px)" }}
-        >
-          <div className="w-[85%] sm:w-[60%] lg:w-[40%] aspect-[3/4] overflow-hidden border border-sand/20 rounded-[2px] shadow-2xl">
-            <img
-              src={midgroundImg}
-              alt="Atelier Subject"
-              className="w-full h-full object-cover"
-              loading="eager"
-            />
-          </div>
-        </div>
-
-        {/* Layer 1: Foreground (Linen / Detail Terdekat yang Blur) */}
-        <div
-          ref={fgRef}
-          className="absolute inset-0 w-full h-full pointer-events-none transform-gpu flex justify-between items-end p-8"
-          style={{ transform: "translateZ(200px)" }}
-        >
-          <div className="w-[30%] aspect-[3/4] -mb-16 -ml-16 overflow-hidden rounded-[2px] blur-sm opacity-90">
-            <img
-              src={foregroundImg}
-              alt="Atelier Foreground Left"
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <div className="w-[25%] aspect-[3/4] -mb-12 -mr-12 overflow-hidden rounded-[2px] blur-[3px] opacity-80">
-            <img
-              src={foregroundImg}
-              alt="Atelier Foreground Right"
-              className="w-full h-full object-cover scale-x-[-1]"
-            />
-          </div>
-        </div>
+    <div ref={containerRef} className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center mb-24 overflow-hidden">
+      <div className={`lg:col-span-7 aspect-[4/5] overflow-hidden relative ${reverse ? "lg:order-last" : ""}`}>
+        <img ref={imgRef} src={imgSrc} alt={imgAlt} className="w-full h-[125%] object-cover absolute top-0" />
       </div>
+      <div className="lg:col-span-5 flex flex-col gap-4 text-left">
+        <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-terracotta">{badgeText}</span>
+        <h3 className="font-playfair text-2xl lg:text-3xl font-normal">{title}</h3>
+        {paragraphs.map((p, i) => <p key={i} className="text-xs text-dust">{p}</p>)}
+      </div>
+    </div>
+  );
+};
+```
 
-      {/* Editorial Content Overlay (Muncul di akhir scroll-scrub) */}
-      <div className="absolute inset-x-0 bottom-0 w-full p-8 sm:p-12 lg:p-16 z-20 flex flex-col md:flex-row items-end justify-between gap-6 pointer-events-none">
-        <div ref={textRef} className="max-w-xl flex flex-col gap-4 pointer-events-auto bg-chalk/90 backdrop-blur-md p-6 sm:p-8 border border-sand/20 rounded-[2px] shadow-lg">
-          <div>
-            <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-terracotta flex items-center gap-1.5 mb-2">
-              <Sparkles className="size-3" />
-              {subtitle}
-            </span>
-            <h2 className="font-playfair text-2xl sm:text-3xl lg:text-4xl font-normal text-soil leading-tight">
-              {title}
-            </h2>
-          </div>
-          
-          <p className="text-xs text-dust leading-relaxed">
-            {description}
-          </p>
+### B. Box-to-Fullscreen Zoom Portal
+Blueprint teruji yang diintegrasikan langsung pada **DioramaSection** di halaman Home (`/`):
 
-          <div className="mt-2">
-            <Button
-              variant="primary"
-              size="default"
-              className="text-[9px] font-bold uppercase tracking-widest px-6 py-2.5"
-              onClick={() => {
-                window.location.href = ctaHref;
-              }}
-            >
-              {ctaText}
-            </Button>
-          </div>
+```tsx
+import { useEffect, useRef } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
+
+export const DioramaSection = ({ subtitle, title, description, backgroundImg }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    const card = cardRef.current;
+    const img = imgRef.current;
+    const overlay = overlayRef.current;
+    const text = textRef.current;
+
+    if (!container || !card || !img || !overlay || !text) return;
+
+    const tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: container,
+        start: "top top",
+        end: "+=300%",
+        scrub: 1.5,
+        pin: true,
+        anticipatePin: 1,
+      },
+    });
+
+    // Inisialisasi State Awal Kartu Melayang
+    gsap.set(card, { width: "70%", height: "70vh" });
+    gsap.set(img, { scale: 1.35 });
+    gsap.set(overlay, { opacity: 0 });
+    gsap.set(text, { opacity: 0, y: 60 });
+
+    tl.to(card, { width: "100%", height: "100vh", ease: "power2.inOut" }, 0)
+      .to(img, { scale: 1.05, ease: "power2.inOut" }, 0)
+      .to(overlay, { opacity: 0.45, ease: "power2.inOut" }, 0.1)
+      .to(text, { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }, 0.45)
+      // Exit Out: Memudar dan mengecil halus saat scroll berakhir
+      .to(container, { opacity: 0, scale: 0.96, ease: "power2.inOut" }, 2.4);
+
+    return () => {
+      ScrollTrigger.getAll().forEach((t) => {
+        if (t.vars.trigger === container) t.kill();
+      });
+    };
+  }, []);
+
+  return (
+    <div ref={containerRef} className="relative w-full h-screen overflow-hidden flex items-center justify-center">
+      <div ref={cardRef} className="relative overflow-hidden shadow-2xl flex items-center justify-center">
+        <img ref={imgRef} src={backgroundImg} className="absolute inset-0 w-full h-full object-cover" />
+        <div ref={overlayRef} className="absolute inset-0 bg-[#1e130c]" />
+        <div ref={textRef} className="relative max-w-2xl px-6 text-center z-10 flex flex-col items-center gap-6">
+          <h2 className="font-playfair text-4xl lg:text-6xl text-chalk">{title}</h2>
+          <p className="text-xs text-sand/85 max-w-lg">{description}</p>
         </div>
       </div>
     </div>
   );
 };
+```
+
+---
+
+*Catatan Kinerja Animasi: Selalu gunakan properti `will-change: transform` pada elemen-elemen paralaks intensif dan pastikan gambar dioptimalkan secara berkala untuk mempertahankan benchmark rendering 60 FPS pada perangkat seluler.*
