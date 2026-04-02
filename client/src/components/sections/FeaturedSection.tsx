@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useProductStore } from "@/stores/productStore";
 import ProductCard from "@/components/shop/ProductCard";
 import { JuicyMotion } from "@/lib/gsap";
 import { ButtonLink } from "@/components/ui/button";
 
 const FeaturedSection = () => {
-  const [loaded, setLoaded] = useState(false);
+  const animPlayed = useRef(false);
   const products = useProductStore((s) => s.products);
   const fetchProducts = useProductStore((s) => s.fetchProducts);
   const featuredProducts = products.filter((p) => p.is_featured).slice(0, 3);
@@ -15,15 +15,15 @@ const FeaturedSection = () => {
   }, []);
 
   useEffect(() => {
-    if (featuredProducts.length > 0 && !loaded) {
-      setLoaded(true);
+    if (featuredProducts.length > 0 && !animPlayed.current) {
+      animPlayed.current = true;
       JuicyMotion.fadeUp(".featured-fade");
       JuicyMotion.gridStagger(".featured-item");
     }
-  }, [featuredProducts, loaded]);
+  }, [featuredProducts.length > 0]);
 
   return (
-    <section className="py-20 sm:py-28 px-4 max-w-[1400px] mx-auto font-dm-sans bg-transparent">
+    <section className="py-20 sm:py-28 px-4 max-w-350 mx-auto font-dm-sans bg-transparent">
       {/* Editorial Title Header */}
       <div className="featured-fade flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
         <div className="flex flex-col gap-3">
@@ -54,7 +54,7 @@ const FeaturedSection = () => {
           to="/collection"
           variant="outline"
           size="sm"
-          className="uppercase tracking-widest text-[11px] font-semibold"
+          className="uppercase tracking-widest text-label-xs font-semibold"
         >
           View All Products
         </ButtonLink>

@@ -14,7 +14,10 @@ const Navbar = () => {
   const isHome = pathname === "/";
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 80);
+    const onScroll = () => setScrolled(prev => {
+      const next = window.scrollY > 80;
+      return prev !== next ? next : prev;
+    });
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);

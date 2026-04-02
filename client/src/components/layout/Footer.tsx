@@ -4,6 +4,8 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { toast } from "sonner";
 
+const YEAR = new Date().getFullYear();
+
 const Footer = () => {
   const [email, setEmail] = useState("");
 
@@ -120,7 +122,7 @@ const Footer = () => {
 
         {/* Bottom copyright */}
         <div className="border-t border-sand/30 mt-16 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-[10px] text-dust tracking-wide">
-          <span>&copy; {new Date().getFullYear()} JUICY Fashion. All rights reserved.</span>
+          <span>&copy; {YEAR} JUICY Fashion. All rights reserved.</span>
           <div className="flex gap-6">
             <a href="#" className="hover:text-soil transition-colors">Privacy Policy</a>
             <a href="#" className="hover:text-soil transition-colors">Terms of Service</a>

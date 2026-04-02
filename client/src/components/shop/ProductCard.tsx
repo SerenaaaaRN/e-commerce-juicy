@@ -8,16 +8,16 @@ type ProductCardProps = {
   className?: string;
 };
 
+const formatPrice = (value: number) => {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0,
+  }).format(value);
+};
+
 const ProductCard = ({ product, className }: ProductCardProps) => {
   const hasSale = product.compare_at_price !== null && product.compare_at_price > product.price;
-
-  const formatPrice = (value: number) => {
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
 
   return (
     <Link
@@ -32,7 +32,6 @@ const ProductCard = ({ product, className }: ProductCardProps) => {
           loading="lazy"
         />
 
-        {/* Badges Overlay */}
         <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5">
           {product.tags.map((tag: string) => {
             if (tag === "sale" && hasSale) {
@@ -48,23 +47,21 @@ const ProductCard = ({ product, className }: ProductCardProps) => {
               </Badge>
             );
           })}
-          {!product.is_available && (
+          {!product.is_available ? (
             <Badge variant="outline" className="bg-chalk/80 text-dust border-sand">
               Sold Out
             </Badge>
-          )}
+          ) : null}
         </div>
       </div>
 
-      {/* Info block - stacked with 0px gap as requested by design guidelines */}
       <div className="font-dm-sans flex flex-col gap-1 bg-transparent pt-3">
-        {/* Rating if present */}
-        {product.avg_rating > 0 && (
+        {product.avg_rating > 0 ? (
           <div className="flex items-center gap-1">
             <StarRating rating={product.avg_rating} starClassName="size-3" />
             <span className="text-dust text-[10px] font-normal">({product.review_count})</span>
           </div>
-        )}
+        ) : null}
 
         <div className="flex items-start justify-between gap-2">
           <h4 className="text-soil group-hover:text-terracotta truncate text-sm font-medium transition-colors duration-300">
@@ -73,14 +70,13 @@ const ProductCard = ({ product, className }: ProductCardProps) => {
           <span className="text-dust/70 text-xs font-normal tracking-widest uppercase">{product.category.name}</span>
         </div>
 
-        {/* Pricing */}
         <div className="mt-0.5 flex items-center gap-2">
           <span className="text-terracotta text-xs font-semibold">{formatPrice(product.price)}</span>
-          {hasSale && (
+          {hasSale ? (
             <span className="text-sand text-label-xs font-normal line-through">
               {formatPrice(product.compare_at_price!)}
             </span>
-          )}
+          ) : null}
         </div>
       </div>
     </Link>

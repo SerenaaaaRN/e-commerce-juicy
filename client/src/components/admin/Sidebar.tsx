@@ -21,22 +21,21 @@ const navItems: NavItem[] = [
   { label: "Reviews", href: "/admin/reviews", icon: Star },
 ];
 
-const Sidebar = ({ mobileOpen, setMobileOpen }: SidebarProps) => {
-  const { pathname } = useLocation();
+const SidebarContent = ({ pathname, onNav }: { pathname: string; onNav: () => void }) => {
   const logout = useAdminAuthStore((state) => state.logout);
 
-  const sidebarContent = (
+  return (
     <div className="flex h-full flex-col bg-cream border-r border-sand/40 font-dm-sans text-soil">
       <div className="flex h-20 items-center justify-between border-b border-sand/30 px-6">
         <Link
           to="/admin"
           className="font-playfair text-xl font-bold tracking-[0.2em]"
-          onClick={() => setMobileOpen(false)}
+          onClick={onNav}
         >
           JUICY STAFF
         </Link>
         <button
-          onClick={() => setMobileOpen(false)}
+          onClick={onNav}
           className="p-1 md:hidden hover:text-terracotta transition-colors"
         >
           <X className="size-5" />
@@ -52,7 +51,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }: SidebarProps) => {
             <Link
               key={item.label}
               to={item.href}
-              onClick={() => setMobileOpen(false)}
+              onClick={onNav}
               className={`flex items-center gap-3 px-4 py-3 text-xs font-semibold tracking-wider uppercase transition-all duration-300 rounded-[2px] ${isActive
                 ? "bg-sand/30 text-terracotta font-bold"
                 : "hover:bg-sand/15 text-soil/80 hover:text-soil"
@@ -68,7 +67,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }: SidebarProps) => {
       <div className="border-t border-sand/30 p-4">
         <button
           onClick={() => {
-            setMobileOpen(false);
+            onNav();
             logout();
           }}
           className="flex w-full items-center gap-3 px-4 py-3 text-xs font-semibold tracking-wider uppercase transition-all duration-300 rounded-[2px] text-dust hover:bg-sand/15 hover:text-terracotta cursor-pointer"
@@ -79,11 +78,15 @@ const Sidebar = ({ mobileOpen, setMobileOpen }: SidebarProps) => {
       </div>
     </div>
   );
+};
+
+const Sidebar = ({ mobileOpen, setMobileOpen }: SidebarProps) => {
+  const { pathname } = useLocation();
 
   return (
     <>
       <aside className="hidden h-screen w-64 md:block md:fixed md:inset-y-0">
-        {sidebarContent}
+        <SidebarContent pathname={pathname} onNav={() => setMobileOpen(false)} />
       </aside>
 
       {mobileOpen ? (
@@ -93,7 +96,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }: SidebarProps) => {
             onClick={() => setMobileOpen(false)}
           />
           <div className="relative flex w-full max-w-xs flex-1 flex-col bg-cream transition-transform duration-300">
-            {sidebarContent}
+            <SidebarContent pathname={pathname} onNav={() => setMobileOpen(false)} />
           </div>
         </div>
       ) : null}

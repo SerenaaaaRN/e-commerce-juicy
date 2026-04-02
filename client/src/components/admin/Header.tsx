@@ -6,15 +6,15 @@ type HeaderProps = {
   setMobileOpen: (open: boolean) => void;
 };
 
+const getBreadcrumbs = (pathname: string) => {
+  const parts = pathname.split("/").filter(Boolean);
+  if (parts.length <= 1) return "Dashboard Overview";
+  return parts[1].charAt(0).toUpperCase() + parts[1].slice(1);
+};
+
 const Header = ({ setMobileOpen }: HeaderProps) => {
   const { pathname } = useLocation();
   const admin = useAdminAuthStore((state) => state.admin);
-
-  const getBreadcrumbs = () => {
-    const parts = pathname.split("/").filter(Boolean);
-    if (parts.length <= 1) return "Dashboard Overview";
-    return parts[1].charAt(0).toUpperCase() + parts[1].slice(1);
-  };
 
   return (
     <header className="flex h-20 items-center justify-between border-b border-sand/40 bg-chalk px-6 font-dm-sans text-soil">
@@ -28,7 +28,7 @@ const Header = ({ setMobileOpen }: HeaderProps) => {
         </button>
 
         <h1 className="hidden text-xs font-bold tracking-widest uppercase sm:block md:text-sm">
-          {getBreadcrumbs()}
+          {getBreadcrumbs(pathname)}
         </h1>
       </div>
 

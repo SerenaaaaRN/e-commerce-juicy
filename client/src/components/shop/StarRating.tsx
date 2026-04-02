@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
+const STARS = [1, 2, 3, 4, 5];
+
 type StarRatingProps = {
   rating: number;
   interactive?: boolean;
@@ -40,7 +42,7 @@ const StarRating = ({
 
   return (
     <div className={cn("flex items-center gap-1", className)}>
-      {[1, 2, 3, 4, 5].map((star) => {
+      {STARS.map((star) => {
         const isFilled = star <= displayRating;
         const isPartiallyFilled = star - 0.5 <= displayRating && star > displayRating;
 

@@ -16,14 +16,12 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     if (token && !customer) {
       fetchProfile();
     }
-  }, [token, customer, fetchProfile]);
+  }, [token, fetchProfile]);
 
-  // If no auth token is present at all, redirect to /login
   if (!token) {
     return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
   }
 
-  // If token exists but customer details are loading, show a warm, luxury styled skeleton loader
   if (!customer) {
     return (
       <div className="bg-background flex min-h-[60vh] items-center justify-center font-dm-sans">
