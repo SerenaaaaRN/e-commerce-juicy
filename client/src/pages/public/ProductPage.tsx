@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useProductStore } from "@/stores/productStore";
 import { useCartStore } from "@/stores/cartStore";
-import StarRating from "@/components/shop/StarRating";
+import StarRating from "@/features/shop/StarRating";
 import { Button } from "@/components/ui/button";
 import Divider from "@/components/ui/Divider";
 import { Input } from "@/components/ui/input";

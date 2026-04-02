@@ -1,9 +1,9 @@
-import type { JSX } from "react";
+import type { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
 import { useAdminAuthStore } from "@/stores/adminAuthStore";
 
 type AdminRouteProps = {
-  children: JSX.Element;
+  children: ReactNode;
 };
 
 const AdminRoute = ({ children }: AdminRouteProps) => {

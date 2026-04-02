@@ -5,7 +5,7 @@ import { gsap } from "gsap";
 
 const HERO_IMAGES = [
   {
-    src: "https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=2000&q=90",
+    src: "https://images.unsplash.com/photo-1577909687863-91bb3ec12db5?q=80&w=1473&?auto=format&fit=crop&w=2000&q=90",
     alt: "Editorial sitting campaign",
   },
   {
@@ -67,29 +67,34 @@ const HeroSection = () => {
     });
 
     if (isReduced) {
-      tl.to(currentRef.current, {
-        opacity: 0,
-        duration: 0.5,
-        ease: "power1.inOut",
-      }, 0);
-
-      tl.fromTo(nextRef.current,
-        { opacity: 0 },
-        { opacity: 1, duration: 0.5, ease: "power1.inOut" },
+      tl.to(
+        currentRef.current,
+        {
+          opacity: 0,
+          duration: 0.5,
+          ease: "power1.inOut",
+        },
         0
       );
-    } else {
-      tl.to(currentRef.current, {
-        opacity: 0,
-        scale: 1.05,
-        duration: 1.2,
-        ease: "power2.inOut",
-      }, 0);
 
-      tl.fromTo(nextRef.current,
+      tl.fromTo(nextRef.current, { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power1.inOut" }, 0);
+    } else {
+      tl.to(
+        currentRef.current,
+        {
+          opacity: 0,
+          scale: 1.05,
+          duration: 1.2,
+          ease: "power2.inOut",
+        },
+        0
+      );
+
+      tl.fromTo(
+        nextRef.current,
         { opacity: 0, scale: 1.08 },
         { opacity: 1, scale: 1, duration: 1.4, ease: "power3.out" },
-        0.3,
+        0.3
       );
     }
   }, [activeIndex]);
@@ -101,27 +106,17 @@ const HeroSection = () => {
       className="bg-soil font-dm-sans relative h-screen w-full overflow-hidden"
     >
       <div ref={currentRef} className="hero-image absolute inset-0 size-full">
-        <img
-          src={HERO_IMAGES[0].src}
-          alt={HERO_IMAGES[0].alt}
-          className="size-full object-cover"
-          loading="eager"
-        />
+        <img src={HERO_IMAGES[0].src} alt={HERO_IMAGES[0].alt} className="size-full object-cover" loading="eager" />
       </div>
 
       <div ref={nextRef} className="hero-image absolute inset-0 size-full opacity-0" style={{ scale: 1.05 }}>
-        <img
-          src={HERO_IMAGES[0].src}
-          alt={HERO_IMAGES[0].alt}
-          className="size-full object-cover"
-          loading="eager"
-        />
+        <img src={HERO_IMAGES[0].src} alt={HERO_IMAGES[0].alt} className="size-full object-cover" loading="eager" />
       </div>
 
-      <div className="hero-overlay from-soil/90 via-soil/50 pointer-events-none absolute inset-0 z-[2] bg-gradient-to-r to-transparent" />
+      <div className="hero-overlay from-soil/90 via-soil/50 pointer-events-none absolute inset-0 z-2 bg-linear-to-r to-transparent" />
 
       <div className="hero-content relative z-10 flex h-full items-center pt-64 lg:pt-80">
-        <div className="mx-auto w-full max-w-[1400px] px-6 sm:px-8 lg:px-12">
+        <div className="mx-auto w-full max-w-350 px-6 sm:px-8 lg:px-12">
           <div className="max-w-xl">
             <div className="hero-stagger mb-6 flex items-center gap-4">
               <span className="bg-terracotta h-px w-10" />
@@ -133,27 +128,22 @@ const HeroSection = () => {
             <h1 className="hero-stagger font-playfair text-chalk text-6xl leading-[0.88] tracking-tight sm:text-7xl md:text-8xl lg:text-[110px]">
               Sun-Soaked
               <br />
-              <span className="from-terracotta-light to-chalk/80 bg-gradient-to-r bg-clip-text text-transparent">
+              <span className="from-terracotta-light to-chalk/80 bg-linear-to-r bg-clip-text text-transparent">
                 Luxury
               </span>
             </h1>
 
-            <div className="hero-divider-line bg-terracotta my-8 h-[2px] w-24 origin-left" />
+            <div className="hero-divider-line bg-terracotta my-8 h-0.5 w-24 origin-left" />
 
             <div className="hero-stagger mt-10 flex items-center gap-5">
-              <ButtonLink
-                to="/collection"
-                variant="outline"
-                size="lg"
-                className="border-chalk/80 text-chalk hover:bg-chalk hover:text-soil text-[11px] font-semibold tracking-widest uppercase"
-              >
+              <ButtonLink to="/collection" variant="primary" size="lg" className="text-chalk/60 hover:text-soil">
                 Explore Collection
               </ButtonLink>
               <ButtonLink
                 to="/collection?category=dresses"
-                variant="ghost"
+                variant="outline"
                 size="lg"
-                className="text-chalk/60 hover:text-chalk text-[11px] font-semibold tracking-widest uppercase"
+                className="text-chalk/60 hover:text-soil"
               >
                 New Arrivals
               </ButtonLink>
@@ -162,7 +152,7 @@ const HeroSection = () => {
         </div>
       </div>
 
-      <div className="absolute bottom-12 right-6 z-10 flex flex-col items-center gap-4 sm:right-10">
+      <div className="absolute right-6 bottom-12 z-10 flex flex-col items-center gap-4 sm:right-10">
         <div className="flex flex-col items-center gap-3">
           {HERO_IMAGES.map((_, i) => (
             <button
@@ -172,14 +162,12 @@ const HeroSection = () => {
                 setActiveIndex(i);
               }}
               className={`rounded-full transition-all duration-700 ${
-                i === activeIndex
-                  ? "bg-chalk h-4 w-[2px]"
-                  : "bg-chalk/30 h-2.5 w-[2px] hover:bg-chalk/60"
+                i === activeIndex ? "bg-chalk h-4 w-0.5" : "bg-chalk/30 hover:bg-chalk/60 h-2.5 w-0.5"
               }`}
             />
           ))}
         </div>
-        <div className="from-chalk/40 h-10 w-px bg-gradient-to-b to-transparent" />
+        <div className="from-chalk/40 h-10 w-px bg-linear-to-b to-transparent" />
         <span className="text-chalk/40 text-[9px] font-semibold tracking-[0.3em] uppercase [writing-mode:vertical-lr]">
           Scroll
         </span>

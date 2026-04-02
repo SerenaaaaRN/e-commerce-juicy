@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useProductStore } from "@/stores/productStore";
-import ProductCard from "@/components/shop/ProductCard";
+import ProductCard from "@/features/shop/ProductCard";
 import { JuicyMotion } from "@/lib/gsap";
 import { ButtonLink } from "@/components/ui/button";
 

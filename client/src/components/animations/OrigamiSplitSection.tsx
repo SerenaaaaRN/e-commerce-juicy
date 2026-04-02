@@ -1,12 +1,7 @@
 import { useEffect, useRef } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger);
-}
+import { gsap, ScrollTrigger } from "@/lib/gsap";
 
 type OrigamiSplitSectionProps = {
   imgSrc: string;

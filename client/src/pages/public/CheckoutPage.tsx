@@ -178,13 +178,15 @@ const CheckoutPage = () => {
                 <h3 className="font-playfair text-xl font-normal text-soil">
                   1. Shipping Destination
                 </h3>
-                <button
+                <Button
+                  variant="ghost"
+                  size="xs"
                   onClick={() => setShowAddressForm(!showAddressForm)}
-                  className="text-xs font-semibold text-terracotta hover:opacity-85 flex items-center gap-1 cursor-pointer"
+                  className="text-terracotta hover:opacity-85"
                 >
                   <Plus className="size-4" />
                   <span>{showAddressForm ? "Select Saved Address" : "Add New Address"}</span>
-                </button>
+                </Button>
               </div>
 
               {showAddressForm ? (

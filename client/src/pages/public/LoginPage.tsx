@@ -74,26 +74,28 @@ const LoginPage = () => {
 
         {/* Tab triggers */}
         <div className="flex border-b border-sand/30 mb-8 text-xs font-semibold uppercase tracking-widest text-center">
-          <button
+          <Button
+            variant="ghost"
             onClick={() => setIsRegister(false)}
-            className={`w-1/2 py-3 border-b-2 transition-all cursor-pointer ${
+            className={`w-1/2 py-3 border-b-2 rounded-none ${
               !isRegister
                 ? "border-terracotta text-soil font-bold"
                 : "border-transparent text-dust hover:text-soil"
             }`}
           >
             Sign In
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
             onClick={() => setIsRegister(true)}
-            className={`w-1/2 py-3 border-b-2 transition-all cursor-pointer ${
+            className={`w-1/2 py-3 border-b-2 rounded-none ${
               isRegister
                 ? "border-terracotta text-soil font-bold"
                 : "border-transparent text-dust hover:text-soil"
             }`}
           >
             Register
-          </button>
+          </Button>
         </div>
 
         {/* Auth form card */}

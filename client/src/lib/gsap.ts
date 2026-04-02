@@ -5,6 +5,8 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
+export { gsap, ScrollTrigger };
+
 export const prefersReducedMotion = (): boolean => {
   if (typeof window === "undefined") return false;
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -13,11 +15,7 @@ export const prefersReducedMotion = (): boolean => {
 type RevealPattern = "fade" | "scale" | "slide-left" | "slide-right" | "clip";
 
 export const JuicyMotion = {
-  scrollReveal: (
-    itemSelector: string,
-    pattern: RevealPattern | RevealPattern[] = "fade",
-    staggerAmount = 0.15
-  ) => {
+  scrollReveal: (itemSelector: string, pattern: RevealPattern | RevealPattern[] = "fade", staggerAmount = 0.15) => {
     const isReduced = prefersReducedMotion();
     const items = gsap.utils.toArray(itemSelector) as HTMLElement[];
 
@@ -98,7 +96,6 @@ export const JuicyMotion = {
     });
   },
 
-
   heroParallax: (containerSelector: string) => {
     const isReduced = prefersReducedMotion();
 
@@ -115,27 +112,9 @@ export const JuicyMotion = {
 
     tl.set(".hero-image", { willChange: "transform" });
     tl.set(".hero-content", { willChange: "transform" });
-
-    tl.fromTo(
-      ".hero-image",
-      { scale: 1.1, opacity: 0 },
-      { scale: 1, opacity: 1, duration: 2 },
-      0
-    );
-
-    tl.fromTo(
-      ".hero-overlay",
-      { opacity: 0 },
-      { opacity: 1, duration: 1.2 },
-      0
-    );
-
-    tl.fromTo(
-      ".hero-stagger",
-      { y: 80, opacity: 0 },
-      { y: 0, opacity: 1, duration: 1.2, stagger: 0.1 },
-      "-=1.0"
-    );
+    tl.fromTo(".hero-image", { scale: 1.1, opacity: 0 }, { scale: 1, opacity: 1, duration: 2 }, 0);
+    tl.fromTo(".hero-overlay", { opacity: 0 }, { opacity: 1, duration: 1.2 }, 0);
+    tl.fromTo(".hero-stagger", { y: 80, opacity: 0 }, { y: 0, opacity: 1, duration: 1.2, stagger: 0.1 }, "-=1.0");
 
     tl.fromTo(
       ".hero-divider-line",

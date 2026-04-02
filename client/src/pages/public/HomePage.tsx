@@ -1,9 +1,9 @@
 import { useEffect } from "react";
-import HeroSection from "@/components/sections/HeroSection";
-import CollectionPreview from "@/components/sections/CollectionPreview";
-import FeaturedSection from "@/components/sections/FeaturedSection";
-import EditorialSection from "@/components/sections/EditorialSection";
-import CtaSection from "@/components/sections/CtaSection";
+import HeroSection from "@/features/landing/HeroSection";
+import CollectionPreview from "@/features/landing/CollectionPreview";
+import FeaturedSection from "@/features/landing/FeaturedSection";
+import EditorialSection from "@/features/landing/EditorialSection";
+import CtaSection from "@/features/landing/CtaSection";
 import { DioramaSection } from "@/components/animations/DioramaSection";
 import { initLenis } from "@/lib/lenis";
 

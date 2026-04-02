@@ -1,9 +1,10 @@
 import { useEffect, useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useProductStore } from "@/stores/productStore";
-import ProductCard from "@/components/shop/ProductCard";
+import ProductCard from "@/features/shop/ProductCard";
 import { initLenis } from "@/lib/lenis";
 import { JuicyMotion } from "@/lib/gsap";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { X, SlidersHorizontal, ChevronDown } from "lucide-react";
 
@@ -401,12 +402,14 @@ const CollectionPage = () => {
       </div>
 
       {activeFilterCount > 0 && (
-        <button
+        <Button
+          variant="ghost"
+          size="xs"
           onClick={clearAllFilters}
-          className="text-terracotta hover:text-terracotta/80 text-xs font-semibold tracking-wider uppercase transition-colors self-start"
+          className="text-terracotta hover:text-terracotta/80 self-start px-0"
         >
           Clear All ({activeFilterCount})
-        </button>
+        </Button>
       )}
     </div>
   );
@@ -449,12 +452,14 @@ const CollectionPage = () => {
                   <span className="text-soil text-xs font-bold tracking-[0.2em] uppercase">
                     Filters
                   </span>
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="xs"
                     onClick={() => setMobileFilterOpen(false)}
-                    className="text-dust hover:text-soil transition-colors"
+                    className="text-dust hover:text-soil"
                   >
                     <X className="size-4" />
-                  </button>
+                  </Button>
                 </div>
                 <FilterSidebar />
               </div>
@@ -464,9 +469,11 @@ const CollectionPage = () => {
           <div className="min-w-0 flex-1">
             <div className="border-sand/25 flex items-center justify-between border-y py-4">
               <div className="flex items-center gap-3">
-                <button
+                <Button
+                  variant="ghost"
+                  size="xs"
                   onClick={() => setMobileFilterOpen(true)}
-                  className="text-soil hover:text-terracotta flex items-center gap-1.5 text-xs font-semibold tracking-wider uppercase transition-colors lg:hidden"
+                  className="text-soil hover:text-terracotta flex items-center gap-1.5 lg:hidden"
                 >
                   <SlidersHorizontal className="size-3.5" />
                   Filters
@@ -475,17 +482,19 @@ const CollectionPage = () => {
                       {activeFilterCount}
                     </span>
                   )}
-                </button>
+                </Button>
                 <span className="text-dust text-xs">
                   {sortedProducts.length} Item{sortedProducts.length !== 1 ? "s" : ""}
                 </span>
                 {activeFilterCount > 0 && (
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="xs"
                     onClick={clearAllFilters}
-                    className="text-terracotta text-[10px] font-semibold tracking-wider uppercase transition-colors hover:opacity-80"
+                    className="text-terracotta hover:opacity-80 px-0"
                   >
                     Clear
-                  </button>
+                  </Button>
                 )}
               </div>
 
@@ -534,47 +543,55 @@ const CollectionPage = () => {
                 <p className="text-dust max-w-xs text-xs">
                   Try adjusting your filters or check back for new drops.
                 </p>
-                <button
+                <Button
+                  variant="ghost"
+                  size="xs"
                   onClick={clearAllFilters}
-                  className="text-terracotta mt-2 text-xs font-semibold tracking-wider uppercase underline underline-offset-4 transition-colors hover:opacity-80"
+                  className="text-terracotta mt-2 underline underline-offset-4 px-0"
                 >
                   Clear all filters
-                </button>
+                </Button>
               </div>
             )}
 
             {totalPages > 1 && !loading && (
               <div className="mt-20 flex items-center justify-center gap-3 text-xs font-semibold">
-                <button
+                <Button
+                  variant="outline"
+                  size="xs"
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
-                  className="border-sand/40 hover:border-terracotta hover:text-terracotta disabled:opacity-30 disabled:pointer-events-none flex size-10 cursor-pointer items-center justify-center rounded-[2px] border transition-colors"
+                  className="size-10"
                 >
                   &larr;
-                </button>
+                </Button>
                 {Array.from({ length: totalPages }).map((_, idx) => {
                   const p = idx + 1;
                   return (
-                    <button
+                    <Button
                       key={p}
+                      variant="outline"
+                      size="xs"
                       onClick={() => setCurrentPage(p)}
-                      className={`flex size-10 cursor-pointer items-center justify-center rounded-[2px] border transition-colors ${
+                      className={`size-10 ${
                         currentPage === p
                           ? "bg-terracotta text-chalk border-transparent"
-                          : "border-sand/40 text-soil hover:border-terracotta hover:text-terracotta"
+                          : ""
                       }`}
                     >
                       {p}
-                    </button>
+                    </Button>
                   );
                 })}
-                <button
+                <Button
+                  variant="outline"
+                  size="xs"
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
-                  className="border-sand/40 hover:border-terracotta hover:text-terracotta disabled:opacity-30 disabled:pointer-events-none flex size-10 cursor-pointer items-center justify-center rounded-[2px] border transition-colors"
+                  className="size-10"
                 >
                   &rarr;
-                </button>
+                </Button>
               </div>
             )}
           </div>

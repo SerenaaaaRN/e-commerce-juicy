@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCartStore } from "@/stores/cartStore";
-import { Button } from "@/components/ui/button";
+import { Button, ButtonLink } from "@/components/ui/button";
 import Divider from "@/components/ui/Divider";
 import { initLenis } from "@/lib/lenis";
 import { ShoppingBag, Trash2, ArrowRight } from "lucide-react";
@@ -71,12 +71,14 @@ const CartPage = () => {
                 Discover our luxury tailored blazers, French linen robes, and statement hardware accessories.
               </p>
             </div>
-            <Link
+            <ButtonLink
               to="/collection"
-              className="inline-flex items-center justify-center h-12 px-8 bg-terracotta text-chalk text-xs font-bold uppercase tracking-widest hover:bg-[#9a5230] transition-colors rounded-[2px]"
+              variant="primary"
+              size="default"
+              className="text-xs font-bold uppercase tracking-widest h-12"
             >
               Shop New Arrivals
-            </Link>
+            </ButtonLink>
           </div>
         ) : (
           /* Cart contents */
@@ -154,31 +156,37 @@ const CartPage = () => {
                         {/* Quantity Stepper */}
                         <div className="flex items-center gap-3">
                           <div className="flex items-center justify-between border border-sand/50 h-10 px-3 rounded-[2px] w-[100px] select-none bg-chalk shrink-0">
-                            <button
+                            <Button
                               type="button"
+                              variant="ghost"
+                              size="xs"
                               onClick={() => updateQuantity(item.id, item.quantity - 1, maxStock)}
-                              className="text-dust hover:text-soil cursor-pointer font-bold text-xs"
+                              className="text-dust hover:text-soil px-1"
                             >
                               &minus;
-                            </button>
+                            </Button>
                             <span className="text-xs font-bold text-soil">{item.quantity}</span>
-                            <button
+                            <Button
                               type="button"
+                              variant="ghost"
+                              size="xs"
                               onClick={() => updateQuantity(item.id, item.quantity + 1, maxStock)}
-                              className="text-dust hover:text-soil cursor-pointer font-bold text-xs"
+                              className="text-dust hover:text-soil px-1"
                             >
                               &#43;
-                            </button>
+                            </Button>
                           </div>
                           
                           {/* Trash button */}
-                          <button
+                          <Button
+                            variant="ghost"
+                            size="xs"
                             onClick={() => removeItem(item.id)}
-                            className="p-2 text-dust/60 hover:text-terracotta cursor-pointer transition-colors"
+                            className="text-dust/60 hover:text-terracotta"
                             title="Remove"
                           >
                             <Trash2 className="size-4" />
-                          </button>
+                          </Button>
                         </div>
 
                         {/* Price */}

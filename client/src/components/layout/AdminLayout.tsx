@@ -13,7 +13,7 @@ const AdminLayout = () => {
       <div className="flex flex-col md:pl-64">
         <Header setMobileOpen={setMobileOpen} />
         <main className="flex-1 p-6">
-          <Outlet />
+          {/* <Outlet /> */}
         </main>
       </div>
     </div>

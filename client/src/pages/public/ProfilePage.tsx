@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { Button, ButtonLink } from "@/components/ui/button";
 import { useCustomerAuthStore } from "@/stores/customerAuthStore";
 import { useOrderStore } from "@/stores/orderStore";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { initLenis } from "@/lib/lenis";
 import { toast } from "sonner";
@@ -168,16 +168,17 @@ const ProfilePage = () => {
             </p>
           </div>
           
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => {
               logout();
               navigate("/login");
             }}
-            className="flex items-center gap-1.5 h-10 px-5 border border-sand hover:border-terracotta text-xs font-semibold uppercase tracking-wider rounded-[2px] cursor-pointer transition-colors duration-200"
           >
             <LogOut className="size-4" />
             <span>Sign Out</span>
-          </button>
+          </Button>
         </div>
 
         {/* Dash layout */}
@@ -226,18 +227,20 @@ const ProfilePage = () => {
             </button>
 
             <div className="border-t border-sand/20 mt-4 pt-4">
-              <Link
+              <ButtonLink
                 to="/orders"
-                className="flex items-center justify-between w-full py-3 px-4 text-xs font-semibold uppercase tracking-wider rounded-[2px] text-terracotta border border-terracotta hover:bg-terracotta hover:text-chalk transition-all"
+                variant="outline"
+                size="sm"
+                className="w-full justify-between"
               >
                 <div className="flex items-center gap-3">
                   <Clock className="size-4 shrink-0" />
                   <span>Order History</span>
                 </div>
-                <span className="text-[10px] bg-terracotta-light text-terracotta hover:text-inherit px-1.5 py-0.5 rounded-[2px] font-bold">
+                <span className="text-[10px] bg-terracotta-light text-terracotta px-1.5 py-0.5 rounded-[2px] font-bold">
                   {orders.length}
                 </span>
-              </Link>
+              </ButtonLink>
             </div>
           </div>
 
@@ -324,13 +327,15 @@ const ProfilePage = () => {
                     </p>
                   </div>
                   
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="xs"
                     onClick={() => setShowAddressForm(!showAddressForm)}
-                    className="text-xs font-bold text-terracotta hover:opacity-85 flex items-center gap-1 cursor-pointer"
+                    className="text-terracotta hover:opacity-85"
                   >
                     <Plus className="size-4" />
                     <span>{showAddressForm ? "Cancel Form" : "Add Destination"}</span>
-                  </button>
+                  </Button>
                 </div>
 
                 {showAddressForm && (
@@ -494,21 +499,24 @@ const ProfilePage = () => {
 
                         <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 shrink-0">
                           {!addr.is_default && (
-                            <button
+                            <Button
+                              variant="outline"
+                              size="xs"
                               onClick={() => setDefaultAddress(addr.id)}
-                              className="h-8 px-3 border border-sand hover:border-soil text-[10px] uppercase font-bold text-dust hover:text-soil transition-colors cursor-pointer rounded-[2px]"
                             >
                               Set Default
-                            </button>
+                            </Button>
                           )}
-                          <button
+                          <Button
+                            variant="ghost"
+                            size="xs"
                             onClick={() => deleteAddress(addr.id)}
-                            className="size-8 flex items-center justify-center border border-sand/40 hover:border-terracotta text-dust/60 hover:text-terracotta transition-colors cursor-pointer rounded-[2px]"
                             title="Delete"
                             disabled={addr.is_default}
+                            className="size-8"
                           >
                             <Trash2 className="size-4" />
-                          </button>
+                          </Button>
                         </div>
                       </div>
                     ))

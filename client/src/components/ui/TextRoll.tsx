@@ -1,10 +1,5 @@
 import { useEffect, useRef } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
-
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger);
-}
+import { gsap, ScrollTrigger } from "@/lib/gsap";
 
 type TextRollProps = {
   text: string;
@@ -13,12 +8,7 @@ type TextRollProps = {
   delay?: number;
 };
 
-export const TextRoll = ({
-  text,
-  className = "",
-  scrub = false,
-  delay = 0,
-}: TextRollProps) => {
+export const TextRoll = ({ text, className = "", scrub = false, delay = 0 }: TextRollProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -28,7 +18,6 @@ export const TextRoll = ({
     const chars = el.querySelectorAll(".roll-char");
     if (chars.length === 0) return;
 
-    // Reset initial state to avoid flash
     gsap.set(chars, {
       transformOrigin: "center bottom -50px",
       rotateX: -90,
@@ -59,7 +48,6 @@ export const TextRoll = ({
     });
 
     return () => {
-      // Clean up triggers for this element
       ScrollTrigger.getAll().forEach((trigger) => {
         if (trigger.vars.trigger === el) {
           trigger.kill();
@@ -68,22 +56,22 @@ export const TextRoll = ({
     };
   }, [text, scrub, delay]);
 
-  // Split words and letters to maintain proper wrapping
   const words = text.split(" ");
 
   return (
     <div
       ref={containerRef}
-      className={`inline-flex flex-wrap select-none transform-gpu ${className}`}
+      className={`inline-flex transform-gpu flex-wrap select-none ${className}`}
       style={{ perspective: "800px", transformStyle: "preserve-3d" }}
     >
       {words.map((word, wIdx) => (
-        <span key={wIdx} className="inline-block whitespace-nowrap mr-[0.25em] last:mr-0 transform-gpu" style={{ transformStyle: "preserve-3d" }}>
+        <span
+          key={wIdx}
+          className="mr-[0.25em] inline-block transform-gpu whitespace-nowrap last:mr-0"
+          style={{ transformStyle: "preserve-3d" }}
+        >
           {word.split("").map((char, cIdx) => (
-            <span
-              key={cIdx}
-              className="roll-char inline-block transform-gpu will-change-transform"
-            >
+            <span key={cIdx} className="roll-char inline-block transform-gpu will-change-transform">
               {char}
             </span>
           ))}

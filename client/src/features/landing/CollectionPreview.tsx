@@ -50,7 +50,7 @@ const CollectionPreview = () => {
       ref={sectionRef}
       className="bg-chalk relative overflow-hidden py-24 sm:py-32 font-dm-sans"
     >
-      <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-350 px-4 sm:px-6 lg:px-8">
         <div className="mb-16 text-center sm:mb-20">
           <span className="text-terracotta text-[10px] font-semibold tracking-[0.25em] uppercase">
             Curated Edits
@@ -79,7 +79,7 @@ const CollectionPreview = () => {
                   className="tile-img absolute inset-0 size-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
                   loading="lazy"
                 />
-                <div className="via-soil/20 absolute inset-0 bg-gradient-to-t from-soil/70 to-transparent opacity-70 transition-opacity duration-500 group-hover:opacity-90" />
+                <div className="via-soil/20 absolute inset-0 bg-linear-to-t from-soil/70 to-transparent opacity-70 transition-opacity duration-500 group-hover:opacity-90" />
               </div>
 
               <div className="relative z-10 flex h-full flex-col justify-end p-6 sm:p-8">

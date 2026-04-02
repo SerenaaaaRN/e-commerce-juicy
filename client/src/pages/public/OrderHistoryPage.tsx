@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useOrderStore } from "@/stores/orderStore";
 import { useCustomerAuthStore } from "@/stores/customerAuthStore";
 import * as customerApi from "@/lib/api/customer";
 import type { OrderDetail } from "@/lib/api/types";
-import { Button } from "@/components/ui/button";
+import { Button, ButtonLink } from "@/components/ui/button";
 import { initLenis } from "@/lib/lenis";
 import { toast } from "sonner";
 import {
@@ -202,13 +202,15 @@ const OrderHistoryPage = () => {
         
         {/* Navigation & Header */}
         <div className="mb-10">
-          <Link
+          <ButtonLink
             to="/profile"
-            className="inline-flex items-center gap-1.5 text-xs text-dust hover:text-soil transition-colors font-semibold uppercase tracking-wider mb-6"
+            variant="ghost"
+            size="xs"
+            className="mb-6"
           >
             <ArrowLeft className="size-4" />
             <span>Return to Profile</span>
-          </Link>
+          </ButtonLink>
 
           <div>
             <span className="text-[10px] font-bold uppercase tracking-wider text-terracotta">
@@ -238,12 +240,14 @@ const OrderHistoryPage = () => {
               <h3 className="font-playfair text-lg text-soil font-semibold">No transactions recorded</h3>
               <p className="text-xs text-dust mt-1">You have not completed any order checkout processes yet.</p>
             </div>
-            <Link
+            <ButtonLink
               to="/collection"
-              className="inline-flex items-center justify-center h-10 px-6 bg-soil hover:bg-soil/95 text-chalk text-[10px] font-bold uppercase tracking-widest transition-colors rounded-[2px] mt-2"
+              variant="primary"
+              size="sm"
+              className="mt-2"
             >
               Browse Products
-            </Link>
+            </ButtonLink>
           </div>
         ) : (
           <div className="flex flex-col gap-6">
@@ -356,7 +360,9 @@ const OrderHistoryPage = () => {
                                 {/* Review CTA / Shipment Link */}
                                 <div className="flex items-center gap-3 sm:justify-end self-end sm:self-auto">
                                   {order.status.toLowerCase() === "delivered" && item.product_id ? (
-                                    <button
+                                    <Button
+                                      variant="outline"
+                                      size="xs"
                                       onClick={() =>
                                         handleOpenReviewModal(
                                           details.id,
@@ -365,11 +371,10 @@ const OrderHistoryPage = () => {
                                           item.image_url
                                         )
                                       }
-                                      className="inline-flex items-center gap-1.5 h-8 px-4 bg-transparent border border-terracotta text-terracotta hover:bg-terracotta hover:text-chalk text-[9px] font-bold uppercase tracking-widest transition-all rounded-[2px] cursor-pointer"
                                     >
                                       <MessageSquare className="size-3.5" />
                                       <span>Write a Review</span>
-                                    </button>
+                                    </Button>
                                   ) : null}
                                 </div>
                               </div>
@@ -400,13 +405,14 @@ const OrderHistoryPage = () => {
                               </div>
 
                               <div className="flex flex-wrap gap-2.5 pt-2">
-                                <Link
+                                <ButtonLink
                                   to={`/order-tracking/${order.order_number}`}
-                                  className="inline-flex items-center justify-center gap-1.5 h-9 px-4 bg-soil hover:bg-soil/95 text-chalk text-[9px] font-bold uppercase tracking-widest transition-colors rounded-[2px]"
+                                  variant="primary"
+                                  size="xs"
                                 >
                                   <Truck className="size-3.5" />
                                   <span>Track Shipment Logistics</span>
-                                </Link>
+                                </ButtonLink>
                               </div>
                             </div>
 
@@ -436,12 +442,14 @@ const OrderHistoryPage = () => {
           <div className="bg-background border border-sand max-w-lg w-full p-6 sm:p-8 rounded-[2px] relative flex flex-col gap-6 shadow-2xl animate-scale-up">
             
             {/* Modal Exit */}
-            <button
+            <Button
+              variant="ghost"
+              size="xs"
               onClick={handleCloseReviewModal}
-              className="absolute top-4 right-4 text-dust hover:text-soil transition-colors cursor-pointer"
+              className="absolute top-4 right-4"
             >
               <X className="size-5" />
-            </button>
+            </Button>
 
             {/* Header info */}
             <div className="border-b border-sand/20 pb-4">
@@ -527,13 +535,14 @@ const OrderHistoryPage = () => {
 
               {/* Form buttons */}
               <div className="flex items-center justify-end gap-3 border-t border-sand/20 pt-4 mt-2">
-                <button
+                <Button
+                  variant="outline"
+                  size="sm"
                   type="button"
                   onClick={handleCloseReviewModal}
-                  className="h-10 px-5 border border-sand hover:border-soil text-[10px] uppercase font-bold text-dust hover:text-soil transition-colors cursor-pointer rounded-[2px]"
                 >
                   Cancel
-                </button>
+                </Button>
                 <Button
                   type="submit"
                   disabled={submittingReview}
