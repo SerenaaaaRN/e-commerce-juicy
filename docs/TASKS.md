@@ -143,24 +143,24 @@
 > **Stack:** shadcn/ui components, Tailwind v4, Hugeicons. Tidak ada custom design system.
 
 ### 4.1 Global Setup & Router
-- [ ] `src/components/layout/Navbar.tsx` — terracotta-accented public header with navigation links, cart badge, and auth dropdown
-- [ ] `src/components/layout/Footer.tsx` — responsive editorial footer with info links
-- [ ] `src/App.tsx` — setup routes according to `ARCHITECTURE.md` + ScrollToTop wrapper
+- [x] `src/components/layout/Navbar.tsx` — terracotta-accented public header with navigation links, cart badge, and auth dropdown
+- [x] `src/components/layout/Footer.tsx` — responsive editorial footer with info links
+- [x] `src/App.tsx` — setup routes according to `ARCHITECTURE.md` + ScrollToTop wrapper
 
 ### 4.2 Home Page (Atelier Narrative)
-- [ ] `src/features/home/HomePage.tsx` — narrative canvas layout composing the editorial sections
-- [ ] `src/features/home/components/HeroSection.tsx` — full-bleed hero banner with bold typography and terracotta primary CTAs
-- [ ] `src/features/home/components/FeaturedSection.tsx` — bestseller product grid with hover-zoom cards
-- [ ] `src/features/home/components/CollectionPreview.tsx` — category preview layout linking to `/shop`
-- [ ] `src/features/home/components/EditorialSection.tsx` — high-fashion campaign showcase
-- [ ] `src/features/home/components/CtaSection.tsx` — bottom campaign call-to-action block
+- [x] `src/features/home/HomePage.tsx` — narrative canvas layout composing the editorial sections
+- [x] `src/features/home/components/HeroSection.tsx` — full-bleed hero banner with bold typography and terracotta primary CTAs
+- [x] `src/features/home/components/FeaturedSection.tsx` — bestseller product grid with hover-zoom cards
+- [x] `src/features/home/components/CollectionPreview.tsx` — category preview layout linking to `/shop`
+- [x] `src/features/home/components/EditorialSection.tsx` — high-fashion campaign showcase
+- [x] `src/features/home/components/CtaSection.tsx` — bottom campaign call-to-action block
 
 ### 4.3 Catalog / Shop (CollectionPage)
-- [ ] `src/features/shop/CollectionPage.tsx` — `/shop` layout integrating filters, sorting, and pagination
-- [ ] `src/features/shop/components/ProductGrid.tsx` — responsive layout for rendering lists
-- [ ] `src/features/shop/components/ProductCard.tsx` — card component displaying product image, price, tags, and badge
-- [ ] `src/features/shop/components/ProductFilters.tsx` — sidebar filter panel (category, sorting, price range)
-- [ ] Infinite scroll or pagination support with skeleton placeholders (`src/components/common/LoadingSkeleton.tsx`)
+- [x] `src/features/shop/CollectionPage.tsx` — `/shop` layout integrating filters, sorting, and pagination
+- [x] `src/features/shop/components/ProductGrid.tsx` — responsive layout for rendering lists
+- [x] `src/features/shop/components/ProductCard.tsx` — card component displaying product image, price, tags, and badge
+- [x] `src/features/shop/components/ProductFilters.tsx` — sidebar filter panel (category, sorting, price range)
+- [x] Infinite scroll or pagination support with skeleton placeholders (`src/components/common/LoadingSkeleton.tsx`)
 
 ### 4.4 Product Detail Page (PDP)
 - [ ] `src/features/shop/ProductPage.tsx` — `/shop/:slug` PDP page compose
