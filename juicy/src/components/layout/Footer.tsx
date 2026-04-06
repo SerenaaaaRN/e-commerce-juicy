@@ -12,7 +12,7 @@ export const Footer = () => {
           
           {/* Brand Intro Column */}
           <div className="flex flex-col gap-4 md:col-span-1">
-            <span className="font-['Space_Grotesk'] text-2xl font-bold tracking-[0.25em] text-primary">
+            <span className="font-heading text-2xl font-bold tracking-[0.25em] text-primary">
               JUICY
             </span>
             <p className="text-xs text-muted-foreground leading-relaxed max-w-xs uppercase tracking-wider">

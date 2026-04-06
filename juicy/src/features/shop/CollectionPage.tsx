@@ -76,16 +76,16 @@ export const CollectionPage = () => {
   return (
     <div className="bg-background py-12">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-
+        
         {/* Typographic Header */}
-        <div className="text-left flex flex-col gap-3">
-          <span className="text-[10px] font-bold tracking-[0.3em] text-primary uppercase block">
+        <div className="text-left flex flex-col gap-2">
+          <span className="text-xs font-semibold tracking-wider text-primary uppercase">
             Atelier Curated Catalog
           </span>
-          <h1 className="font-['Space_Grotesk'] text-4xl font-semibold tracking-wider text-foreground uppercase">
+          <h1 className="text-4xl font-bold tracking-tight text-foreground">
             The Shop
           </h1>
-          <p className="text-xs text-muted-foreground uppercase tracking-widest max-w-md leading-relaxed">
+          <p className="text-sm text-muted-foreground max-w-md leading-relaxed">
             Browse our complete collection of pure raw textures and high-fashion linen silhouettes.
           </p>
         </div>
@@ -94,7 +94,7 @@ export const CollectionPage = () => {
 
         {/* Content Layout Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-
+          
           {/* Desktop Filter Sidebar */}
           <aside className="hidden lg:block lg:col-span-3">
             <ProductFilters
@@ -109,20 +109,20 @@ export const CollectionPage = () => {
 
           {/* Main Grid Area */}
           <main className="col-span-12 lg:col-span-9 flex flex-col gap-8">
-
+            
             {/* Toolbar row */}
-            <div className="flex items-center justify-between bg-muted/20 px-4 py-3 rounded-none border border-foreground/5">
-              <span className="text-[10px] tracking-widest text-muted-foreground uppercase font-medium">
+            <div className="flex items-center justify-between bg-muted/40 px-4 py-3 border border-border rounded-md">
+              <span className="text-xs text-muted-foreground font-medium">
                 Showing {products.length} of {meta?.total || products.length} Silhouettes
               </span>
-
+              
               {/* Mobile filter drawer trigger */}
               <div className="lg:hidden">
                 <Sheet>
                   <SheetTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-9 px-3 gap-2 uppercase tracking-widest text-[9px] cursor-pointer">
+                    <Button variant="outline" size="sm" className="gap-2 cursor-pointer">
                       <HugeiconsIcon icon={FilterIcon} strokeWidth={1.8} data-icon="inline-start" />
-                      Filter & Sort
+                      Filters
                     </Button>
                   </SheetTrigger>
                   <SheetContent side="left" className="w-80">
@@ -151,7 +151,7 @@ export const CollectionPage = () => {
             {meta && meta.total_pages > 1 && (
               <Pagination className="mt-8">
                 <PaginationContent>
-
+                  
                   {/* Previous button */}
                   {meta.page > 1 && (
                     <PaginationItem className="cursor-pointer">

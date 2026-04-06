@@ -41,7 +41,7 @@ export const Navbar = () => {
 
         {/* Brand Logo */}
         <Link to="/" className="flex items-center gap-2">
-          <span className="font-['Space_Grotesk'] text-2xl font-bold tracking-[0.25em] text-foreground hover:text-primary transition-colors duration-300">
+          <span className="font-heading text-2xl font-bold tracking-[0.25em] text-foreground hover:text-primary transition-colors duration-300">
             JUICY
           </span>
         </Link>

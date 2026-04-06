@@ -10,7 +10,7 @@ export const ProductGridSkeleton = ({ count = 4 }: ProductGridSkeletonProps) => 
       {Array.from({ length: count }).map((_, index) => (
         <div key={index} className="flex flex-col gap-3">
           {/* Aspect Ratio Box */}
-          <Skeleton className="aspect-[3/4] w-full rounded-none" />
+          <Skeleton className="aspect-[3/4] w-full" />
           {/* Metadata Row */}
           <div className="flex justify-between items-center mt-1">
             <Skeleton className="h-3 w-16" />
@@ -26,5 +26,4 @@ export const ProductGridSkeleton = ({ count = 4 }: ProductGridSkeletonProps) => 
   )
 }
 
-export { Skeleton }
 export default Skeleton

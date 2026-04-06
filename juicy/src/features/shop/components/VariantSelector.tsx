@@ -51,12 +51,12 @@ export const VariantSelector = ({
       {/* Sizes Section */}
       {uniqueSizes.length > 0 && (
         <div className="flex flex-col gap-2">
-          <div className="flex justify-between items-center">
-            <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-foreground">
+          <div className="flex justify-between items-center text-xs">
+            <span className="font-semibold text-foreground">
               Select Size
             </span>
             {selectedSize && (
-              <span className="text-[10px] tracking-widest text-muted-foreground uppercase font-medium">
+              <span className="text-muted-foreground font-medium">
                 Active: {selectedSize}
               </span>
             )}
@@ -75,7 +75,7 @@ export const VariantSelector = ({
                   key={size}
                   value={size}
                   disabled={oos}
-                  className="size-11 uppercase font-semibold text-xs tracking-wider cursor-pointer rounded-none border border-foreground/15 hover:bg-muted/50 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="cursor-pointer font-semibold min-w-10 h-10 px-3 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   {size}
                 </ToggleGroupItem>
@@ -88,12 +88,12 @@ export const VariantSelector = ({
       {/* Colors Section */}
       {uniqueColors.length > 0 && (
         <div className="flex flex-col gap-2">
-          <div className="flex justify-between items-center">
-            <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-foreground">
+          <div className="flex justify-between items-center text-xs">
+            <span className="font-semibold text-foreground">
               Select Color
             </span>
             {selectedColor && (
-              <span className="text-[10px] tracking-widest text-muted-foreground uppercase font-medium">
+              <span className="text-muted-foreground font-medium">
                 Active: {selectedColor}
               </span>
             )}
@@ -115,10 +115,10 @@ export const VariantSelector = ({
                   key={color}
                   value={color}
                   disabled={oos}
-                  className="px-4 py-2 uppercase font-medium text-[10px] tracking-widest cursor-pointer rounded-none border border-foreground/15 hover:bg-muted/50 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="cursor-pointer px-3 h-10 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   <span
-                    className="size-3.5 inline-block border border-white/20"
+                    className="size-3.5 inline-block rounded-full border border-white/20"
                     style={{ backgroundColor: hex }}
                   />
                   {color}
@@ -131,7 +131,7 @@ export const VariantSelector = ({
 
       {/* Stock Availability indicator */}
       {activeVariant && (
-        <div className="pt-1 text-[10px] uppercase tracking-widest font-semibold">
+        <div className="pt-1 text-xs font-semibold">
           {activeVariant.stock > 0 ? (
             <span className="text-emerald-700">In Stock: {activeVariant.stock} available</span>
           ) : (

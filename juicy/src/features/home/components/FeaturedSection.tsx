@@ -76,15 +76,15 @@ export const FeaturedSection = () => {
         
         {/* Editorial Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 text-left gap-4">
-          <div className="flex flex-col gap-3">
-            <span className="text-[10px] font-bold tracking-[0.3em] text-primary uppercase block">
+          <div className="flex flex-col gap-2">
+            <span className="text-xs font-semibold tracking-wider text-primary uppercase">
               Atelier Curator Highlights
             </span>
-            <h2 className="font-['Space_Grotesk'] text-3xl font-semibold uppercase tracking-wider text-foreground">
+            <h2 className="text-3xl font-bold tracking-tight text-foreground">
               Bestseller Silhouettes
             </h2>
           </div>
-          <p className="text-xs text-muted-foreground uppercase tracking-widest max-w-sm leading-relaxed">
+          <p className="text-sm text-muted-foreground max-w-sm leading-relaxed">
             A selective edit of our signature, most sought-after silhouettes. Handcrafted using premium European flax fiber.
           </p>
         </div>

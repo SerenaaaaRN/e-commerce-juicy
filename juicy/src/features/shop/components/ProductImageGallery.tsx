@@ -17,7 +17,7 @@ export const ProductImageGallery = ({ images, fallbackImage }: ProductImageGalle
     <div className="flex flex-col gap-4 w-full">
       
       {/* Main High-Res Preview */}
-      <div className="relative aspect-[3/4] w-full overflow-hidden bg-muted shadow-md rounded-none select-none group border border-foreground/5">
+      <div className="relative aspect-[3/4] w-full overflow-hidden bg-muted shadow-md rounded-md select-none group border border-foreground/5">
         <img
           src={activeImage}
           alt="Product details zoom"
@@ -34,7 +34,7 @@ export const ProductImageGallery = ({ images, fallbackImage }: ProductImageGalle
             <button
               key={index}
               onClick={() => setActiveImage(imgUrl)}
-              className="relative aspect-[3/4] w-20 overflow-hidden bg-muted cursor-pointer border hover:border-primary/50 transition-all rounded-none"
+              className="relative aspect-[3/4] w-20 overflow-hidden bg-muted cursor-pointer border hover:border-primary/50 transition-all rounded-md"
             >
               <img
                 src={imgUrl}
@@ -42,7 +42,7 @@ export const ProductImageGallery = ({ images, fallbackImage }: ProductImageGalle
                 className="size-full object-cover object-center"
               />
               {activeImage === imgUrl && (
-                <div className="absolute inset-0 bg-black/10 border-2 border-primary" />
+                <div className="absolute inset-0 bg-black/10 border-2 border-primary rounded-md" />
               )}
             </button>
           ))}

@@ -37,18 +37,18 @@ export const ProductInfo = ({
       
       {/* Category & Tags Row */}
       <div className="flex flex-wrap items-center gap-3">
-        <span className="text-[10px] font-bold tracking-[0.3em] text-primary uppercase">
+        <span className="text-xs font-semibold tracking-wider text-primary uppercase">
           {categoryName}
         </span>
         {tags.map((tag) => (
-          <Badge key={tag} variant="secondary" className="text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-none font-semibold border-none">
+          <Badge key={tag} variant="secondary" className="font-semibold px-2 py-0.5 border-none">
             {tag}
           </Badge>
         ))}
       </div>
 
       {/* Product Title */}
-      <h1 className="font-['Space_Grotesk'] text-3xl sm:text-4xl font-semibold tracking-wide text-foreground uppercase">
+      <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
         {name}
       </h1>
 
@@ -78,7 +78,7 @@ export const ProductInfo = ({
 
       {/* Description */}
       {description && (
-        <div className="pt-4 border-t border-foreground/5 text-xs uppercase tracking-widest text-muted-foreground leading-relaxed">
+        <div className="pt-4 border-t border-foreground/5 text-sm text-muted-foreground leading-relaxed">
           <p>{description}</p>
         </div>
       )}

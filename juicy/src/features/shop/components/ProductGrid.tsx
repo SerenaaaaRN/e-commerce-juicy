@@ -18,10 +18,10 @@ export const ProductGrid = ({ products, isLoading }: ProductGridProps) => {
       <div className="flex justify-center items-center py-20 w-full">
         <Empty className="border-none max-w-md bg-transparent">
           <EmptyHeader>
-            <EmptyTitle className="font-['Space_Grotesk'] text-lg font-bold tracking-widest uppercase">
+            <EmptyTitle className="text-lg font-bold">
               No Items Found
             </EmptyTitle>
-            <EmptyDescription className="text-xs text-muted-foreground uppercase tracking-widest leading-relaxed mt-2">
+            <EmptyDescription className="text-sm text-muted-foreground mt-2">
               We couldn't find any silhouettes matching your current criteria. Try adjusting or clearing your filters.
             </EmptyDescription>
           </EmptyHeader>

@@ -8,16 +8,16 @@ export const LoginPage = () => {
       <Empty className="border-none max-w-lg bg-transparent">
         
         <EmptyHeader>
-          <EmptyTitle className="font-['Space_Grotesk'] text-3xl font-semibold tracking-wider text-foreground uppercase">
+          <EmptyTitle className="text-3xl font-bold tracking-tight">
             Customer Login
           </EmptyTitle>
-          <EmptyDescription className="text-sm text-muted-foreground uppercase tracking-widest max-w-md mt-4 leading-relaxed">
+          <EmptyDescription className="text-sm text-muted-foreground mt-2">
             Access your personal Juicy account and order history.
           </EmptyDescription>
         </EmptyHeader>
         
         <EmptyContent className="mt-6">
-          <Button asChild className="font-medium uppercase tracking-widest text-xs px-6 py-5 h-auto transition-transform hover:scale-[1.02]">
+          <Button asChild size="lg">
             <Link to="/">Return to Atelier</Link>
           </Button>
         </EmptyContent>

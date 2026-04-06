@@ -25,7 +25,7 @@ export const ProductFilters = ({
       
       {/* Category Section */}
       <div className="flex flex-col gap-3">
-        <h3 className="font-['Space_Grotesk'] text-xs font-bold tracking-[0.2em] uppercase text-foreground">
+        <h3 className="text-sm font-semibold tracking-tight text-foreground">
           Categories
         </h3>
         <Separator />
@@ -38,7 +38,7 @@ export const ProductFilters = ({
         >
           <ToggleGroupItem
             value=""
-            className="justify-start uppercase tracking-widest text-[10px] py-4 h-auto cursor-pointer rounded-none border-none hover:bg-muted/50 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            className="justify-start cursor-pointer w-full text-left"
           >
             All Apparel
           </ToggleGroupItem>
@@ -46,7 +46,7 @@ export const ProductFilters = ({
             <ToggleGroupItem
               key={cat.id}
               value={cat.slug}
-              className="justify-start uppercase tracking-widest text-[10px] py-4 h-auto cursor-pointer rounded-none border-none hover:bg-muted/50 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+              className="justify-start cursor-pointer w-full text-left"
             >
               {cat.name}
             </ToggleGroupItem>
@@ -56,7 +56,7 @@ export const ProductFilters = ({
 
       {/* Sorting Section */}
       <div className="flex flex-col gap-3">
-        <h3 className="font-['Space_Grotesk'] text-xs font-bold tracking-[0.2em] uppercase text-foreground">
+        <h3 className="text-sm font-semibold tracking-tight text-foreground">
           Sort By
         </h3>
         <Separator />
@@ -69,25 +69,25 @@ export const ProductFilters = ({
         >
           <ToggleGroupItem
             value="newest"
-            className="justify-start uppercase tracking-widest text-[10px] py-4 h-auto cursor-pointer rounded-none border-none hover:bg-muted/50 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            className="justify-start cursor-pointer w-full text-left"
           >
             New Arrivals
           </ToggleGroupItem>
           <ToggleGroupItem
             value="price_asc"
-            className="justify-start uppercase tracking-widest text-[10px] py-4 h-auto cursor-pointer rounded-none border-none hover:bg-muted/50 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            className="justify-start cursor-pointer w-full text-left"
           >
             Price: Low to High
           </ToggleGroupItem>
           <ToggleGroupItem
             value="price_desc"
-            className="justify-start uppercase tracking-widest text-[10px] py-4 h-auto cursor-pointer rounded-none border-none hover:bg-muted/50 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            className="justify-start cursor-pointer w-full text-left"
           >
             Price: High to Low
           </ToggleGroupItem>
           <ToggleGroupItem
             value="popular"
-            className="justify-start uppercase tracking-widest text-[10px] py-4 h-auto cursor-pointer rounded-none border-none hover:bg-muted/50 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            className="justify-start cursor-pointer w-full text-left"
           >
             Popularity
           </ToggleGroupItem>
@@ -98,7 +98,7 @@ export const ProductFilters = ({
       <Button
         variant="outline"
         onClick={onReset}
-        className="uppercase tracking-widest text-[10px] py-5 h-auto cursor-pointer transition-transform hover:scale-[1.01] rounded-none mt-2"
+        className="cursor-pointer mt-2"
       >
         Clear Filters
       </Button>
