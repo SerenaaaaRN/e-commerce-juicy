@@ -62,11 +62,13 @@ func (r *Router) Setup(engine *gin.Engine) {
 		api.POST("/customers/register", r.customerHandler.Register)
 		api.POST("/customers/login", r.customerHandler.Login)
 
-		api.GET("/categories", r.categoryHandler.ListActiveCategories)
-
-		api.GET("/products", r.productHandler.ListProducts)
-		api.GET("/products/:slug", r.productHandler.GetProductBySlug)
-		api.GET("/products/:slug/reviews", r.reviewHandler.GetProductReviews)
+		shop := api.Group("/shop")
+		{
+			shop.GET("/categories", r.categoryHandler.ListActiveCategories)
+			shop.GET("/products", r.productHandler.ListProducts)
+			shop.GET("/products/:slug", r.productHandler.GetProductBySlug)
+			shop.GET("/products/:slug/reviews", r.reviewHandler.GetProductReviews)
+		}
 
 		customerAuth := api.Group("")
 		customerAuth.Use(middleware.CustomerAuth(r.config))

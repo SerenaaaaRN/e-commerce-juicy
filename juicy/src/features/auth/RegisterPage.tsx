@@ -1,9 +1,9 @@
 import { Link, Navigate } from "react-router-dom"
 import { useCustomerAuthStore } from "@/stores/customerAuthStore"
-import { LoginForm } from "./components/LoginForm"
+import { RegisterForm } from "./components/RegisterForm"
 import { Card, CardContent } from "@/components/ui/card"
 
-export const LoginPage = () => {
+export const RegisterPage = () => {
   const { isAuthenticated } = useCustomerAuthStore()
 
   // Redirect to homepage if already authenticated
@@ -12,32 +12,32 @@ export const LoginPage = () => {
   }
 
   return (
-    <div className="container mx-auto flex min-h-[75vh] max-w-7xl items-center justify-center px-4 py-16">
+    <div className="container mx-auto flex min-h-[85vh] max-w-7xl items-center justify-center px-4 py-16">
       <Card className="border border-border/80 shadow-md w-full max-w-md">
         <CardContent className="p-8 flex flex-col gap-6 text-left">
           
           {/* Header block */}
           <div className="flex flex-col gap-2">
             <span className="text-xs font-semibold tracking-wider text-primary uppercase">
-              Juicy Storefront
+              Join the Atelier
             </span>
             <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
-              Customer Sign In
+              Create Account
             </h1>
             <p className="text-xs text-muted-foreground font-sans">
-              Enter your email and passcode credentials to view your profile and placed orders.
+              Sign up today to track your shipping history and publish linen reviews.
             </p>
           </div>
 
           {/* Form */}
-          <LoginForm />
+          <RegisterForm />
 
-          {/* Register redirect */}
+          {/* Login redirect */}
           <div className="text-center pt-2">
             <span className="text-xs text-muted-foreground font-medium">
-              Don't have an account?{" "}
-              <Link to="/register" className="text-primary font-bold hover:underline">
-                Create Account
+              Already have an account?{" "}
+              <Link to="/login" className="text-primary font-bold hover:underline">
+                Sign In
               </Link>
             </span>
           </div>
@@ -48,4 +48,4 @@ export const LoginPage = () => {
   )
 }
 
-export default LoginPage
+export default RegisterPage

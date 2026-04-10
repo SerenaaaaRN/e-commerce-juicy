@@ -3,6 +3,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { StarIcon } from "@hugeicons/core-free-icons"
+import { formatPrice } from "@/lib/utils"
 import type { CatalogProduct } from "@/types"
 
 type ProductCardProps = {
@@ -11,15 +12,6 @@ type ProductCardProps = {
 
 export const ProductCard = ({ product }: ProductCardProps) => {
   const hasDiscount = product.compare_at_price && product.compare_at_price > product.price
-  
-  // Helper to format currency
-  const formatPrice = (value: number) => {
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-    }).format(value)
-  }
 
   return (
     <Card className="group overflow-hidden shadow-sm hover:shadow transition-shadow duration-300">

@@ -23,7 +23,7 @@ export const HeroSection = () => {
               <Button asChild className="font-medium uppercase tracking-widest text-xs px-8 py-6 h-auto transition-transform hover:scale-[1.02] duration-300">
                 <Link to="/shop">Explore Shop</Link>
               </Button>
-              <Button asChild variant="outline" className="font-medium uppercase tracking-widest text-xs ">
+              <Button asChild variant="outline" className="font-medium uppercase tracking-widest text-xs px-8 py-6 h-auto transition-all duration-300">
                 <a href="#featured">View Collection</a>
               </Button>
             </div>

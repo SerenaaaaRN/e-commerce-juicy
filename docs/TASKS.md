@@ -163,33 +163,33 @@
 - [x] Infinite scroll or pagination support with skeleton placeholders (`src/components/common/LoadingSkeleton.tsx`)
 
 ### 4.4 Product Detail Page (PDP)
-- [ ] `src/features/shop/ProductPage.tsx` — `/shop/:slug` PDP page compose
-- [ ] `src/features/shop/components/ProductImageGallery.tsx` — thumbnail selector strip + high-res main preview with smooth transitions
-- [ ] `src/features/shop/components/VariantSelector.tsx` — size pills & color swatches with stock checking (disable out-of-stock options)
-- [ ] `src/features/shop/components/AddToCartButton.tsx` — terracotta CTA with active stock availability checks & loading states
-- [ ] `src/features/shop/components/ProductInfo.tsx` — details: title, price comparison, tags, and description
-- [ ] `src/features/shop/components/ReviewsSection.tsx` — list reviews with rating summaries and pagination
-- [ ] `src/features/shop/components/ReviewCard.tsx` — single customer rating, comment, and formatted date
-- [ ] `src/features/shop/components/StarRating.tsx` — dual mode (readonly display & active interactive stars)
+- [x] `src/features/shop/ProductPage.tsx` — `/shop/:slug` PDP page compose
+- [x] `src/features/shop/components/ProductImageGallery.tsx` — thumbnail selector strip + high-res main preview with smooth transitions
+- [x] `src/features/shop/components/VariantSelector.tsx` — size pills & color swatches with stock checking (disable out-of-stock options)
+- [x] `src/features/shop/components/AddToCartButton.tsx` — terracotta CTA with active stock availability checks & loading states
+- [x] `src/features/shop/components/ProductInfo.tsx` — details: title, price comparison, tags, and description
+- [x] `src/features/shop/components/ReviewsSection.tsx` — list reviews with rating summaries and pagination
+- [x] `src/features/shop/components/ReviewCard.tsx` — single customer rating, comment, and formatted date
+- [x] `src/features/shop/components/StarRating.tsx` — dual mode (readonly display & active interactive stars)
 
 ### 4.5 Cart Page
-- [ ] `src/features/cart/CartPage.tsx` — `/cart` main view, restricted to authenticated customers (redirect to login if guest)
-- [ ] `src/features/cart/components/CartItem.tsx` — row displaying image, details, variant details, price, quantity stepper, and remove action
-- [ ] `src/features/cart/components/CartSummary.tsx` — sidebar summary showing subtotal, shipping placeholder, and final total with a checkout CTA
-- [ ] `src/features/cart/components/EmptyCart.tsx` — friendly empty state with terracotta "Shop Now" button redirecting to `/shop`
+- [x] `src/features/cart/CartPage.tsx` — `/cart` main view, restricted to authenticated customers (redirect to login if guest)
+- [x] `src/features/cart/components/CartItem.tsx` — row displaying image, details, variant details, price, quantity stepper, and remove action
+- [x] `src/features/cart/components/CartSummary.tsx` — sidebar summary showing subtotal, shipping placeholder, and final total with a checkout CTA
+- [x] `src/features/cart/components/EmptyCart.tsx` — friendly empty state with terracotta "Shop Now" button redirecting to `/shop`
 
 ### 4.6 Checkout Flow (Protected)
-- [ ] `src/features/checkout/CheckoutPage.tsx` — `/checkout` page protected route
-- [ ] `src/features/checkout/components/AddressSelector.tsx` — choose from existing addresses or trigger address modal
-- [ ] `src/features/checkout/components/AddressForm.tsx` — inline form for adding addresses on the fly
-- [ ] `src/features/checkout/components/OrderSummary.tsx` — immutable read-only checklist of purchased items, prices, and total cost
-- [ ] `src/features/checkout/components/PaymentSelector.tsx` — payment option select (COD stub for MVP)
-- [ ] Implement order submission: `placeOrder()` with transaction handling on the backend
+- [x] `src/features/checkout/CheckoutPage.tsx` — `/checkout` page protected route
+- [x] `src/features/checkout/components/AddressSelector.tsx` — choose from existing addresses or trigger address modal
+- [x] `src/features/checkout/components/AddressForm.tsx` — inline form for adding addresses on the fly
+- [x] `src/features/checkout/components/OrderSummary.tsx` — immutable read-only checklist of purchased items, prices, and total cost
+- [x] `src/features/checkout/components/PaymentSelector.tsx` — payment option select (COD stub for MVP)
+- [x] Implement order submission: `placeOrder()` with transaction handling on the backend
 
 ### 4.7 Order Tracking (Protected)
-- [ ] `src/features/orders/OrderTrackingPage.tsx` — `/orders/:orderNumber` detail page
-- [ ] `src/features/orders/components/OrderStatusTimeline.tsx` — modern status step timeline (Pending → Confirmed → Processing → Shipped → Delivered)
-- [ ] `src/features/orders/components/OrderItemRow.tsx` — read-only display of snapshotted items purchased
+- [x] `src/features/orders/OrderTrackingPage.tsx` — `/orders/:orderNumber` detail page
+- [x] `src/features/orders/components/OrderStatusTimeline.tsx` — modern status step timeline (Pending → Confirmed → Processing → Shipped → Delivered)
+- [x] `src/features/orders/components/OrderItemRow.tsx` — read-only display of snapshotted items purchased
 
 ### 4.8 Public QA & Responsiveness
 - [ ] Verify complete layout responsiveness (mobile first, fluid desktop layout)
@@ -208,21 +208,21 @@
 
 ### 5.1 Customer Authentication Flow
 - [x] `src/features/auth/LoginPage.tsx` — `/login` public page (redirects to `/` if already logged in)
-- [ ] `src/features/auth/RegisterPage.tsx` — `/register` public page with validation
-- [ ] `src/features/auth/components/LoginForm.tsx` & `src/features/auth/components/RegisterForm.tsx` using React Hook Form + Zod
+- [x] `src/features/auth/RegisterPage.tsx` — `/register` public page with validation
+- [x] `src/features/auth/components/LoginForm.tsx` & `src/features/auth/components/RegisterForm.tsx` using React Hook Form + Zod
 - [x] `src/components/common/ProtectedRoute.tsx` — protect `/cart`, `/checkout`, `/profile`, `/orders`
 
 ### 5.2 Profile & Address Management
 - [x] `src/features/profile/ProfilePage.tsx` — `/profile` account tabs (Info, Security, Addresses)
-- [ ] `src/features/profile/components/EditProfileForm.tsx` — edit name, phone number, email
-- [ ] `src/features/profile/components/ChangePasswordForm.tsx` — update password securely
-- [ ] `src/features/profile/components/AddressList.tsx` & `AddressCard.tsx` — display active customer addresses with "Default" label badge
-- [ ] `src/features/profile/components/AddressFormModal.tsx` — modal container for creating/editing customer address details
+- [x] `src/features/profile/components/EditProfileForm.tsx` — edit name, phone number, email
+- [x] `src/features/profile/components/ChangePasswordForm.tsx` — update password securely
+- [x] `src/features/profile/components/AddressList.tsx` & `AddressCard.tsx` — display active customer addresses with "Default" label badge
+- [x] `src/features/profile/components/AddressFormModal.tsx` — modal container for creating/editing customer address details
 
 ### 5.3 Order History & Review Submission
-- [ ] `src/features/orders/OrderHistoryPage.tsx` — `/orders` listing all historic customer purchases
-- [ ] `src/features/orders/components/OrderCard.tsx` — listing order number, timestamp, total price, status badge, and detail link
-- [ ] `src/features/orders/components/WriteReviewCta.tsx` — "Write a Review" prompt active only for verified `delivered` items (triggers `StarRating` + review comment modal)
+- [x] `src/features/orders/OrderHistoryPage.tsx` — `/orders` listing all historic customer purchases
+- [x] `src/features/orders/components/OrderCard.tsx` — listing order number, timestamp, total price, status badge, and detail link
+- [x] `src/features/orders/components/WriteReviewCta.tsx` — "Write a Review" prompt active only for verified `delivered` items (triggers `StarRating` + review comment modal)
 
 ---
 

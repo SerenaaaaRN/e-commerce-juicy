@@ -1,5 +1,6 @@
 import { StarRating } from "./StarRating"
 import { Badge } from "@/components/ui/badge"
+import { formatPrice } from "@/lib/utils"
 
 type ProductInfoProps = {
   name: string
@@ -23,14 +24,6 @@ export const ProductInfo = ({
   tags,
 }: ProductInfoProps) => {
   const hasDiscount = compareAtPrice && compareAtPrice > price
-  
-  const formatPrice = (value: number) => {
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-    }).format(value)
-  }
 
   return (
     <div className="flex flex-col gap-5 text-left">
