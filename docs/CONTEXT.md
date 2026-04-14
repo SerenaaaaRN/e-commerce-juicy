@@ -130,3 +130,4 @@ juicy/
 - Frontend communicates with backend only through the defined API contract in `API.md`.
 - Image URLs stored in DB are always Cloudinary `secure_url` strings.
 - Customer auth and Admin auth are completely separate JWT flows — different secrets, different middleware, different Zustand stores.
+- **Admin UI must use shadcn primitives** — `Table` not `<table>`, `Select` not `<select>`, `Checkbox` not `<input type="checkbox">`, `Separator` not `<hr>`, `Badge` variants not raw color classes (`text-green-600`, etc.). Inline SVG icons must be replaced with `HugeiconsIcon`. Chart colors must reference CSS variables (`hsl(var(--primary))`) not raw `oklch()` values.

@@ -114,18 +114,13 @@ client/
 │   │   │
 │   │   └── admin/                        # Admin dashboard (sudah done Phase 3)
 │   │       ├── components/
-│   │       │   ├── AdminRoute.tsx        # Route guard — redirect ke /admin/login
-│   │       │   ├── Sidebar.tsx
-│   │       │   ├── Header.tsx
-│   │       │   ├── DataTable.tsx         # Reusable paginated table
-│   │       │   ├── StatsCard.tsx
-│   │       │   └── ImageUploader.tsx
-│   │       ├── LoginPage.tsx
-│   │       ├── DashboardPage.tsx
-│   │       ├── ProductsPage.tsx
-│   │       ├── OrdersPage.tsx
-│   │       ├── CustomersPage.tsx
-│   │       └── ReviewsPage.tsx
+│   │       │   └── AdminRoute.tsx        # Route guard — redirect ke /admin/login
+│   │       ├── LoginPage.tsx             # /admin/login — FieldGroup + Field + Input + Button
+│   │       ├── DashboardPage.tsx         # /admin/dashboard — Card + Recharts (CSS vars, not raw oklch)
+│   │       ├── ProductsPage.tsx          # /admin/products — Table + Select + Checkbox + Dialog + Badge
+│   │       ├── OrdersPage.tsx            # /admin/orders — Table + Select + Dialog + Badge + Separator
+│   │       ├── CustomersPage.tsx         # /admin/customers — Table + Badge + Dialog
+│   │       └── ReviewsPage.tsx           # /admin/reviews — Select + Card + Badge
 │   │
 │   ├── components/                       # Shared UI — dipakai lintas feature
 │   │   ├── ui/                           # shadcn/ui primitives (auto-generated via CLI)

@@ -4,12 +4,14 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Spinner } from "@/components/ui/spinner"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { adminApi } from "@/lib/api/admin"
 import { formatDate } from "@/lib/utils/format"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   StarIcon,
   SearchIcon,
+  Delete02Icon,
 } from "@hugeicons/core-free-icons"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
@@ -56,32 +58,30 @@ export const ReviewsPage = () => {
 
   // Filters
   const [search, setSearch] = useState("")
-  const [ratingFilter, setRatingFilter] = useState("")
-  const [publishFilter, setPublishFilter] = useState("")
+  const [ratingFilter, setRatingFilter] = useState("all")
+  const [publishFilter, setPublishFilter] = useState("all")
 
   // Submitting process state
   const [moderatingId, setModeratingId] = useState<string | null>(null)
 
-  const loadData = async () => {
-    try {
-      setLoading(true)
-      const res = await adminApi.getReviews()
-      if (res.success && res.data) {
-        setReviews(res.data)
-      } else {
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await adminApi.getReviews()
+        if (res.success && res.data) {
+          setReviews(res.data)
+        } else {
+          setReviews(fallbackReviews)
+          setUsingFallback(true)
+        }
+      } catch {
         setReviews(fallbackReviews)
         setUsingFallback(true)
+      } finally {
+        setLoading(false)
       }
-    } catch {
-      setReviews(fallbackReviews)
-      setUsingFallback(true)
-    } finally {
-      setLoading(false)
     }
-  }
-
-  useEffect(() => {
-    loadData()
+    fetchData()
   }, [])
 
   // Toggle publish / hide status
@@ -160,10 +160,10 @@ export const ReviewsPage = () => {
       r.customer_name.toLowerCase().includes(search.toLowerCase()) ||
       r.body.toLowerCase().includes(search.toLowerCase())
     
-    const matchesRating = ratingFilter === "" || r.rating.toString() === ratingFilter
+    const matchesRating = ratingFilter === "all" || r.rating.toString() === ratingFilter
     
     const matchesPublish =
-      publishFilter === "" ||
+      publishFilter === "all" ||
       (publishFilter === "published" && (r.is_published ?? true)) ||
       (publishFilter === "hidden" && !(r.is_published ?? true))
 
@@ -215,31 +215,33 @@ export const ReviewsPage = () => {
 
         {/* Rating filter */}
         <div className="w-full sm:max-w-xs">
-          <select
-            value={ratingFilter}
-            onChange={(e) => setRatingFilter(e.target.value)}
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          >
-            <option value="">All Ratings</option>
-            <option value="5">5 Stars</option>
-            <option value="4">4 Stars</option>
-            <option value="3">3 Stars</option>
-            <option value="2">2 Stars</option>
-            <option value="1">1 Star</option>
-          </select>
+          <Select value={ratingFilter} onValueChange={setRatingFilter}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="All Ratings" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Ratings</SelectItem>
+              <SelectItem value="5">5 Stars</SelectItem>
+              <SelectItem value="4">4 Stars</SelectItem>
+              <SelectItem value="3">3 Stars</SelectItem>
+              <SelectItem value="2">2 Stars</SelectItem>
+              <SelectItem value="1">1 Star</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Publish filter */}
         <div className="w-full sm:max-w-xs">
-          <select
-            value={publishFilter}
-            onChange={(e) => setPublishFilter(e.target.value)}
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          >
-            <option value="">All Statuses</option>
-            <option value="published">Published</option>
-            <option value="hidden">Hidden</option>
-          </select>
+          <Select value={publishFilter} onValueChange={setPublishFilter}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="All Statuses" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="published">Published</SelectItem>
+              <SelectItem value="hidden">Hidden</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
       </div>
@@ -274,7 +276,7 @@ export const ReviewsPage = () => {
                 <div className="flex items-center gap-3 sm:self-center">
                   
                   {/* Status badge */}
-                  <Badge variant={rev.is_published ?? true ? "outline" : "secondary"} className={rev.is_published ?? true ? "text-green-600 border-green-600 bg-green-500/5" : "text-destructive border-destructive bg-destructive/5"}>
+                  <Badge variant={rev.is_published ?? true ? "default" : "destructive"}>
                     {rev.is_published ?? true ? "Published" : "Hidden"}
                   </Badge>
 
@@ -284,7 +286,6 @@ export const ReviewsPage = () => {
                     size="sm"
                     disabled={moderatingId === rev.id}
                     onClick={() => handleTogglePublish(rev)}
-                    className="cursor-pointer font-semibold"
                   >
                     {rev.is_published ?? true ? "Censor Hide" : "Publish Star"}
                   </Button>
@@ -295,11 +296,9 @@ export const ReviewsPage = () => {
                     size="icon"
                     disabled={moderatingId === rev.id}
                     onClick={() => handleDeleteReview(rev.id)}
-                    className="hover:bg-destructive/10 hover:text-destructive size-8 cursor-pointer"
+                    className="hover:bg-destructive/10 hover:text-destructive"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.8" stroke="currentColor" className="size-4">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                    </svg>
+                    <HugeiconsIcon icon={Delete02Icon} className="size-4" />
                   </Button>
 
                 </div>

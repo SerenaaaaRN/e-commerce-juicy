@@ -3,6 +3,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Spinner } from "@/components/ui/spinner"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Separator } from "@/components/ui/separator"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog"
 import { adminApi } from "@/lib/api/admin"
 import { formatPrice, formatDate } from "@/lib/utils/format"
@@ -137,7 +140,7 @@ export const OrdersPage = () => {
 
   // Filters state
   const [search, setSearch] = useState("")
-  const [statusFilter, setStatusFilter] = useState("")
+  const [statusFilter, setStatusFilter] = useState("all")
 
   // Details dialog state
   const [detailsOpen, setDetailsOpen] = useState(false)
@@ -166,7 +169,23 @@ export const OrdersPage = () => {
   }
 
   useEffect(() => {
-    loadData()
+    const fetchInitial = async () => {
+      try {
+        const res = await adminApi.getOrders()
+        if (res.success && res.data) {
+          setOrders(res.data)
+        } else {
+          setOrders(fallbackOrders)
+          setUsingFallback(true)
+        }
+      } catch {
+        setOrders(fallbackOrders)
+        setUsingFallback(true)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchInitial()
   }, [])
 
   // View order details
@@ -253,15 +272,15 @@ export const OrdersPage = () => {
   const getStatusBadge = (status: OrderStatus) => {
     switch (status) {
       case "pending":
-        return <Badge variant="outline" className="text-yellow-600 border-yellow-500/30 bg-yellow-500/5">Pending</Badge>
+        return <Badge variant="secondary">Pending</Badge>
       case "confirmed":
-        return <Badge variant="outline" className="text-blue-600 border-blue-500/30 bg-blue-500/5">Confirmed</Badge>
+        return <Badge>Confirmed</Badge>
       case "processing":
-        return <Badge variant="outline" className="text-purple-600 border-purple-500/30 bg-purple-500/5">Processing</Badge>
+        return <Badge variant="secondary">Processing</Badge>
       case "shipped":
-        return <Badge variant="outline" className="text-indigo-600 border-indigo-500/30 bg-indigo-500/5">Shipped</Badge>
+        return <Badge>Shipped</Badge>
       case "delivered":
-        return <Badge variant="outline" className="text-green-600 border-green-500/30 bg-green-500/5">Delivered</Badge>
+        return <Badge variant="default">Delivered</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>
     }
@@ -270,11 +289,11 @@ export const OrdersPage = () => {
   const getPaymentBadge = (status: PaymentStatus) => {
     switch (status) {
       case "unpaid":
-        return <Badge variant="outline" className="text-destructive border-destructive/30 bg-destructive/5">Unpaid</Badge>
+        return <Badge variant="destructive">Unpaid</Badge>
       case "paid":
-        return <Badge variant="outline" className="text-green-600 border-green-500/30 bg-green-500/5">Paid</Badge>
+        return <Badge variant="default">Paid</Badge>
       case "refunded":
-        return <Badge variant="outline" className="text-orange-600 border-orange-500/30 bg-orange-500/5">Refunded</Badge>
+        return <Badge variant="secondary">Refunded</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>
     }
@@ -283,7 +302,7 @@ export const OrdersPage = () => {
   // Filtering
   const filteredOrders = orders.filter((o) => {
     const matchesSearch = o.order_number.toLowerCase().includes(search.toLowerCase())
-    const matchesStatus = statusFilter === "" || o.status === statusFilter
+    const matchesStatus = statusFilter === "all" || o.status === statusFilter
     return matchesSearch && matchesStatus
   })
 
@@ -332,89 +351,90 @@ export const OrdersPage = () => {
 
         {/* Status Selection */}
         <div className="w-full sm:max-w-xs">
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-          >
-            <option value="">All Fulfillment Statuses</option>
-            <option value="pending">Pending</option>
-            <option value="confirmed">Confirmed</option>
-            <option value="processing">Processing</option>
-            <option value="shipped">Shipped</option>
-            <option value="delivered">Delivered</option>
-          </select>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="All Fulfillment Statuses" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Fulfillment Statuses</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="confirmed">Confirmed</SelectItem>
+              <SelectItem value="processing">Processing</SelectItem>
+              <SelectItem value="shipped">Shipped</SelectItem>
+              <SelectItem value="delivered">Delivered</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
       </div>
 
       {/* Orders Table */}
-      <div className="border border-border/60 rounded-lg bg-card overflow-x-auto shadow-sm">
-        <table className="w-full text-left border-collapse text-sm">
-          <thead className="bg-muted/40 font-bold border-b border-border">
-            <tr>
-              <th className="px-6 py-4">Invoice ID</th>
-              <th className="px-6 py-4">Fulfillment Status</th>
-              <th className="px-6 py-4">Invoice Payment</th>
-              <th className="px-6 py-4">Ordered Items</th>
-              <th className="px-6 py-4">Invoice Amount</th>
-              <th className="px-6 py-4">Ordered At</th>
-              <th className="px-6 py-4 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border/60">
+      <div className="border border-border/60 rounded-lg bg-card shadow-sm">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="px-6 py-4">Invoice ID</TableHead>
+              <TableHead className="px-6 py-4">Fulfillment Status</TableHead>
+              <TableHead className="px-6 py-4">Invoice Payment</TableHead>
+              <TableHead className="px-6 py-4">Ordered Items</TableHead>
+              <TableHead className="px-6 py-4">Invoice Amount</TableHead>
+              <TableHead className="px-6 py-4">Ordered At</TableHead>
+              <TableHead className="px-6 py-4 text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {filteredOrders.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
+              <TableRow>
+                <TableCell colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
                   No boutique orders found matching your search.
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ) : (
               filteredOrders.map((o) => (
-                <tr key={o.id} className="hover:bg-muted/20 transition-colors">
+                <TableRow key={o.id}>
                   
                   {/* Order Number */}
-                  <td className="px-6 py-4 font-mono font-bold text-foreground">
+                  <TableCell className="px-6 py-4 font-mono font-bold text-foreground">
                     {o.order_number}
-                  </td>
+                  </TableCell>
 
                   {/* Status badge */}
-                  <td className="px-6 py-4">
+                  <TableCell className="px-6 py-4">
                     {getStatusBadge(o.status)}
-                  </td>
+                  </TableCell>
 
                   {/* Payment status badge */}
-                  <td className="px-6 py-4">
+                  <TableCell className="px-6 py-4">
                     {getPaymentBadge(o.payment_status)}
-                  </td>
+                  </TableCell>
 
                   {/* Item count */}
-                  <td className="px-6 py-4 font-medium text-muted-foreground">
+                  <TableCell className="px-6 py-4 font-medium text-muted-foreground">
                     {o.item_count || 0} unit(s)
-                  </td>
+                  </TableCell>
 
                   {/* Total */}
-                  <td className="px-6 py-4 font-bold text-foreground">
+                  <TableCell className="px-6 py-4 font-bold text-foreground">
                     {formatPrice(o.total)}
-                  </td>
+                  </TableCell>
 
                   {/* Ordered date */}
-                  <td className="px-6 py-4 text-muted-foreground text-xs">
+                  <TableCell className="px-6 py-4 text-muted-foreground text-xs">
                     {formatDate(o.created_at)}
-                  </td>
+                  </TableCell>
 
                   {/* Inspect Details trigger */}
-                  <td className="px-6 py-4 text-right">
-                    <Button variant="outline" size="sm" onClick={() => handleViewDetails(o.id)} className="cursor-pointer">
+                  <TableCell className="px-6 py-4 text-right">
+                    <Button variant="outline" size="sm" onClick={() => handleViewDetails(o.id)}>
                       Fulfill Order
                     </Button>
-                  </td>
+                  </TableCell>
 
-                </tr>
+                </TableRow>
               ))
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
 
       {/* --- FULFILLMENT ORDER DETAIL DIALOG --- */}
@@ -455,7 +475,7 @@ export const OrdersPage = () => {
                         size="xs"
                         onClick={() => handleUpdateStatus(st)}
                         disabled={updatingStatus}
-                        className="text-[10px] uppercase font-bold py-1 h-auto cursor-pointer"
+                        className="text-[10px] uppercase font-bold py-1 h-auto"
                       >
                         {st}
                       </Button>
@@ -474,7 +494,7 @@ export const OrdersPage = () => {
                         size="xs"
                         onClick={() => handleUpdatePaymentStatus(pst)}
                         disabled={updatingStatus}
-                        className="text-[10px] uppercase font-bold py-1 h-auto cursor-pointer"
+                        className="text-[10px] uppercase font-bold py-1 h-auto"
                       >
                         {pst}
                       </Button>
@@ -544,7 +564,7 @@ export const OrdersPage = () => {
                     <div className="text-muted-foreground font-mono">{activeOrder.address.phone}</div>
                   </div>
 
-                  <hr className="border-border/60 my-1" />
+                  <Separator className="my-1" />
 
                   {/* Address info */}
                   <div className="flex flex-col gap-1.5">
@@ -556,7 +576,7 @@ export const OrdersPage = () => {
 
                   {activeOrder.notes && (
                     <>
-                      <hr className="border-border/60 my-1" />
+                      <Separator className="my-1" />
                       {/* Notes info */}
                       <div className="flex flex-col gap-1.5">
                         <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Consignee Delivery Instructions</span>
@@ -567,7 +587,7 @@ export const OrdersPage = () => {
                     </>
                   )}
 
-                  <hr className="border-border/60 my-1" />
+                  <Separator className="my-1" />
 
                   {/* Dates tracker */}
                   <div className="flex flex-col gap-1.5 text-[10px] font-medium text-muted-foreground">
@@ -585,7 +605,7 @@ export const OrdersPage = () => {
 
           <DialogFooter className="border-t border-border pt-4">
             <DialogClose asChild>
-              <Button type="button" className="cursor-pointer">Close Registry</Button>
+              <Button type="button">Close Registry</Button>
             </DialogClose>
           </DialogFooter>
         </DialogContent>

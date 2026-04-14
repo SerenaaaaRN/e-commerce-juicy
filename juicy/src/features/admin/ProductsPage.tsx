@@ -7,12 +7,17 @@ import { Textarea } from "@/components/ui/textarea"
 import { Field, FieldLabel, FieldError } from "@/components/ui/field"
 import { Badge } from "@/components/ui/badge"
 import { Spinner } from "@/components/ui/spinner"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog"
 import { adminApi } from "@/lib/api/admin"
 import { formatPrice } from "@/lib/utils/format"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   SearchIcon,
+  Edit01Icon,
+  Delete02Icon,
 } from "@hugeicons/core-free-icons"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
@@ -83,7 +88,7 @@ export const ProductsPage = () => {
 
   // Filters state
   const [search, setSearch] = useState("")
-  const [categoryFilter, setCategoryFilter] = useState("")
+  const [categoryFilter, setCategoryFilter] = useState("all")
 
   // Modals & Drawers trigger states
   const [productModalOpen, setProductModalOpen] = useState(false)
@@ -158,7 +163,35 @@ export const ProductsPage = () => {
   }
 
   useEffect(() => {
-    loadData()
+    const fetchInitial = async () => {
+      try {
+        const [prodRes, catRes] = await Promise.all([
+          adminApi.getProducts(),
+          adminApi.getCategories(),
+        ])
+
+        if (prodRes.success && prodRes.data) {
+          setProducts(prodRes.data)
+        } else {
+          setProducts(fallbackProducts)
+          setUsingFallback(true)
+        }
+
+        if (catRes.success && catRes.data) {
+          setCategories(catRes.data)
+        } else {
+          setCategories(fallbackCategories)
+          setUsingFallback(true)
+        }
+      } catch {
+        setProducts(fallbackProducts)
+        setCategories(fallbackCategories)
+        setUsingFallback(true)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchInitial()
   }, [])
 
   // Handle open Add Product Modal
@@ -673,7 +706,7 @@ export const ProductsPage = () => {
   // Filtering
   const filteredProducts = products.filter((p) => {
     const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase()) || p.slug.toLowerCase().includes(search.toLowerCase())
-    const matchesCategory = categoryFilter === "" || p.category_id === categoryFilter
+    const matchesCategory = categoryFilter === "all" || p.category_id === categoryFilter
     return matchesSearch && matchesCategory
   })
 
@@ -703,7 +736,7 @@ export const ProductsPage = () => {
             Manage your boutique catalog products, category lists, variant stocks, and high-res media.
           </p>
         </div>
-        <Button onClick={handleOpenAddProduct} className="cursor-pointer">
+        <Button onClick={handleOpenAddProduct}>
           Add New Product
         </Button>
       </div>
@@ -737,53 +770,54 @@ export const ProductsPage = () => {
 
             {/* Category selection */}
             <div className="w-full sm:max-w-xs">
-              <select
-                value={categoryFilter}
-                onChange={(e) => setCategoryFilter(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              >
-                <option value="">All Categories</option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="All Categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
           </div>
 
           {/* Grid listing products */}
-          <div className="border border-border/60 rounded-lg bg-card overflow-x-auto shadow-sm">
-            <table className="w-full text-left border-collapse text-sm">
-              <thead className="bg-muted/40 font-bold border-b border-border">
-                <tr>
-                  <th className="px-6 py-4">Image</th>
-                  <th className="px-6 py-4">Product Details</th>
-                  <th className="px-6 py-4">Category</th>
-                  <th className="px-6 py-4">Price</th>
-                  <th className="px-6 py-4">Badges</th>
-                  <th className="px-6 py-4">Variants / Stocks</th>
-                  <th className="px-6 py-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60">
+          <div className="border border-border/60 rounded-lg bg-card shadow-sm">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="px-6 py-4">Image</TableHead>
+                  <TableHead className="px-6 py-4">Product Details</TableHead>
+                  <TableHead className="px-6 py-4">Category</TableHead>
+                  <TableHead className="px-6 py-4">Price</TableHead>
+                  <TableHead className="px-6 py-4">Badges</TableHead>
+                  <TableHead className="px-6 py-4">Variants / Stocks</TableHead>
+                  <TableHead className="px-6 py-4 text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {filteredProducts.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
+                  <TableRow>
+                    <TableCell colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
                       No catalog products matched your query.
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ) : (
                   filteredProducts.map((prod) => {
                     const primaryImage = prod.images?.find((img) => img.is_primary)?.image_url || "/placeholder-product.jpg"
                     const totalStock = prod.variants?.reduce((sum, v) => sum + v.stock, 0) ?? 0
 
                     return (
-                      <tr key={prod.id} className="hover:bg-muted/20 transition-colors">
+                      <TableRow key={prod.id}>
                         
                         {/* Image Thumbnail */}
-                        <td className="px-6 py-4">
+                        <TableCell className="px-6 py-4">
                           <img
                             src={primaryImage}
                             alt={prod.name}
@@ -792,86 +826,77 @@ export const ProductsPage = () => {
                               (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1610970881699-44a5587caaec?auto=format&fit=crop&q=80&w=200"
                             }}
                           />
-                        </td>
+                        </TableCell>
 
                         {/* Title and slug */}
-                        <td className="px-6 py-4">
+                        <TableCell className="px-6 py-4">
                           <div className="font-semibold text-foreground">{prod.name}</div>
                           <div className="text-[11px] text-muted-foreground font-mono truncate max-w-xs">{prod.slug}</div>
-                        </td>
+                        </TableCell>
 
                         {/* Category */}
-                        <td className="px-6 py-4">
-                          <span className="text-xs font-medium px-2.5 py-1 rounded bg-muted/60 text-muted-foreground border">
-                            {prod.category?.name || "Unassigned"}
-                          </span>
-                        </td>
+                        <TableCell className="px-6 py-4">
+                          <Badge variant="outline">{prod.category?.name || "Unassigned"}</Badge>
+                        </TableCell>
 
                         {/* Price */}
-                        <td className="px-6 py-4 font-semibold text-foreground">
+                        <TableCell className="px-6 py-4 font-semibold text-foreground">
                           {formatPrice(prod.price)}
                           {prod.compare_at_price && (
                             <div className="text-[11px] text-muted-foreground line-through font-normal">
                               {formatPrice(prod.compare_at_price)}
                             </div>
                           )}
-                        </td>
+                        </TableCell>
 
                         {/* Badges */}
-                        <td className="px-6 py-4">
+                        <TableCell className="px-6 py-4">
                           <div className="flex flex-col gap-1.5 self-start items-start">
-                            <Badge variant={prod.is_available ? "outline" : "secondary"} className={prod.is_available ? "text-green-600 border-green-600 bg-green-500/5" : "text-destructive border-destructive bg-destructive/5"}>
+                            <Badge variant={prod.is_available ? "default" : "destructive"}>
                               {prod.is_available ? "Active" : "Archived"}
                             </Badge>
                             {prod.is_featured && (
-                              <Badge className="bg-primary hover:bg-primary/90 text-[10px] tracking-wider uppercase font-bold py-0.5">
+                              <Badge variant="default">
                                 Featured
                               </Badge>
                             )}
                           </div>
-                        </td>
+                        </TableCell>
 
                         {/* Variant / Stocks */}
-                        <td className="px-6 py-4">
-                          <span className={cn(
-                            "font-semibold text-xs",
-                            totalStock === 0 ? "text-destructive" : totalStock <= 15 ? "text-amber-600" : "text-green-600"
-                          )}>
+                        <TableCell className="px-6 py-4">
+                          <Badge variant={totalStock === 0 ? "destructive" : totalStock <= 15 ? "secondary" : "default"}>
                             {totalStock} in stock
-                          </span>
+                          </Badge>
                           <div className="text-[10px] text-muted-foreground mt-0.5 font-medium">
                             {prod.variants?.length || 0} active option(s)
                           </div>
-                        </td>
+                        </TableCell>
 
                         {/* Actions buttons */}
-                        <td className="px-6 py-4 text-right">
+                        <TableCell className="px-6 py-4 text-right">
                           <div className="flex items-center justify-end gap-2">
-                            <Button variant="ghost" size="xs" onClick={() => handleOpenVariantManager(prod)} className="text-xs px-2.5 border hover:bg-muted font-medium cursor-pointer">
+                            <Button variant="ghost" size="xs" onClick={() => handleOpenVariantManager(prod)} className="text-xs px-2.5 border hover:bg-muted font-medium">
                               Variants
                             </Button>
-                            <Button variant="ghost" size="xs" onClick={() => handleOpenImageManager(prod)} className="text-xs px-2.5 border hover:bg-muted font-medium cursor-pointer">
+                            <Button variant="ghost" size="xs" onClick={() => handleOpenImageManager(prod)} className="text-xs px-2.5 border hover:bg-muted font-medium">
                               Media
                             </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleOpenEditProduct(prod)} className="hover:bg-muted size-8 cursor-pointer">
-                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.8" stroke="currentColor" className="size-4 text-muted-foreground hover:text-foreground">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" />
-                              </svg>
+                            <Button variant="ghost" size="icon" onClick={() => handleOpenEditProduct(prod)} className="hover:bg-muted">
+                              <HugeiconsIcon icon={Edit01Icon} className="size-4 text-muted-foreground" />
                             </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDeleteProduct(prod.id)} className="hover:bg-destructive/10 hover:text-destructive size-8 cursor-pointer">
-                              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.8" stroke="currentColor" className="size-4">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                              </svg>
+                            <Button variant="ghost" size="icon" onClick={() => handleDeleteProduct(prod.id)} className="hover:bg-destructive/10 hover:text-destructive">
+                              <HugeiconsIcon icon={Delete02Icon} className="size-4" />
                             </Button>
                           </div>
-                        </td>
+                        </TableCell>
 
-                      </tr>
+                      </TableRow>
                     )
                   })
                 )}
-              </tbody>
-            </table>
+              </TableBody>
+            </Table>
           </div>
 
         </TabsContent>
@@ -946,7 +971,7 @@ export const ProductsPage = () => {
                   </Field>
 
                   {/* Submit Button */}
-                  <Button type="submit" disabled={submittingCategory} className="w-full mt-2 font-medium cursor-pointer">
+                  <Button type="submit" disabled={submittingCategory} className="w-full mt-2 font-medium">
                     {submittingCategory && <Spinner data-icon="inline-start" />}
                     {submittingCategory ? "Creating..." : "Save Classification"}
                   </Button>
@@ -956,62 +981,60 @@ export const ProductsPage = () => {
             </Card>
 
             {/* Category listing grid */}
-            <div className="lg:col-span-2 border border-border/60 rounded-lg bg-card overflow-x-auto shadow-sm h-fit">
-              <table className="w-full text-left border-collapse text-sm">
-                <thead className="bg-muted/40 font-bold border-b border-border">
-                  <tr>
-                    <th className="px-6 py-4">Name</th>
-                    <th className="px-6 py-4">Slug</th>
-                    <th className="px-6 py-4">Description</th>
-                    <th className="px-6 py-4">Display Order</th>
-                    <th className="px-6 py-4 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/60">
+            <div className="lg:col-span-2 border border-border/60 rounded-lg bg-card shadow-sm h-fit">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="px-6 py-4">Name</TableHead>
+                    <TableHead className="px-6 py-4">Slug</TableHead>
+                    <TableHead className="px-6 py-4">Description</TableHead>
+                    <TableHead className="px-6 py-4">Display Order</TableHead>
+                    <TableHead className="px-6 py-4 text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {categories.length === 0 ? (
-                    <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center text-muted-foreground">
+                    <TableRow>
+                      <TableCell colSpan={5} className="px-6 py-12 text-center text-muted-foreground">
                         No categories currently defined.
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   ) : (
                     categories.map((cat) => (
-                      <tr key={cat.id} className="hover:bg-muted/20 transition-colors">
+                      <TableRow key={cat.id}>
                         
                         {/* Name */}
-                        <td className="px-6 py-4 font-semibold text-foreground">
+                        <TableCell className="px-6 py-4 font-semibold text-foreground">
                           {cat.name}
-                        </td>
+                        </TableCell>
 
                         {/* Slug */}
-                        <td className="px-6 py-4 font-mono text-xs text-muted-foreground">
+                        <TableCell className="px-6 py-4 font-mono text-xs text-muted-foreground">
                           {cat.slug}
-                        </td>
+                        </TableCell>
 
                         {/* Description */}
-                        <td className="px-6 py-4 max-w-xs truncate text-muted-foreground">
+                        <TableCell className="px-6 py-4 max-w-xs truncate text-muted-foreground">
                           {cat.description || "-"}
-                        </td>
+                        </TableCell>
 
                         {/* Display Order */}
-                        <td className="px-6 py-4 font-medium text-foreground">
+                        <TableCell className="px-6 py-4 font-medium text-foreground">
                           {cat.display_order}
-                        </td>
+                        </TableCell>
 
                         {/* Actions */}
-                        <td className="px-6 py-4 text-right">
-                          <Button variant="ghost" size="icon" onClick={() => handleDeleteCategory(cat.id)} className="hover:bg-destructive/10 hover:text-destructive size-8 cursor-pointer">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.8" stroke="currentColor" className="size-4">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                            </svg>
+                        <TableCell className="px-6 py-4 text-right">
+                          <Button variant="ghost" size="icon" onClick={() => handleDeleteCategory(cat.id)} className="hover:bg-destructive/10 hover:text-destructive">
+                            <HugeiconsIcon icon={Delete02Icon} className="size-4" />
                           </Button>
-                        </td>
+                        </TableCell>
 
-                      </tr>
+                      </TableRow>
                     ))
                   )}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
 
           </div>
@@ -1071,20 +1094,16 @@ export const ProductsPage = () => {
             {/* Category selection */}
             <Field data-invalid={!!formErrors.category}>
               <FieldLabel htmlFor="formCategoryId">Assign Category Classification</FieldLabel>
-              <select
-                id="formCategoryId"
-                value={formCategoryId}
-                onChange={(e) => {
-                  setFormCategoryId(e.target.value)
-                  if (formErrors.category) setFormErrors(prev => ({ ...prev, category: "" }))
-                }}
-                className="flex h-10 w-full rounded-md border border-input bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2"
-              >
-                <option value="">Choose Classification...</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
+              <Select value={formCategoryId} onValueChange={setFormCategoryId}>
+                <SelectTrigger id="formCategoryId" className="w-full" aria-invalid={!!formErrors.category}>
+                  <SelectValue placeholder="Choose Classification..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               {formErrors.category && <FieldError>{formErrors.category}</FieldError>}
             </Field>
 
@@ -1164,23 +1183,13 @@ export const ProductsPage = () => {
 
             {/* Toggles */}
             <div className="flex gap-6 pt-2">
-              <label className="flex items-center gap-2 text-xs font-semibold text-foreground cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={formIsAvailable}
-                  onChange={(e) => setFormIsAvailable(e.target.checked)}
-                  className="rounded border-input text-primary focus:ring-primary size-4"
-                />
+              <label className="flex items-center gap-2 text-xs font-semibold text-foreground select-none">
+                <Checkbox checked={formIsAvailable} onCheckedChange={(c) => setFormIsAvailable(!!c)} />
                 Is Available (Publish immediately)
               </label>
 
-              <label className="flex items-center gap-2 text-xs font-semibold text-foreground cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={formIsFeatured}
-                  onChange={(e) => setFormIsFeatured(e.target.checked)}
-                  className="rounded border-input text-primary focus:ring-primary size-4"
-                />
+              <label className="flex items-center gap-2 text-xs font-semibold text-foreground select-none">
+                <Checkbox checked={formIsFeatured} onCheckedChange={(c) => setFormIsFeatured(!!c)} />
                 Is Featured (Promote on frontpage)
               </label>
             </div>
@@ -1188,9 +1197,9 @@ export const ProductsPage = () => {
             {/* Footer triggers */}
             <DialogFooter className="mt-4 gap-2">
               <DialogClose asChild>
-                <Button type="button" variant="outline" className="cursor-pointer">Cancel</Button>
+                <Button type="button" variant="outline">Cancel</Button>
               </DialogClose>
-              <Button type="submit" disabled={submittingProduct} className="cursor-pointer">
+              <Button type="submit" disabled={submittingProduct}>
                 {submittingProduct && <Spinner data-icon="inline-start" />}
                 {submittingProduct ? "Saving catalogue..." : "Save Product Catalogue"}
               </Button>
@@ -1308,7 +1317,7 @@ export const ProductsPage = () => {
                   </div>
 
                   {/* Save option */}
-                  <Button type="submit" disabled={submittingVariant} className="w-full mt-2 font-medium cursor-pointer">
+                  <Button type="submit" disabled={submittingVariant} className="w-full mt-2 font-medium">
                     {submittingVariant && <Spinner data-icon="inline-start" />}
                     {submittingVariant ? "Appending..." : "Append Variant Option"}
                   </Button>
@@ -1320,7 +1329,7 @@ export const ProductsPage = () => {
             {/* Existing Variants list */}
             <div className="flex flex-col gap-4">
               <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Active Variant Combinations</h3>
-              <div className="flex flex-col gap-3 max-h-[350px] overflow-y-auto pr-1">
+              <div className="flex flex-col gap-3 max-h-87.5 overflow-y-auto pr-1">
                 {!activeProduct?.variants || activeProduct.variants.length === 0 ? (
                   <div className="text-center py-12 text-xs text-muted-foreground border border-dashed rounded-lg bg-muted/20">
                     No variant combinations constructed yet.
@@ -1345,14 +1354,12 @@ export const ProductsPage = () => {
                         </div>
                         <div className="text-[10px] text-muted-foreground font-mono">{v.sku}</div>
                         <div className="flex items-center gap-3 mt-1 text-[10px] font-semibold">
-                          <span className="text-green-600">{v.stock} in stock</span>
+                          <Badge variant="default">{v.stock} in stock</Badge>
                           <span className="text-primary">+{formatPrice(v.additional_price)} offset</span>
                         </div>
                       </div>
-                      <Button variant="ghost" size="icon" onClick={() => handleDeleteVariant(v.id)} className="hover:bg-destructive/10 hover:text-destructive size-7 cursor-pointer">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.8" stroke="currentColor" className="size-3.5">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                        </svg>
+                      <Button variant="ghost" size="icon" onClick={() => handleDeleteVariant(v.id)} className="hover:bg-destructive/10 hover:text-destructive size-7">
+                        <HugeiconsIcon icon={Delete02Icon} className="size-3.5" />
                       </Button>
                     </div>
                   ))
@@ -1364,7 +1371,7 @@ export const ProductsPage = () => {
 
           <DialogFooter className="border-t border-border pt-4">
             <DialogClose asChild>
-              <Button type="button" className="cursor-pointer">Close Manager</Button>
+              <Button type="button">Close Manager</Button>
             </DialogClose>
           </DialogFooter>
         </DialogContent>
@@ -1396,7 +1403,7 @@ export const ProductsPage = () => {
                   className="w-full text-xs text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-md file:border file:text-xs file:font-semibold file:bg-card file:text-foreground hover:file:bg-muted cursor-pointer"
                 />
               </div>
-              <Button type="submit" disabled={uploadingImages || !selectedFiles} className="cursor-pointer">
+              <Button type="submit" disabled={uploadingImages || !selectedFiles}>
                 {uploadingImages && <Spinner data-icon="inline-start" />}
                 {uploadingImages ? "Uploading..." : "Upload Assets"}
               </Button>
@@ -1439,7 +1446,7 @@ export const ProductsPage = () => {
                           size="xs"
                           onClick={() => handleSetPrimaryImage(img.id)}
                           disabled={img.is_primary}
-                          className="text-[10px] p-1.5 h-auto cursor-pointer"
+                          className="text-[10px] p-1.5 h-auto"
                         >
                           Set Cover
                         </Button>
@@ -1448,11 +1455,9 @@ export const ProductsPage = () => {
                           variant="ghost"
                           size="icon"
                           onClick={() => handleDeleteImage(img.id)}
-                          className="hover:bg-destructive/10 hover:text-destructive size-7 cursor-pointer"
+                          className="hover:bg-destructive/10 hover:text-destructive size-7"
                         >
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.8" stroke="currentColor" className="size-3.5">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                          </svg>
+                          <HugeiconsIcon icon={Delete02Icon} className="size-3.5" />
                         </Button>
                       </div>
 
@@ -1466,7 +1471,7 @@ export const ProductsPage = () => {
 
           <DialogFooter className="border-t border-border pt-4">
             <DialogClose asChild>
-              <Button type="button" className="cursor-pointer">Close Gallery</Button>
+              <Button type="button">Close Gallery</Button>
             </DialogClose>
           </DialogFooter>
         </DialogContent>

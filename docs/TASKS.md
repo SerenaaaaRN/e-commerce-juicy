@@ -125,9 +125,18 @@
 - [x] Product and published/unpublished status filters
 - [x] Action to publish/unpublish reviews or delete permanently
 
-### 3.9 Integration QA
-- [x] Validate all admin screens connect to the Golang backend without mock data
+### 3.9 Shadcn UI Standardization
+- [x] Replace all raw `<table>` with shadcn `Table` component (ProductsPage, OrdersPage, CustomersPage)
+- [x] Replace all raw `<select>` with shadcn `Select` component (ProductsPage, OrdersPage, ReviewsPage)
+- [x] Replace raw `<input type="checkbox">` with shadcn `Checkbox` (ProductsPage)
+- [x] Replace `<hr>` with shadcn `Separator` (OrdersPage)
+- [x] Replace inline SVG icons with `HugeiconsIcon` (all pages)
+- [x] Replace raw color classes (`text-green-600`, `text-yellow-600`, etc.) with semantic `Badge` variants
+- [x] Replace raw `oklch()` values in Recharts with `hsl(var(--...))` CSS variables (DashboardPage)
 - [x] Clean production build (`npm run build` passes)
+
+### 3.10 Integration QA
+- [x] Validate all admin screens connect to the Golang backend without mock data
 
 ---
 

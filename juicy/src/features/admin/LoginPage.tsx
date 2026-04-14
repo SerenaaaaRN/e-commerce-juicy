@@ -59,7 +59,7 @@ export const LoginPage = () => {
       } else {
         toast.error(res.message || "Invalid email or passcode. Access denied.")
       }
-    } catch (err: unknown) {
+    } catch {
       toast.error("Failed to authenticate. Access denied.")
     } finally {
       setLoading(false)

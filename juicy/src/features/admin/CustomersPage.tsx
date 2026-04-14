@@ -3,12 +3,15 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Spinner } from "@/components/ui/spinner"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog"
 import { adminApi } from "@/lib/api/admin"
 import { formatPrice, formatDate } from "@/lib/utils/format"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   SearchIcon,
+  CheckmarkCircle01Icon,
+  Cancel01Icon,
 } from "@hugeicons/core-free-icons"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
@@ -88,26 +91,24 @@ export const CustomersPage = () => {
   // Account suspension process state
   const [togglingStatus, setTogglingStatus] = useState(false)
 
-  const loadData = async () => {
-    try {
-      setLoading(true)
-      const res = await adminApi.getCustomers()
-      if (res.success && res.data) {
-        setClients(res.data as ClientStatistics[])
-      } else {
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await adminApi.getCustomers()
+        if (res.success && res.data) {
+          setClients(res.data as ClientStatistics[])
+        } else {
+          setClients(fallbackClients)
+          setUsingFallback(true)
+        }
+      } catch {
         setClients(fallbackClients)
         setUsingFallback(true)
+      } finally {
+        setLoading(false)
       }
-    } catch {
-      setClients(fallbackClients)
-      setUsingFallback(true)
-    } finally {
-      setLoading(false)
     }
-  }
-
-  useEffect(() => {
-    loadData()
+    fetchData()
   }, [])
 
   // View Customer profile history
@@ -232,32 +233,32 @@ export const CustomersPage = () => {
       </div>
 
       {/* Customer table Grid */}
-      <div className="border border-border/60 rounded-lg bg-card overflow-x-auto shadow-sm">
-        <table className="w-full text-left border-collapse text-sm">
-          <thead className="bg-muted/40 font-bold border-b border-border">
-            <tr>
-              <th className="px-6 py-4">Client</th>
-              <th className="px-6 py-4">Phone Number</th>
-              <th className="px-6 py-4">Registration</th>
-              <th className="px-6 py-4">Lifecycle Orders</th>
-              <th className="px-6 py-4">Lifecycle Spent</th>
-              <th className="px-6 py-4">Account Health</th>
-              <th className="px-6 py-4 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border/60">
+      <div className="border border-border/60 rounded-lg bg-card shadow-sm">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="px-6 py-4">Client</TableHead>
+              <TableHead className="px-6 py-4">Phone Number</TableHead>
+              <TableHead className="px-6 py-4">Registration</TableHead>
+              <TableHead className="px-6 py-4">Lifecycle Orders</TableHead>
+              <TableHead className="px-6 py-4">Lifecycle Spent</TableHead>
+              <TableHead className="px-6 py-4">Account Health</TableHead>
+              <TableHead className="px-6 py-4 text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {filteredClients.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
+              <TableRow>
+                <TableCell colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
                   No customers found matching your search term.
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ) : (
               filteredClients.map((client) => (
-                <tr key={client.id} className="hover:bg-muted/20 transition-colors">
+                <TableRow key={client.id}>
                   
                   {/* Client info */}
-                  <td className="px-6 py-4">
+                  <TableCell className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="flex size-9 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary uppercase">
                         {client.full_name.substring(0, 2)}
@@ -267,39 +268,39 @@ export const CustomersPage = () => {
                         <div className="text-[11px] text-muted-foreground">{client.email}</div>
                       </div>
                     </div>
-                  </td>
+                  </TableCell>
 
                   {/* Phone */}
-                  <td className="px-6 py-4 font-mono text-xs text-foreground">
+                  <TableCell className="px-6 py-4 font-mono text-xs text-foreground">
                     {client.phone || "-"}
-                  </td>
+                  </TableCell>
 
                   {/* Registration date */}
-                  <td className="px-6 py-4 text-muted-foreground text-xs">
+                  <TableCell className="px-6 py-4 text-muted-foreground text-xs">
                     {formatDate(client.created_at)}
-                  </td>
+                  </TableCell>
 
                   {/* Orders count */}
-                  <td className="px-6 py-4 font-semibold text-foreground">
+                  <TableCell className="px-6 py-4 font-semibold text-foreground">
                     {client.order_count} unit(s)
-                  </td>
+                  </TableCell>
 
                   {/* Total spent */}
-                  <td className="px-6 py-4 font-bold text-foreground">
+                  <TableCell className="px-6 py-4 font-bold text-foreground">
                     {formatPrice(client.total_spent)}
-                  </td>
+                  </TableCell>
 
                   {/* Account status */}
-                  <td className="px-6 py-4">
-                    <Badge variant={client.is_active ?? true ? "outline" : "secondary"} className={client.is_active ?? true ? "text-green-600 border-green-600 bg-green-500/5" : "text-destructive border-destructive bg-destructive/5"}>
+                  <TableCell className="px-6 py-4">
+                    <Badge variant={client.is_active ?? true ? "default" : "destructive"}>
                       {client.is_active ?? true ? "Active Health" : "Suspended"}
                     </Badge>
-                  </td>
+                  </TableCell>
 
                   {/* Actions */}
-                  <td className="px-6 py-4 text-right">
+                  <TableCell className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <Button variant="outline" size="sm" onClick={() => handleViewClientDetails(client)} className="cursor-pointer">
+                      <Button variant="outline" size="sm" onClick={() => handleViewClientDetails(client)}>
                         CRM Log
                       </Button>
                       <Button
@@ -308,28 +309,24 @@ export const CustomersPage = () => {
                         disabled={togglingStatus}
                         onClick={() => handleToggleClientStatus(client)}
                         className={cn(
-                          "size-8 rounded-full border cursor-pointer hover:bg-muted",
-                          client.is_active ?? true ? "text-destructive hover:bg-destructive/10" : "text-green-600 hover:bg-green-600/10"
+                          "size-8 rounded-full border hover:bg-muted",
+                          client.is_active ?? true ? "text-destructive hover:bg-destructive/10" : "text-primary hover:bg-primary/10"
                         )}
                       >
                         {client.is_active ?? true ? (
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.8" stroke="currentColor" className="size-4">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 0 0 5.636 5.636m12.728 12.728A9 9 0 0 1 5.636 5.636m12.728 12.728L5.636 5.636" />
-                          </svg>
+                          <HugeiconsIcon icon={Cancel01Icon} className="size-4" />
                         ) : (
-                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.8" stroke="currentColor" className="size-4">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                          </svg>
+                          <HugeiconsIcon icon={CheckmarkCircle01Icon} className="size-4" />
                         )}
                       </Button>
                     </div>
-                  </td>
+                  </TableCell>
 
-                </tr>
+                </TableRow>
               ))
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
 
       {/* --- CUSTOMER PROFILE CRM DRAWER DIALOG --- */}
@@ -369,7 +366,7 @@ export const CustomersPage = () => {
                 <div className="flex flex-col gap-1">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Account Health</span>
                   <div>
-                    <Badge variant={activeClient.is_active ?? true ? "outline" : "secondary"} className={activeClient.is_active ?? true ? "text-green-600 border-green-600 bg-green-500/5" : "text-destructive border-destructive bg-destructive/5"}>
+                    <Badge variant={activeClient.is_active ?? true ? "default" : "destructive"}>
                       {activeClient.is_active ?? true ? "Active Access" : "Suspended"}
                     </Badge>
                   </div>
@@ -399,10 +396,7 @@ export const CustomersPage = () => {
                         </div>
                         <div className="flex items-center gap-3">
                           <div className="text-right font-bold text-foreground">{formatPrice(ord.total)}</div>
-                          <Badge variant="outline" className={cn(
-                            "text-[10px] uppercase font-bold",
-                            ord.status === "delivered" ? "text-green-600 border-green-600" : "text-yellow-600 border-yellow-600"
-                          )}>
+                          <Badge variant={ord.status === "delivered" ? "default" : "secondary"}>
                             {ord.status}
                           </Badge>
                         </div>
@@ -417,7 +411,7 @@ export const CustomersPage = () => {
 
           <DialogFooter className="border-t border-border pt-4">
             <DialogClose asChild>
-              <Button type="button" className="cursor-pointer">Close CRM Log</Button>
+              <Button type="button">Close CRM Log</Button>
             </DialogClose>
           </DialogFooter>
         </DialogContent>
