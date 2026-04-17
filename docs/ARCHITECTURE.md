@@ -34,96 +34,155 @@
 
 ## Frontend Structure
 
+Struktur frontend menggunakan pendekatan **hybrid domain-based**: setiap domain/fitur besar punya folder sendiri di dalam `features/`, sementara shared UI, layout, dan utilities tetap di folder top-level (`components/`, `lib/`, `hooks/`).
+
 ```
 client/
 ├── public/
-│   └── fonts/                    # Playfair Display, DM Sans (self-hosted)
 ├── src/
-│   ├── assets/                   # Static images, SVGs
-│   ├── components/
-│   │   ├── ui/                   # Custom design system primitives
+│   │
+│   ├── features/                         # Domain-based feature folders
+│   │   │
+│   │   ├── home/                         # Landing page
+│   │   │   ├── components/
+│   │   │   │   ├── HeroSection.tsx       # Hero banner utama dengan CTA
+│   │   │   │   ├── FeaturedSection.tsx   # Grid produk featured/bestseller
+│   │   │   │   ├── CollectionPreview.tsx # Preview koleksi dengan link ke /shop
+│   │   │   │   ├── EditorialSection.tsx  # Editorial/lookbook imagery section
+│   │   │   │   └── CtaSection.tsx        # Call-to-action banner bawah halaman
+│   │   │   └── HomePage.tsx              # Page component — compose semua sections
+│   │   │
+│   │   ├── shop/                         # Catalog + Product Detail
+│   │   │   ├── components/
+│   │   │   │   ├── ProductCard.tsx           # Card produk: gambar, nama, harga, badge
+│   │   │   │   ├── ProductGrid.tsx           # Grid layout untuk list produk
+│   │   │   │   ├── ProductFilters.tsx        # Filter sidebar: kategori, sort, price range
+│   │   │   │   ├── ProductImageGallery.tsx   # Main image + thumbnail strip
+│   │   │   │   ├── VariantSelector.tsx       # Size pills + color swatches; OOS state
+│   │   │   │   ├── AddToCartButton.tsx       # Button dengan stock check + loading state
+│   │   │   │   ├── ProductInfo.tsx           # Nama, harga, compare_at_price, tags, desc
+│   │   │   │   ├── ReviewsSection.tsx        # Review list + pagination di PDP
+│   │   │   │   ├── ReviewCard.tsx            # Satu review: avatar, rating, body, date
+│   │   │   │   └── StarRating.tsx            # Reusable — display mode + interactive mode
+│   │   │   ├── types.ts                      # ProductFilters, SortOption, GalleryImage
+│   │   │   ├── CollectionPage.tsx            # /shop — grid + filter + sort + pagination
+│   │   │   └── ProductPage.tsx               # /shop/:slug — PDP lengkap
+│   │   │
+│   │   ├── cart/                         # Cart
+│   │   │   ├── components/
+│   │   │   │   ├── CartItem.tsx          # Row: gambar, nama, variant, qty stepper, hapus
+│   │   │   │   ├── CartSummary.tsx       # Sidebar: subtotal, shipping placeholder, total
+│   │   │   │   └── EmptyCart.tsx         # Empty state dengan CTA ke /shop
+│   │   │   └── CartPage.tsx              # /cart — hanya untuk authenticated customer
+│   │   │
+│   │   ├── checkout/                     # Checkout flow
+│   │   │   ├── components/
+│   │   │   │   ├── AddressSelector.tsx   # Pilih dari saved addresses atau tambah baru
+│   │   │   │   ├── AddressForm.tsx       # Inline form tambah/edit address
+│   │   │   │   ├── OrderSummary.tsx      # Read-only ringkasan item + harga
+│   │   │   │   └── PaymentSelector.tsx   # Payment method selector (COD untuk MVP)
+│   │   │   ├── types.ts                  # CheckoutFormValues, AddressFormValues
+│   │   │   └── CheckoutPage.tsx          # /checkout — protected route
+│   │   │
+│   │   ├── orders/                       # Order tracking + history
+│   │   │   ├── components/
+│   │   │   │   ├── OrderStatusTimeline.tsx   # Step indicator: Pending→Confirmed→...→Delivered
+│   │   │   │   ├── OrderItemRow.tsx           # Baris item: gambar, nama, variant, harga
+│   │   │   │   ├── OrderCard.tsx              # Card ringkasan order di list history
+│   │   │   │   └── WriteReviewCta.tsx         # CTA review untuk item yang sudah delivered
+│   │   │   ├── types.ts                       # OrderTimelineStep, OrderStatusDisplay
+│   │   │   ├── OrderTrackingPage.tsx          # /orders/:orderNumber — detail + timeline
+│   │   │   └── OrderHistoryPage.tsx           # /orders — list semua order customer
+│   │   │
+│   │   ├── auth/                         # Customer authentication
+│   │   │   ├── components/
+│   │   │   │   ├── LoginForm.tsx         # Email + password form dengan Zod validation
+│   │   │   │   └── RegisterForm.tsx      # Nama, email, password, konfirmasi password
+│   │   │   ├── types.ts                  # LoginFormValues, RegisterFormValues
+│   │   │   ├── LoginPage.tsx             # /login
+│   │   │   └── RegisterPage.tsx          # /register
+│   │   │
+│   │   ├── profile/                      # Customer profile management
+│   │   │   ├── components/
+│   │   │   │   ├── EditProfileForm.tsx       # Form edit nama + nomor telepon
+│   │   │   │   ├── ChangePasswordForm.tsx    # Form ganti password (old + new + confirm)
+│   │   │   │   ├── AddressList.tsx           # List semua address customer
+│   │   │   │   ├── AddressCard.tsx           # Card address: label, detail, badge default, actions
+│   │   │   │   └── AddressFormModal.tsx      # Modal tambah/edit address
+│   │   │   ├── types.ts                      # EditProfileValues, ChangePasswordValues, AddressFormValues
+│   │   │   └── ProfilePage.tsx               # /profile — tabs: Info, Password, Alamat
+│   │   │
+│   │   └── admin/                        # Admin dashboard (sudah done Phase 3)
+│   │       ├── components/
+│   │       │   └── AdminRoute.tsx        # Route guard — redirect ke /admin/login
+│   │       ├── LoginPage.tsx             # /admin/login — FieldGroup + Field + Input + Button
+│   │       ├── DashboardPage.tsx         # /admin/dashboard — Card + Recharts (CSS vars, not raw oklch)
+│   │       ├── ProductsPage.tsx          # /admin/products — Table + Select + Checkbox + Dialog + Badge
+│   │       ├── OrdersPage.tsx            # /admin/orders — Table + Select + Dialog + Badge + Separator
+│   │       ├── CustomersPage.tsx         # /admin/customers — Table + Badge + Dialog
+│   │       └── ReviewsPage.tsx           # /admin/reviews — Select + Card + Badge
+│   │
+│   ├── components/                       # Shared UI — dipakai lintas feature
+│   │   ├── ui/                           # shadcn/ui primitives (auto-generated via CLI)
 │   │   │   ├── badge.tsx
 │   │   │   ├── button.tsx
 │   │   │   ├── card.tsx
 │   │   │   ├── input.tsx
 │   │   │   ├── label.tsx
 │   │   │   ├── select.tsx
-│   │   │   ├── sonner.tsx
-│   │   │   ├── textarea.tsx
-│   │   │   └── Divider.tsx
+│   │   │   ├── separator.tsx
+│   │   │   └── ...other
 │   │   ├── layout/
-│   │   │   ├── Navbar.tsx            # Public nav (logo + links + cart icon + auth)
+│   │   │   ├── Navbar.tsx                # Public nav: logo + links + cart icon + auth
 │   │   │   ├── Footer.tsx
-│   │   │   └── AdminLayout.tsx
-│   │   ├── animations/           # Reusable GSAP cinematic animations
-│   │   │   ├── AsymmetricParallaxSection.tsx
-│   │   │   ├── OrigamiSplitSection.tsx
-│   │   │   └── DioramaSection.tsx    # Box-to-Fullscreen Zoom Portal
-│   │   ├── sections/             # Public page sections
-│   │   │   ├── HeroSection.tsx
-│   │   │   ├── FeaturedSection.tsx
-│   │   │   ├── CollectionPreview.tsx
-│   │   │   ├── EditorialSection.tsx
-│   │   │   └── CtaSection.tsx
-│   │   ├── shop/
-│   │   │   ├── ProductCard.tsx
-│   │   │   ├── ProductGrid.tsx
-│   │   │   ├── ProductImageGallery.tsx
-│   │   │   ├── VariantSelector.tsx   # Size + color picker
-│   │   │   ├── ReviewCard.tsx
-│   │   │   └── StarRating.tsx
-│   │   ├── admin/
-│   │   │   ├── AdminRoute.tsx
-│   │   │   ├── Sidebar.tsx
-│   │   │   ├── DataTable.tsx
-│   │   │   ├── StatsCard.tsx
-│   │   │   └── ImageUploader.tsx
+│   │   │   └── AdminLayout.tsx           # Sidebar + Header wrapper untuk admin
 │   │   └── common/
-│   │       └── ProtectedRoute.tsx    # Customer route guard
-│   ├── pages/
-│   │   ├── public/
-│   │   │   ├── HomePage.tsx
-│   │   │   ├── CollectionPage.tsx    # Product catalog with filters
-│   │   │   ├── ProductPage.tsx       # PDP — product detail
-│   │   │   ├── CartPage.tsx
-│   │   │   ├── CheckoutPage.tsx
-│   │   │   └── OrderTrackingPage.tsx
-│   │   ├── customer/
-│   │   │   ├── RegisterPage.tsx
-│   │   │   ├── LoginPage.tsx
-│   │   │   ├── ProfilePage.tsx
-│   │   │   └── OrderHistoryPage.tsx
-│   │   └── admin/
-│   │       ├── LoginPage.tsx
-│   │       ├── DashboardPage.tsx
-│   │       ├── ProductsPage.tsx
-│   │       ├── OrdersPage.tsx
-│   │       └── CustomersPage.tsx
+│   │       ├── ProtectedRoute.tsx        # Customer route guard — cek customerAuthStore
+│   │       ├── LoadingSkeleton.tsx       # Generic skeleton placeholder
+│   │       ├── EmptyState.tsx            # Generic empty state: icon + message + optional CTA
+│   │       └── ErrorMessage.tsx          # Generic error display dengan retry button
+│   │
 │   ├── lib/
-│   │   ├── api/                  # API client layer
-│   │   │   ├── client.ts         # Admin Axios instance + JWT interceptor
-│   │   │   ├── customerClient.ts # Customer Axios instance + JWT interceptor
-│   │   │   ├── types.ts          # 25+ TypeScript interfaces matching backend DTOs
-│   │   │   ├── products.ts       # Public shop product API
-│   │   │   ├── customer.ts       # Customer auth, addresses, cart, orders, reviews
-│   │   │   ├── admin.ts          # Admin auth, CRUDs, analytics
-│   │   │   └── index.ts          # Re-exports
-│   │   ├── utils.ts              # cn() utility (clsx + tailwind-merge)
-│   │   ├── gsap.ts               # GSAP + ScrollTrigger init
-│   │   └── lenis.ts              # Lenis smooth scroll init
-│   ├── stores/                   # Zustand — API calls directly in async actions
-│   │   ├── adminAuthStore.ts     # Admin JWT token + profile
-│   │   ├── customerAuthStore.ts  # Customer JWT token + profile + addresses
-│   │   ├── cartStore.ts          # Cart items, fetchCart, addItem, etc.
-│   │   ├── orderStore.ts         # Orders, placeOrder, fetchOrders, etc.
-│   │   ├── productStore.ts       # Products + categories
-│   │   └── uiStore.ts            # Sidebar open, loading overlay
-│   ├── features/                 # Feature types (shop types only)
-│   │   └── shop/
-│   │       └── shop.types.ts
-│   ├── App.tsx
-│   ├── main.tsx
-│   └── index.css                 # Tailwind v4 @theme, font-face declarations
+│   │   ├── api/
+│   │   │   ├── client.ts                 # Admin Axios instance + JWT interceptor + refresh logic
+│   │   │   ├── customerClient.ts         # Customer Axios instance + JWT interceptor + auto-logout on 401
+│   │   │   ├── admin.ts                  # Semua admin API calls: auth, products, orders, customers, analytics
+│   │   │   ├── products.ts               # Public shop API: getProducts, getProductBySlug, getCategories
+│   │   │   ├── customer.ts               # Customer API: auth, profile, addresses, cart, orders, reviews
+│   │   │   └── index.ts                  # Re-exports semua API modules
+│   │   └── utils/
+│   │       ├── cn.ts                     # cn() helper — clsx + tailwind-merge
+│   │       ├── format.ts                 # formatPrice (Rupiah), formatDate, formatOrderNumber
+│   │       └── status.ts                 # getOrderStatusLabel, getOrderStatusColor, getPaymentStatusLabel
+│   │
+│   ├── stores/                           # Zustand global stores
+│   │   ├── adminAuthStore.ts             # Admin JWT access token + admin profile
+│   │   ├── customerAuthStore.ts          # Customer JWT token + customer profile + addresses
+│   │   ├── cartStore.ts                  # Cart items, fetchCart, addItem, updateQty, removeItem, clearCart
+│   │   ├── orderStore.ts                 # Orders list, currentOrder, placeOrder, fetchOrders, fetchByOrderNumber
+│   │   ├── productStore.ts               # Products list, categories, filters, fetchProducts, fetchProductBySlug
+│   │   └── reviewStore.ts                # Reviews per product, submitReview, fetchReviews
+│   │
+│   ├── hooks/                            # Custom hooks — per concern
+│   │   ├── useAuth.ts                    # Shortcut ke customerAuthStore: isLoggedIn, customer, logout
+│   │   ├── useCart.ts                    # Shortcut ke cartStore + computed values: itemCount, totalPrice
+│   │   ├── useProduct.ts                 # Fetch + state management untuk single product / list
+│   │   └── useOrder.ts                   # Fetch order by orderNumber, status helpers
+│   │
+│   ├── types/
+│   │   └── index.ts                      # Shared global types: ApiResponse<T>, PaginatedResponse<T>, semua backend DTO interfaces (Product, Order, Customer, Review, CartItem, Address, dll)
+│   │
+│   ├── constants/
+│   │   ├── routes.ts                     # Typed route paths: ROUTES.shop, ROUTES.cart, ROUTES.orders, dll
+│   │   └── orderStatus.ts                # ORDER_STATUS enum values, label map, color map
+│   │
+│   ├── provider/
+│   │   └── theme-provider.tsx            # shadcn theme provider (light/dark)
+│   │
+│   ├── App.tsx                           # Router setup — semua route definitions
+│   ├── main.tsx                          # Entry point — mount App + providers
+│   └── index.css                         # Tailwind v4 @theme, shadcn CSS variables, accent terracotta #b5633a
+│
 ├── index.html
 ├── vite.config.ts
 ├── tsconfig.json
@@ -145,13 +204,13 @@ server/
 │   │   └── postgres.go
 │   ├── handler/
 │   │   ├── interfaces.go
-│   │   ├── admin.go              # Admin auth
-│   │   ├── customer.go           # Customer auth + profile
-│   │   ├── product.go            # Public + admin product endpoints
+│   │   ├── admin.go
+│   │   ├── customer.go
+│   │   ├── product.go
 │   │   ├── category.go
-│   │   ├── cart.go               # Customer cart
-│   │   ├── order.go              # Customer checkout + admin order management
-│   │   ├── review.go             # Customer reviews
+│   │   ├── cart.go
+│   │   ├── order.go
+│   │   ├── review.go
 │   │   └── analytics.go
 │   ├── service/
 │   │   ├── interfaces.go
@@ -161,9 +220,9 @@ server/
 │   │   ├── product.go
 │   │   ├── category.go
 │   │   ├── cart.go
-│   │   ├── order.go              # Stock decrement + order number generation
+│   │   ├── order.go
 │   │   ├── review.go
-│   │   ├── email.go              # Order confirmation, shipping update emails
+│   │   ├── email.go
 │   │   ├── cloudinary.go
 │   │   └── analytics.go
 │   ├── repository/
@@ -191,36 +250,24 @@ server/
 │   │   ├── order.go
 │   │   └── review.go
 │   ├── middleware/
-│   │   ├── admin_auth.go         # JWT validator for admin routes
-│   │   ├── customer_auth.go      # JWT validator for customer routes
+│   │   ├── admin_auth.go
+│   │   ├── customer_auth.go
 │   │   └── cors.go
 │   └── router/
 │       └── router.go
 ├── migrations/
-│   ├── 000001_create_enums.up.sql
-│   ├── 000001_create_enums.down.sql
-│   ├── 000002_create_admins.up.sql
-│   ├── 000002_create_admins.down.sql
-│   ├── 000003_create_customers.up.sql
-│   ├── 000003_create_customers.down.sql
-│   ├── 000004_create_addresses.up.sql
-│   ├── 000004_create_addresses.down.sql
-│   ├── 000005_create_categories.up.sql
-│   ├── 000005_create_categories.down.sql
-│   ├── 000006_create_products.up.sql
-│   ├── 000006_create_products.down.sql
-│   ├── 000007_create_product_images.up.sql
-│   ├── 000007_create_product_images.down.sql
-│   ├── 000008_create_product_variants.up.sql
-│   ├── 000008_create_product_variants.down.sql
-│   ├── 000009_create_cart_items.up.sql
-│   ├── 000009_create_cart_items.down.sql
-│   ├── 000010_create_orders.up.sql
-│   ├── 000010_create_orders.down.sql
-│   ├── 000011_create_order_items.up.sql
-│   ├── 000011_create_order_items.down.sql
-│   ├── 000012_create_reviews.up.sql
-│   └── 000012_create_reviews.down.sql
+│   ├── 000001_create_enums.up.sql / .down.sql
+│   ├── 000002_create_admins.up.sql / .down.sql
+│   ├── 000003_create_customers.up.sql / .down.sql
+│   ├── 000004_create_addresses.up.sql / .down.sql
+│   ├── 000005_create_categories.up.sql / .down.sql
+│   ├── 000006_create_products.up.sql / .down.sql
+│   ├── 000007_create_product_images.up.sql / .down.sql
+│   ├── 000008_create_product_variants.up.sql / .down.sql
+│   ├── 000009_create_cart_items.up.sql / .down.sql
+│   ├── 000010_create_orders.up.sql / .down.sql
+│   ├── 000011_create_order_items.up.sql / .down.sql
+│   └── 000012_create_reviews.up.sql / .down.sql
 ├── .env
 ├── .env.example
 ├── go.mod
@@ -229,35 +276,132 @@ server/
 
 ---
 
+## Route Structure (Frontend)
+
+```
+/                           → HomePage
+/shop                       → CollectionPage
+/shop/:slug                 → ProductPage
+/cart                       → CartPage (protected)
+/checkout                   → CheckoutPage (protected)
+/orders                     → OrderHistoryPage (protected)
+/orders/:orderNumber        → OrderTrackingPage (protected)
+/login                      → LoginPage (redirect ke / jika sudah login)
+/register                   → RegisterPage (redirect ke / jika sudah login)
+/profile                    → ProfilePage (protected)
+
+/admin/login                → Admin LoginPage
+/admin/dashboard            → DashboardPage (admin protected)
+/admin/products             → ProductsPage (admin protected)
+/admin/orders               → OrdersPage (admin protected)
+/admin/customers            → CustomersPage (admin protected)
+/admin/reviews              → ReviewsPage (admin protected)
+```
+
+---
+
+## Types Strategy
+
+### Global Types (`src/types/index.ts`)
+Berisi semua interface yang merupakan cerminan langsung dari backend DTO — dipakai lintas feature:
+
+```typescript
+// API envelope
+interface ApiResponse<T> { success: boolean; data: T; message?: string }
+interface PaginatedResponse<T> { success: boolean; data: T[]; meta: PaginationMeta }
+interface PaginationMeta { page: number; per_page: number; total: number; total_pages: number }
+
+// Domain models
+interface Product { ... }
+interface ProductVariant { ... }
+interface ProductImage { ... }
+interface Category { ... }
+interface CartItem { ... }
+interface Order { ... }
+interface OrderItem { ... }
+interface Address { ... }
+interface Customer { ... }
+interface Review { ... }
+```
+
+### Feature-Specific Types (`src/features/<domain>/types.ts`)
+Berisi types yang hanya relevan untuk UI/form di feature tersebut — tidak perlu di-share:
+
+```typescript
+// features/shop/types.ts
+interface ProductFilters { categoryId?: string; sort?: SortOption; page?: number }
+type SortOption = 'newest' | 'price_asc' | 'price_desc'
+
+// features/checkout/types.ts
+interface CheckoutFormValues { addressId: string; paymentMethod: string; notes?: string }
+
+// features/auth/types.ts
+interface LoginFormValues { email: string; password: string }
+interface RegisterFormValues { name: string; email: string; password: string; confirmPassword: string }
+```
+
+---
+
 ## Architectural Patterns
 
-### 1. Robust Layer Coupling via Interface Abstraction
-Same pattern as Elysium — "Accept Interfaces, Return Structs". Services and handlers accept mockable interfaces in their constructors. `service/interfaces.go` defines repository contracts; `handler/interfaces.go` defines service actions.
+### 1. Interface Abstraction (Backend)
+"Accept Interfaces, Return Structs." Services dan handlers accept mockable interfaces di constructor mereka. `service/interfaces.go` mendefinisikan repository contracts; `handler/interfaces.go` mendefinisikan service contracts.
 
-### 2. Request Context Propagation
-All Gin handlers extract context via `c.Request.Context()` and chain it downward. All GORM queries use `db.WithContext(ctx)`.
+### 2. Request Context Propagation (Backend)
+Semua Gin handlers extract context via `c.Request.Context()` dan chain-nya ke bawah. Semua GORM queries menggunakan `db.WithContext(ctx)`.
 
-### 3. Graceful Shutdown & Managed Concurrency
-- Graceful HTTP shutdown on `SIGINT` / `SIGTERM` with 10-second drain timeout.
-- `BackgroundWorker` using `sync.WaitGroup` for async email dispatches (order confirmation, shipping update).
-- `errgroup` concurrent pipeline for dashboard analytics overview.
+### 3. Graceful Shutdown & Managed Concurrency (Backend)
+- Graceful HTTP shutdown pada `SIGINT` / `SIGTERM` dengan 10-second drain timeout.
+- `BackgroundWorker` menggunakan `sync.WaitGroup` untuk async email dispatch.
+- `errgroup` concurrent pipeline untuk dashboard analytics overview.
 
 ### 4. Dual Auth Middleware
-Admin and customer JWTs are issued with separate secrets (`JWT_ADMIN_SECRET`, `JWT_CUSTOMER_SECRET`), validated by separate middleware (`admin_auth.go`, `customer_auth.go`), and stored in separate Zustand stores on the frontend. This prevents any cross-contamination of auth contexts.
+Admin dan customer JWT menggunakan separate secrets (`JWT_ADMIN_SECRET`, `JWT_CUSTOMER_SECRET`), separate middleware, dan separate Zustand stores. Tidak ada cross-contamination.
 
-### 5. Atomic Stock Decrement
-Order creation runs inside a PostgreSQL transaction:
-1. Lock all relevant `product_variants` rows with `SELECT FOR UPDATE`.
-2. Check each variant has sufficient stock.
-3. Decrement stock for each item.
+| | Admin | Customer |
+|---|---|---|
+| Secret | `JWT_ADMIN_SECRET` | `JWT_CUSTOMER_SECRET` |
+| Expiry | Access 15min + Refresh 7d (HttpOnly cookie) | Access 7d |
+| Axios instance | `client.ts` | `customerClient.ts` |
+| Zustand store | `adminAuthStore` | `customerAuthStore` |
+| 401 behavior | Attempt refresh → auto-logout | Auto-logout |
+
+### 5. Atomic Stock Decrement (Backend)
+Order creation berjalan dalam PostgreSQL transaction:
+1. Lock semua `product_variants` rows yang relevan dengan `SELECT FOR UPDATE`.
+2. Cek kecukupan stok.
+3. Decrement stok.
 4. Insert `orders` + `order_items`.
-5. Commit — or rollback if any variant is out of stock, returning `409 OUT_OF_STOCK`.
+5. Commit — atau rollback jika out-of-stock, return `409 OUT_OF_STOCK`.
 
-### 6. Order Number Generation
-`order_number` is generated in the service layer as `JUICY-YYYYMMDD-XXXXXX` (date + 6-char random alphanumeric), checked for uniqueness before insert.
+### 6. Order Number Generation (Backend)
+`order_number` di-generate sebagai `JUICY-YYYYMMDD-XXXXXX` (tanggal + 6-char random alphanumeric), dengan uniqueness check sebelum insert.
 
-### 7. Cart Upsert Pattern
-`POST /cart/items` uses `INSERT ... ON CONFLICT (customer_id, variant_id) DO UPDATE SET quantity = cart_items.quantity + EXCLUDED.quantity` to handle add-to-cart idempotency.
+### 7. Cart Upsert Pattern (Backend)
+`POST /cart/items` menggunakan `INSERT ... ON CONFLICT (customer_id, variant_id) DO UPDATE SET quantity = cart_items.quantity + EXCLUDED.quantity`.
+
+### 8. Zustand Store Pattern (Frontend)
+Setiap store berisi state + async actions yang langsung call API. Tidak ada TanStack Query / cache layer tambahan.
+
+```typescript
+// Pola standar store
+interface CartStore {
+  items: CartItem[]
+  isLoading: boolean
+  error: string | null
+  fetchCart: () => Promise<void>
+  addItem: (variantId: string, qty: number) => Promise<void>
+  updateQty: (itemId: string, qty: number) => Promise<void>
+  removeItem: (itemId: string) => Promise<void>
+  clearCart: () => void
+}
+```
+
+### 9. Protected Routes (Frontend)
+Dua jenis route guard yang terpisah:
+
+- `ProtectedRoute` (customer) — cek `customerAuthStore.isAuthenticated`. Jika tidak, redirect ke `/login` dengan `state.from` untuk post-login redirect.
+- `AdminRoute` (admin) — cek `adminAuthStore.isAuthenticated`. Jika tidak, redirect ke `/admin/login`.
 
 ---
 
@@ -265,64 +409,59 @@ Order creation runs inside a PostgreSQL transaction:
 
 ### Customer Checks Out
 ```
-1. Customer reviews cart (CartPage)
-2. Selects shipping address
-3. React Hook Form validates via Zod
-4. Zustand store.action → customerApi.placeOrder()
+1. Customer review cart (CartPage)
+2. Pilih shipping address (AddressSelector)
+3. React Hook Form + Zod validation
+4. orderStore.placeOrder() → customerApi.placeOrder()
 5. POST /api/customer/orders
-6. Gin handler extracts context → OrderService.Create(ctx, req)
+6. Gin handler → OrderService.Create(ctx, req)
 7. BEGIN TRANSACTION
    ├── Lock variants (SELECT FOR UPDATE)
-   ├── Validate stock for each item
+   ├── Validate stock
    ├── Decrement stock
    ├── Generate order_number
    ├── Insert orders row
-   ├── Insert order_items rows (with price/name snapshots)
+   ├── Insert order_items (snapshot: name, price, image, variant)
    └── COMMIT
-8. BackgroundWorker.Submit() → Resend: order confirmation email to customer
-9. BackgroundWorker.Submit() → Resend: new order alert to admin
-10. Response 201 → frontend clears cart store, shows order confirmation
+8. BackgroundWorker → Resend: order confirmation ke customer
+9. BackgroundWorker → Resend: new order alert ke admin
+10. Response 201 → frontend clear cart, redirect ke /orders/:orderNumber
 ```
 
-### Admin Updates Order Status to Shipped
+### Admin Updates Order ke Shipped
 ```
-1. Admin selects order → PATCH /api/admin/orders/:id/status { status: "shipped" }
-2. OrderService.UpdateStatus(ctx, id, "shipped")
-3. Sets shipped_at = NOW()
-4. BackgroundWorker.Submit() → Resend: shipping update email to customer
-5. Response 200 → admin page updates local state
+1. PATCH /api/admin/orders/:id/status { status: "shipped" }
+2. OrderService.UpdateStatus → set shipped_at = NOW()
+3. BackgroundWorker → Resend: shipping update email ke customer
+4. Response 200 → admin page update local state
 ```
 
-### Customer Submits Review
+### Customer Submit Review
 ```
-1. Customer navigates to order history → clicks "Review" on delivered item
-2. POST /api/customer/reviews with product_id, order_id, rating, body
-3. ReviewService validates: order must belong to customer, status must be 'delivered'
-4. Checks UNIQUE (product_id, customer_id, order_id) — one review per order-item
-5. Inserts review (is_published: true by default)
-6. Response 201 → PDP review list updates
+1. POST /api/customer/reviews { product_id, order_id, rating, body }
+2. ReviewService: order harus milik customer + status harus 'delivered'
+3. Cek UNIQUE (product_id, customer_id, order_id)
+4. Insert review (is_published: true by default)
+5. Response 201 → ReviewsSection refresh
 ```
 
 ### Admin Auth Flow
 ```
-1. POST /api/admin/login with credentials
-2. AdminService verifies bcrypt hash
-3. Returns signed JWT (access: 15min) + sets HttpOnly refresh_token cookie
-4. Frontend stores access token in adminAuthStore (Zustand, memory only)
-5. Axios interceptor (client.ts) reads token from store, attaches Bearer to all /api/admin/* requests
-6. On 401, interceptor calls POST /api/admin/refresh; if that fails, clears store (auto-logout)
-7. admin_auth.go middleware validates JWT on every protected route
+1. POST /api/admin/login
+2. AdminService verifikasi bcrypt hash
+3. Return JWT (access: 15min) + HttpOnly refresh_token cookie
+4. Frontend simpan access token di adminAuthStore (memory only)
+5. client.ts interceptor attach Bearer ke semua /api/admin/* requests
+6. Pada 401 → POST /api/admin/refresh; jika gagal → auto-logout
 ```
 
 ### Customer Auth Flow
 ```
-1. POST /api/customer/register or /api/customer/login
-2. CustomerService verifies bcrypt hash (login) or creates account (register)
-3. Returns signed customer JWT (access: 7d — longer since non-admin)
-4. Frontend stores token in customerAuthStore (Zustand, memory only)
-5. customerClient.ts Axios interceptor reads token from store, attaches Bearer to all /api/customer/* requests
-6. On 401, interceptor clears store (auto-logout)
-7. customer_auth.go middleware validates JWT on protected customer routes
+1. POST /api/customer/register atau /login
+2. Return customer JWT (access: 7d)
+3. Frontend simpan di customerAuthStore (memory only — bukan localStorage)
+4. customerClient.ts interceptor attach Bearer ke /api/customer/* requests
+5. Pada 401 → clear store (auto-logout)
 ```
 
 ---
@@ -344,19 +483,18 @@ Order creation runs inside a PostgreSQL transaction:
 
 ## Key Design Decisions
 
-| Decision | Choice | Reason |
+| Decision | Choice | Alasan |
 |---|---|---|
-| No component library | Custom UI | DESIGN.md too opinionated; override cost too high |
-| Dual JWT secrets | Separate admin/customer secrets | Prevents cross-contamination; admin tokens cannot be used on customer routes |
-| Atomic stock decrement | SELECT FOR UPDATE transaction | Prevents overselling under concurrent checkout |
-| Snapshot fields in order_items | product_name, price, image_url copied at checkout | Order history accuracy even if product is edited/deleted |
-| Purchase-verified reviews | order_id FK on reviews | Prevents fake reviews; enforces real purchase |
-| Cart upsert | ON CONFLICT DO UPDATE | Idempotent add-to-cart without duplicates |
-| GORM over raw SQL | GORM | Development speed; migrations still use raw SQL |
-| golang-migrate over AutoMigrate | golang-migrate | Explicit, reversible, production-safe |
-| stores call API directly (no TanStack Query) | Zustand async actions | Simpler mental model; no extra cache layer needed for admin CRUD |
-| JWT in memory | Memory (not localStorage) | XSS protection; admin session lost on refresh (re-login required) |
-| Payment as stub | Service layer stub | Slot for Midtrans/Xendit/Stripe in post-MVP without architectural change |
-| No mock data | Server is single source of truth | All pages show empty states when server is offline |
-| Dual Axios instances | client.ts + customerClient.ts | Separate token sources (admin vs customer); separate 401 handling |
-| Reusable Animations Folder | components/animations/ | Pure visual GSAP wrapper components (AsymmetricParallax, OrigamiSplit) isolated to prevent redundant math code and preserve prop typing rules |
+| Hybrid domain-based structure | `features/` per domain + shared `components/` | Mudah navigate per fitur, tapi shared UI tidak duplikat |
+| Feature-specific types | `features/<domain>/types.ts` untuk form/UI types | Hanya expose ke global apa yang benar-benar di-share |
+| shadcn/ui | Component library base | Development cepat; zinc theme dengan terracotta accent override |
+| Dual JWT secrets | Separate admin/customer secrets | Cegah cross-contamination |
+| Atomic stock decrement | SELECT FOR UPDATE transaction | Cegah overselling di concurrent checkout |
+| Snapshot fields di order_items | product_name, price, image_url di-copy saat checkout | Akurasi order history jika produk diedit/dihapus |
+| Purchase-verified reviews | order_id FK di reviews | Cegah fake review |
+| Cart upsert | ON CONFLICT DO UPDATE | Idempotent add-to-cart |
+| GORM + raw migrations | GORM untuk queries, golang-migrate untuk schema | Speed development + explicit reversible migrations |
+| Zustand (no TanStack Query) | Zustand async actions | Mental model lebih simpel; tidak ada cache layer tambahan |
+| JWT in memory | Memory (bukan localStorage) | Proteksi XSS |
+| Payment sebagai stub | Service layer stub | Slot untuk Midtrans/Xendit/Stripe post-MVP |
+| Dual Axios instances | client.ts + customerClient.ts | Token source terpisah; 401 handling terpisah |

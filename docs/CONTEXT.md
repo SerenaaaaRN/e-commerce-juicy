@@ -5,14 +5,13 @@
 
 ## Project Overview
 
-**Juicy** is a luxury fashion e-commerce brand. This project is a full-stack web application serving as the brand's digital storefront — combining an editorial public-facing website with an internal admin dashboard for operations management, and a full customer-facing shopping experience including cart, checkout, order tracking, and reviews.
+**Juicy** is a luxury fashion e-commerce brand. This project is a full-stack web application serving as the brand's digital storefront — combining a public-facing shopping experience with an internal admin dashboard for operations management.
 
 ---
 
 ## Goals
 
 ### Primary
-- Establish a premium, editorial online presence aligned with the Jacquemus-inspired warm aesthetic.
 - Allow customers to browse products, manage a cart, checkout, track orders, and leave reviews.
 - Give staff a clean admin dashboard to manage products, orders, customers, and analytics.
 
@@ -66,10 +65,8 @@
 | Layer | Technology |
 |---|---|
 | Frontend | React + TypeScript + Vite |
-| Styling | Tailwind CSS v4 (custom, no component library) |
+| Styling | Tailwind CSS v4 + shadcn/ui |
 | Icons | Hugeicons |
-| Scroll | Lenis |
-| Animation | GSAP + ScrollTrigger |
 | Global State | Zustand (stores call API directly — no TanStack Query) |
 | Forms | React Hook Form + Zod |
 | Backend | Golang + Gin |
@@ -85,26 +82,23 @@
 
 ## Design Philosophy
 
-Refer to `DESIGN.md` for full token reference.
-
-- **Theme:** Light, warm, editorial — "Warm Editorial Canvas"
-- **Inspiration:** Jacquemus — warm beige/cream dominant, playful asymmetric layouts, bold typography, premium yet approachable
-- **Primary palette:** Cream `#f5efe6`, Sand `#c9b99a`, Terracotta `#b5633a`, Chalk `#faf7f2`, Dust `#8c7b6b`
-- **Typography:** Playfair Display (headlines) + DM Sans (body/UI)
-- **Motion:** GSAP ScrollTrigger for section reveals; Lenis for smooth scroll
-- **No component library** — all UI is custom-built to match the DESIGN.md spec precisely
+- **Base:** shadcn/ui (zinc) — all components are shadcn primitives, unstyled overrides are minimal
+- **Accent color:** Terracotta `#b5633a` — used for primary CTAs, active states, highlights
+- **Background:** Zinc scale (shadcn default light theme)
+- **No custom design system** — DESIGN.md is retired; do not reference it
 
 ---
 
 ## Development Phases
 
-| Phase | Focus |
-|---|---|
-| 1 | Database schema, migrations, pgAdmin setup |
-| 2 | Backend API (Golang Gin) — all endpoints |
-| 3 | Admin dashboard (React) |
-| 4 | Public frontend — Landing, Collection, PDP, Cart, Checkout, Order Tracking |
-| 5 | Customer auth frontend — Register, Login, Profile, Order History |
+| Phase | Status | Focus |
+|---|---|---|
+| 1 | ✅ Done | Database schema, migrations, pgAdmin setup |
+| 2 | ✅ Done | Backend API (Golang Gin) — all endpoints |
+| 3 | ✅ Done | Admin dashboard (React) |
+| 4 | 🔄 In Progress | Public frontend — Landing, Collection, PDP, Cart, Checkout, Order Tracking |
+| 5 | 🔄 In Progress | Customer auth frontend — Register, Login, Profile, Order History |
+| 6 | [ ] | Deployment to Railway |
 
 ---
 
@@ -116,7 +110,6 @@ juicy/
 ├── server/          # Golang Gin backend
 ├── docs/            # All markdown documentation
 │   ├── CONTEXT.md
-│   ├── DESIGN.md
 │   ├── ARCHITECTURE.md
 │   ├── ERD.md
 │   ├── API.md
@@ -124,6 +117,8 @@ juicy/
 │   └── ENV.md
 └── README.md
 ```
+
+> `DESIGN.md` has been retired — shadcn/ui handles all component styling.
 
 ---
 
@@ -135,3 +130,4 @@ juicy/
 - Frontend communicates with backend only through the defined API contract in `API.md`.
 - Image URLs stored in DB are always Cloudinary `secure_url` strings.
 - Customer auth and Admin auth are completely separate JWT flows — different secrets, different middleware, different Zustand stores.
+- **Admin UI must use shadcn primitives** — `Table` not `<table>`, `Select` not `<select>`, `Checkbox` not `<input type="checkbox">`, `Separator` not `<hr>`, `Badge` variants not raw color classes (`text-green-600`, etc.). Inline SVG icons must be replaced with `HugeiconsIcon`. Chart colors must reference CSS variables (`hsl(var(--primary))`) not raw `oklch()` values.
