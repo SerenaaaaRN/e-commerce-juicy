@@ -109,17 +109,13 @@ export const adminApi = {
     return response.data
   },
 
-  createProduct: async (formData: FormData): Promise<ApiResponse<ProductDetail>> => {
-    const response = await client.post<ApiResponse<ProductDetail>>("/admin/products", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    })
+  createProduct: async (payload: Record<string, unknown>): Promise<ApiResponse<ProductDetail>> => {
+    const response = await client.post<ApiResponse<ProductDetail>>("/admin/products", payload)
     return response.data
   },
 
-  updateProduct: async (id: string, formData: FormData): Promise<ApiResponse<ProductDetail>> => {
-    const response = await client.put<ApiResponse<ProductDetail>>(`/admin/products/${id}`, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    })
+  updateProduct: async (id: string, payload: Record<string, unknown>): Promise<ApiResponse<ProductDetail>> => {
+    const response = await client.put<ApiResponse<ProductDetail>>(`/admin/products/${id}`, payload)
     return response.data
   },
 

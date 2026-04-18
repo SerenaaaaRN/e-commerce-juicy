@@ -140,7 +140,7 @@ func (r *Router) Setup(engine *gin.Engine) {
 			adminAuth.DELETE("/reviews/:id", r.reviewHandler.DeleteReview)
 
 			adminAuth.GET("/analytics/overview", r.analyticsHandler.GetOverview)
-			adminAuth.GET("/analytics/chart", r.analyticsHandler.GetOrdersChart)
+			adminAuth.GET("/analytics/orders/chart", r.analyticsHandler.GetOrdersChart)
 		}
 	}
 }

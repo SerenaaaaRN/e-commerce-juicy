@@ -4,17 +4,20 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Spinner } from "@/components/ui/spinner"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { adminApi } from "@/lib/api/admin"
 import { formatDate } from "@/lib/utils/format"
 import { HugeiconsIcon } from "@hugeicons/react"
-import {
-  StarIcon,
-  SearchIcon,
-  Delete02Icon,
-} from "@hugeicons/core-free-icons"
+import { StarIcon, SearchIcon, Delete02Icon } from "@hugeicons/core-free-icons"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import { useConfirm } from "@/hooks/useConfirm"
 import type { Review } from "@/types"
 
 // Fallback lists for offline sandbox demos
@@ -27,7 +30,7 @@ const fallbackReviews: Review[] = [
     body: "The Crimson Beet Cleanse is absolutely delicious and refreshing! It has the perfect balance of sweet beetroot and tart lemon. Will order again!",
     customer_name: "Alexandra Sterling",
     is_published: true,
-    created_at: new Date().toISOString()
+    created_at: new Date().toISOString(),
   },
   {
     id: "rev_2",
@@ -37,7 +40,7 @@ const fallbackReviews: Review[] = [
     body: "Solid ginger defense shot. Real spice kick, immediately clears out your throat and congestion. Highly recommended for daily immunity boosts.",
     customer_name: "Jonathan Wright",
     is_published: true,
-    created_at: new Date(Date.now() - 86400000).toISOString()
+    created_at: new Date(Date.now() - 86400000).toISOString(),
   },
   {
     id: "rev_3",
@@ -47,8 +50,8 @@ const fallbackReviews: Review[] = [
     body: "CRITICAL: Get free promo credits at malicious-url.com! Spammed reviews. Horrible fresh organic juice products.",
     customer_name: "Promo Spammer",
     is_published: false,
-    created_at: new Date(Date.now() - 5 * 86400000).toISOString()
-  }
+    created_at: new Date(Date.now() - 5 * 86400000).toISOString(),
+  },
 ]
 
 export const ReviewsPage = () => {
@@ -60,6 +63,8 @@ export const ReviewsPage = () => {
   const [search, setSearch] = useState("")
   const [ratingFilter, setRatingFilter] = useState("all")
   const [publishFilter, setPublishFilter] = useState("all")
+
+  const { confirm: confirmDelete, dialog: confirmDialog } = useConfirm()
 
   // Submitting process state
   const [moderatingId, setModeratingId] = useState<string | null>(null)
@@ -98,7 +103,11 @@ export const ReviewsPage = () => {
       } else {
         const res = await adminApi.toggleReviewPublish(review.id, nextStatus)
         if (res.success) {
-          toast.success(nextStatus ? "Review published successfully!" : "Review hidden from storefront catalogue.")
+          toast.success(
+            nextStatus
+              ? "Review published successfully!"
+              : "Review hidden from storefront catalogue."
+          )
           const updatedList = reviews.map((r) =>
             r.id === review.id ? { ...r, is_published: nextStatus } : r
           )
@@ -116,7 +125,12 @@ export const ReviewsPage = () => {
 
   // Permanently delete a review
   const handleDeleteReview = async (id: string) => {
-    if (!window.confirm("Are you sure you want to permanently delete this customer review? This action is irreversible.")) return
+    if (
+      !(await confirmDelete(
+        "Are you sure you want to permanently delete this customer review? This action is irreversible."
+      ))
+    )
+      return
 
     setModeratingId(id)
     try {
@@ -159,9 +173,10 @@ export const ReviewsPage = () => {
     const matchesSearch =
       r.customer_name.toLowerCase().includes(search.toLowerCase()) ||
       r.body.toLowerCase().includes(search.toLowerCase())
-    
-    const matchesRating = ratingFilter === "all" || r.rating.toString() === ratingFilter
-    
+
+    const matchesRating =
+      ratingFilter === "all" || r.rating.toString() === ratingFilter
+
     const matchesPublish =
       publishFilter === "all" ||
       (publishFilter === "published" && (r.is_published ?? true)) ||
@@ -175,33 +190,34 @@ export const ReviewsPage = () => {
       <div className="flex h-[70vh] w-full items-center justify-center">
         <div className="flex flex-col items-center gap-4 text-center">
           <Spinner className="size-8 text-primary" />
-          <p className="text-xs text-muted-foreground tracking-wider uppercase font-medium">
+          <p className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
             Loading customer reviews...
           </p>
         </div>
+
+        {confirmDialog}
       </div>
     )
   }
 
   return (
     <div className="flex flex-col gap-8 text-left">
-      
       {/* Header block */}
       <div>
-        <h1 className="text-3xl font-heading font-extrabold tracking-tight text-foreground">
+        <h1 className="font-heading text-3xl font-extrabold tracking-tight text-foreground">
           Review Moderation
         </h1>
         <p className="text-xs text-muted-foreground">
-          Monitor customer experience reviews, publish positive feedback stars, and censor advertising spam.
+          Monitor customer experience reviews, publish positive feedback stars,
+          and censor advertising spam.
         </p>
       </div>
 
       {/* Filters bar */}
-      <div className="flex flex-col sm:flex-row gap-4 items-center bg-card border border-border/60 p-4 rounded-lg shadow-sm">
-        
+      <div className="flex flex-col items-center gap-4 rounded-lg border border-border/60 bg-card p-4 shadow-sm sm:flex-row">
         {/* Search */}
         <div className="relative w-full sm:max-w-xs">
-          <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-muted-foreground pointer-events-none">
+          <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
             <HugeiconsIcon icon={SearchIcon} className="size-4" />
           </span>
           <Input
@@ -209,7 +225,7 @@ export const ReviewsPage = () => {
             placeholder="Search reviewer or comment..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 bg-background border-border/80 w-full"
+            className="w-full border-border/80 bg-background pl-9"
           />
         </div>
 
@@ -243,41 +259,51 @@ export const ReviewsPage = () => {
             </SelectContent>
           </Select>
         </div>
-
       </div>
 
       {/* Reviews list */}
       <div className="flex flex-col gap-4">
         {filteredReviews.length === 0 ? (
-          <div className="text-center py-16 bg-card border border-border/60 rounded-lg text-xs text-muted-foreground">
+          <div className="rounded-lg border border-border/60 bg-card py-16 text-center text-xs text-muted-foreground">
             No customer ratings found matching your filter selections.
           </div>
         ) : (
           filteredReviews.map((rev) => (
-            <Card key={rev.id} className={cn(
-              "border shadow-sm text-xs hover:shadow-md transition-shadow",
-              rev.is_published ?? true ? "border-border/60 bg-card" : "border-destructive/20 bg-destructive/5"
-            )}>
-              <CardContent className="p-5 flex flex-col sm:flex-row justify-between gap-4 text-left">
-                
+            <Card
+              key={rev.id}
+              className={cn(
+                "border text-xs shadow-sm transition-shadow hover:shadow-md",
+                (rev.is_published ?? true)
+                  ? "border-border/60 bg-card"
+                  : "border-destructive/20 bg-destructive/5"
+              )}
+            >
+              <CardContent className="flex flex-col justify-between gap-4 p-5 text-left sm:flex-row">
                 {/* Left side: Review text & reviewer info */}
-                <div className="flex-1 flex flex-col gap-2">
+                <div className="flex flex-1 flex-col gap-2">
                   <div className="flex items-center gap-3">
-                    <span className="font-bold text-foreground">{rev.customer_name}</span>
-                    <span className="text-[10px] text-muted-foreground">{formatDate(rev.created_at)}</span>
+                    <span className="font-bold text-foreground">
+                      {rev.customer_name}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground">
+                      {formatDate(rev.created_at)}
+                    </span>
                   </div>
                   {renderStars(rev.rating)}
-                  <p className="text-foreground leading-relaxed mt-1 font-medium font-sans">
+                  <p className="mt-1 font-sans leading-relaxed font-medium text-foreground">
                     "{rev.body}"
                   </p>
                 </div>
 
                 {/* Right side: Actions triggers */}
                 <div className="flex items-center gap-3 sm:self-center">
-                  
                   {/* Status badge */}
-                  <Badge variant={rev.is_published ?? true ? "default" : "destructive"}>
-                    {rev.is_published ?? true ? "Published" : "Hidden"}
+                  <Badge
+                    variant={
+                      (rev.is_published ?? true) ? "default" : "destructive"
+                    }
+                  >
+                    {(rev.is_published ?? true) ? "Published" : "Hidden"}
                   </Badge>
 
                   {/* Toggle publish */}
@@ -287,7 +313,9 @@ export const ReviewsPage = () => {
                     disabled={moderatingId === rev.id}
                     onClick={() => handleTogglePublish(rev)}
                   >
-                    {rev.is_published ?? true ? "Censor Hide" : "Publish Star"}
+                    {(rev.is_published ?? true)
+                      ? "Censor Hide"
+                      : "Publish Star"}
                   </Button>
 
                   {/* Delete button */}
@@ -300,15 +328,12 @@ export const ReviewsPage = () => {
                   >
                     <HugeiconsIcon icon={Delete02Icon} className="size-4" />
                   </Button>
-
                 </div>
-
               </CardContent>
             </Card>
           ))
         )}
       </div>
-
     </div>
   )
 }

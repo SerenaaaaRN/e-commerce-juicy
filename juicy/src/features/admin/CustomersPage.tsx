@@ -3,8 +3,23 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Spinner } from "@/components/ui/spinner"
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog"
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog"
 import { adminApi } from "@/lib/api/admin"
 import { formatPrice, formatDate } from "@/lib/utils/format"
 import { HugeiconsIcon } from "@hugeicons/react"
@@ -15,6 +30,7 @@ import {
 } from "@hugeicons/core-free-icons"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import { useConfirm } from "@/hooks/useConfirm"
 import type { Customer, Order } from "@/types"
 
 // Customer with statistics fields returned by index endpoint
@@ -56,22 +72,64 @@ const fallbackClients: ClientStatistics[] = [
     total_spent: 128000,
     is_active: false,
     created_at: new Date(Date.now() - 5 * 86400000).toISOString(),
-  }
+  },
 ]
 
 const fallbackClientOrders: Record<string, Order[]> = {
-  "cust_1": [
-    { id: "ord_1", order_number: "JUICY-20260525-9A4F81", status: "pending", payment_status: "unpaid", total: 128000, created_at: new Date().toISOString() },
-    { id: "ord_11", order_number: "JUICY-20260518-8A3B22", status: "delivered", payment_status: "paid", total: 245000, created_at: new Date(Date.now() - 7 * 86400000).toISOString() },
-    { id: "ord_12", order_number: "JUICY-20260510-4A3C99", status: "delivered", payment_status: "paid", total: 412000, created_at: new Date(Date.now() - 15 * 86400000).toISOString() }
+  cust_1: [
+    {
+      id: "ord_1",
+      order_number: "JUICY-20260525-9A4F81",
+      status: "pending",
+      payment_status: "unpaid",
+      total: 128000,
+      created_at: new Date().toISOString(),
+    },
+    {
+      id: "ord_11",
+      order_number: "JUICY-20260518-8A3B22",
+      status: "delivered",
+      payment_status: "paid",
+      total: 245000,
+      created_at: new Date(Date.now() - 7 * 86400000).toISOString(),
+    },
+    {
+      id: "ord_12",
+      order_number: "JUICY-20260510-4A3C99",
+      status: "delivered",
+      payment_status: "paid",
+      total: 412000,
+      created_at: new Date(Date.now() - 15 * 86400000).toISOString(),
+    },
   ],
-  "cust_2": [
-    { id: "ord_2", order_number: "JUICY-20260524-7C9E43", status: "shipped", payment_status: "paid", total: 224000, created_at: new Date(Date.now() - 86400000).toISOString() },
-    { id: "ord_21", order_number: "JUICY-20260515-5A3D11", status: "delivered", payment_status: "paid", total: 121000, created_at: new Date(Date.now() - 10 * 86400000).toISOString() }
+  cust_2: [
+    {
+      id: "ord_2",
+      order_number: "JUICY-20260524-7C9E43",
+      status: "shipped",
+      payment_status: "paid",
+      total: 224000,
+      created_at: new Date(Date.now() - 86400000).toISOString(),
+    },
+    {
+      id: "ord_21",
+      order_number: "JUICY-20260515-5A3D11",
+      status: "delivered",
+      payment_status: "paid",
+      total: 121000,
+      created_at: new Date(Date.now() - 10 * 86400000).toISOString(),
+    },
   ],
-  "cust_3": [
-    { id: "ord_3", order_number: "JUICY-20260522-3B2D45", status: "delivered", payment_status: "paid", total: 128000, created_at: new Date(Date.now() - 3 * 86400000).toISOString() }
-  ]
+  cust_3: [
+    {
+      id: "ord_3",
+      order_number: "JUICY-20260522-3B2D45",
+      status: "delivered",
+      payment_status: "paid",
+      total: 128000,
+      created_at: new Date(Date.now() - 3 * 86400000).toISOString(),
+    },
+  ],
 }
 
 export const CustomersPage = () => {
@@ -84,9 +142,13 @@ export const CustomersPage = () => {
 
   // Detail Modal trigger states
   const [detailsOpen, setDetailsOpen] = useState(false)
-  const [activeClient, setActiveClient] = useState<ClientStatistics | null>(null)
+  const [activeClient, setActiveClient] = useState<ClientStatistics | null>(
+    null
+  )
   const [clientHistory, setClientHistory] = useState<Order[]>([])
   const [loadingDetails, setLoadingDetails] = useState(false)
+
+  const { confirm: confirmDelete, dialog: confirmDialog } = useConfirm()
 
   // Account suspension process state
   const [togglingStatus, setTogglingStatus] = useState(false)
@@ -143,7 +205,7 @@ export const CustomersPage = () => {
       ? `Reactivate account credentials for ${client.full_name}?`
       : `Suspend account credentials for ${client.full_name}? This prevents checkout or carts management.`
 
-    if (!window.confirm(promptMsg)) return
+    if (!(await confirmDelete(promptMsg))) return
 
     setTogglingStatus(true)
     try {
@@ -192,7 +254,7 @@ export const CustomersPage = () => {
       <div className="flex h-[70vh] w-full items-center justify-center">
         <div className="flex flex-col items-center gap-4 text-center">
           <Spinner className="size-8 text-primary" />
-          <p className="text-xs text-muted-foreground tracking-wider uppercase font-medium">
+          <p className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
             Loading Customer Directory...
           </p>
         </div>
@@ -202,23 +264,22 @@ export const CustomersPage = () => {
 
   return (
     <div className="flex flex-col gap-8 text-left">
-      
       {/* Header block */}
       <div>
-        <h1 className="text-3xl font-heading font-extrabold tracking-tight text-foreground">
+        <h1 className="font-heading text-3xl font-extrabold tracking-tight text-foreground">
           Customers CRM
         </h1>
         <p className="text-xs text-muted-foreground">
-          Browse customer profile details, toggle checkout access credentials, and monitor lifecycle sales averages.
+          Browse customer profile details, toggle checkout access credentials,
+          and monitor lifecycle sales averages.
         </p>
       </div>
 
       {/* Filter bar */}
-      <div className="flex flex-col sm:flex-row gap-4 items-center bg-card border border-border/60 p-4 rounded-lg shadow-sm">
-        
+      <div className="flex flex-col items-center gap-4 rounded-lg border border-border/60 bg-card p-4 shadow-sm sm:flex-row">
         {/* Search */}
         <div className="relative w-full sm:max-w-md">
-          <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-muted-foreground pointer-events-none">
+          <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
             <HugeiconsIcon icon={SearchIcon} className="size-4" />
           </span>
           <Input
@@ -226,14 +287,13 @@ export const CustomersPage = () => {
             placeholder="Search full name, email address, phone..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 bg-background border-border/80 w-full"
+            className="w-full border-border/80 bg-background pl-9"
           />
         </div>
-
       </div>
 
       {/* Customer table Grid */}
-      <div className="border border-border/60 rounded-lg bg-card shadow-sm">
+      <div className="rounded-lg border border-border/60 bg-card shadow-sm">
         <Table>
           <TableHeader>
             <TableRow>
@@ -249,14 +309,16 @@ export const CustomersPage = () => {
           <TableBody>
             {filteredClients.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
+                <TableCell
+                  colSpan={7}
+                  className="px-6 py-12 text-center text-muted-foreground"
+                >
                   No customers found matching your search term.
                 </TableCell>
               </TableRow>
             ) : (
               filteredClients.map((client) => (
                 <TableRow key={client.id}>
-                  
                   {/* Client info */}
                   <TableCell className="px-6 py-4">
                     <div className="flex items-center gap-3">
@@ -264,8 +326,12 @@ export const CustomersPage = () => {
                         {client.full_name.substring(0, 2)}
                       </div>
                       <div>
-                        <div className="font-semibold text-foreground">{client.full_name}</div>
-                        <div className="text-[11px] text-muted-foreground">{client.email}</div>
+                        <div className="font-semibold text-foreground">
+                          {client.full_name}
+                        </div>
+                        <div className="text-[11px] text-muted-foreground">
+                          {client.email}
+                        </div>
                       </div>
                     </div>
                   </TableCell>
@@ -276,7 +342,7 @@ export const CustomersPage = () => {
                   </TableCell>
 
                   {/* Registration date */}
-                  <TableCell className="px-6 py-4 text-muted-foreground text-xs">
+                  <TableCell className="px-6 py-4 text-xs text-muted-foreground">
                     {formatDate(client.created_at)}
                   </TableCell>
 
@@ -292,15 +358,25 @@ export const CustomersPage = () => {
 
                   {/* Account status */}
                   <TableCell className="px-6 py-4">
-                    <Badge variant={client.is_active ?? true ? "default" : "destructive"}>
-                      {client.is_active ?? true ? "Active Health" : "Suspended"}
+                    <Badge
+                      variant={
+                        (client.is_active ?? true) ? "default" : "destructive"
+                      }
+                    >
+                      {(client.is_active ?? true)
+                        ? "Active Health"
+                        : "Suspended"}
                     </Badge>
                   </TableCell>
 
                   {/* Actions */}
                   <TableCell className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <Button variant="outline" size="sm" onClick={() => handleViewClientDetails(client)}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleViewClientDetails(client)}
+                      >
                         CRM Log
                       </Button>
                       <Button
@@ -310,18 +386,25 @@ export const CustomersPage = () => {
                         onClick={() => handleToggleClientStatus(client)}
                         className={cn(
                           "size-8 rounded-full border hover:bg-muted",
-                          client.is_active ?? true ? "text-destructive hover:bg-destructive/10" : "text-primary hover:bg-primary/10"
+                          (client.is_active ?? true)
+                            ? "text-destructive hover:bg-destructive/10"
+                            : "text-primary hover:bg-primary/10"
                         )}
                       >
-                        {client.is_active ?? true ? (
-                          <HugeiconsIcon icon={Cancel01Icon} className="size-4" />
+                        {(client.is_active ?? true) ? (
+                          <HugeiconsIcon
+                            icon={Cancel01Icon}
+                            className="size-4"
+                          />
                         ) : (
-                          <HugeiconsIcon icon={CheckmarkCircle01Icon} className="size-4" />
+                          <HugeiconsIcon
+                            icon={CheckmarkCircle01Icon}
+                            className="size-4"
+                          />
                         )}
                       </Button>
                     </div>
                   </TableCell>
-
                 </TableRow>
               ))
             )}
@@ -331,14 +414,14 @@ export const CustomersPage = () => {
 
       {/* --- CUSTOMER PROFILE CRM DRAWER DIALOG --- */}
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-        <DialogContent className="max-w-3xl bg-card border overflow-y-auto max-h-[90vh]">
-          
+        <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto border bg-card">
           <DialogHeader>
-            <DialogTitle className="text-lg font-bold font-heading">
+            <DialogTitle className="font-heading text-lg font-bold">
               Client CRM File: {activeClient?.full_name}
             </DialogTitle>
             <DialogDescription className="text-xs">
-              Check historically placed orders, lifecycle totals spent, and account status modifications.
+              Check historically placed orders, lifecycle totals spent, and
+              account status modifications.
             </DialogDescription>
           </DialogHeader>
 
@@ -347,27 +430,44 @@ export const CustomersPage = () => {
               <Spinner className="size-8 text-primary" />
             </div>
           ) : !activeClient ? (
-            <div className="text-center py-12 text-xs text-muted-foreground border border-dashed rounded-lg bg-muted/20">
+            <div className="rounded-lg border border-dashed bg-muted/20 py-12 text-center text-xs text-muted-foreground">
               Failed to load detailed client credentials files.
             </div>
           ) : (
-            <div className="text-left py-4 flex flex-col gap-6">
-              
+            <div className="flex flex-col gap-6 py-4 text-left">
               {/* Profile Overview Card */}
-              <div className="grid gap-4 sm:grid-cols-3 bg-muted/15 border p-4 rounded-lg text-xs">
+              <div className="grid gap-4 rounded-lg border bg-muted/15 p-4 text-xs sm:grid-cols-3">
                 <div className="flex flex-col gap-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Email Address</span>
-                  <span className="font-semibold text-foreground">{activeClient.email}</span>
+                  <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+                    Email Address
+                  </span>
+                  <span className="font-semibold text-foreground">
+                    {activeClient.email}
+                  </span>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Mobile Contact</span>
-                  <span className="font-semibold text-foreground">{activeClient.phone || "Unassigned"}</span>
+                  <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+                    Mobile Contact
+                  </span>
+                  <span className="font-semibold text-foreground">
+                    {activeClient.phone || "Unassigned"}
+                  </span>
                 </div>
                 <div className="flex flex-col gap-1">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Account Health</span>
+                  <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
+                    Account Health
+                  </span>
                   <div>
-                    <Badge variant={activeClient.is_active ?? true ? "default" : "destructive"}>
-                      {activeClient.is_active ?? true ? "Active Access" : "Suspended"}
+                    <Badge
+                      variant={
+                        (activeClient.is_active ?? true)
+                          ? "default"
+                          : "destructive"
+                      }
+                    >
+                      {(activeClient.is_active ?? true)
+                        ? "Active Access"
+                        : "Suspended"}
                     </Badge>
                   </div>
                 </div>
@@ -375,28 +475,48 @@ export const CustomersPage = () => {
 
               {/* Historical Orders section */}
               <div className="flex flex-col gap-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Placed Order History</h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
+                    Placed Order History
+                  </h3>
                   <div className="text-xs font-bold text-foreground">
-                    Total Spent: <span className="text-primary">{formatPrice(activeClient.total_spent)}</span>
+                    Total Spent:{" "}
+                    <span className="text-primary">
+                      {formatPrice(activeClient.total_spent)}
+                    </span>
                   </div>
                 </div>
 
                 <div className="flex flex-col gap-3">
                   {clientHistory.length === 0 ? (
-                    <div className="text-center py-12 text-xs text-muted-foreground border border-dashed rounded-lg bg-muted/20">
+                    <div className="rounded-lg border border-dashed bg-muted/20 py-12 text-center text-xs text-muted-foreground">
                       No order lifecycle invoices captured under this account.
                     </div>
                   ) : (
                     clientHistory.map((ord) => (
-                      <div key={ord.id} className="p-3 border rounded-lg bg-card flex items-center justify-between text-xs hover:border-primary transition-colors">
-                        <div className="flex flex-col gap-1 items-start">
-                          <span className="font-mono font-bold text-foreground">{ord.order_number}</span>
-                          <span className="text-[10px] text-muted-foreground mt-0.5">{formatDate(ord.created_at)}</span>
+                      <div
+                        key={ord.id}
+                        className="flex items-center justify-between rounded-lg border bg-card p-3 text-xs transition-colors hover:border-primary"
+                      >
+                        <div className="flex flex-col items-start gap-1">
+                          <span className="font-mono font-bold text-foreground">
+                            {ord.order_number}
+                          </span>
+                          <span className="mt-0.5 text-[10px] text-muted-foreground">
+                            {formatDate(ord.created_at)}
+                          </span>
                         </div>
                         <div className="flex items-center gap-3">
-                          <div className="text-right font-bold text-foreground">{formatPrice(ord.total)}</div>
-                          <Badge variant={ord.status === "delivered" ? "default" : "secondary"}>
+                          <div className="text-right font-bold text-foreground">
+                            {formatPrice(ord.total)}
+                          </div>
+                          <Badge
+                            variant={
+                              ord.status === "delivered"
+                                ? "default"
+                                : "secondary"
+                            }
+                          >
                             {ord.status}
                           </Badge>
                         </div>
@@ -405,7 +525,6 @@ export const CustomersPage = () => {
                   )}
                 </div>
               </div>
-
             </div>
           )}
 
@@ -417,6 +536,7 @@ export const CustomersPage = () => {
         </DialogContent>
       </Dialog>
 
+      {confirmDialog}
     </div>
   )
 }

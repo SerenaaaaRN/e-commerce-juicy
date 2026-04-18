@@ -1,16 +1,43 @@
 import { useEffect, useState } from "react"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Field, FieldLabel, FieldError } from "@/components/ui/field"
 import { Badge } from "@/components/ui/badge"
 import { Spinner } from "@/components/ui/spinner"
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog"
 import { adminApi } from "@/lib/api/admin"
 import { formatPrice } from "@/lib/utils/format"
 import { HugeiconsIcon } from "@hugeicons/react"
@@ -21,13 +48,37 @@ import {
 } from "@hugeicons/core-free-icons"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
-import type { Category, ProductDetail, ProductVariant, ProductImage } from "@/types"
+import { useConfirm } from "@/hooks/useConfirm"
+import type {
+  Category,
+  ProductDetail,
+  ProductVariant,
+  ProductImage,
+} from "@/types"
 
 // Fallback lists for offline sandbox demos
 const fallbackCategories: Category[] = [
-  { id: "1", name: "Cold-Pressed Juice", slug: "cold-pressed-juice", display_order: 1, is_active: true },
-  { id: "2", name: "Wellness Shots", slug: "wellness-shots", display_order: 2, is_active: true },
-  { id: "3", name: "Elixirs & Tonics", slug: "elixirs-tonics", display_order: 3, is_active: true },
+  {
+    id: "1",
+    name: "Cold-Pressed Juice",
+    slug: "cold-pressed-juice",
+    display_order: 1,
+    is_active: true,
+  },
+  {
+    id: "2",
+    name: "Wellness Shots",
+    slug: "wellness-shots",
+    display_order: 2,
+    is_active: true,
+  },
+  {
+    id: "3",
+    name: "Elixirs & Tonics",
+    slug: "elixirs-tonics",
+    display_order: 3,
+    is_active: true,
+  },
 ]
 
 const fallbackProducts: ProductDetail[] = [
@@ -36,7 +87,8 @@ const fallbackProducts: ProductDetail[] = [
     category_id: "1",
     name: "Crimson Beet Cleanse",
     slug: "crimson-beet-cleanse",
-    description: "A highly restorative blend of organic red beetroots, fresh green apples, and sweet lemon juice. Packed with raw antioxidants and earthy vitamins.",
+    description:
+      "A highly restorative blend of organic red beetroots, fresh green apples, and sweet lemon juice. Packed with raw antioxidants and earthy vitamins.",
     price: 48000,
     compare_at_price: 55000,
     is_available: true,
@@ -47,21 +99,55 @@ const fallbackProducts: ProductDetail[] = [
     updated_at: new Date().toISOString(),
     category: fallbackCategories[0],
     images: [
-      { id: "img1", product_id: "1", image_url: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&q=80&w=200", cloudinary_public_id: "mock1", display_order: 1, is_primary: true, created_at: new Date().toISOString() }
+      {
+        id: "img1",
+        product_id: "1",
+        image_url:
+          "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&q=80&w=200",
+        cloudinary_public_id: "mock1",
+        display_order: 1,
+        is_primary: true,
+        created_at: new Date().toISOString(),
+      },
     ],
     variants: [
-      { id: "v1", product_id: "1", size: "250ml", color: "Beet Red", color_hex: "#8b0000", sku: "JUICE-BEET-250", stock: 45, additional_price: 0, is_active: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-      { id: "v2", product_id: "1", size: "500ml", color: "Beet Red", color_hex: "#8b0000", sku: "JUICE-BEET-500", stock: 12, additional_price: 18000, is_active: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
+      {
+        id: "v1",
+        product_id: "1",
+        size: "250ml",
+        color: "Beet Red",
+        color_hex: "#8b0000",
+        sku: "JUICE-BEET-250",
+        stock: 45,
+        additional_price: 0,
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+      {
+        id: "v2",
+        product_id: "1",
+        size: "500ml",
+        color: "Beet Red",
+        color_hex: "#8b0000",
+        sku: "JUICE-BEET-500",
+        stock: 12,
+        additional_price: 18000,
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
     ],
     avg_rating: 4.9,
-    review_count: 24
+    review_count: 24,
   },
   {
     id: "2",
     category_id: "2",
     name: "Golden Ginger Defense",
     slug: "golden-ginger-defense",
-    description: "An intense immunity booster shot containing pure extracted raw ginger root, sweet organic turmeric, black pepper blend, and fresh honey notes.",
+    description:
+      "An intense immunity booster shot containing pure extracted raw ginger root, sweet organic turmeric, black pepper blend, and fresh honey notes.",
     price: 32000,
     is_available: true,
     is_featured: false,
@@ -72,11 +158,23 @@ const fallbackProducts: ProductDetail[] = [
     category: fallbackCategories[1],
     images: [],
     variants: [
-      { id: "v3", product_id: "2", size: "60ml", color: "Turmeric Yellow", color_hex: "#ffd700", sku: "SHOT-GING-60", stock: 80, additional_price: 0, is_active: true, created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
+      {
+        id: "v3",
+        product_id: "2",
+        size: "60ml",
+        color: "Turmeric Yellow",
+        color_hex: "#ffd700",
+        sku: "SHOT-GING-60",
+        stock: 80,
+        additional_price: 0,
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
     ],
     avg_rating: 4.7,
-    review_count: 12
-  }
+    review_count: 12,
+  },
 ]
 
 export const ProductsPage = () => {
@@ -95,6 +193,8 @@ export const ProductsPage = () => {
   const [activeProduct, setActiveProduct] = useState<ProductDetail | null>(null) // null = Add mode
   const [variantsModalOpen, setVariantsModalOpen] = useState(false)
   const [imagesModalOpen, setImagesModalOpen] = useState(false)
+
+  const { confirm: confirmDelete, dialog: confirmDialog } = useConfirm()
 
   // Product Form states
   const [formName, setFormName] = useState("")
@@ -233,7 +333,11 @@ export const ProductsPage = () => {
     const errs: Record<string, string> = {}
     if (!formName.trim()) errs.name = "Product name is required"
     if (!formSlug.trim()) errs.slug = "Product slug is required"
-    if (!formPrice.trim() || isNaN(Number(formPrice)) || Number(formPrice) <= 0) {
+    if (
+      !formPrice.trim() ||
+      isNaN(Number(formPrice)) ||
+      Number(formPrice) <= 0
+    ) {
       errs.price = "Valid base price is required"
     }
     if (!formCategoryId) errs.category = "Category assignment is required"
@@ -248,21 +352,25 @@ export const ProductsPage = () => {
 
     setSubmittingProduct(true)
     try {
-      const formData = new FormData()
-      formData.append("name", formName.trim())
-      formData.append("slug", formSlug.trim())
-      formData.append("description", formDescription.trim())
-      formData.append("category_id", formCategoryId)
-      formData.append("price", Number(formPrice).toString())
-      if (formComparePrice) {
-        formData.append("compare_at_price", Number(formComparePrice).toString())
+      const parsedTags = formTags
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean)
+
+      const payload: Record<string, unknown> = {
+        name: formName.trim(),
+        slug: formSlug.trim(),
+        description: formDescription.trim(),
+        category_id: formCategoryId,
+        price: Number(formPrice),
+        is_available: formIsAvailable,
+        is_featured: formIsFeatured,
+        display_order: Number(formDisplayOrder),
+        tags: parsedTags,
       }
-      formData.append("is_available", formIsAvailable ? "true" : "false")
-      formData.append("is_featured", formIsFeatured ? "true" : "false")
-      formData.append("display_order", Number(formDisplayOrder).toString())
-      
-      const parsedTags = formTags.split(",").map(t => t.trim()).filter(Boolean)
-      parsedTags.forEach(tag => formData.append("tags", tag))
+      if (formComparePrice) {
+        payload.compare_at_price = Number(formComparePrice)
+      }
 
       if (activeProduct) {
         // Edit mode
@@ -272,17 +380,11 @@ export const ProductsPage = () => {
             p.id === activeProduct.id
               ? {
                   ...p,
-                  name: formName,
-                  slug: formSlug,
-                  description: formDescription,
-                  category_id: formCategoryId,
-                  price: Number(formPrice),
-                  compare_at_price: formComparePrice ? Number(formComparePrice) : undefined,
-                  is_available: formIsAvailable,
-                  is_featured: formIsFeatured,
-                  tags: parsedTags,
-                  display_order: Number(formDisplayOrder),
-                  category: categories.find((c) => c.id === formCategoryId)
+                  ...payload,
+                  compare_at_price: formComparePrice
+                    ? Number(formComparePrice)
+                    : undefined,
+                  category: categories.find((c) => c.id === formCategoryId),
                 }
               : p
           )
@@ -290,7 +392,7 @@ export const ProductsPage = () => {
           toast.success("Product details modified successfully (Mocked)")
           setProductModalOpen(false)
         } else {
-          const res = await adminApi.updateProduct(activeProduct.id, formData)
+          const res = await adminApi.updateProduct(activeProduct.id, payload)
           if (res.success) {
             toast.success("Product details modified successfully!")
             setProductModalOpen(false)
@@ -304,29 +406,23 @@ export const ProductsPage = () => {
         if (usingFallback) {
           const mockNew: ProductDetail = {
             id: `prod_${Date.now()}`,
-            category_id: formCategoryId,
-            name: formName,
-            slug: formSlug,
-            description: formDescription,
-            price: Number(formPrice),
-            compare_at_price: formComparePrice ? Number(formComparePrice) : undefined,
-            is_available: formIsAvailable,
-            is_featured: formIsFeatured,
-            tags: parsedTags,
-            display_order: Number(formDisplayOrder),
+            ...payload,
+            compare_at_price: formComparePrice
+              ? Number(formComparePrice)
+              : undefined,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
             category: categories.find((c) => c.id === formCategoryId),
             images: [],
             variants: [],
             avg_rating: 0,
-            review_count: 0
+            review_count: 0,
           }
           setProducts([mockNew, ...products])
           toast.success("Product created successfully (Mocked)")
           setProductModalOpen(false)
         } else {
-          const res = await adminApi.createProduct(formData)
+          const res = await adminApi.createProduct(payload)
           if (res.success) {
             toast.success("New product catalog created successfully!")
             setProductModalOpen(false)
@@ -345,11 +441,16 @@ export const ProductsPage = () => {
 
   // Delete Product
   const handleDeleteProduct = async (id: string) => {
-    if (!window.confirm("Are you sure you want to permanently delete this product catalogue? This action is irreversible.")) return
+    if (
+      !(await confirmDelete(
+        "Are you sure you want to permanently delete this product catalogue? This action is irreversible."
+      ))
+    )
+      return
 
     try {
       if (usingFallback) {
-        setProducts(products.filter(p => p.id !== id))
+        setProducts(products.filter((p) => p.id !== id))
         toast.success("Product catalogue removed successfully (Mocked)")
       } else {
         const res = await adminApi.deleteProduct(id)
@@ -401,7 +502,7 @@ export const ProductsPage = () => {
       sku: varSku.trim(),
       stock: Number(varStock),
       additional_price: varAddPrice ? Number(varAddPrice) : 0,
-      is_active: true
+      is_active: true,
     }
 
     try {
@@ -417,10 +518,10 @@ export const ProductsPage = () => {
           additional_price: payload.additional_price,
           is_active: true,
           created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         }
 
-        const updatedProds = products.map(p => {
+        const updatedProds = products.map((p) => {
           if (p.id === activeProduct.id) {
             const currentVariants = p.variants || []
             const updatedV = [...currentVariants, mockV]
@@ -432,7 +533,7 @@ export const ProductsPage = () => {
         })
         setProducts(updatedProds)
         toast.success("Variant created successfully (Mocked)")
-        
+
         // Reset variant form
         setVarSize("")
         setVarColor("")
@@ -446,7 +547,7 @@ export const ProductsPage = () => {
           toast.success("Variant appended successfully!")
           const updatedV = [...(activeProduct.variants || []), res.data]
           setActiveProduct({ ...activeProduct, variants: updatedV })
-          
+
           // Refresh catalog list
           loadData()
 
@@ -469,14 +570,18 @@ export const ProductsPage = () => {
   }
 
   const handleDeleteVariant = async (variantId: string) => {
-    if (!window.confirm("Are you sure you want to delete this variant?") || !activeProduct) return
+    if (
+      !(await confirmDelete("Are you sure you want to delete this variant?")) ||
+      !activeProduct
+    )
+      return
 
     try {
       if (usingFallback) {
-        const updatedProds = products.map(p => {
+        const updatedProds = products.map((p) => {
           if (p.id === activeProduct.id) {
             const currentVariants = p.variants || []
-            const updatedV = currentVariants.filter(v => v.id !== variantId)
+            const updatedV = currentVariants.filter((v) => v.id !== variantId)
             setActiveProduct({ ...p, variants: updatedV })
             return { ...p, variants: updatedV }
           }
@@ -488,7 +593,9 @@ export const ProductsPage = () => {
         const res = await adminApi.deleteVariant(activeProduct.id, variantId)
         if (res.success) {
           toast.success("Variant removed successfully!")
-          const updatedV = (activeProduct.variants || []).filter(v => v.id !== variantId)
+          const updatedV = (activeProduct.variants || []).filter(
+            (v) => v.id !== variantId
+          )
           setActiveProduct({ ...activeProduct, variants: updatedV })
           loadData()
         } else {
@@ -523,14 +630,18 @@ export const ProductsPage = () => {
         const mockImg: ProductImage = {
           id: `img_${Date.now()}`,
           product_id: activeProduct.id,
-          image_url: "https://images.unsplash.com/photo-1610970881699-44a5587caaec?auto=format&fit=crop&q=80&w=200",
+          image_url:
+            "https://images.unsplash.com/photo-1610970881699-44a5587caaec?auto=format&fit=crop&q=80&w=200",
           cloudinary_public_id: `mock_${Date.now()}`,
           display_order: 10,
-          is_primary: activeProduct.images && activeProduct.images.length === 0 ? true : false,
-          created_at: new Date().toISOString()
+          is_primary:
+            activeProduct.images && activeProduct.images.length === 0
+              ? true
+              : false,
+          created_at: new Date().toISOString(),
         }
 
-        const updatedProds = products.map(p => {
+        const updatedProds = products.map((p) => {
           if (p.id === activeProduct.id) {
             const currentImg = p.images || []
             const updatedI = [...currentImg, mockImg]
@@ -543,7 +654,10 @@ export const ProductsPage = () => {
         toast.success("Images uploaded successfully (Mocked)")
         setSelectedFiles(null)
       } else {
-        const res = await adminApi.uploadProductImages(activeProduct.id, formData)
+        const res = await adminApi.uploadProductImages(
+          activeProduct.id,
+          formData
+        )
         if (res.success && res.data) {
           toast.success("Images uploaded successfully!")
           setActiveProduct(res.data)
@@ -564,11 +678,11 @@ export const ProductsPage = () => {
     if (!activeProduct) return
     try {
       if (usingFallback) {
-        const updatedProds = products.map(p => {
+        const updatedProds = products.map((p) => {
           if (p.id === activeProduct.id) {
-            const updatedI = (p.images || []).map(img => ({
+            const updatedI = (p.images || []).map((img) => ({
               ...img,
-              is_primary: img.id === imageId
+              is_primary: img.id === imageId,
             }))
             setActiveProduct({ ...p, images: updatedI })
             return { ...p, images: updatedI }
@@ -581,9 +695,9 @@ export const ProductsPage = () => {
         const res = await adminApi.setPrimaryImage(activeProduct.id, imageId)
         if (res.success) {
           toast.success("Cover image modified successfully!")
-          const updatedI = (activeProduct.images || []).map(img => ({
+          const updatedI = (activeProduct.images || []).map((img) => ({
             ...img,
-            is_primary: img.id === imageId
+            is_primary: img.id === imageId,
           }))
           setActiveProduct({ ...activeProduct, images: updatedI })
           loadData()
@@ -597,12 +711,20 @@ export const ProductsPage = () => {
   }
 
   const handleDeleteImage = async (imageId: string) => {
-    if (!window.confirm("Are you sure you want to delete this image asset?") || !activeProduct) return
+    if (
+      !(await confirmDelete(
+        "Are you sure you want to delete this image asset?"
+      )) ||
+      !activeProduct
+    )
+      return
     try {
       if (usingFallback) {
-        const updatedProds = products.map(p => {
+        const updatedProds = products.map((p) => {
           if (p.id === activeProduct.id) {
-            const updatedI = (p.images || []).filter(img => img.id !== imageId)
+            const updatedI = (p.images || []).filter(
+              (img) => img.id !== imageId
+            )
             setActiveProduct({ ...p, images: updatedI })
             return { ...p, images: updatedI }
           }
@@ -614,7 +736,9 @@ export const ProductsPage = () => {
         const res = await adminApi.deleteProductImage(activeProduct.id, imageId)
         if (res.success) {
           toast.success("Image asset deleted successfully!")
-          const updatedI = (activeProduct.images || []).filter(img => img.id !== imageId)
+          const updatedI = (activeProduct.images || []).filter(
+            (img) => img.id !== imageId
+          )
           setActiveProduct({ ...activeProduct, images: updatedI })
           loadData()
         } else {
@@ -655,7 +779,7 @@ export const ProductsPage = () => {
           slug: payload.slug,
           description: payload.description,
           display_order: payload.display_order,
-          is_active: true
+          is_active: true,
         }
         setCategories([...categories, mockC])
         toast.success("Category created successfully (Mocked)")
@@ -684,10 +808,15 @@ export const ProductsPage = () => {
   }
 
   const handleDeleteCategory = async (id: string) => {
-    if (!window.confirm("Are you sure you want to permanently delete this category? Product catalogs assigned to it may be affected.")) return
+    if (
+      !(await confirmDelete(
+        "Are you sure you want to permanently delete this category? Product catalogs assigned to it may be affected."
+      ))
+    )
+      return
     try {
       if (usingFallback) {
-        setCategories(categories.filter(c => c.id !== id))
+        setCategories(categories.filter((c) => c.id !== id))
         toast.success("Category deleted (Mocked)")
       } else {
         const res = await adminApi.deleteCategory(id)
@@ -705,8 +834,11 @@ export const ProductsPage = () => {
 
   // Filtering
   const filteredProducts = products.filter((p) => {
-    const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase()) || p.slug.toLowerCase().includes(search.toLowerCase())
-    const matchesCategory = categoryFilter === "all" || p.category_id === categoryFilter
+    const matchesSearch =
+      p.name.toLowerCase().includes(search.toLowerCase()) ||
+      p.slug.toLowerCase().includes(search.toLowerCase())
+    const matchesCategory =
+      categoryFilter === "all" || p.category_id === categoryFilter
     return matchesSearch && matchesCategory
   })
 
@@ -715,7 +847,7 @@ export const ProductsPage = () => {
       <div className="flex h-[70vh] w-full items-center justify-center">
         <div className="flex flex-col items-center gap-4 text-center">
           <Spinner className="size-8 text-primary" />
-          <p className="text-xs text-muted-foreground tracking-wider uppercase font-medium">
+          <p className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
             Loading Catalog inventory...
           </p>
         </div>
@@ -725,38 +857,38 @@ export const ProductsPage = () => {
 
   return (
     <div className="flex flex-col gap-8 text-left">
-      
       {/* Header block */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div>
-          <h1 className="text-3xl font-heading font-extrabold tracking-tight text-foreground">
+          <h1 className="font-heading text-3xl font-extrabold tracking-tight text-foreground">
             Inventory Console
           </h1>
           <p className="text-xs text-muted-foreground">
-            Manage your boutique catalog products, category lists, variant stocks, and high-res media.
+            Manage your boutique catalog products, category lists, variant
+            stocks, and high-res media.
           </p>
         </div>
-        <Button onClick={handleOpenAddProduct}>
-          Add New Product
-        </Button>
+        <Button onClick={handleOpenAddProduct}>Add New Product</Button>
       </div>
 
       {/* Main Tabs Container */}
       <Tabs defaultValue="products" className="w-full">
         <TabsList className="mb-6 bg-muted/60 p-1">
-          <TabsTrigger value="products" className="cursor-pointer">Products Inventory</TabsTrigger>
-          <TabsTrigger value="categories" className="cursor-pointer">Categories & Slugs</TabsTrigger>
+          <TabsTrigger value="products" className="cursor-pointer">
+            Products Inventory
+          </TabsTrigger>
+          <TabsTrigger value="categories" className="cursor-pointer">
+            Categories & Slugs
+          </TabsTrigger>
         </TabsList>
 
         {/* Tab 1: Products Catalogue grid */}
         <TabsContent value="products">
-          
           {/* Filters Bar */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-6 items-center">
-            
+          <div className="mb-6 flex flex-col items-center gap-4 sm:flex-row">
             {/* Search Input */}
             <div className="relative w-full sm:max-w-xs">
-              <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-muted-foreground pointer-events-none">
+              <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
                 <HugeiconsIcon icon={SearchIcon} className="size-4" />
               </span>
               <Input
@@ -764,7 +896,7 @@ export const ProductsPage = () => {
                 placeholder="Search products..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 bg-card border-border/80 w-full"
+                className="w-full border-border/80 bg-card pl-9"
               />
             </div>
 
@@ -784,11 +916,10 @@ export const ProductsPage = () => {
                 </SelectContent>
               </Select>
             </div>
-
           </div>
 
           {/* Grid listing products */}
-          <div className="border border-border/60 rounded-lg bg-card shadow-sm">
+          <div className="rounded-lg border border-border/60 bg-card shadow-sm">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -798,52 +929,66 @@ export const ProductsPage = () => {
                   <TableHead className="px-6 py-4">Price</TableHead>
                   <TableHead className="px-6 py-4">Badges</TableHead>
                   <TableHead className="px-6 py-4">Variants / Stocks</TableHead>
-                  <TableHead className="px-6 py-4 text-right">Actions</TableHead>
+                  <TableHead className="px-6 py-4 text-right">
+                    Actions
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredProducts.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
+                    <TableCell
+                      colSpan={7}
+                      className="px-6 py-12 text-center text-muted-foreground"
+                    >
                       No catalog products matched your query.
                     </TableCell>
                   </TableRow>
                 ) : (
                   filteredProducts.map((prod) => {
-                    const primaryImage = prod.images?.find((img) => img.is_primary)?.image_url || "/placeholder-product.jpg"
-                    const totalStock = prod.variants?.reduce((sum, v) => sum + v.stock, 0) ?? 0
+                    const primaryImage =
+                      prod.images?.find((img) => img.is_primary)?.image_url ||
+                      "/placeholder-product.svg"
+                    const totalStock =
+                      prod.variants?.reduce((sum, v) => sum + v.stock, 0) ?? 0
 
                     return (
                       <TableRow key={prod.id}>
-                        
                         {/* Image Thumbnail */}
                         <TableCell className="px-6 py-4">
                           <img
                             src={primaryImage}
                             alt={prod.name}
-                            className="size-12 object-cover rounded bg-muted border"
+                            className="size-12 rounded border bg-muted object-cover"
                             onError={(e) => {
-                              (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1610970881699-44a5587caaec?auto=format&fit=crop&q=80&w=200"
+                              ;(e.target as HTMLImageElement).src =
+                                "/placeholder-product.svg"
                             }}
                           />
                         </TableCell>
 
                         {/* Title and slug */}
                         <TableCell className="px-6 py-4">
-                          <div className="font-semibold text-foreground">{prod.name}</div>
-                          <div className="text-[11px] text-muted-foreground font-mono truncate max-w-xs">{prod.slug}</div>
+                          <div className="font-semibold text-foreground">
+                            {prod.name}
+                          </div>
+                          <div className="max-w-xs truncate font-mono text-[11px] text-muted-foreground">
+                            {prod.slug}
+                          </div>
                         </TableCell>
 
                         {/* Category */}
                         <TableCell className="px-6 py-4">
-                          <Badge variant="outline">{prod.category?.name || "Unassigned"}</Badge>
+                          <Badge variant="outline">
+                            {prod.category?.name || "Unassigned"}
+                          </Badge>
                         </TableCell>
 
                         {/* Price */}
                         <TableCell className="px-6 py-4 font-semibold text-foreground">
                           {formatPrice(prod.price)}
                           {prod.compare_at_price && (
-                            <div className="text-[11px] text-muted-foreground line-through font-normal">
+                            <div className="text-[11px] font-normal text-muted-foreground line-through">
                               {formatPrice(prod.compare_at_price)}
                             </div>
                           )}
@@ -851,24 +996,34 @@ export const ProductsPage = () => {
 
                         {/* Badges */}
                         <TableCell className="px-6 py-4">
-                          <div className="flex flex-col gap-1.5 self-start items-start">
-                            <Badge variant={prod.is_available ? "default" : "destructive"}>
+                          <div className="flex flex-col items-start gap-1.5 self-start">
+                            <Badge
+                              variant={
+                                prod.is_available ? "default" : "destructive"
+                              }
+                            >
                               {prod.is_available ? "Active" : "Archived"}
                             </Badge>
                             {prod.is_featured && (
-                              <Badge variant="default">
-                                Featured
-                              </Badge>
+                              <Badge variant="default">Featured</Badge>
                             )}
                           </div>
                         </TableCell>
 
                         {/* Variant / Stocks */}
                         <TableCell className="px-6 py-4">
-                          <Badge variant={totalStock === 0 ? "destructive" : totalStock <= 15 ? "secondary" : "default"}>
+                          <Badge
+                            variant={
+                              totalStock === 0
+                                ? "destructive"
+                                : totalStock <= 15
+                                  ? "secondary"
+                                  : "default"
+                            }
+                          >
                             {totalStock} in stock
                           </Badge>
-                          <div className="text-[10px] text-muted-foreground mt-0.5 font-medium">
+                          <div className="mt-0.5 text-[10px] font-medium text-muted-foreground">
                             {prod.variants?.length || 0} active option(s)
                           </div>
                         </TableCell>
@@ -876,21 +1031,46 @@ export const ProductsPage = () => {
                         {/* Actions buttons */}
                         <TableCell className="px-6 py-4 text-right">
                           <div className="flex items-center justify-end gap-2">
-                            <Button variant="ghost" size="xs" onClick={() => handleOpenVariantManager(prod)} className="text-xs px-2.5 border hover:bg-muted font-medium">
+                            <Button
+                              variant="ghost"
+                              size="xs"
+                              onClick={() => handleOpenVariantManager(prod)}
+                              className="border px-2.5 text-xs font-medium hover:bg-muted"
+                            >
                               Variants
                             </Button>
-                            <Button variant="ghost" size="xs" onClick={() => handleOpenImageManager(prod)} className="text-xs px-2.5 border hover:bg-muted font-medium">
+                            <Button
+                              variant="ghost"
+                              size="xs"
+                              onClick={() => handleOpenImageManager(prod)}
+                              className="border px-2.5 text-xs font-medium hover:bg-muted"
+                            >
                               Media
                             </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleOpenEditProduct(prod)} className="hover:bg-muted">
-                              <HugeiconsIcon icon={Edit01Icon} className="size-4 text-muted-foreground" />
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleOpenEditProduct(prod)}
+                              className="hover:bg-muted"
+                            >
+                              <HugeiconsIcon
+                                icon={Edit01Icon}
+                                className="size-4 text-muted-foreground"
+                              />
                             </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDeleteProduct(prod.id)} className="hover:bg-destructive/10 hover:text-destructive">
-                              <HugeiconsIcon icon={Delete02Icon} className="size-4" />
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDeleteProduct(prod.id)}
+                              className="hover:bg-destructive/10 hover:text-destructive"
+                            >
+                              <HugeiconsIcon
+                                icon={Delete02Icon}
+                                className="size-4"
+                              />
                             </Button>
                           </div>
                         </TableCell>
-
                       </TableRow>
                     )
                   })
@@ -898,22 +1078,27 @@ export const ProductsPage = () => {
               </TableBody>
             </Table>
           </div>
-
         </TabsContent>
 
         {/* Tab 2: Categories Inventory Management */}
         <TabsContent value="categories">
           <div className="grid gap-8 lg:grid-cols-3">
-            
             {/* Category creation form */}
-            <Card className="border border-border/60 bg-card shadow-sm h-fit">
+            <Card className="h-fit border border-border/60 bg-card shadow-sm">
               <CardHeader>
-                <CardTitle className="text-sm font-bold uppercase tracking-wider text-foreground">Add New Category</CardTitle>
-                <CardDescription className="text-xs">Create classifications to group organic juices & wellness products.</CardDescription>
+                <CardTitle className="text-sm font-bold tracking-wider text-foreground uppercase">
+                  Add New Category
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Create classifications to group organic juices & wellness
+                  products.
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleCategorySubmit} className="flex flex-col gap-5 text-left">
-                  
+                <form
+                  onSubmit={handleCategorySubmit}
+                  className="flex flex-col gap-5 text-left"
+                >
                   {/* Category Name */}
                   <Field data-invalid={!!catErrors.name}>
                     <FieldLabel htmlFor="catName">Category Name</FieldLabel>
@@ -922,12 +1107,15 @@ export const ProductsPage = () => {
                       value={catName}
                       onChange={(e) => {
                         setCatName(e.target.value)
-                        if (catErrors.name) setCatErrors(prev => ({ ...prev, name: "" }))
+                        if (catErrors.name)
+                          setCatErrors((prev) => ({ ...prev, name: "" }))
                       }}
                       placeholder="e.g. Cleansing Tonics"
                       aria-invalid={!!catErrors.name}
                     />
-                    {catErrors.name && <FieldError>{catErrors.name}</FieldError>}
+                    {catErrors.name && (
+                      <FieldError>{catErrors.name}</FieldError>
+                    )}
                   </Field>
 
                   {/* Slug */}
@@ -937,13 +1125,21 @@ export const ProductsPage = () => {
                       id="catSlug"
                       value={catSlug}
                       onChange={(e) => {
-                        setCatSlug(e.target.value.toLowerCase().replace(/ /g, "-").replace(/[^a-z0-9-]/g, ""))
-                        if (catErrors.slug) setCatErrors(prev => ({ ...prev, slug: "" }))
+                        setCatSlug(
+                          e.target.value
+                            .toLowerCase()
+                            .replace(/ /g, "-")
+                            .replace(/[^a-z0-9-]/g, "")
+                        )
+                        if (catErrors.slug)
+                          setCatErrors((prev) => ({ ...prev, slug: "" }))
                       }}
                       placeholder="cleansing-tonics"
                       aria-invalid={!!catErrors.slug}
                     />
-                    {catErrors.slug && <FieldError>{catErrors.slug}</FieldError>}
+                    {catErrors.slug && (
+                      <FieldError>{catErrors.slug}</FieldError>
+                    )}
                   </Field>
 
                   {/* Description */}
@@ -971,17 +1167,20 @@ export const ProductsPage = () => {
                   </Field>
 
                   {/* Submit Button */}
-                  <Button type="submit" disabled={submittingCategory} className="w-full mt-2 font-medium">
+                  <Button
+                    type="submit"
+                    disabled={submittingCategory}
+                    className="mt-2 w-full font-medium"
+                  >
                     {submittingCategory && <Spinner data-icon="inline-start" />}
                     {submittingCategory ? "Creating..." : "Save Classification"}
                   </Button>
-
                 </form>
               </CardContent>
             </Card>
 
             {/* Category listing grid */}
-            <div className="lg:col-span-2 border border-border/60 rounded-lg bg-card shadow-sm h-fit">
+            <div className="h-fit rounded-lg border border-border/60 bg-card shadow-sm lg:col-span-2">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -989,20 +1188,24 @@ export const ProductsPage = () => {
                     <TableHead className="px-6 py-4">Slug</TableHead>
                     <TableHead className="px-6 py-4">Description</TableHead>
                     <TableHead className="px-6 py-4">Display Order</TableHead>
-                    <TableHead className="px-6 py-4 text-right">Actions</TableHead>
+                    <TableHead className="px-6 py-4 text-right">
+                      Actions
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {categories.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="px-6 py-12 text-center text-muted-foreground">
+                      <TableCell
+                        colSpan={5}
+                        className="px-6 py-12 text-center text-muted-foreground"
+                      >
                         No categories currently defined.
                       </TableCell>
                     </TableRow>
                   ) : (
                     categories.map((cat) => (
                       <TableRow key={cat.id}>
-                        
                         {/* Name */}
                         <TableCell className="px-6 py-4 font-semibold text-foreground">
                           {cat.name}
@@ -1014,7 +1217,7 @@ export const ProductsPage = () => {
                         </TableCell>
 
                         {/* Description */}
-                        <TableCell className="px-6 py-4 max-w-xs truncate text-muted-foreground">
+                        <TableCell className="max-w-xs truncate px-6 py-4 text-muted-foreground">
                           {cat.description || "-"}
                         </TableCell>
 
@@ -1025,36 +1228,47 @@ export const ProductsPage = () => {
 
                         {/* Actions */}
                         <TableCell className="px-6 py-4 text-right">
-                          <Button variant="ghost" size="icon" onClick={() => handleDeleteCategory(cat.id)} className="hover:bg-destructive/10 hover:text-destructive">
-                            <HugeiconsIcon icon={Delete02Icon} className="size-4" />
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteCategory(cat.id)}
+                            className="hover:bg-destructive/10 hover:text-destructive"
+                          >
+                            <HugeiconsIcon
+                              icon={Delete02Icon}
+                              className="size-4"
+                            />
                           </Button>
                         </TableCell>
-
                       </TableRow>
                     ))
                   )}
                 </TableBody>
               </Table>
             </div>
-
           </div>
         </TabsContent>
       </Tabs>
 
       {/* --- ADD/EDIT PRODUCT DIALOG --- */}
       <Dialog open={productModalOpen} onOpenChange={setProductModalOpen}>
-        <DialogContent className="max-w-xl bg-card border overflow-y-auto max-h-[90vh]">
+        <DialogContent className="max-h-[90vh] max-w-xl sm:max-w-xl overflow-y-auto border bg-card">
           <DialogHeader>
-            <DialogTitle className="text-lg font-bold font-heading">
-              {activeProduct ? `Modify Catalogue: ${activeProduct.name}` : "Create New Product Catalog"}
+            <DialogTitle className="font-heading text-lg font-bold">
+              {activeProduct
+                ? `Modify Catalogue: ${activeProduct.name}`
+                : "Create New Product Catalog"}
             </DialogTitle>
             <DialogDescription className="text-xs">
-              Fill out the basic information details below to compile your catalog entry.
+              Fill out the basic information details below to compile your
+              catalog entry.
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleProductSubmit} className="text-left py-4 flex flex-col gap-5">
-            
+          <form
+            onSubmit={handleProductSubmit}
+            className="flex flex-col gap-5 py-4 text-left"
+          >
             {/* Title Name */}
             <Field data-invalid={!!formErrors.name}>
               <FieldLabel htmlFor="formName">Product Title</FieldLabel>
@@ -1063,10 +1277,16 @@ export const ProductsPage = () => {
                 value={formName}
                 onChange={(e) => {
                   setFormName(e.target.value)
-                  if (formErrors.name) setFormErrors(prev => ({ ...prev, name: "" }))
+                  if (formErrors.name)
+                    setFormErrors((prev) => ({ ...prev, name: "" }))
                   // Auto-generate slug on typing name in create mode
                   if (!activeProduct) {
-                    setFormSlug(e.target.value.toLowerCase().replace(/ /g, "-").replace(/[^a-z0-9-]/g, ""))
+                    setFormSlug(
+                      e.target.value
+                        .toLowerCase()
+                        .replace(/ /g, "-")
+                        .replace(/[^a-z0-9-]/g, "")
+                    )
                   }
                 }}
                 placeholder="e.g. Pure Earth Cleanser"
@@ -1082,8 +1302,14 @@ export const ProductsPage = () => {
                 id="formSlug"
                 value={formSlug}
                 onChange={(e) => {
-                  setFormSlug(e.target.value.toLowerCase().replace(/ /g, "-").replace(/[^a-z0-9-]/g, ""))
-                  if (formErrors.slug) setFormErrors(prev => ({ ...prev, slug: "" }))
+                  setFormSlug(
+                    e.target.value
+                      .toLowerCase()
+                      .replace(/ /g, "-")
+                      .replace(/[^a-z0-9-]/g, "")
+                  )
+                  if (formErrors.slug)
+                    setFormErrors((prev) => ({ ...prev, slug: "" }))
                 }}
                 placeholder="pure-earth-cleanser"
                 aria-invalid={!!formErrors.slug}
@@ -1093,43 +1319,59 @@ export const ProductsPage = () => {
 
             {/* Category selection */}
             <Field data-invalid={!!formErrors.category}>
-              <FieldLabel htmlFor="formCategoryId">Assign Category Classification</FieldLabel>
+              <FieldLabel htmlFor="formCategoryId">
+                Assign Category Classification
+              </FieldLabel>
               <Select value={formCategoryId} onValueChange={setFormCategoryId}>
-                <SelectTrigger id="formCategoryId" className="w-full" aria-invalid={!!formErrors.category}>
+                <SelectTrigger
+                  id="formCategoryId"
+                  className="w-full"
+                  aria-invalid={!!formErrors.category}
+                >
                   <SelectValue placeholder="Choose Classification..." />
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              {formErrors.category && <FieldError>{formErrors.category}</FieldError>}
+              {formErrors.category && (
+                <FieldError>{formErrors.category}</FieldError>
+              )}
             </Field>
 
             {/* Price Grid */}
             <div className="grid grid-cols-2 gap-4">
-              
               {/* Base Price */}
               <Field data-invalid={!!formErrors.price}>
-                <FieldLabel htmlFor="formPrice">Base Retail Price (IDR)</FieldLabel>
+                <FieldLabel htmlFor="formPrice">
+                  Base Retail Price (IDR)
+                </FieldLabel>
                 <Input
                   id="formPrice"
                   type="number"
                   value={formPrice}
                   onChange={(e) => {
                     setFormPrice(e.target.value)
-                    if (formErrors.price) setFormErrors(prev => ({ ...prev, price: "" }))
+                    if (formErrors.price)
+                      setFormErrors((prev) => ({ ...prev, price: "" }))
                   }}
                   placeholder="45000"
                   aria-invalid={!!formErrors.price}
                 />
-                {formErrors.price && <FieldError>{formErrors.price}</FieldError>}
+                {formErrors.price && (
+                  <FieldError>{formErrors.price}</FieldError>
+                )}
               </Field>
 
               {/* Compare Price */}
               <Field>
-                <FieldLabel htmlFor="formComparePrice">Compare-At Price (IDR - Strikeout)</FieldLabel>
+                <FieldLabel htmlFor="formComparePrice">
+                  Compare-At Price (IDR - Strikeout)
+                </FieldLabel>
                 <Input
                   id="formComparePrice"
                   type="number"
@@ -1138,15 +1380,15 @@ export const ProductsPage = () => {
                   placeholder="50000"
                 />
               </Field>
-
             </div>
 
             {/* Tags and Order */}
             <div className="grid grid-cols-2 gap-4">
-              
               {/* Tags */}
               <Field>
-                <FieldLabel htmlFor="formTags">Tags (Comma Separated)</FieldLabel>
+                <FieldLabel htmlFor="formTags">
+                  Tags (Comma Separated)
+                </FieldLabel>
                 <Input
                   id="formTags"
                   value={formTags}
@@ -1157,7 +1399,9 @@ export const ProductsPage = () => {
 
               {/* Display Order */}
               <Field>
-                <FieldLabel htmlFor="formDisplayOrder">Display Order (Sorting)</FieldLabel>
+                <FieldLabel htmlFor="formDisplayOrder">
+                  Display Order (Sorting)
+                </FieldLabel>
                 <Input
                   id="formDisplayOrder"
                   type="number"
@@ -1166,7 +1410,6 @@ export const ProductsPage = () => {
                   placeholder="10"
                 />
               </Field>
-
             </div>
 
             {/* Description */}
@@ -1184,12 +1427,18 @@ export const ProductsPage = () => {
             {/* Toggles */}
             <div className="flex gap-6 pt-2">
               <label className="flex items-center gap-2 text-xs font-semibold text-foreground select-none">
-                <Checkbox checked={formIsAvailable} onCheckedChange={(c) => setFormIsAvailable(!!c)} />
+                <Checkbox
+                  checked={formIsAvailable}
+                  onCheckedChange={(c) => setFormIsAvailable(!!c)}
+                />
                 Is Available (Publish immediately)
               </label>
 
               <label className="flex items-center gap-2 text-xs font-semibold text-foreground select-none">
-                <Checkbox checked={formIsFeatured} onCheckedChange={(c) => setFormIsFeatured(!!c)} />
+                <Checkbox
+                  checked={formIsFeatured}
+                  onCheckedChange={(c) => setFormIsFeatured(!!c)}
+                />
                 Is Featured (Promote on frontpage)
               </label>
             </div>
@@ -1197,55 +1446,67 @@ export const ProductsPage = () => {
             {/* Footer triggers */}
             <DialogFooter className="mt-4 gap-2">
               <DialogClose asChild>
-                <Button type="button" variant="outline">Cancel</Button>
+                <Button type="button" variant="outline">
+                  Cancel
+                </Button>
               </DialogClose>
               <Button type="submit" disabled={submittingProduct}>
                 {submittingProduct && <Spinner data-icon="inline-start" />}
-                {submittingProduct ? "Saving catalogue..." : "Save Product Catalogue"}
+                {submittingProduct
+                  ? "Saving catalogue..."
+                  : "Save Product Catalogue"}
               </Button>
             </DialogFooter>
-
           </form>
         </DialogContent>
       </Dialog>
 
       {/* --- VARIANTS MANAGER DIALOG --- */}
       <Dialog open={variantsModalOpen} onOpenChange={setVariantsModalOpen}>
-        <DialogContent className="max-w-3xl bg-card border overflow-y-auto max-h-[90vh]">
+        <DialogContent className="max-h-[90vh] max-w-3xl sm:max-w-3xl overflow-y-auto border bg-card">
           <DialogHeader>
-            <DialogTitle className="text-lg font-bold font-heading">
+            <DialogTitle className="font-heading text-lg font-bold">
               Manage Variants: {activeProduct?.name}
             </DialogTitle>
             <DialogDescription className="text-xs">
-              Configure variant options (Volume size, customized colors, localized SKU strings, stock values, and pricing offsets).
+              Configure variant options (Volume size, customized colors,
+              localized SKU strings, stock values, and pricing offsets).
             </DialogDescription>
           </DialogHeader>
 
           {/* Core manager layout */}
-          <div className="grid gap-6 md:grid-cols-2 text-left py-4">
-            
+          <div className="grid gap-6 py-4 text-left md:grid-cols-2">
             {/* Append Variant form */}
-            <Card className="border border-border/80 bg-card/40 h-fit">
+            <Card className="h-fit border border-border/80 bg-card/40">
               <CardHeader className="p-4">
-                <CardTitle className="text-xs font-bold uppercase tracking-wider text-foreground">Add New Variant option</CardTitle>
+                <CardTitle className="text-xs font-bold tracking-wider text-foreground uppercase">
+                  Add New Variant option
+                </CardTitle>
               </CardHeader>
               <CardContent className="p-4 pt-0">
-                <form onSubmit={handleAddVariant} className="flex flex-col gap-4">
-                  
+                <form
+                  onSubmit={handleAddVariant}
+                  className="flex flex-col gap-4"
+                >
                   {/* Variant Size */}
                   <Field data-invalid={!!varErrors.size}>
-                    <FieldLabel htmlFor="varSize">Size (Volume/Dimension)</FieldLabel>
+                    <FieldLabel htmlFor="varSize">
+                      Size (Volume/Dimension)
+                    </FieldLabel>
                     <Input
                       id="varSize"
                       value={varSize}
                       onChange={(e) => {
                         setVarSize(e.target.value)
-                        if (varErrors.size) setVarErrors(prev => ({ ...prev, size: "" }))
+                        if (varErrors.size)
+                          setVarErrors((prev) => ({ ...prev, size: "" }))
                       }}
                       placeholder="e.g. 250ml or 500ml"
                       aria-invalid={!!varErrors.size}
                     />
-                    {varErrors.size && <FieldError>{varErrors.size}</FieldError>}
+                    {varErrors.size && (
+                      <FieldError>{varErrors.size}</FieldError>
+                    )}
                   </Field>
 
                   {/* Color & Color Hex */}
@@ -1260,7 +1521,9 @@ export const ProductsPage = () => {
                       />
                     </Field>
                     <Field>
-                      <FieldLabel htmlFor="varColorHex">Color Hex Code</FieldLabel>
+                      <FieldLabel htmlFor="varColorHex">
+                        Color Hex Code
+                      </FieldLabel>
                       <Input
                         id="varColorHex"
                         value={varColorHex}
@@ -1278,7 +1541,8 @@ export const ProductsPage = () => {
                       value={varSku}
                       onChange={(e) => {
                         setVarSku(e.target.value)
-                        if (varErrors.sku) setVarErrors(prev => ({ ...prev, sku: "" }))
+                        if (varErrors.sku)
+                          setVarErrors((prev) => ({ ...prev, sku: "" }))
                       }}
                       placeholder="JUICE-BEET-250"
                       aria-invalid={!!varErrors.sku}
@@ -1289,23 +1553,30 @@ export const ProductsPage = () => {
                   {/* Stock and additional price */}
                   <div className="grid grid-cols-2 gap-3">
                     <Field data-invalid={!!varErrors.stock}>
-                      <FieldLabel htmlFor="varStock">Fulfillment Stock</FieldLabel>
+                      <FieldLabel htmlFor="varStock">
+                        Fulfillment Stock
+                      </FieldLabel>
                       <Input
                         id="varStock"
                         type="number"
                         value={varStock}
                         onChange={(e) => {
                           setVarStock(e.target.value)
-                          if (varErrors.stock) setVarErrors(prev => ({ ...prev, stock: "" }))
+                          if (varErrors.stock)
+                            setVarErrors((prev) => ({ ...prev, stock: "" }))
                         }}
                         placeholder="100"
                         aria-invalid={!!varErrors.stock}
                       />
-                      {varErrors.stock && <FieldError>{varErrors.stock}</FieldError>}
+                      {varErrors.stock && (
+                        <FieldError>{varErrors.stock}</FieldError>
+                      )}
                     </Field>
 
                     <Field>
-                      <FieldLabel htmlFor="varAddPrice">Add. Price Offset (IDR)</FieldLabel>
+                      <FieldLabel htmlFor="varAddPrice">
+                        Add. Price Offset (IDR)
+                      </FieldLabel>
                       <Input
                         id="varAddPrice"
                         type="number"
@@ -1317,27 +1588,38 @@ export const ProductsPage = () => {
                   </div>
 
                   {/* Save option */}
-                  <Button type="submit" disabled={submittingVariant} className="w-full mt-2 font-medium">
+                  <Button
+                    type="submit"
+                    disabled={submittingVariant}
+                    className="mt-2 w-full font-medium"
+                  >
                     {submittingVariant && <Spinner data-icon="inline-start" />}
-                    {submittingVariant ? "Appending..." : "Append Variant Option"}
+                    {submittingVariant
+                      ? "Appending..."
+                      : "Append Variant Option"}
                   </Button>
-
                 </form>
               </CardContent>
             </Card>
 
             {/* Existing Variants list */}
             <div className="flex flex-col gap-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Active Variant Combinations</h3>
-              <div className="flex flex-col gap-3 max-h-87.5 overflow-y-auto pr-1">
-                {!activeProduct?.variants || activeProduct.variants.length === 0 ? (
-                  <div className="text-center py-12 text-xs text-muted-foreground border border-dashed rounded-lg bg-muted/20">
+              <h3 className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
+                Active Variant Combinations
+              </h3>
+              <div className="flex max-h-87.5 flex-col gap-3 overflow-y-auto pr-1">
+                {!activeProduct?.variants ||
+                activeProduct.variants.length === 0 ? (
+                  <div className="rounded-lg border border-dashed bg-muted/20 py-12 text-center text-xs text-muted-foreground">
                     No variant combinations constructed yet.
                   </div>
                 ) : (
                   activeProduct.variants.map((v) => (
-                    <div key={v.id} className="p-3 border rounded-lg bg-card flex items-center justify-between text-xs hover:border-primary transition-colors">
-                      <div className="flex flex-col gap-1 items-start">
+                    <div
+                      key={v.id}
+                      className="flex items-center justify-between rounded-lg border bg-card p-3 text-xs transition-colors hover:border-primary"
+                    >
+                      <div className="flex flex-col items-start gap-1">
                         <div className="flex items-center gap-2 font-bold text-foreground">
                           <span>{v.size}</span>
                           {v.color && (
@@ -1352,21 +1634,32 @@ export const ProductsPage = () => {
                             </span>
                           )}
                         </div>
-                        <div className="text-[10px] text-muted-foreground font-mono">{v.sku}</div>
-                        <div className="flex items-center gap-3 mt-1 text-[10px] font-semibold">
+                        <div className="font-mono text-[10px] text-muted-foreground">
+                          {v.sku}
+                        </div>
+                        <div className="mt-1 flex items-center gap-3 text-[10px] font-semibold">
                           <Badge variant="default">{v.stock} in stock</Badge>
-                          <span className="text-primary">+{formatPrice(v.additional_price)} offset</span>
+                          <span className="text-primary">
+                            +{formatPrice(v.additional_price)} offset
+                          </span>
                         </div>
                       </div>
-                      <Button variant="ghost" size="icon" onClick={() => handleDeleteVariant(v.id)} className="hover:bg-destructive/10 hover:text-destructive size-7">
-                        <HugeiconsIcon icon={Delete02Icon} className="size-3.5" />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDeleteVariant(v.id)}
+                        className="size-7 hover:bg-destructive/10 hover:text-destructive"
+                      >
+                        <HugeiconsIcon
+                          icon={Delete02Icon}
+                          className="size-3.5"
+                        />
                       </Button>
                     </div>
                   ))
                 )}
               </div>
             </div>
-
           </div>
 
           <DialogFooter className="border-t border-border pt-4">
@@ -1379,31 +1672,39 @@ export const ProductsPage = () => {
 
       {/* --- MEDIA IMAGE MANAGER DIALOG --- */}
       <Dialog open={imagesModalOpen} onOpenChange={setImagesModalOpen}>
-        <DialogContent className="max-w-2xl bg-card border overflow-y-auto max-h-[90vh]">
+        <DialogContent className="max-h-[90vh] max-w-2xl sm:max-w-2xl overflow-y-auto border bg-card">
           <DialogHeader>
-            <DialogTitle className="text-lg font-bold font-heading">
+            <DialogTitle className="font-heading text-lg font-bold">
               Boutique Image Assets: {activeProduct?.name}
             </DialogTitle>
             <DialogDescription className="text-xs">
-              Upload multiple raw images directly to Cloudinary CDN, set primary listing catalog covers, or remove expired graphics assets.
+              Upload multiple raw images directly to Cloudinary CDN, set primary
+              listing catalog covers, or remove expired graphics assets.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="text-left py-4 flex flex-col gap-6">
-            
+          <div className="flex flex-col gap-6 py-4 text-left">
             {/* Uploader section */}
-            <form onSubmit={handleImageUploadSubmit} className="flex gap-4 items-end border p-4 rounded-lg bg-muted/10">
+            <form
+              onSubmit={handleImageUploadSubmit}
+              className="flex items-end gap-4 rounded-lg border bg-muted/10 p-4"
+            >
               <div className="flex-1 text-xs">
-                <label className="block font-semibold mb-2 text-foreground">Select Multi-Images files to upload</label>
+                <label className="mb-2 block font-semibold text-foreground">
+                  Select Multi-Images files to upload
+                </label>
                 <input
                   type="file"
                   multiple
                   accept="image/*"
                   onChange={(e) => setSelectedFiles(e.target.files)}
-                  className="w-full text-xs text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-md file:border file:text-xs file:font-semibold file:bg-card file:text-foreground hover:file:bg-muted cursor-pointer"
+                  className="w-full cursor-pointer text-xs text-muted-foreground file:mr-4 file:rounded-md file:border file:bg-card file:px-4 file:py-2 file:text-xs file:font-semibold file:text-foreground hover:file:bg-muted"
                 />
               </div>
-              <Button type="submit" disabled={uploadingImages || !selectedFiles}>
+              <Button
+                type="submit"
+                disabled={uploadingImages || !selectedFiles}
+              >
                 {uploadingImages && <Spinner data-icon="inline-start" />}
                 {uploadingImages ? "Uploading..." : "Upload Assets"}
               </Button>
@@ -1411,42 +1712,52 @@ export const ProductsPage = () => {
 
             {/* Thumbnail Grid display */}
             <div className="flex flex-col gap-3">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Catalog Image Assets</h3>
+              <h3 className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
+                Catalog Image Assets
+              </h3>
               {!activeProduct?.images || activeProduct.images.length === 0 ? (
-                <div className="text-center py-16 border border-dashed rounded-lg text-xs text-muted-foreground bg-muted/20">
+                <div className="rounded-lg border border-dashed bg-muted/20 py-16 text-center text-xs text-muted-foreground">
                   No photographic graphics uploaded for this product yet.
                 </div>
               ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
                   {activeProduct.images.map((img) => (
-                    <div key={img.id} className={cn(
-                      "group relative border rounded-lg bg-card overflow-hidden flex flex-col items-center gap-2 p-2 hover:border-primary transition-colors",
-                      img.is_primary ? "border-2 border-primary" : "border-border"
-                    )}>
-                      
+                    <div
+                      key={img.id}
+                      className={cn(
+                        "group relative flex flex-col items-center gap-2 overflow-hidden rounded-lg border bg-card p-2 transition-colors hover:border-primary",
+                        img.is_primary
+                          ? "border-2 border-primary"
+                          : "border-border"
+                      )}
+                    >
                       {/* Image Frame */}
                       <img
                         src={img.image_url}
                         alt="Product option thumbnail"
-                        className="h-28 w-full object-cover rounded bg-muted"
+                        className="h-28 w-full rounded bg-muted object-cover"
+                        onError={(e) => {
+                          ;(e.target as HTMLImageElement).src =
+                            "/placeholder-product.svg"
+                        }}
                       />
 
                       {/* Display info */}
                       {img.is_primary && (
-                        <div className="absolute top-2 left-2 text-[9px] font-bold uppercase tracking-wider bg-primary text-primary-foreground px-2 py-0.5 rounded shadow">
+                        <div className="absolute top-2 left-2 rounded bg-primary px-2 py-0.5 text-[9px] font-bold tracking-wider text-primary-foreground uppercase shadow">
                           Cover Cover
                         </div>
                       )}
 
                       {/* Action buttons panel */}
-                      <div className="flex w-full items-center justify-between mt-1 pt-1.5 border-t border-border/60">
+                      <div className="mt-1 flex w-full items-center justify-between border-t border-border/60 pt-1.5">
                         <Button
                           type="button"
                           variant="ghost"
                           size="xs"
                           onClick={() => handleSetPrimaryImage(img.id)}
                           disabled={img.is_primary}
-                          className="text-[10px] p-1.5 h-auto"
+                          className="h-auto p-1.5 text-[10px]"
                         >
                           Set Cover
                         </Button>
@@ -1455,18 +1766,19 @@ export const ProductsPage = () => {
                           variant="ghost"
                           size="icon"
                           onClick={() => handleDeleteImage(img.id)}
-                          className="hover:bg-destructive/10 hover:text-destructive size-7"
+                          className="size-7 hover:bg-destructive/10 hover:text-destructive"
                         >
-                          <HugeiconsIcon icon={Delete02Icon} className="size-3.5" />
+                          <HugeiconsIcon
+                            icon={Delete02Icon}
+                            className="size-3.5"
+                          />
                         </Button>
                       </div>
-
                     </div>
                   ))}
                 </div>
               )}
             </div>
-
           </div>
 
           <DialogFooter className="border-t border-border pt-4">
@@ -1477,6 +1789,7 @@ export const ProductsPage = () => {
         </DialogContent>
       </Dialog>
 
+      {confirmDialog}
     </div>
   )
 }
