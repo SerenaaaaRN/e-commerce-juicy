@@ -5,11 +5,11 @@ import type {
   Category,
   ProductDetail,
   ProductVariant,
-  Order,
+  AdminOrder,
   OrderDetail,
-  Customer,
-  Review,
+  AdminReview,
 } from "@/types"
+import type { ClientStatistics } from "@/features/admin/types"
 
 // Analytics response shapes
 export type AnalyticsOverview = {
@@ -164,8 +164,8 @@ export const adminApi = {
   },
 
   // --- ORDERS ---
-  getOrders: async (params?: OrderQueryParams): Promise<PaginatedResponse<Order>> => {
-    const response = await client.get<PaginatedResponse<Order>>("/admin/orders", { params })
+  getOrders: async (params?: OrderQueryParams): Promise<PaginatedResponse<AdminOrder>> => {
+    const response = await client.get<PaginatedResponse<AdminOrder>>("/admin/orders", { params })
     return response.data
   },
 
@@ -185,13 +185,13 @@ export const adminApi = {
   },
 
   // --- CUSTOMERS ---
-  getCustomers: async (params?: CustomerQueryParams): Promise<PaginatedResponse<Customer & { order_count: number; total_spent: number }>> => {
-    const response = await client.get<PaginatedResponse<Customer & { order_count: number; total_spent: number }>>("/admin/customers", { params })
+  getCustomers: async (params?: CustomerQueryParams): Promise<PaginatedResponse<ClientStatistics>> => {
+    const response = await client.get<PaginatedResponse<ClientStatistics>>("/admin/customers", { params })
     return response.data
   },
 
-  getCustomerDetail: async (id: string): Promise<ApiResponse<Customer & { order_history?: Order[] }>> => {
-    const response = await client.get<ApiResponse<Customer & { order_history?: Order[] }>>(`/admin/customers/${id}`)
+  getCustomerDetail: async (id: string): Promise<ApiResponse<ClientStatistics & { order_history?: AdminOrder[] }>> => {
+    const response = await client.get<ApiResponse<ClientStatistics & { order_history?: AdminOrder[] }>>(`/admin/customers/${id}`)
     return response.data
   },
 
@@ -201,8 +201,8 @@ export const adminApi = {
   },
 
   // --- REVIEWS ---
-  getReviews: async (params?: ReviewQueryParams): Promise<PaginatedResponse<Review>> => {
-    const response = await client.get<PaginatedResponse<Review>>("/admin/reviews", { params })
+  getReviews: async (params?: ReviewQueryParams): Promise<PaginatedResponse<AdminReview>> => {
+    const response = await client.get<PaginatedResponse<AdminReview>>("/admin/reviews", { params })
     return response.data
   },
 

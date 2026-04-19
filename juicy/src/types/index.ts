@@ -30,18 +30,14 @@ export type Category = {
 
 export type ProductImage = {
   id: string
-  product_id: string
   image_url: string
-  cloudinary_public_id: string
   alt_text?: string
-  display_order: number
   is_primary: boolean
-  created_at: string
+  display_order: number
 }
 
 export type ProductVariant = {
   id: string
-  product_id: string
   size: string
   color: string
   color_hex?: string
@@ -49,8 +45,6 @@ export type ProductVariant = {
   stock: number
   additional_price: number
   is_active: boolean
-  created_at: string
-  updated_at: string
 }
 
 // Product representation used in list responses
@@ -68,10 +62,9 @@ export type CatalogProduct = {
   review_count: number
 }
 
-// Product representation used in detail response (PDP)
+// Product representation used in detail response (PDP + Admin)
 export type ProductDetail = {
   id: string
-  category_id: string
   name: string
   slug: string
   description?: string
@@ -81,6 +74,7 @@ export type ProductDetail = {
   is_featured: boolean
   tags: string[]
   display_order: number
+  category_id: string
   created_at: string
   updated_at: string
   category?: Category
@@ -143,13 +137,22 @@ export type Order = {
   created_at: string
 }
 
+// Order address info shape matching Go's OrderAddressInfo DTO
+export type OrderAddressInfo = {
+  recipient_name: string
+  phone: string
+  address_line: string
+  city: string
+  province: string
+  postal_code: string
+}
+
 export type OrderItem = {
-  id: string
-  order_id: string
+  product_id?: string
   product_name: string
   variant_size: string
   variant_color: string
-  image_url: string
+  image_url?: string
   quantity: number
   unit_price: number
   subtotal: number
@@ -158,7 +161,6 @@ export type OrderItem = {
 export type OrderDetail = {
   id: string
   order_number: string
-  customer_id: string
   status: OrderStatus
   payment_status: PaymentStatus
   subtotal: number
@@ -166,10 +168,9 @@ export type OrderDetail = {
   total: number
   notes?: string
   shipped_at?: string
-  delivered_at?: string
   created_at: string
-  updated_at: string
-  address: Address
+  updated_at?: string
+  address: OrderAddressInfo
   items: OrderItem[]
 }
 
@@ -182,5 +183,33 @@ export type Review = {
   body: string
   customer_name: string
   is_published?: boolean
+  created_at: string
+}
+
+// --- Admin-specific response types (Option A) ---
+// These match Go's admin DTO shapes which return richer data
+
+export type AdminOrder = {
+  id: string
+  order_number: string
+  customer_name: string
+  customer_email: string
+  status: OrderStatus
+  payment_status: PaymentStatus
+  total: number
+  item_count: number
+  created_at: string
+}
+
+export type AdminReview = {
+  id: string
+  product_id: string
+  product_name: string
+  customer_id: string
+  customer_name: string
+  customer_email: string
+  rating: number
+  body?: string
+  is_published: boolean
   created_at: string
 }

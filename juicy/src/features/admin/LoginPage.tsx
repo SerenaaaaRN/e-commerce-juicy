@@ -2,7 +2,6 @@ import { useTransition } from "react"
 import { Navigate, useNavigate } from "react-router-dom"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,16 +10,8 @@ import { Spinner } from "@/components/ui/spinner"
 import { useAdminAuthStore } from "@/stores/adminAuthStore"
 import { adminApi } from "@/lib/api/admin"
 import { toast } from "sonner"
-
-const loginSchema = z.object({
-  email: z
-    .string()
-    .min(1, "Email address is required")
-    .email("Please enter a valid email address"),
-  password: z.string().min(1, "Password is required"),
-})
-
-type LoginFormValues = z.infer<typeof loginSchema>
+import { loginSchema } from "@/features/admin/validations"
+import type { LoginFormValues } from "@/features/admin/types"
 
 export const LoginPage = () => {
   const navigate = useNavigate()

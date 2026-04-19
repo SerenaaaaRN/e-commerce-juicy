@@ -95,7 +95,7 @@
 |---|---|---|
 | 1 | ✅ Done | Database schema, migrations, pgAdmin setup |
 | 2 | ✅ Done | Backend API (Golang Gin) — all endpoints |
-| 3 | ✅ Done | Admin dashboard (React) |
+| 3 | ✅ Done | Admin dashboard (React) — refactored to clean architecture (hooks + components + validations) |
 | 4 | 🔄 In Progress | Public frontend — Landing, Collection, PDP, Cart, Checkout, Order Tracking |
 | 5 | 🔄 In Progress | Customer auth frontend — Register, Login, Profile, Order History |
 | 6 | [ ] | Deployment to Railway |
@@ -131,3 +131,6 @@ juicy/
 - Image URLs stored in DB are always Cloudinary `secure_url` strings.
 - Customer auth and Admin auth are completely separate JWT flows — different secrets, different middleware, different Zustand stores.
 - **Admin UI must use shadcn primitives** — `Table` not `<table>`, `Select` not `<select>`, `Checkbox` not `<input type="checkbox">`, `Separator` not `<hr>`, `Badge` variants not raw color classes (`text-green-600`, etc.). Inline SVG icons must be replaced with `HugeiconsIcon`. Chart colors must reference CSS variables (`hsl(var(--primary))`) not raw `oklch()` values.
+- **Admin feature follows clean architecture** — business logic in `hooks/`, validation schemas in `validations.ts`, form/derived types in `types.ts`, presentational dialogs in `components/`, page files are thin orchestrators. Do not put business logic inside page components.
+- **Use `type` not `interface`** for all TypeScript definitions (props, form values, domain models). Always use arrow function components.
+- **Admin-specific API response types** (`AdminOrder`, `AdminReview`) are separate from customer-facing types (`Order`, `Review`), matching the Go backend's separate admin DTO pattern.

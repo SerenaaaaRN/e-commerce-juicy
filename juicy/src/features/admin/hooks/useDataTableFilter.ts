@@ -1,9 +1,9 @@
 import { useState, useDeferredValue, useMemo } from "react"
 
-export function useDataTableFilter<T>(
+export const useDataTableFilter = <T>(
   initialData: T[],
   filterFn: (item: T, searchLower: string, deferredSearch: string) => boolean
-) {
+) => {
   const [search, setSearch] = useState("")
   const deferredSearch = useDeferredValue(search)
 

@@ -1,12 +1,12 @@
-import React from "react"
+import type { ReactNode } from "react"
 import { Navigate } from "react-router-dom"
 import { useAdminAuthStore } from "@/stores/adminAuthStore"
 
 type AdminRouteProps = {
-  children: React.ReactNode
+  children: ReactNode
 }
 
-export const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
+export const AdminRoute = ({ children }: AdminRouteProps) => {
   const isAuthenticated = useAdminAuthStore((state) => state.isAuthenticated)
 
   if (!isAuthenticated) {

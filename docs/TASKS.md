@@ -135,7 +135,41 @@
 - [x] Replace raw `oklch()` values in Recharts with `hsl(var(--...))` CSS variables (DashboardPage)
 - [x] Clean production build (`npm run build` passes)
 
-### 3.10 Integration QA
+### 3.10 Clean Code Refactoring
+- [x] Extract admin-specific types to `src/features/admin/types.ts` (ProductFormValues, VariantFormValues, CategoryFormValues, LoginFormValues, ClientStatistics)
+- [x] Extract all Zod validation schemas to `src/features/admin/validations.ts` (productSchema, variantSchema, categorySchema, loginSchema)
+- [x] Extract business logic hooks:
+  - [x] `hooks/useProducts.ts` — product + category CRUD, form state, modal management
+  - [x] `hooks/useVariants.ts` — variant add/delete operations per product
+  - [x] `hooks/useProductImages.ts` — image upload, set-primary, delete operations
+  - [x] `hooks/useOrders.ts` — orders list, detail loading, status/payment updates
+  - [x] `hooks/useCustomers.ts` — customer CRM: list, detail, toggle status
+  - [x] `hooks/useReviews.ts` — review moderation: list, toggle publish, delete
+  - [x] Migrate `hook/useDataTableFilter.ts` → `hooks/useDataTableFilter.ts` (kebab-case folder convention)
+- [x] Extract reusable admin UI components:
+  - [x] `components/FullPageSpinner.tsx` — shared full-page loading spinner
+  - [x] `components/SearchInput.tsx` — search input with icon prefix
+  - [x] `components/ProductFormDialog.tsx` — product create/edit dialog (presentational)
+  - [x] `components/VariantManagerDialog.tsx` — variant management dialog (presentational)
+  - [x] `components/ImageManagerDialog.tsx` — image upload/management dialog (presentational)
+- [x] Fix `AdminRoute.tsx` to use arrow function component (per project rules)
+- [x] Slim down all page components to thin orchestrators:
+  - [x] `ProductsPage.tsx` (1382 → ~200 lines)
+  - [x] `OrdersPage.tsx` — uses useOrders hook
+  - [x] `CustomersPage.tsx` — uses useCustomers hook
+  - [x] `ReviewsPage.tsx` — uses useReviews hook
+  - [x] `LoginPage.tsx` — imports schema from validations.ts
+- [x] Align `src/types/index.ts` with Go backend DTOs:
+  - [x] Add `AdminOrder` type (matches Go `AdminOrderResponse` with `customer_name`, `customer_email`)
+  - [x] Add `AdminReview` type (matches Go `AdminReviewResponse` with `product_name`, `is_published`)
+  - [x] Add `OrderAddressInfo` type (matches Go simplified address DTO)
+  - [x] Add `CatalogProduct` type (matches Go `ProductResponse` for list views)
+  - [x] Fix `OrderItem` to match Go DTO (no `id`/`order_id`, `image_url` optional)
+  - [x] Use `type` keyword everywhere instead of `interface` (per project rules)
+- [x] Update `src/lib/api/admin.ts` to use new admin-specific types
+- [x] Delete old `hook/` directory (singular)
+
+### 3.11 Integration QA
 - [x] Validate all admin screens connect to the Golang backend without mock data
 
 ---
@@ -257,7 +291,7 @@
 5. Referensi `ENV.md` untuk nama env var — jangan hardcode nilai apapun.
 6. Kerjakan satu subphase per sesi.
 7. Semua Go struct wajib punya GORM tag + JSON tag.
-8. Semua React component wajib typed — tidak ada `any`.
+8. Semua React component wajib typed — gunakan `type` bukan `interface` untuk props dan form values. Tidak ada `any`.
 9. Folder baru diletakkan sesuai `ARCHITECTURE.md` — jangan improvisasi struktur.
 10. Response backend selalu pakai envelope: `{ success, data, message/error }`.
 11. **Admin auth dan Customer auth adalah dua flow terpisah** — JWT secret berbeda, middleware berbeda, Zustand store berbeda, Axios instance berbeda.

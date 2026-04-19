@@ -112,15 +112,33 @@ client/
 │   │   │   ├── types.ts                      # EditProfileValues, ChangePasswordValues, AddressFormValues
 │   │   │   └── ProfilePage.tsx               # /profile — tabs: Info, Password, Alamat
 │   │   │
-│   │   └── admin/                        # Admin dashboard (sudah done Phase 3)
+│   │   └── admin/                        # Admin dashboard (Phase 3 — refactored to clean architecture)
+│   │       ├── types.ts                 # Admin-specific form values & derived types (ProductFormValues, VariantFormValues, CategoryFormValues, LoginFormValues, ClientStatistics)
+│   │       ├── validations.ts           # Centralized Zod schemas (productSchema, variantSchema, categorySchema, loginSchema)
+│   │       ├── hooks/
+│   │       │   ├── useDataTableFilter.ts # Generic deferred search + filter hook
+│   │       │   ├── useProducts.ts        # Product + category CRUD, form state, modal management
+│   │       │   ├── useVariants.ts        # Variant add/delete operations per product
+│   │       │   ├── useProductImages.ts   # Image upload, set-primary, delete operations
+│   │       │   ├── useOrders.ts          # Orders list, detail loading, status/payment updates
+│   │       │   ├── useCustomers.ts       # Customer CRM: list, detail, toggle status
+│   │       │   └── useReviews.ts         # Review moderation: list, toggle publish, delete
 │   │       ├── components/
-│   │       │   └── AdminRoute.tsx        # Route guard — redirect ke /admin/login
-│   │       ├── LoginPage.tsx             # /admin/login — FieldGroup + Field + Input + Button
-│   │       ├── DashboardPage.tsx         # /admin/dashboard — Card + Recharts (CSS vars, not raw oklch)
-│   │       ├── ProductsPage.tsx          # /admin/products — Table + Select + Checkbox + Dialog + Badge
-│   │       ├── OrdersPage.tsx            # /admin/orders — Table + Select + Dialog + Badge + Separator
-│   │       ├── CustomersPage.tsx         # /admin/customers — Table + Badge + Dialog
-│   │       └── ReviewsPage.tsx           # /admin/reviews — Select + Card + Badge
+│   │       │   ├── AdminRoute.tsx        # Route guard — redirect ke /admin/login
+│   │       │   ├── PageHeader.tsx        # Reusable page header with title, description, action slot
+│   │       │   ├── DataEmpty.tsx         # Standardized empty state for tables and cards
+│   │       │   ├── DefferedContainer.tsx # Container for deferred transitions (opacity stale state)
+│   │       │   ├── FullPageSpinner.tsx   # Reusable full-page loading spinner
+│   │       │   ├── SearchInput.tsx       # Search input with icon prefix
+│   │       │   ├── ProductFormDialog.tsx # Product create/edit dialog (presentational)
+│   │       │   ├── VariantManagerDialog.tsx # Variant management dialog (presentational)
+│   │       │   └── ImageManagerDialog.tsx  # Image upload/management dialog (presentational)
+│   │       ├── LoginPage.tsx             # /admin/login — imports schema from validations.ts
+│   │       ├── DashboardPage.tsx         # /admin/dashboard — Card + Recharts (CSS vars)
+│   │       ├── ProductsPage.tsx          # /admin/products — thin orchestrator using useProducts + useVariants + useProductImages hooks
+│   │       ├── OrdersPage.tsx            # /admin/orders — thin orchestrator using useOrders hook
+│   │       ├── CustomersPage.tsx         # /admin/customers — thin orchestrator using useCustomers hook
+│   │       └── ReviewsPage.tsx           # /admin/reviews — thin orchestrator using useReviews hook
 │   │
 │   ├── components/                       # Shared UI — dipakai lintas feature
 │   │   ├── ui/                           # shadcn/ui primitives (auto-generated via CLI)
@@ -303,41 +321,54 @@ server/
 ## Types Strategy
 
 ### Global Types (`src/types/index.ts`)
-Berisi semua interface yang merupakan cerminan langsung dari backend DTO — dipakai lintas feature:
+Semua `type` (bukan `interface`, per project rules) yang merupakan cerminan langsung dari backend DTO — dipakai lintas feature:
 
 ```typescript
 // API envelope
-interface ApiResponse<T> { success: boolean; data: T; message?: string }
-interface PaginatedResponse<T> { success: boolean; data: T[]; meta: PaginationMeta }
-interface PaginationMeta { page: number; per_page: number; total: number; total_pages: number }
+type ApiResponse<T> = { success: boolean; data: T; message?: string }
+type PaginatedResponse<T> = { success: boolean; data: T[]; meta: PaginationMeta }
 
-// Domain models
-interface Product { ... }
-interface ProductVariant { ... }
-interface ProductImage { ... }
-interface Category { ... }
-interface CartItem { ... }
-interface Order { ... }
-interface OrderItem { ... }
-interface Address { ... }
-interface Customer { ... }
-interface Review { ... }
+// Domain models (public-facing responses)
+type CatalogProduct = { ... }      // List view (matches Go ProductResponse)
+type ProductDetail = { ... }       // Detail view (matches Go ProductDetailResponse + model fields)
+type ProductVariant = { ... }      // Matches Go ProductVariantRes
+type ProductImage = { ... }        // Matches Go ProductImageResponse
+type Category = { ... }
+type CartItem = { ... }
+type Order = { ... }               // Customer-facing order list
+type OrderDetail = { ... }         // Customer-facing order detail
+type OrderItem = { ... }           // Matches Go OrderItemResponse
+type OrderAddressInfo = { ... }    // Matches Go OrderAddressInfo (simplified — no id, customer_id, label)
+type Customer = { ... }
+type Review = { ... }
+type Address = { ... }
+
+// Admin-specific response types (Option A — separate from customer types)
+type AdminOrder = { ... }          // Matches Go AdminOrderResponse (has customer_name, customer_email)
+type AdminReview = { ... }         // Matches Go AdminReviewResponse (has product_name, is_published as required bool)
 ```
 
 ### Feature-Specific Types (`src/features/<domain>/types.ts`)
 Berisi types yang hanya relevan untuk UI/form di feature tersebut — tidak perlu di-share:
 
 ```typescript
+// features/admin/types.ts
+type ProductFormValues = { name: string; slug: string; category_id: string; price: number; ... }
+type VariantFormValues = { size: string; color?: string; sku: string; stock: number; ... }
+type CategoryFormValues = { name: string; slug: string; description?: string; display_order: number }
+type LoginFormValues = { email: string; password: string }
+type ClientStatistics = Customer & { order_count: number; total_spent: number; is_active?: boolean }
+
 // features/shop/types.ts
-interface ProductFilters { categoryId?: string; sort?: SortOption; page?: number }
+type ProductFilters = { categoryId?: string; sort?: SortOption; page?: number }
 type SortOption = 'newest' | 'price_asc' | 'price_desc'
 
 // features/checkout/types.ts
-interface CheckoutFormValues { addressId: string; paymentMethod: string; notes?: string }
+type CheckoutFormValues = { addressId: string; paymentMethod: string; notes?: string }
 
 // features/auth/types.ts
-interface LoginFormValues { email: string; password: string }
-interface RegisterFormValues { name: string; email: string; password: string; confirmPassword: string }
+type LoginFormValues = { email: string; password: string }
+type RegisterFormValues = { name: string; email: string; password: string; confirmPassword: string }
 ```
 
 ---
