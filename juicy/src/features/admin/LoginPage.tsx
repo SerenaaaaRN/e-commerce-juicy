@@ -1,5 +1,8 @@
-import React, { useState } from "react"
+import { useTransition } from "react"
 import { Navigate, useNavigate } from "react-router-dom"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,61 +12,57 @@ import { useAdminAuthStore } from "@/stores/adminAuthStore"
 import { adminApi } from "@/lib/api/admin"
 import { toast } from "sonner"
 
+const loginSchema = z.object({
+  email: z
+    .string()
+    .min(1, "Email address is required")
+    .email("Please enter a valid email address"),
+  password: z.string().min(1, "Password is required"),
+})
+
+type LoginFormValues = z.infer<typeof loginSchema>
+
 export const LoginPage = () => {
   const navigate = useNavigate()
   const { isAuthenticated, login } = useAdminAuthStore()
+  const [isPending, startTransition] = useTransition()
 
-  // Form State
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  })
 
-  // If already authenticated, redirect to admin dashboard
   if (isAuthenticated) {
     return <Navigate to="/admin/dashboard" replace />
   }
 
-  const validate = () => {
-    const newErrors: Record<string, string> = {}
-    if (!email.trim()) {
-      newErrors.email = "Email address is required"
-    } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = "Please enter a valid email address"
-    }
-
-    if (!password) {
-      newErrors.password = "Password is required"
-    }
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!validate()) return
-
-    setLoading(true)
-    try {
-      const res = await adminApi.login({ email, password })
-      if (res.success && res.data) {
-        const { token, admin } = res.data
-        login(token, {
-          id: admin.id,
-          email: admin.email,
-          name: admin.username,
-        })
-        toast.success(`Access granted. Welcome back, Admin ${admin.username}!`)
-        navigate("/admin/dashboard")
-      } else {
-        toast.error(res.message || "Invalid email or passcode. Access denied.")
+  const onSubmit = (data: LoginFormValues) => {
+    startTransition(async () => {
+      try {
+        const res = await adminApi.login(data)
+        if (res.success && res.data) {
+          const { token, admin } = res.data
+          login(token, {
+            id: admin.id,
+            email: admin.email,
+            name: admin.username,
+          })
+          toast.success(`Access granted. Welcome back, Admin ${admin.username}!`)
+          navigate("/admin/dashboard")
+        } else {
+          toast.error(res.message || "Invalid email or passcode. Access denied.")
+        }
+      } catch {
+        toast.error("Failed to authenticate. Access denied.")
       }
-    } catch {
-      toast.error("Failed to authenticate. Access denied.")
-    } finally {
-      setLoading(false)
-    }
+    })
   }
 
   return (
@@ -84,7 +83,7 @@ export const LoginPage = () => {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="text-left w-full">
+          <form onSubmit={handleSubmit(onSubmit)} className="text-left w-full">
             <FieldGroup className="gap-6">
               
               {/* Email Address */}
@@ -93,16 +92,12 @@ export const LoginPage = () => {
                 <Input
                   id="email"
                   type="email"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value)
-                    if (errors.email) setErrors((prev) => ({ ...prev, email: "" }))
-                  }}
                   placeholder="admin@juicy.com"
                   autoComplete="email"
                   aria-invalid={!!errors.email}
+                  {...register("email")}
                 />
-                {errors.email && <FieldError>{errors.email}</FieldError>}
+                {errors.email && <FieldError>{errors.email.message}</FieldError>}
               </Field>
 
               {/* Password */}
@@ -111,27 +106,23 @@ export const LoginPage = () => {
                 <Input
                   id="password"
                   type="password"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value)
-                    if (errors.password) setErrors((prev) => ({ ...prev, password: "" }))
-                  }}
                   placeholder="••••••••"
                   autoComplete="current-password"
                   aria-invalid={!!errors.password}
+                  {...register("password")}
                 />
-                {errors.password && <FieldError>{errors.password}</FieldError>}
+                {errors.password && <FieldError>{errors.password.message}</FieldError>}
               </Field>
 
               {/* Submit Button */}
               <Button
                 type="submit"
-                disabled={loading}
+                disabled={isPending}
                 size="lg"
                 className="w-full mt-2 font-medium uppercase tracking-widest text-xs py-6 h-auto cursor-pointer"
               >
-                {loading && <Spinner data-icon="inline-start" />}
-                {loading ? "Authorizing..." : "Sign In to Console"}
+                {isPending && <Spinner data-icon="inline-start" />}
+                {isPending ? "Authorizing..." : "Sign In to Console"}
               </Button>
 
             </FieldGroup>

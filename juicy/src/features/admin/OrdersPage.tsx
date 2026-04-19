@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useTransition } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -10,301 +10,128 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { adminApi } from "@/lib/api/admin"
 import { formatPrice, formatDate } from "@/lib/utils/format"
 import { HugeiconsIcon } from "@hugeicons/react"
-import {
-  SearchIcon,
-} from "@hugeicons/core-free-icons"
+import { SearchIcon } from "@hugeicons/core-free-icons"
 import { toast } from "sonner"
+import { useDataTableFilter } from "@/features/admin/hook/useDataTableFilter"
+import { PageHeader } from "@/features/admin/components/PageHeader"
+import { EmptyState } from "@/features/admin/components/DataEmpty"
+import { DefferedContainer } from "@/features/admin/components/DefferedContainer"
 import type { Order, OrderDetail, OrderStatus, PaymentStatus } from "@/types"
 
-// Fallback lists for offline sandbox demos
-const fallbackOrders: Order[] = [
-  {
-    id: "ord_1",
-    order_number: "JUICY-20260525-9A4F81",
-    status: "pending",
-    payment_status: "unpaid",
-    total: 128000,
-    item_count: 2,
-    created_at: new Date().toISOString(),
-  },
-  {
-    id: "ord_2",
-    order_number: "JUICY-20260524-7C9E43",
-    status: "shipped",
-    payment_status: "paid",
-    total: 224000,
-    item_count: 3,
-    created_at: new Date(Date.now() - 86400000).toISOString(),
-  },
-  {
-    id: "ord_3",
-    order_number: "JUICY-20260522-3B2D45",
-    status: "delivered",
-    payment_status: "paid",
-    total: 310000,
-    item_count: 4,
-    created_at: new Date(Date.now() - 3 * 86400000).toISOString(),
-  }
-]
+const FULFILLMENT_STEPS: OrderStatus[] = ["pending", "confirmed", "processing", "shipped", "delivered"]
+const PAYMENT_STEPS: PaymentStatus[] = ["unpaid", "paid", "refunded"]
 
-const fallbackOrderDetails: Record<string, OrderDetail> = {
-  "ord_1": {
-    id: "ord_1",
-    order_number: "JUICY-20260525-9A4F81",
-    customer_id: "cust_1",
-    status: "pending",
-    payment_status: "unpaid",
-    subtotal: 128000,
-    shipping_fee: 15000,
-    total: 143000,
-    notes: "Leave package at the front porch table, please call upon arrival.",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    address: {
-      id: "addr_1",
-      label: "Apartment",
-      recipient_name: "Alexandra Sterling",
-      phone: "+628123456789",
-      address_line: "Pakuwon Tower Unit 24B, Casablanca St Kav 88",
-      city: "South Jakarta",
-      province: "DKI Jakarta",
-      postal_code: "12870",
-      is_default: true,
-    },
-    items: [
-      { id: "oi_1", order_id: "ord_1", product_name: "Crimson Beet Cleanse", variant_size: "250ml", variant_color: "Beet Red", image_url: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&q=80&w=200", quantity: 2, unit_price: 48000, subtotal: 96000 },
-      { id: "oi_2", order_id: "ord_1", product_name: "Golden Ginger Defense", variant_size: "60ml", variant_color: "Turmeric Yellow", image_url: "https://images.unsplash.com/photo-1610970881699-44a5587caaec?auto=format&fit=crop&q=80&w=200", quantity: 1, unit_price: 32000, subtotal: 32000 }
-    ]
-  },
-  "ord_2": {
-    id: "ord_2",
-    order_number: "JUICY-20260524-7C9E43",
-    customer_id: "cust_2",
-    status: "shipped",
-    payment_status: "paid",
-    subtotal: 209000,
-    shipping_fee: 15000,
-    total: 224000,
-    shipped_at: new Date(Date.now() - 40000000).toISOString(),
-    created_at: new Date(Date.now() - 86400000).toISOString(),
-    updated_at: new Date(Date.now() - 40000000).toISOString(),
-    address: {
-      id: "addr_2",
-      label: "Home Office",
-      recipient_name: "Jonathan Wright",
-      phone: "+628198765432",
-      address_line: "Bukit Dago Blok D12 No 4, Pamulang St",
-      city: "Tangerang Selatan",
-      province: "Banten",
-      postal_code: "15414",
-      is_default: true,
-    },
-    items: [
-      { id: "oi_3", order_id: "ord_2", product_name: "Crimson Beet Cleanse", variant_size: "500ml", variant_color: "Beet Red", image_url: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&q=80&w=200", quantity: 3, unit_price: 66000, subtotal: 198000 }
-    ]
-  },
-  "ord_3": {
-    id: "ord_3",
-    order_number: "JUICY-20260522-3B2D45",
-    customer_id: "cust_3",
-    status: "delivered",
-    payment_status: "paid",
-    subtotal: 295000,
-    shipping_fee: 15000,
-    total: 310000,
-    shipped_at: new Date(Date.now() - 2 * 86400000).toISOString(),
-    delivered_at: new Date(Date.now() - 86400000).toISOString(),
-    created_at: new Date(Date.now() - 3 * 86400000).toISOString(),
-    updated_at: new Date(Date.now() - 86400000).toISOString(),
-    address: {
-      id: "addr_3",
-      label: "Main Residence",
-      recipient_name: "Eleanor Vance",
-      phone: "+628177228833",
-      address_line: "Pondok Indah Townhouse A-8, Metro St",
-      city: "South Jakarta",
-      province: "DKI Jakarta",
-      postal_code: "12310",
-      is_default: true,
-    },
-    items: [
-      { id: "oi_4", order_id: "ord_3", product_name: "Crimson Beet Cleanse", variant_size: "250ml", variant_color: "Beet Red", image_url: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&q=80&w=200", quantity: 4, unit_price: 48000, subtotal: 192000 }
-    ]
+const getStatusBadge = (status: OrderStatus) => {
+  switch (status) {
+    case "pending": return <Badge variant="secondary">Pending</Badge>
+    case "confirmed": return <Badge>Confirmed</Badge>
+    case "processing": return <Badge variant="secondary">Processing</Badge>
+    case "shipped": return <Badge>Shipped</Badge>
+    case "delivered": return <Badge variant="default">Delivered</Badge>
+    default: return <Badge variant="outline">{status}</Badge>
+  }
+}
+
+const getPaymentBadge = (status: PaymentStatus) => {
+  switch (status) {
+    case "unpaid": return <Badge variant="destructive">Unpaid</Badge>
+    case "paid": return <Badge variant="default">Paid</Badge>
+    case "refunded": return <Badge variant="secondary">Refunded</Badge>
+    default: return <Badge variant="outline">{status}</Badge>
   }
 }
 
 export const OrdersPage = () => {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
-  const [usingFallback, setUsingFallback] = useState(false)
+  const [isPending, startTransition] = useTransition()
 
-  // Filters state
-  const [search, setSearch] = useState("")
+  const {
+    search,
+    setSearch,
+    filteredData: searchFilteredOrders,
+    isStale,
+  } = useDataTableFilter(orders, (o, searchLower) =>
+    o.order_number.toLowerCase().includes(searchLower)
+  )
   const [statusFilter, setStatusFilter] = useState("all")
 
-  // Details dialog state
   const [detailsOpen, setDetailsOpen] = useState(false)
   const [activeOrder, setActiveOrder] = useState<OrderDetail | null>(null)
-  const [loadingDetails, setLoadingDetails] = useState(false)
 
-  // Submitting statuses state
-  const [updatingStatus, setUpdatingStatus] = useState(false)
-
-  const loadData = async () => {
+  const loadOrdersData = async (shouldTriggerLoader = false) => {
+    if (shouldTriggerLoader) setLoading(true)
     try {
-      setLoading(true)
       const res = await adminApi.getOrders()
       if (res.success && res.data) {
         setOrders(res.data)
-      } else {
-        setOrders(fallbackOrders)
-        setUsingFallback(true)
       }
     } catch {
-      setOrders(fallbackOrders)
-      setUsingFallback(true)
+      // silent fail
     } finally {
-      setLoading(false)
+      if (shouldTriggerLoader) setLoading(false)
     }
   }
 
   useEffect(() => {
-    const fetchInitial = async () => {
-      try {
-        const res = await adminApi.getOrders()
-        if (res.success && res.data) {
-          setOrders(res.data)
-        } else {
-          setOrders(fallbackOrders)
-          setUsingFallback(true)
-        }
-      } catch {
-        setOrders(fallbackOrders)
-        setUsingFallback(true)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchInitial()
+    loadOrdersData(true)
   }, [])
 
-  // View order details
-  const handleViewDetails = async (orderId: string) => {
-    try {
-      setLoadingDetails(true)
-      setActiveOrder(null)
-      setDetailsOpen(true)
+  const handleViewDetails = (orderId: string) => {
+    setActiveOrder(null)
+    setDetailsOpen(true)
 
-      if (usingFallback) {
-        setActiveOrder(fallbackOrderDetails[orderId] || null)
-      } else {
+    startTransition(async () => {
+      try {
         const res = await adminApi.getOrderDetail(orderId)
         if (res.success && res.data) {
           setActiveOrder(res.data)
-        } else {
-          setActiveOrder(fallbackOrderDetails[orderId] || null)
         }
+      } catch {
+        // silent fail
       }
-    } catch {
-      setActiveOrder(fallbackOrderDetails[orderId] || null)
-    } finally {
-      setLoadingDetails(false)
-    }
+    })
   }
 
-  // Update order status
-  const handleUpdateStatus = async (status: OrderStatus) => {
+  const handleUpdateStatus = (status: OrderStatus) => {
     if (!activeOrder) return
-    setUpdatingStatus(true)
-    try {
-      if (usingFallback) {
-        const updatedDetail = { ...activeOrder, status }
-        setActiveOrder(updatedDetail)
-        setOrders(orders.map((o) => (o.id === activeOrder.id ? { ...o, status } : o)))
-        toast.success(`Fulfillment status updated to: ${status} (Mocked)`)
-      } else {
+    startTransition(async () => {
+      try {
         const res = await adminApi.updateOrderStatus(activeOrder.id, status)
         if (res.success) {
           toast.success(`Fulfillment status updated to: ${status}`)
-          const updatedDetail = { ...activeOrder, status }
-          setActiveOrder(updatedDetail)
-          loadData()
+          setActiveOrder((prev) => (prev ? { ...prev, status } : null))
+          setOrders((curr) => curr.map((o) => (o.id === activeOrder.id ? { ...o, status } : o)))
         } else {
           toast.error(res.message || "Failed to update order status.")
         }
+      } catch {
+        toast.error("Failed to update status workflow.")
       }
-    } catch {
-      toast.error("Failed to update status workflow.")
-    } finally {
-      setUpdatingStatus(false)
-    }
+    })
   }
 
-  // Update payment status
-  const handleUpdatePaymentStatus = async (paymentStatus: PaymentStatus) => {
+  const handleUpdatePaymentStatus = (paymentStatus: PaymentStatus) => {
     if (!activeOrder) return
-    setUpdatingStatus(true)
-    try {
-      if (usingFallback) {
-        const updatedDetail = { ...activeOrder, payment_status: paymentStatus }
-        setActiveOrder(updatedDetail)
-        setOrders(orders.map((o) => (o.id === activeOrder.id ? { ...o, payment_status: paymentStatus } : o)))
-        toast.success(`Payment status marked as: ${paymentStatus} (Mocked)`)
-      } else {
+    startTransition(async () => {
+      try {
         const res = await adminApi.updateOrderPaymentStatus(activeOrder.id, paymentStatus)
         if (res.success) {
           toast.success(`Payment status marked as: ${paymentStatus}`)
-          const updatedDetail = { ...activeOrder, payment_status: paymentStatus }
-          setActiveOrder(updatedDetail)
-          loadData()
+          setActiveOrder((prev) => (prev ? { ...prev, payment_status: paymentStatus } : null))
+          setOrders((curr) => curr.map((o) => (o.id === activeOrder.id ? { ...o, payment_status: paymentStatus } : o)))
         } else {
           toast.error(res.message || "Failed to update payment status.")
         }
+      } catch {
+        toast.error("Failed to transition payment status.")
       }
-    } catch {
-      toast.error("Failed to transition payment status.")
-    } finally {
-      setUpdatingStatus(false)
-    }
+    })
   }
 
-  // Badge stylings
-  const getStatusBadge = (status: OrderStatus) => {
-    switch (status) {
-      case "pending":
-        return <Badge variant="secondary">Pending</Badge>
-      case "confirmed":
-        return <Badge>Confirmed</Badge>
-      case "processing":
-        return <Badge variant="secondary">Processing</Badge>
-      case "shipped":
-        return <Badge>Shipped</Badge>
-      case "delivered":
-        return <Badge variant="default">Delivered</Badge>
-      default:
-        return <Badge variant="outline">{status}</Badge>
-    }
-  }
-
-  const getPaymentBadge = (status: PaymentStatus) => {
-    switch (status) {
-      case "unpaid":
-        return <Badge variant="destructive">Unpaid</Badge>
-      case "paid":
-        return <Badge variant="default">Paid</Badge>
-      case "refunded":
-        return <Badge variant="secondary">Refunded</Badge>
-      default:
-        return <Badge variant="outline">{status}</Badge>
-    }
-  }
-
-  // Filtering
-  const filteredOrders = orders.filter((o) => {
-    const matchesSearch = o.order_number.toLowerCase().includes(search.toLowerCase())
-    const matchesStatus = statusFilter === "all" || o.status === statusFilter
-    return matchesSearch && matchesStatus
-  })
+  const filteredOrders = searchFilteredOrders.filter((o) =>
+    statusFilter === "all" || o.status === statusFilter
+  )
 
   if (loading) {
     return (
@@ -321,21 +148,12 @@ export const OrdersPage = () => {
 
   return (
     <div className="flex flex-col gap-8 text-left">
-      
-      {/* Header block */}
-      <div>
-        <h1 className="text-3xl font-heading font-extrabold tracking-tight text-foreground">
-          Fulfillment Registry
-        </h1>
-        <p className="text-xs text-muted-foreground">
-          Monitor incoming customer orders, manage daily shipments tracking, and capture direct invoice payments.
-        </p>
-      </div>
+      <PageHeader
+        title="Fulfillment Registry"
+        description="Monitor incoming customer orders, manage daily shipments tracking, and capture direct invoice payments."
+      />
 
-      {/* Filters bar */}
       <div className="flex flex-col sm:flex-row gap-4 items-center bg-card border border-border/60 p-4 rounded-lg shadow-sm">
-        
-        {/* Search */}
         <div className="relative w-full sm:max-w-xs">
           <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-muted-foreground pointer-events-none">
             <HugeiconsIcon icon={SearchIcon} className="size-4" />
@@ -349,7 +167,6 @@ export const OrdersPage = () => {
           />
         </div>
 
-        {/* Status Selection */}
         <div className="w-full sm:max-w-xs">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-full">
@@ -365,11 +182,12 @@ export const OrdersPage = () => {
             </SelectContent>
           </Select>
         </div>
-
       </div>
 
-      {/* Orders Table */}
-      <div className="border border-border/60 rounded-lg bg-card shadow-sm">
+      <DefferedContainer
+        isStale={isStale}
+        className="border border-border/60 rounded-lg bg-card shadow-sm"
+      >
         <Table>
           <TableHeader>
             <TableRow>
@@ -384,63 +202,42 @@ export const OrdersPage = () => {
           </TableHeader>
           <TableBody>
             {filteredOrders.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} className="px-6 py-12 text-center text-muted-foreground">
-                  No boutique orders found matching your search.
-                </TableCell>
-              </TableRow>
+              <EmptyState message="No boutique orders found matching your search." />
             ) : (
               filteredOrders.map((o) => (
                 <TableRow key={o.id}>
-                  
-                  {/* Order Number */}
                   <TableCell className="px-6 py-4 font-mono font-bold text-foreground">
                     {o.order_number}
                   </TableCell>
-
-                  {/* Status badge */}
                   <TableCell className="px-6 py-4">
                     {getStatusBadge(o.status)}
                   </TableCell>
-
-                  {/* Payment status badge */}
                   <TableCell className="px-6 py-4">
                     {getPaymentBadge(o.payment_status)}
                   </TableCell>
-
-                  {/* Item count */}
                   <TableCell className="px-6 py-4 font-medium text-muted-foreground">
                     {o.item_count || 0} unit(s)
                   </TableCell>
-
-                  {/* Total */}
                   <TableCell className="px-6 py-4 font-bold text-foreground">
                     {formatPrice(o.total)}
                   </TableCell>
-
-                  {/* Ordered date */}
                   <TableCell className="px-6 py-4 text-muted-foreground text-xs">
                     {formatDate(o.created_at)}
                   </TableCell>
-
-                  {/* Inspect Details trigger */}
                   <TableCell className="px-6 py-4 text-right">
                     <Button variant="outline" size="sm" onClick={() => handleViewDetails(o.id)}>
                       Fulfill Order
                     </Button>
                   </TableCell>
-
                 </TableRow>
               ))
             )}
           </TableBody>
         </Table>
-      </div>
+      </DefferedContainer>
 
-      {/* --- FULFILLMENT ORDER DETAIL DIALOG --- */}
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
         <DialogContent className="max-w-3xl bg-card border overflow-y-auto max-h-[90vh]">
-          
           <DialogHeader>
             <DialogTitle className="text-lg font-bold font-heading">
               Invoice Order Detail: {activeOrder?.order_number || "Fulfillment"}
@@ -450,7 +247,7 @@ export const OrdersPage = () => {
             </DialogDescription>
           </DialogHeader>
 
-          {loadingDetails ? (
+          {isPending ? (
             <div className="flex h-64 w-full items-center justify-center">
               <Spinner className="size-8 text-primary" />
             </div>
@@ -460,21 +257,17 @@ export const OrdersPage = () => {
             </div>
           ) : (
             <div className="text-left py-4 flex flex-col gap-6">
-              
-              {/* Status and payment controls rows */}
               <div className="grid gap-4 sm:grid-cols-2 bg-muted/15 border p-4 rounded-lg">
-                
-                {/* Fulfillment Status controller */}
                 <div className="flex flex-col gap-2">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Fulfillment Status Flow</span>
                   <div className="flex gap-1.5 flex-wrap">
-                    {(["pending", "confirmed", "processing", "shipped", "delivered"] as OrderStatus[]).map((st) => (
+                    {FULFILLMENT_STEPS.map((st) => (
                       <Button
                         key={st}
                         variant={activeOrder.status === st ? "default" : "outline"}
                         size="xs"
                         onClick={() => handleUpdateStatus(st)}
-                        disabled={updatingStatus}
+                        disabled={isPending}
                         className="text-[10px] uppercase font-bold py-1 h-auto"
                       >
                         {st}
@@ -483,17 +276,16 @@ export const OrdersPage = () => {
                   </div>
                 </div>
 
-                {/* Payment controller */}
                 <div className="flex flex-col gap-2">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Invoice Capture</span>
                   <div className="flex gap-1.5">
-                    {(["unpaid", "paid", "refunded"] as PaymentStatus[]).map((pst) => (
+                    {PAYMENT_STEPS.map((pst) => (
                       <Button
                         key={pst}
                         variant={activeOrder.payment_status === pst ? "default" : "outline"}
                         size="xs"
                         onClick={() => handleUpdatePaymentStatus(pst)}
-                        disabled={updatingStatus}
+                        disabled={isPending}
                         className="text-[10px] uppercase font-bold py-1 h-auto"
                       >
                         {pst}
@@ -501,13 +293,9 @@ export const OrdersPage = () => {
                     ))}
                   </div>
                 </div>
-
               </div>
 
-              {/* Two column detail panels */}
               <div className="grid gap-6 md:grid-cols-3">
-                
-                {/* Left side: Items list */}
                 <div className="md:col-span-2 flex flex-col gap-4">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Snapshotted Cart items</h3>
                   <div className="flex flex-col gap-3">
@@ -537,7 +325,6 @@ export const OrdersPage = () => {
                     ))}
                   </div>
 
-                  {/* Summary math */}
                   <div className="border-t border-border pt-4 text-xs flex flex-col gap-2">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Line subtotal</span>
@@ -554,10 +341,7 @@ export const OrdersPage = () => {
                   </div>
                 </div>
 
-                {/* Right side: client and shipping address */}
                 <div className="flex flex-col gap-4 bg-muted/10 p-4 rounded-lg border h-fit text-xs">
-                  
-                  {/* Recipient info */}
                   <div className="flex flex-col gap-1.5">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Fulfillment Consignee</span>
                     <div className="font-bold text-foreground">{activeOrder.address.recipient_name}</div>
@@ -566,7 +350,6 @@ export const OrdersPage = () => {
 
                   <Separator className="my-1" />
 
-                  {/* Address info */}
                   <div className="flex flex-col gap-1.5">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Delivery Destination ({activeOrder.address.label})</span>
                     <div className="text-foreground leading-relaxed">
@@ -577,7 +360,6 @@ export const OrdersPage = () => {
                   {activeOrder.notes && (
                     <>
                       <Separator className="my-1" />
-                      {/* Notes info */}
                       <div className="flex flex-col gap-1.5">
                         <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Consignee Delivery Instructions</span>
                         <div className="text-muted-foreground italic leading-relaxed">
@@ -589,17 +371,13 @@ export const OrdersPage = () => {
 
                   <Separator className="my-1" />
 
-                  {/* Dates tracker */}
                   <div className="flex flex-col gap-1.5 text-[10px] font-medium text-muted-foreground">
                     <div>Placed: {formatDate(activeOrder.created_at)}</div>
                     {activeOrder.shipped_at && <div>Shipped: {formatDate(activeOrder.shipped_at)}</div>}
                     {activeOrder.delivered_at && <div>Delivered: {formatDate(activeOrder.delivered_at)}</div>}
                   </div>
-
                 </div>
-
               </div>
-
             </div>
           )}
 
@@ -610,7 +388,6 @@ export const OrdersPage = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
     </div>
   )
 }

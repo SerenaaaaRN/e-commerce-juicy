@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useTransition } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -31,9 +31,12 @@ import {
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { useConfirm } from "@/hooks/useConfirm"
+import { useDataTableFilter } from "@/features/admin/hook/useDataTableFilter"
+import { PageHeader } from "@/features/admin/components/PageHeader"
+import { EmptyState } from "@/features/admin/components/DataEmpty"
+import { DefferedContainer } from "@/features/admin/components/DefferedContainer"
 import type { Customer, Order } from "@/types"
 
-// Customer with statistics fields returned by index endpoint
 type ClientStatistics = Customer & {
   order_count: number
   total_spent: number
@@ -41,117 +44,31 @@ type ClientStatistics = Customer & {
   created_at: string
 }
 
-// Fallback lists for offline sandbox demos
-const fallbackClients: ClientStatistics[] = [
-  {
-    id: "cust_1",
-    full_name: "Alexandra Sterling",
-    email: "alexandra@sterling.com",
-    phone: "+628123456789",
-    order_count: 5,
-    total_spent: 785000,
-    is_active: true,
-    created_at: new Date(Date.now() - 30 * 86400000).toISOString(),
-  },
-  {
-    id: "cust_2",
-    full_name: "Jonathan Wright",
-    email: "jonathan.wright@gmail.com",
-    phone: "+628198765432",
-    order_count: 2,
-    total_spent: 345000,
-    is_active: true,
-    created_at: new Date(Date.now() - 15 * 86400000).toISOString(),
-  },
-  {
-    id: "cust_3",
-    full_name: "Eleanor Vance",
-    email: "eleanor@vance.org",
-    phone: "+628177228833",
-    order_count: 1,
-    total_spent: 128000,
-    is_active: false,
-    created_at: new Date(Date.now() - 5 * 86400000).toISOString(),
-  },
-]
-
-const fallbackClientOrders: Record<string, Order[]> = {
-  cust_1: [
-    {
-      id: "ord_1",
-      order_number: "JUICY-20260525-9A4F81",
-      status: "pending",
-      payment_status: "unpaid",
-      total: 128000,
-      created_at: new Date().toISOString(),
-    },
-    {
-      id: "ord_11",
-      order_number: "JUICY-20260518-8A3B22",
-      status: "delivered",
-      payment_status: "paid",
-      total: 245000,
-      created_at: new Date(Date.now() - 7 * 86400000).toISOString(),
-    },
-    {
-      id: "ord_12",
-      order_number: "JUICY-20260510-4A3C99",
-      status: "delivered",
-      payment_status: "paid",
-      total: 412000,
-      created_at: new Date(Date.now() - 15 * 86400000).toISOString(),
-    },
-  ],
-  cust_2: [
-    {
-      id: "ord_2",
-      order_number: "JUICY-20260524-7C9E43",
-      status: "shipped",
-      payment_status: "paid",
-      total: 224000,
-      created_at: new Date(Date.now() - 86400000).toISOString(),
-    },
-    {
-      id: "ord_21",
-      order_number: "JUICY-20260515-5A3D11",
-      status: "delivered",
-      payment_status: "paid",
-      total: 121000,
-      created_at: new Date(Date.now() - 10 * 86400000).toISOString(),
-    },
-  ],
-  cust_3: [
-    {
-      id: "ord_3",
-      order_number: "JUICY-20260522-3B2D45",
-      status: "delivered",
-      payment_status: "paid",
-      total: 128000,
-      created_at: new Date(Date.now() - 3 * 86400000).toISOString(),
-    },
-  ],
-}
-
 export const CustomersPage = () => {
   const [clients, setClients] = useState<ClientStatistics[]>([])
   const [loading, setLoading] = useState(true)
-  const [usingFallback, setUsingFallback] = useState(false)
+  const [isPending, startTransition] = useTransition()
 
-  // Filters
-  const [search, setSearch] = useState("")
+  const {
+    search,
+    setSearch,
+    filteredData: filteredClients,
+    isStale,
+  } = useDataTableFilter(clients, (c, searchLower) => {
+    return (
+      c.full_name.toLowerCase().includes(searchLower) ||
+      c.email.toLowerCase().includes(searchLower) ||
+      !!c.phone?.includes(searchLower)
+    )
+  })
 
-  // Detail Modal trigger states
   const [detailsOpen, setDetailsOpen] = useState(false)
   const [activeClient, setActiveClient] = useState<ClientStatistics | null>(
     null
   )
   const [clientHistory, setClientHistory] = useState<Order[]>([])
-  const [loadingDetails, setLoadingDetails] = useState(false)
 
   const { confirm: confirmDelete, dialog: confirmDialog } = useConfirm()
-
-  // Account suspension process state
-  const [togglingStatus, setTogglingStatus] = useState(false)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -159,13 +76,9 @@ export const CustomersPage = () => {
         const res = await adminApi.getCustomers()
         if (res.success && res.data) {
           setClients(res.data as ClientStatistics[])
-        } else {
-          setClients(fallbackClients)
-          setUsingFallback(true)
         }
       } catch {
-        setClients(fallbackClients)
-        setUsingFallback(true)
+        // silent fail
       } finally {
         setLoading(false)
       }
@@ -173,32 +86,23 @@ export const CustomersPage = () => {
     fetchData()
   }, [])
 
-  // View Customer profile history
-  const handleViewClientDetails = async (client: ClientStatistics) => {
-    try {
-      setLoadingDetails(true)
-      setActiveClient(client)
-      setClientHistory([])
-      setDetailsOpen(true)
+  const handleViewClientDetails = (client: ClientStatistics) => {
+    setActiveClient(client)
+    setClientHistory([])
+    setDetailsOpen(true)
 
-      if (usingFallback) {
-        setClientHistory(fallbackClientOrders[client.id] || [])
-      } else {
+    startTransition(async () => {
+      try {
         const res = await adminApi.getCustomerDetail(client.id)
         if (res.success && res.data) {
           setClientHistory(res.data.order_history || [])
-        } else {
-          setClientHistory(fallbackClientOrders[client.id] || [])
         }
+      } catch {
+        // silent fail
       }
-    } catch {
-      setClientHistory(fallbackClientOrders[client.id] || [])
-    } finally {
-      setLoadingDetails(false)
-    }
+    })
   }
 
-  // Toggle account block/unblock status
   const handleToggleClientStatus = async (client: ClientStatistics) => {
     const nextStatus = !(client.is_active ?? true)
     const promptMsg = nextStatus
@@ -207,47 +111,27 @@ export const CustomersPage = () => {
 
     if (!(await confirmDelete(promptMsg))) return
 
-    setTogglingStatus(true)
-    try {
-      if (usingFallback) {
-        const updatedList = clients.map((c) =>
-          c.id === client.id ? { ...c, is_active: nextStatus } : c
-        )
-        setClients(updatedList)
-        if (activeClient && activeClient.id === client.id) {
-          setActiveClient({ ...activeClient, is_active: nextStatus })
-        }
-        toast.success(`Account credentials modified successfully (Mocked)`)
-      } else {
+    startTransition(async () => {
+      try {
         const res = await adminApi.toggleCustomerStatus(client.id, nextStatus)
         if (res.success) {
           toast.success(`Account credentials modified successfully!`)
-          const updatedList = clients.map((c) =>
-            c.id === client.id ? { ...c, is_active: nextStatus } : c
+          setClients((prev) =>
+            prev.map((c) =>
+              c.id === client.id ? { ...c, is_active: nextStatus } : c
+            )
           )
-          setClients(updatedList)
-          if (activeClient && activeClient.id === client.id) {
-            setActiveClient({ ...activeClient, is_active: nextStatus })
-          }
+          setActiveClient((prev) =>
+            prev?.id === client.id ? { ...prev, is_active: nextStatus } : prev
+          )
         } else {
           toast.error(res.message || "Failed to update account status.")
         }
+      } catch {
+        toast.error("Failed to execute account status transition.")
       }
-    } catch {
-      toast.error("Failed to execute account status transition.")
-    } finally {
-      setTogglingStatus(false)
-    }
+    })
   }
-
-  // Filtering
-  const filteredClients = clients.filter((c) => {
-    return (
-      c.full_name.toLowerCase().includes(search.toLowerCase()) ||
-      c.email.toLowerCase().includes(search.toLowerCase()) ||
-      c.phone?.includes(search)
-    )
-  })
 
   if (loading) {
     return (
@@ -264,20 +148,12 @@ export const CustomersPage = () => {
 
   return (
     <div className="flex flex-col gap-8 text-left">
-      {/* Header block */}
-      <div>
-        <h1 className="font-heading text-3xl font-extrabold tracking-tight text-foreground">
-          Customers CRM
-        </h1>
-        <p className="text-xs text-muted-foreground">
-          Browse customer profile details, toggle checkout access credentials,
-          and monitor lifecycle sales averages.
-        </p>
-      </div>
+      <PageHeader
+        title="Customers CRM"
+        description="Browse customer profile details, toggle checkout access credentials, and monitor lifecycle sales averages."
+      />
 
-      {/* Filter bar */}
       <div className="flex flex-col items-center gap-4 rounded-lg border border-border/60 bg-card p-4 shadow-sm sm:flex-row">
-        {/* Search */}
         <div className="relative w-full sm:max-w-md">
           <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
             <HugeiconsIcon icon={SearchIcon} className="size-4" />
@@ -292,8 +168,10 @@ export const CustomersPage = () => {
         </div>
       </div>
 
-      {/* Customer table Grid */}
-      <div className="rounded-lg border border-border/60 bg-card shadow-sm">
+      <DefferedContainer
+        isStale={isStale}
+        className="rounded-lg border border-border/60 bg-card shadow-sm"
+      >
         <Table>
           <TableHeader>
             <TableRow>
@@ -308,18 +186,10 @@ export const CustomersPage = () => {
           </TableHeader>
           <TableBody>
             {filteredClients.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className="px-6 py-12 text-center text-muted-foreground"
-                >
-                  No customers found matching your search term.
-                </TableCell>
-              </TableRow>
+              <EmptyState message="No customers found matching your search term." />
             ) : (
               filteredClients.map((client) => (
                 <TableRow key={client.id}>
-                  {/* Client info */}
                   <TableCell className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="flex size-9 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary uppercase">
@@ -336,27 +206,22 @@ export const CustomersPage = () => {
                     </div>
                   </TableCell>
 
-                  {/* Phone */}
                   <TableCell className="px-6 py-4 font-mono text-xs text-foreground">
                     {client.phone || "-"}
                   </TableCell>
 
-                  {/* Registration date */}
                   <TableCell className="px-6 py-4 text-xs text-muted-foreground">
                     {formatDate(client.created_at)}
                   </TableCell>
 
-                  {/* Orders count */}
                   <TableCell className="px-6 py-4 font-semibold text-foreground">
                     {client.order_count} unit(s)
                   </TableCell>
 
-                  {/* Total spent */}
                   <TableCell className="px-6 py-4 font-bold text-foreground">
                     {formatPrice(client.total_spent)}
                   </TableCell>
 
-                  {/* Account status */}
                   <TableCell className="px-6 py-4">
                     <Badge
                       variant={
@@ -369,7 +234,6 @@ export const CustomersPage = () => {
                     </Badge>
                   </TableCell>
 
-                  {/* Actions */}
                   <TableCell className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-2">
                       <Button
@@ -382,7 +246,7 @@ export const CustomersPage = () => {
                       <Button
                         variant="ghost"
                         size="icon"
-                        disabled={togglingStatus}
+                        disabled={isPending}
                         onClick={() => handleToggleClientStatus(client)}
                         className={cn(
                           "size-8 rounded-full border hover:bg-muted",
@@ -410,9 +274,8 @@ export const CustomersPage = () => {
             )}
           </TableBody>
         </Table>
-      </div>
+      </DefferedContainer>
 
-      {/* --- CUSTOMER PROFILE CRM DRAWER DIALOG --- */}
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
         <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto border bg-card">
           <DialogHeader>
@@ -425,7 +288,7 @@ export const CustomersPage = () => {
             </DialogDescription>
           </DialogHeader>
 
-          {loadingDetails ? (
+          {isPending ? (
             <div className="flex h-64 w-full items-center justify-center">
               <Spinner className="size-8 text-primary" />
             </div>
@@ -435,7 +298,6 @@ export const CustomersPage = () => {
             </div>
           ) : (
             <div className="flex flex-col gap-6 py-4 text-left">
-              {/* Profile Overview Card */}
               <div className="grid gap-4 rounded-lg border bg-muted/15 p-4 text-xs sm:grid-cols-3">
                 <div className="flex flex-col gap-1">
                   <span className="text-[10px] font-bold tracking-wider text-muted-foreground uppercase">
@@ -473,7 +335,6 @@ export const CustomersPage = () => {
                 </div>
               </div>
 
-              {/* Historical Orders section */}
               <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-xs font-bold tracking-wider text-muted-foreground uppercase">

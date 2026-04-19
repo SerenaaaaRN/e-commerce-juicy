@@ -1,4 +1,7 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useTransition } from "react"
+import { useForm, type Resolver } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import {
   Card,
@@ -49,192 +52,143 @@ import {
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { useConfirm } from "@/hooks/useConfirm"
+import { useDataTableFilter } from "@/features/admin/hook/useDataTableFilter"
+import { PageHeader } from "@/features/admin/components/PageHeader"
+import { EmptyState } from "@/features/admin/components/DataEmpty"
+import { DefferedContainer } from "@/features/admin/components/DefferedContainer"
 import type {
   Category,
   ProductDetail,
-  ProductVariant,
-  ProductImage,
 } from "@/types"
 
-// Fallback lists for offline sandbox demos
-const fallbackCategories: Category[] = [
-  {
-    id: "1",
-    name: "Cold-Pressed Juice",
-    slug: "cold-pressed-juice",
-    display_order: 1,
-    is_active: true,
-  },
-  {
-    id: "2",
-    name: "Wellness Shots",
-    slug: "wellness-shots",
-    display_order: 2,
-    is_active: true,
-  },
-  {
-    id: "3",
-    name: "Elixirs & Tonics",
-    slug: "elixirs-tonics",
-    display_order: 3,
-    is_active: true,
-  },
-]
+// Zod schemas for form validations
+const productSchema = z.object({
+  name: z.string().min(1, "Product name is required"),
+  slug: z.string().min(1, "Product slug is required"),
+  description: z.string().optional(),
+  category_id: z.string().min(1, "Category assignment is required"),
+  price: z.coerce.number().positive("Valid base price is required"),
+  compare_at_price: z.coerce.number().optional(),
+  is_available: z.boolean().default(true),
+  is_featured: z.boolean().default(false),
+  tags: z.string().optional(),
+  display_order: z.coerce.number().default(10),
+})
 
-const fallbackProducts: ProductDetail[] = [
-  {
-    id: "1",
-    category_id: "1",
-    name: "Crimson Beet Cleanse",
-    slug: "crimson-beet-cleanse",
-    description:
-      "A highly restorative blend of organic red beetroots, fresh green apples, and sweet lemon juice. Packed with raw antioxidants and earthy vitamins.",
-    price: 48000,
-    compare_at_price: 55000,
-    is_available: true,
-    is_featured: true,
-    tags: ["Antioxidant", "Detox"],
-    display_order: 1,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    category: fallbackCategories[0],
-    images: [
-      {
-        id: "img1",
-        product_id: "1",
-        image_url:
-          "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&q=80&w=200",
-        cloudinary_public_id: "mock1",
-        display_order: 1,
-        is_primary: true,
-        created_at: new Date().toISOString(),
-      },
-    ],
-    variants: [
-      {
-        id: "v1",
-        product_id: "1",
-        size: "250ml",
-        color: "Beet Red",
-        color_hex: "#8b0000",
-        sku: "JUICE-BEET-250",
-        stock: 45,
-        additional_price: 0,
-        is_active: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-      {
-        id: "v2",
-        product_id: "1",
-        size: "500ml",
-        color: "Beet Red",
-        color_hex: "#8b0000",
-        sku: "JUICE-BEET-500",
-        stock: 12,
-        additional_price: 18000,
-        is_active: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-    ],
-    avg_rating: 4.9,
-    review_count: 24,
-  },
-  {
-    id: "2",
-    category_id: "2",
-    name: "Golden Ginger Defense",
-    slug: "golden-ginger-defense",
-    description:
-      "An intense immunity booster shot containing pure extracted raw ginger root, sweet organic turmeric, black pepper blend, and fresh honey notes.",
-    price: 32000,
-    is_available: true,
-    is_featured: false,
-    tags: ["Immunity", "Spicy"],
-    display_order: 2,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    category: fallbackCategories[1],
-    images: [],
-    variants: [
-      {
-        id: "v3",
-        product_id: "2",
-        size: "60ml",
-        color: "Turmeric Yellow",
-        color_hex: "#ffd700",
-        sku: "SHOT-GING-60",
-        stock: 80,
-        additional_price: 0,
-        is_active: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
-    ],
-    avg_rating: 4.7,
-    review_count: 12,
-  },
-]
+const variantSchema = z.object({
+  size: z.string().min(1, "Size identifier is required (e.g. 250ml)"),
+  color: z.string().optional(),
+  color_hex: z.string().optional(),
+  sku: z.string().min(1, "Unique SKU is required"),
+  stock: z.coerce.number().min(0, "Valid non-negative stock quantity is required"),
+  additional_price: z.coerce.number().default(0),
+})
+
+const categorySchema = z.object({
+  name: z.string().min(1, "Category name is required"),
+  slug: z.string().min(1, "Category slug is required"),
+  description: z.string().optional(),
+  display_order: z.coerce.number().default(1),
+})
+
+type ProductFormValues = {
+  name: string
+  slug: string
+  description?: string
+  category_id: string
+  price: number
+  compare_at_price?: number
+  is_available: boolean
+  is_featured: boolean
+  tags?: string
+  display_order: number
+}
+
+type VariantFormValues = {
+  size: string
+  color?: string
+  color_hex?: string
+  sku: string
+  stock: number
+  additional_price: number
+}
+
+type CategoryFormValues = {
+  name: string
+  slug: string
+  description?: string
+  display_order: number
+}
 
 export const ProductsPage = () => {
-  // Page Lists States
   const [products, setProducts] = useState<ProductDetail[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
-  const [usingFallback, setUsingFallback] = useState(false)
+  const [isPending, startTransition] = useTransition()
 
-  // Filters state
-  const [search, setSearch] = useState("")
+  const {
+    search,
+    setSearch,
+    filteredData: searchFilteredProducts,
+    isStale,
+  } = useDataTableFilter(products, (p, searchLower) =>
+    p.name.toLowerCase().includes(searchLower) ||
+    p.slug.toLowerCase().includes(searchLower)
+  )
   const [categoryFilter, setCategoryFilter] = useState("all")
 
-  // Modals & Drawers trigger states
   const [productModalOpen, setProductModalOpen] = useState(false)
-  const [activeProduct, setActiveProduct] = useState<ProductDetail | null>(null) // null = Add mode
+  const [activeProduct, setActiveProduct] = useState<ProductDetail | null>(null)
   const [variantsModalOpen, setVariantsModalOpen] = useState(false)
   const [imagesModalOpen, setImagesModalOpen] = useState(false)
 
   const { confirm: confirmDelete, dialog: confirmDialog } = useConfirm()
 
-  // Product Form states
-  const [formName, setFormName] = useState("")
-  const [formSlug, setFormSlug] = useState("")
-  const [formDescription, setFormDescription] = useState("")
-  const [formCategoryId, setFormCategoryId] = useState("")
-  const [formPrice, setFormPrice] = useState("")
-  const [formComparePrice, setFormComparePrice] = useState("")
-  const [formIsAvailable, setFormIsAvailable] = useState(true)
-  const [formIsFeatured, setFormIsFeatured] = useState(false)
-  const [formTags, setFormTags] = useState("")
-  const [formDisplayOrder, setFormDisplayOrder] = useState("10")
-  const [formErrors, setFormErrors] = useState<Record<string, string>>({})
-  const [submittingProduct, setSubmittingProduct] = useState(false)
-
-  // Variant Form states
-  const [varSize, setVarSize] = useState("")
-  const [varColor, setVarColor] = useState("")
-  const [varColorHex, setVarColorHex] = useState("")
-  const [varSku, setVarSku] = useState("")
-  const [varStock, setVarStock] = useState("")
-  const [varAddPrice, setVarAddPrice] = useState("")
-  const [varErrors, setVarErrors] = useState<Record<string, string>>({})
-  const [submittingVariant, setSubmittingVariant] = useState(false)
-
-  // Image Upload states
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null)
-  const [uploadingImages, setUploadingImages] = useState(false)
 
-  // Category Form states
-  const [catName, setCatName] = useState("")
-  const [catSlug, setCatSlug] = useState("")
-  const [catDesc, setCatDesc] = useState("")
-  const [catOrder, setCatOrder] = useState("1")
-  const [catErrors, setCatErrors] = useState<Record<string, string>>({})
-  const [submittingCategory, setSubmittingCategory] = useState(false)
+  // React Hook Form setups
+  // Cast schemas through Resolver type to handle Zod number/coercion input type divergence smoothly
+  const productForm = useForm<ProductFormValues>({
+    resolver: zodResolver(productSchema) as unknown as Resolver<ProductFormValues>,
+    defaultValues: {
+      name: "",
+      slug: "",
+      description: "",
+      category_id: "",
+      price: 0,
+      compare_at_price: undefined,
+      is_available: true,
+      is_featured: false,
+      tags: "",
+      display_order: 10,
+    },
+  })
 
-  const loadData = async () => {
+  const variantForm = useForm<VariantFormValues>({
+    resolver: zodResolver(variantSchema) as unknown as Resolver<VariantFormValues>,
+    defaultValues: {
+      size: "",
+      color: "",
+      color_hex: "",
+      sku: "",
+      stock: 0,
+      additional_price: 0,
+    },
+  })
+
+  const categoryForm = useForm<CategoryFormValues>({
+    resolver: zodResolver(categorySchema) as unknown as Resolver<CategoryFormValues>,
+    defaultValues: {
+      name: "",
+      slug: "",
+      description: "",
+      display_order: 1,
+    },
+  })
+
+  const loadData = async (shouldTriggerLoader = false) => {
+    if (shouldTriggerLoader) setLoading(true)
     try {
-      setLoading(true)
       const [prodRes, catRes] = await Promise.all([
         adminApi.getProducts(),
         adminApi.getCategories(),
@@ -242,156 +196,77 @@ export const ProductsPage = () => {
 
       if (prodRes.success && prodRes.data) {
         setProducts(prodRes.data)
-      } else {
-        setProducts(fallbackProducts)
-        setUsingFallback(true)
       }
-
       if (catRes.success && catRes.data) {
         setCategories(catRes.data)
-      } else {
-        setCategories(fallbackCategories)
-        setUsingFallback(true)
       }
     } catch {
-      setProducts(fallbackProducts)
-      setCategories(fallbackCategories)
-      setUsingFallback(true)
+      // silent fail
     } finally {
-      setLoading(false)
+      if (shouldTriggerLoader) setLoading(false)
     }
   }
 
   useEffect(() => {
-    const fetchInitial = async () => {
-      try {
-        const [prodRes, catRes] = await Promise.all([
-          adminApi.getProducts(),
-          adminApi.getCategories(),
-        ])
-
-        if (prodRes.success && prodRes.data) {
-          setProducts(prodRes.data)
-        } else {
-          setProducts(fallbackProducts)
-          setUsingFallback(true)
-        }
-
-        if (catRes.success && catRes.data) {
-          setCategories(catRes.data)
-        } else {
-          setCategories(fallbackCategories)
-          setUsingFallback(true)
-        }
-      } catch {
-        setProducts(fallbackProducts)
-        setCategories(fallbackCategories)
-        setUsingFallback(true)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchInitial()
+    loadData(true)
   }, [])
 
-  // Handle open Add Product Modal
   const handleOpenAddProduct = () => {
     setActiveProduct(null)
-    setFormName("")
-    setFormSlug("")
-    setFormDescription("")
-    setFormCategoryId(categories[0]?.id || "")
-    setFormPrice("")
-    setFormComparePrice("")
-    setFormIsAvailable(true)
-    setFormIsFeatured(false)
-    setFormTags("")
-    setFormDisplayOrder("10")
-    setFormErrors({})
+    productForm.reset({
+      name: "",
+      slug: "",
+      description: "",
+      category_id: categories[0]?.id || "",
+      price: 0,
+      compare_at_price: undefined,
+      is_available: true,
+      is_featured: false,
+      tags: "",
+      display_order: 10,
+    })
     setProductModalOpen(true)
   }
 
-  // Handle open Edit Product Modal
   const handleOpenEditProduct = (prod: ProductDetail) => {
     setActiveProduct(prod)
-    setFormName(prod.name)
-    setFormSlug(prod.slug)
-    setFormDescription(prod.description || "")
-    setFormCategoryId(prod.category_id)
-    setFormPrice(prod.price.toString())
-    setFormComparePrice(prod.compare_at_price?.toString() || "")
-    setFormIsAvailable(prod.is_available)
-    setFormIsFeatured(prod.is_featured)
-    setFormTags(prod.tags?.join(", ") || "")
-    setFormDisplayOrder(prod.display_order.toString())
-    setFormErrors({})
+    productForm.reset({
+      name: prod.name,
+      slug: prod.slug,
+      description: prod.description || "",
+      category_id: prod.category_id,
+      price: prod.price,
+      compare_at_price: prod.compare_at_price || undefined,
+      is_available: prod.is_available,
+      is_featured: prod.is_featured,
+      tags: prod.tags?.join(", ") || "",
+      display_order: prod.display_order,
+    })
     setProductModalOpen(true)
   }
 
-  // Validate Product Form
-  const validateProduct = () => {
-    const errs: Record<string, string> = {}
-    if (!formName.trim()) errs.name = "Product name is required"
-    if (!formSlug.trim()) errs.slug = "Product slug is required"
-    if (
-      !formPrice.trim() ||
-      isNaN(Number(formPrice)) ||
-      Number(formPrice) <= 0
-    ) {
-      errs.price = "Valid base price is required"
-    }
-    if (!formCategoryId) errs.category = "Category assignment is required"
-    setFormErrors(errs)
-    return Object.keys(errs).length === 0
-  }
+  const handleProductSubmit = productForm.handleSubmit(async (values) => {
+    startTransition(async () => {
+      try {
+        const parsedTags = values.tags
+          ? values.tags.split(",").map((t: string) => t.trim()).filter(Boolean)
+          : []
+        const payload: Record<string, unknown> = {
+          name: values.name.trim(),
+          slug: values.slug.trim(),
+          description: values.description?.trim() || "",
+          category_id: values.category_id,
+          price: values.price,
+          is_available: values.is_available,
+          is_featured: values.is_featured,
+          display_order: values.display_order,
+          tags: parsedTags,
+        }
+        if (values.compare_at_price !== undefined && !isNaN(values.compare_at_price) && values.compare_at_price > 0) {
+          payload.compare_at_price = values.compare_at_price
+        }
 
-  // Submit Product Add/Edit
-  const handleProductSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!validateProduct()) return
-
-    setSubmittingProduct(true)
-    try {
-      const parsedTags = formTags
-        .split(",")
-        .map((t) => t.trim())
-        .filter(Boolean)
-
-      const payload: Record<string, unknown> = {
-        name: formName.trim(),
-        slug: formSlug.trim(),
-        description: formDescription.trim(),
-        category_id: formCategoryId,
-        price: Number(formPrice),
-        is_available: formIsAvailable,
-        is_featured: formIsFeatured,
-        display_order: Number(formDisplayOrder),
-        tags: parsedTags,
-      }
-      if (formComparePrice) {
-        payload.compare_at_price = Number(formComparePrice)
-      }
-
-      if (activeProduct) {
-        // Edit mode
-        if (usingFallback) {
-          // Fallback mocking
-          const updatedList = products.map((p) =>
-            p.id === activeProduct.id
-              ? {
-                  ...p,
-                  ...payload,
-                  compare_at_price: formComparePrice
-                    ? Number(formComparePrice)
-                    : undefined,
-                  category: categories.find((c) => c.id === formCategoryId),
-                }
-              : p
-          )
-          setProducts(updatedList)
-          toast.success("Product details modified successfully (Mocked)")
-          setProductModalOpen(false)
-        } else {
+        if (activeProduct) {
           const res = await adminApi.updateProduct(activeProduct.id, payload)
           if (res.success) {
             toast.success("Product details modified successfully!")
@@ -400,27 +275,6 @@ export const ProductsPage = () => {
           } else {
             toast.error(res.message || "Failed to update product details.")
           }
-        }
-      } else {
-        // Create mode
-        if (usingFallback) {
-          const mockNew: ProductDetail = {
-            id: `prod_${Date.now()}`,
-            ...payload,
-            compare_at_price: formComparePrice
-              ? Number(formComparePrice)
-              : undefined,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            category: categories.find((c) => c.id === formCategoryId),
-            images: [],
-            variants: [],
-            avg_rating: 0,
-            review_count: 0,
-          }
-          setProducts([mockNew, ...products])
-          toast.success("Product created successfully (Mocked)")
-          setProductModalOpen(false)
         } else {
           const res = await adminApi.createProduct(payload)
           if (res.success) {
@@ -431,15 +285,12 @@ export const ProductsPage = () => {
             toast.error(res.message || "Failed to catalog product.")
           }
         }
+      } catch {
+        toast.error("An error occurred during submission.")
       }
-    } catch {
-      toast.error("An error occurred during submission.")
-    } finally {
-      setSubmittingProduct(false)
-    }
-  }
+    })
+  })
 
-  // Delete Product
   const handleDeleteProduct = async (id: string) => {
     if (
       !(await confirmDelete(
@@ -448,11 +299,8 @@ export const ProductsPage = () => {
     )
       return
 
-    try {
-      if (usingFallback) {
-        setProducts(products.filter((p) => p.id !== id))
-        toast.success("Product catalogue removed successfully (Mocked)")
-      } else {
+    startTransition(async () => {
+      try {
         const res = await adminApi.deleteProduct(id)
         if (res.success) {
           toast.success("Product catalogue removed successfully!")
@@ -460,114 +308,64 @@ export const ProductsPage = () => {
         } else {
           toast.error(res.message || "Failed to delete product catalog.")
         }
+      } catch {
+        toast.error("Failed to delete catalog product.")
       }
-    } catch {
-      toast.error("Failed to delete catalog product.")
-    }
+    })
   }
 
-  // --- VARIANTS OPERATIONS ---
   const handleOpenVariantManager = (prod: ProductDetail) => {
     setActiveProduct(prod)
-    setVarSize("")
-    setVarColor("")
-    setVarColorHex("")
-    setVarSku("")
-    setVarStock("")
-    setVarAddPrice("")
-    setVarErrors({})
+    variantForm.reset({
+      size: "",
+      color: "",
+      color_hex: "",
+      sku: "",
+      stock: 0,
+      additional_price: 0,
+    })
     setVariantsModalOpen(true)
   }
 
-  const validateVariant = () => {
-    const errs: Record<string, string> = {}
-    if (!varSize.trim()) errs.size = "Size identifier is required (e.g. 250ml)"
-    if (!varSku.trim()) errs.sku = "Unique Stock Keeping Unit (SKU) is required"
-    if (!varStock.trim() || isNaN(Number(varStock)) || Number(varStock) < 0) {
-      errs.stock = "Valid non-negative stock quantity is required"
-    }
-    setVarErrors(errs)
-    return Object.keys(errs).length === 0
-  }
+  const handleAddVariant = variantForm.handleSubmit(async (values) => {
+    if (!activeProduct) return
 
-  const handleAddVariant = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!validateVariant() || !activeProduct) return
+    startTransition(async () => {
+      const payload = {
+        size: values.size.trim(),
+        color: values.color?.trim() || "",
+        color_hex: values.color_hex?.trim() || undefined,
+        sku: values.sku.trim(),
+        stock: values.stock,
+        additional_price: values.additional_price,
+        is_active: true,
+      }
 
-    setSubmittingVariant(true)
-    const payload = {
-      size: varSize.trim(),
-      color: varColor.trim(),
-      color_hex: varColorHex.trim() || undefined,
-      sku: varSku.trim(),
-      stock: Number(varStock),
-      additional_price: varAddPrice ? Number(varAddPrice) : 0,
-      is_active: true,
-    }
-
-    try {
-      if (usingFallback) {
-        const mockV: ProductVariant = {
-          id: `var_${Date.now()}`,
-          product_id: activeProduct.id,
-          size: payload.size,
-          color: payload.color,
-          color_hex: payload.color_hex,
-          sku: payload.sku,
-          stock: payload.stock,
-          additional_price: payload.additional_price,
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        }
-
-        const updatedProds = products.map((p) => {
-          if (p.id === activeProduct.id) {
-            const currentVariants = p.variants || []
-            const updatedV = [...currentVariants, mockV]
-            // Update active product reference
-            setActiveProduct({ ...p, variants: updatedV })
-            return { ...p, variants: updatedV }
-          }
-          return p
-        })
-        setProducts(updatedProds)
-        toast.success("Variant created successfully (Mocked)")
-
-        // Reset variant form
-        setVarSize("")
-        setVarColor("")
-        setVarColorHex("")
-        setVarSku("")
-        setVarStock("")
-        setVarAddPrice("")
-      } else {
+      try {
         const res = await adminApi.addVariant(activeProduct.id, payload)
         if (res.success && res.data) {
           toast.success("Variant appended successfully!")
           const updatedV = [...(activeProduct.variants || []), res.data]
-          setActiveProduct({ ...activeProduct, variants: updatedV })
-
-          // Refresh catalog list
+          setActiveProduct((prev) =>
+            prev ? { ...prev, variants: updatedV } : null
+          )
           loadData()
-
-          // Reset variant form
-          setVarSize("")
-          setVarColor("")
-          setVarColorHex("")
-          setVarSku("")
-          setVarStock("")
-          setVarAddPrice("")
+          variantForm.reset({
+            size: "",
+            color: "",
+            color_hex: "",
+            sku: "",
+            stock: 0,
+            additional_price: 0,
+          })
         } else {
           toast.error(res.message || "Failed to append variant option.")
         }
+      } catch {
+        toast.error("Failed to append variant.")
       }
-    } catch {
-      toast.error("Failed to append variant.")
-    } finally {
-      setSubmittingVariant(false)
-    }
-  }
+    })
+  })
 
   const handleDeleteVariant = async (variantId: string) => {
     if (
@@ -576,38 +374,27 @@ export const ProductsPage = () => {
     )
       return
 
-    try {
-      if (usingFallback) {
-        const updatedProds = products.map((p) => {
-          if (p.id === activeProduct.id) {
-            const currentVariants = p.variants || []
-            const updatedV = currentVariants.filter((v) => v.id !== variantId)
-            setActiveProduct({ ...p, variants: updatedV })
-            return { ...p, variants: updatedV }
-          }
-          return p
-        })
-        setProducts(updatedProds)
-        toast.success("Variant deleted successfully (Mocked)")
-      } else {
+    startTransition(async () => {
+      try {
         const res = await adminApi.deleteVariant(activeProduct.id, variantId)
         if (res.success) {
           toast.success("Variant removed successfully!")
           const updatedV = (activeProduct.variants || []).filter(
             (v) => v.id !== variantId
           )
-          setActiveProduct({ ...activeProduct, variants: updatedV })
+          setActiveProduct((prev) =>
+            prev ? { ...prev, variants: updatedV } : null
+          )
           loadData()
         } else {
           toast.error(res.message || "Failed to delete variant.")
         }
+      } catch {
+        toast.error("Failed to delete variant.")
       }
-    } catch {
-      toast.error("Failed to delete variant.")
-    }
+    })
   }
 
-  // --- IMAGES OPERATIONS ---
   const handleOpenImageManager = (prod: ProductDetail) => {
     setActiveProduct(prod)
     setSelectedFiles(null)
@@ -618,42 +405,13 @@ export const ProductsPage = () => {
     e.preventDefault()
     if (!selectedFiles || selectedFiles.length === 0 || !activeProduct) return
 
-    setUploadingImages(true)
-    const formData = new FormData()
-    for (let i = 0; i < selectedFiles.length; i++) {
-      formData.append("images", selectedFiles[i])
-    }
+    startTransition(async () => {
+      const formData = new FormData()
+      for (let i = 0; i < selectedFiles.length; i++) {
+        formData.append("images", selectedFiles[i])
+      }
 
-    try {
-      if (usingFallback) {
-        // Mock new image appended
-        const mockImg: ProductImage = {
-          id: `img_${Date.now()}`,
-          product_id: activeProduct.id,
-          image_url:
-            "https://images.unsplash.com/photo-1610970881699-44a5587caaec?auto=format&fit=crop&q=80&w=200",
-          cloudinary_public_id: `mock_${Date.now()}`,
-          display_order: 10,
-          is_primary:
-            activeProduct.images && activeProduct.images.length === 0
-              ? true
-              : false,
-          created_at: new Date().toISOString(),
-        }
-
-        const updatedProds = products.map((p) => {
-          if (p.id === activeProduct.id) {
-            const currentImg = p.images || []
-            const updatedI = [...currentImg, mockImg]
-            setActiveProduct({ ...p, images: updatedI })
-            return { ...p, images: updatedI }
-          }
-          return p
-        })
-        setProducts(updatedProds)
-        toast.success("Images uploaded successfully (Mocked)")
-        setSelectedFiles(null)
-      } else {
+      try {
         const res = await adminApi.uploadProductImages(
           activeProduct.id,
           formData
@@ -666,32 +424,16 @@ export const ProductsPage = () => {
         } else {
           toast.error(res.message || "Failed to upload image assets.")
         }
+      } catch {
+        toast.error("Failed to upload product images.")
       }
-    } catch {
-      toast.error("Failed to upload product images.")
-    } finally {
-      setUploadingImages(false)
-    }
+    })
   }
 
   const handleSetPrimaryImage = async (imageId: string) => {
     if (!activeProduct) return
-    try {
-      if (usingFallback) {
-        const updatedProds = products.map((p) => {
-          if (p.id === activeProduct.id) {
-            const updatedI = (p.images || []).map((img) => ({
-              ...img,
-              is_primary: img.id === imageId,
-            }))
-            setActiveProduct({ ...p, images: updatedI })
-            return { ...p, images: updatedI }
-          }
-          return p
-        })
-        setProducts(updatedProds)
-        toast.success("Primary image set (Mocked)")
-      } else {
+    startTransition(async () => {
+      try {
         const res = await adminApi.setPrimaryImage(activeProduct.id, imageId)
         if (res.success) {
           toast.success("Cover image modified successfully!")
@@ -699,15 +441,17 @@ export const ProductsPage = () => {
             ...img,
             is_primary: img.id === imageId,
           }))
-          setActiveProduct({ ...activeProduct, images: updatedI })
+          setActiveProduct((prev) =>
+            prev ? { ...prev, images: updatedI } : null
+          )
           loadData()
         } else {
           toast.error(res.message || "Failed to set primary image.")
         }
+      } catch {
+        toast.error("Failed to set cover image.")
       }
-    } catch {
-      toast.error("Failed to set cover image.")
-    }
+    })
   }
 
   const handleDeleteImage = async (imageId: string) => {
@@ -718,94 +462,55 @@ export const ProductsPage = () => {
       !activeProduct
     )
       return
-    try {
-      if (usingFallback) {
-        const updatedProds = products.map((p) => {
-          if (p.id === activeProduct.id) {
-            const updatedI = (p.images || []).filter(
-              (img) => img.id !== imageId
-            )
-            setActiveProduct({ ...p, images: updatedI })
-            return { ...p, images: updatedI }
-          }
-          return p
-        })
-        setProducts(updatedProds)
-        toast.success("Image asset deleted (Mocked)")
-      } else {
+    startTransition(async () => {
+      try {
         const res = await adminApi.deleteProductImage(activeProduct.id, imageId)
         if (res.success) {
           toast.success("Image asset deleted successfully!")
           const updatedI = (activeProduct.images || []).filter(
             (img) => img.id !== imageId
           )
-          setActiveProduct({ ...activeProduct, images: updatedI })
+          setActiveProduct((prev) =>
+            prev ? { ...prev, images: updatedI } : null
+          )
           loadData()
         } else {
           toast.error(res.message || "Failed to delete image asset.")
         }
+      } catch {
+        toast.error("Failed to delete image asset.")
       }
-    } catch {
-      toast.error("Failed to delete image asset.")
-    }
+    })
   }
 
-  // --- CATEGORY OPERATIONS ---
-  const validateCategory = () => {
-    const errs: Record<string, string> = {}
-    if (!catName.trim()) errs.name = "Category name is required"
-    if (!catSlug.trim()) errs.slug = "Category slug is required"
-    setCatErrors(errs)
-    return Object.keys(errs).length === 0
-  }
+  const handleCategorySubmit = categoryForm.handleSubmit(async (values) => {
+    startTransition(async () => {
+      const payload = {
+        name: values.name.trim(),
+        slug: values.slug.trim(),
+        description: values.description?.trim() || undefined,
+        display_order: values.display_order,
+      }
 
-  const handleCategorySubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!validateCategory()) return
-
-    setSubmittingCategory(true)
-    const payload = {
-      name: catName.trim(),
-      slug: catSlug.trim(),
-      description: catDesc.trim() || undefined,
-      display_order: Number(catOrder) || 1,
-    }
-
-    try {
-      if (usingFallback) {
-        const mockC: Category = {
-          id: `cat_${Date.now()}`,
-          name: payload.name,
-          slug: payload.slug,
-          description: payload.description,
-          display_order: payload.display_order,
-          is_active: true,
-        }
-        setCategories([...categories, mockC])
-        toast.success("Category created successfully (Mocked)")
-        setCatName("")
-        setCatSlug("")
-        setCatDesc("")
-        setCatOrder("1")
-      } else {
+      try {
         const res = await adminApi.createCategory(payload)
         if (res.success && res.data) {
           toast.success("Category created successfully!")
-          setCategories([...categories, res.data])
-          setCatName("")
-          setCatSlug("")
-          setCatDesc("")
-          setCatOrder("1")
+          setCategories((curr) => [...curr, res.data])
+          categoryForm.reset({
+            name: "",
+            slug: "",
+            description: "",
+            display_order: 1,
+          })
         } else {
           toast.error(res.message || "Failed to create category.")
         }
+      } catch {
+        toast.error("Failed to append category.")
       }
-    } catch {
-      toast.error("Failed to append category.")
-    } finally {
-      setSubmittingCategory(false)
-    }
-  }
+    })
+  })
 
   const handleDeleteCategory = async (id: string) => {
     if (
@@ -814,11 +519,8 @@ export const ProductsPage = () => {
       ))
     )
       return
-    try {
-      if (usingFallback) {
-        setCategories(categories.filter((c) => c.id !== id))
-        toast.success("Category deleted (Mocked)")
-      } else {
+    startTransition(async () => {
+      try {
         const res = await adminApi.deleteCategory(id)
         if (res.success) {
           toast.success("Category removed successfully!")
@@ -826,21 +528,15 @@ export const ProductsPage = () => {
         } else {
           toast.error(res.message || "Failed to remove category.")
         }
+      } catch {
+        toast.error("Failed to delete category.")
       }
-    } catch {
-      toast.error("Failed to delete category.")
-    }
+    })
   }
 
-  // Filtering
-  const filteredProducts = products.filter((p) => {
-    const matchesSearch =
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.slug.toLowerCase().includes(search.toLowerCase())
-    const matchesCategory =
-      categoryFilter === "all" || p.category_id === categoryFilter
-    return matchesSearch && matchesCategory
-  })
+  const filteredProducts = searchFilteredProducts.filter((p) =>
+    categoryFilter === "all" || p.category_id === categoryFilter
+  )
 
   if (loading) {
     return (
@@ -857,21 +553,12 @@ export const ProductsPage = () => {
 
   return (
     <div className="flex flex-col gap-8 text-left">
-      {/* Header block */}
-      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-        <div>
-          <h1 className="font-heading text-3xl font-extrabold tracking-tight text-foreground">
-            Inventory Console
-          </h1>
-          <p className="text-xs text-muted-foreground">
-            Manage your boutique catalog products, category lists, variant
-            stocks, and high-res media.
-          </p>
-        </div>
-        <Button onClick={handleOpenAddProduct}>Add New Product</Button>
-      </div>
+      <PageHeader
+        title="Inventory Console"
+        description="Manage your boutique catalog products, category lists, variant stocks, and high-res media."
+        action={<Button onClick={handleOpenAddProduct}>Add New Product</Button>}
+      />
 
-      {/* Main Tabs Container */}
       <Tabs defaultValue="products" className="w-full">
         <TabsList className="mb-6 bg-muted/60 p-1">
           <TabsTrigger value="products" className="cursor-pointer">
@@ -882,11 +569,8 @@ export const ProductsPage = () => {
           </TabsTrigger>
         </TabsList>
 
-        {/* Tab 1: Products Catalogue grid */}
         <TabsContent value="products">
-          {/* Filters Bar */}
           <div className="mb-6 flex flex-col items-center gap-4 sm:flex-row">
-            {/* Search Input */}
             <div className="relative w-full sm:max-w-xs">
               <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
                 <HugeiconsIcon icon={SearchIcon} className="size-4" />
@@ -900,7 +584,6 @@ export const ProductsPage = () => {
               />
             </div>
 
-            {/* Category selection */}
             <div className="w-full sm:max-w-xs">
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                 <SelectTrigger className="w-full">
@@ -918,8 +601,10 @@ export const ProductsPage = () => {
             </div>
           </div>
 
-          {/* Grid listing products */}
-          <div className="rounded-lg border border-border/60 bg-card shadow-sm">
+          <DefferedContainer
+            isStale={isStale}
+            className="rounded-lg border border-border/60 bg-card shadow-sm"
+          >
             <Table>
               <TableHeader>
                 <TableRow>
@@ -936,14 +621,7 @@ export const ProductsPage = () => {
               </TableHeader>
               <TableBody>
                 {filteredProducts.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={7}
-                      className="px-6 py-12 text-center text-muted-foreground"
-                    >
-                      No catalog products matched your query.
-                    </TableCell>
-                  </TableRow>
+                  <EmptyState message="No catalog products matched your query." />
                 ) : (
                   filteredProducts.map((prod) => {
                     const primaryImage =
@@ -954,7 +632,6 @@ export const ProductsPage = () => {
 
                     return (
                       <TableRow key={prod.id}>
-                        {/* Image Thumbnail */}
                         <TableCell className="px-6 py-4">
                           <img
                             src={primaryImage}
@@ -966,8 +643,6 @@ export const ProductsPage = () => {
                             }}
                           />
                         </TableCell>
-
-                        {/* Title and slug */}
                         <TableCell className="px-6 py-4">
                           <div className="font-semibold text-foreground">
                             {prod.name}
@@ -976,16 +651,12 @@ export const ProductsPage = () => {
                             {prod.slug}
                           </div>
                         </TableCell>
-
-                        {/* Category */}
                         <TableCell className="px-6 py-4">
                           <Badge variant="outline">
                             {prod.category?.name || "Unassigned"}
                           </Badge>
                         </TableCell>
-
-                        {/* Price */}
-                        <TableCell className="px-6 py-4 font-semibold text-foreground">
+                        <TableCell className="Richmond-font px-6 py-4 font-semibold text-foreground">
                           {formatPrice(prod.price)}
                           {prod.compare_at_price && (
                             <div className="text-[11px] font-normal text-muted-foreground line-through">
@@ -993,8 +664,6 @@ export const ProductsPage = () => {
                             </div>
                           )}
                         </TableCell>
-
-                        {/* Badges */}
                         <TableCell className="px-6 py-4">
                           <div className="flex flex-col items-start gap-1.5 self-start">
                             <Badge
@@ -1009,8 +678,6 @@ export const ProductsPage = () => {
                             )}
                           </div>
                         </TableCell>
-
-                        {/* Variant / Stocks */}
                         <TableCell className="px-6 py-4">
                           <Badge
                             variant={
@@ -1027,8 +694,6 @@ export const ProductsPage = () => {
                             {prod.variants?.length || 0} active option(s)
                           </div>
                         </TableCell>
-
-                        {/* Actions buttons */}
                         <TableCell className="px-6 py-4 text-right">
                           <div className="flex items-center justify-end gap-2">
                             <Button
@@ -1061,6 +726,7 @@ export const ProductsPage = () => {
                             <Button
                               variant="ghost"
                               size="icon"
+                              disabled={isPending}
                               onClick={() => handleDeleteProduct(prod.id)}
                               className="hover:bg-destructive/10 hover:text-destructive"
                             >
@@ -1077,13 +743,11 @@ export const ProductsPage = () => {
                 )}
               </TableBody>
             </Table>
-          </div>
+          </DefferedContainer>
         </TabsContent>
 
-        {/* Tab 2: Categories Inventory Management */}
         <TabsContent value="categories">
           <div className="grid gap-8 lg:grid-cols-3">
-            {/* Category creation form */}
             <Card className="h-fit border border-border/60 bg-card shadow-sm">
               <CardHeader>
                 <CardTitle className="text-sm font-bold tracking-wider text-foreground uppercase">
@@ -1099,87 +763,82 @@ export const ProductsPage = () => {
                   onSubmit={handleCategorySubmit}
                   className="flex flex-col gap-5 text-left"
                 >
-                  {/* Category Name */}
-                  <Field data-invalid={!!catErrors.name}>
+                  <Field data-invalid={!!categoryForm.formState.errors.name}>
                     <FieldLabel htmlFor="catName">Category Name</FieldLabel>
                     <Input
                       id="catName"
-                      value={catName}
-                      onChange={(e) => {
-                        setCatName(e.target.value)
-                        if (catErrors.name)
-                          setCatErrors((prev) => ({ ...prev, name: "" }))
-                      }}
+                      {...categoryForm.register("name", {
+                        onChange: (e) => {
+                          categoryForm.setValue(
+                            "slug",
+                            e.target.value
+                              .toLowerCase()
+                              .replace(/ /g, "-")
+                              .replace(/[^a-z0-9-]/g, "")
+                          )
+                        }
+                      })}
                       placeholder="e.g. Cleansing Tonics"
-                      aria-invalid={!!catErrors.name}
                     />
-                    {catErrors.name && (
-                      <FieldError>{catErrors.name}</FieldError>
+                    {categoryForm.formState.errors.name && (
+                      <FieldError>{categoryForm.formState.errors.name.message}</FieldError>
                     )}
                   </Field>
 
-                  {/* Slug */}
-                  <Field data-invalid={!!catErrors.slug}>
+                  <Field data-invalid={!!categoryForm.formState.errors.slug}>
                     <FieldLabel htmlFor="catSlug">URL Slug</FieldLabel>
                     <Input
                       id="catSlug"
-                      value={catSlug}
-                      onChange={(e) => {
-                        setCatSlug(
-                          e.target.value
-                            .toLowerCase()
-                            .replace(/ /g, "-")
-                            .replace(/[^a-z0-9-]/g, "")
-                        )
-                        if (catErrors.slug)
-                          setCatErrors((prev) => ({ ...prev, slug: "" }))
-                      }}
+                      {...categoryForm.register("slug", {
+                        onChange: (e) => {
+                          categoryForm.setValue(
+                            "slug",
+                            e.target.value
+                              .toLowerCase()
+                              .replace(/ /g, "-")
+                              .replace(/[^a-z0-9-]/g, "")
+                          )
+                        }
+                      })}
                       placeholder="cleansing-tonics"
-                      aria-invalid={!!catErrors.slug}
                     />
-                    {catErrors.slug && (
-                      <FieldError>{catErrors.slug}</FieldError>
+                    {categoryForm.formState.errors.slug && (
+                      <FieldError>{categoryForm.formState.errors.slug.message}</FieldError>
                     )}
                   </Field>
 
-                  {/* Description */}
                   <Field>
                     <FieldLabel htmlFor="catDesc">Description</FieldLabel>
                     <Textarea
                       id="catDesc"
-                      value={catDesc}
-                      onChange={(e) => setCatDesc(e.target.value)}
+                      {...categoryForm.register("description")}
                       placeholder="Brief details about the products in this category..."
                       rows={3}
                     />
                   </Field>
 
-                  {/* Order */}
                   <Field>
                     <FieldLabel htmlFor="catOrder">Display Order</FieldLabel>
                     <Input
                       id="catOrder"
                       type="number"
-                      value={catOrder}
-                      onChange={(e) => setCatOrder(e.target.value)}
+                      {...categoryForm.register("display_order")}
                       placeholder="1"
                     />
                   </Field>
 
-                  {/* Submit Button */}
                   <Button
                     type="submit"
-                    disabled={submittingCategory}
+                    disabled={isPending}
                     className="mt-2 w-full font-medium"
                   >
-                    {submittingCategory && <Spinner data-icon="inline-start" />}
-                    {submittingCategory ? "Creating..." : "Save Classification"}
+                    {isPending && <Spinner data-icon="inline-start" />}
+                    {isPending ? "Creating..." : "Save Classification"}
                   </Button>
                 </form>
               </CardContent>
             </Card>
 
-            {/* Category listing grid */}
             <div className="h-fit rounded-lg border border-border/60 bg-card shadow-sm lg:col-span-2">
               <Table>
                 <TableHeader>
@@ -1195,42 +854,27 @@ export const ProductsPage = () => {
                 </TableHeader>
                 <TableBody>
                   {categories.length === 0 ? (
-                    <TableRow>
-                      <TableCell
-                        colSpan={5}
-                        className="px-6 py-12 text-center text-muted-foreground"
-                      >
-                        No categories currently defined.
-                      </TableCell>
-                    </TableRow>
+                    <EmptyState message="No categories currently defined." colSpan={5} />
                   ) : (
                     categories.map((cat) => (
                       <TableRow key={cat.id}>
-                        {/* Name */}
                         <TableCell className="px-6 py-4 font-semibold text-foreground">
                           {cat.name}
                         </TableCell>
-
-                        {/* Slug */}
                         <TableCell className="px-6 py-4 font-mono text-xs text-muted-foreground">
                           {cat.slug}
                         </TableCell>
-
-                        {/* Description */}
                         <TableCell className="max-w-xs truncate px-6 py-4 text-muted-foreground">
                           {cat.description || "-"}
                         </TableCell>
-
-                        {/* Display Order */}
                         <TableCell className="px-6 py-4 font-medium text-foreground">
                           {cat.display_order}
                         </TableCell>
-
-                        {/* Actions */}
                         <TableCell className="px-6 py-4 text-right">
                           <Button
                             variant="ghost"
                             size="icon"
+                            disabled={isPending}
                             onClick={() => handleDeleteCategory(cat.id)}
                             className="hover:bg-destructive/10 hover:text-destructive"
                           >
@@ -1250,9 +894,8 @@ export const ProductsPage = () => {
         </TabsContent>
       </Tabs>
 
-      {/* --- ADD/EDIT PRODUCT DIALOG --- */}
       <Dialog open={productModalOpen} onOpenChange={setProductModalOpen}>
-        <DialogContent className="max-h-[90vh] max-w-xl sm:max-w-xl overflow-y-auto border bg-card">
+        <DialogContent className="max-h-[90vh] max-w-xl overflow-y-auto border bg-card">
           <DialogHeader>
             <DialogTitle className="font-heading text-lg font-bold">
               {activeProduct
@@ -1269,65 +912,61 @@ export const ProductsPage = () => {
             onSubmit={handleProductSubmit}
             className="flex flex-col gap-5 py-4 text-left"
           >
-            {/* Title Name */}
-            <Field data-invalid={!!formErrors.name}>
+            <Field data-invalid={!!productForm.formState.errors.name}>
               <FieldLabel htmlFor="formName">Product Title</FieldLabel>
               <Input
                 id="formName"
-                value={formName}
-                onChange={(e) => {
-                  setFormName(e.target.value)
-                  if (formErrors.name)
-                    setFormErrors((prev) => ({ ...prev, name: "" }))
-                  // Auto-generate slug on typing name in create mode
-                  if (!activeProduct) {
-                    setFormSlug(
+                {...productForm.register("name", {
+                  onChange: (e) => {
+                    if (!activeProduct) {
+                      productForm.setValue(
+                        "slug",
+                        e.target.value
+                          .toLowerCase()
+                          .replace(/ /g, "-")
+                          .replace(/[^a-z0-9-]/g, "")
+                      )
+                    }
+                  }
+                })}
+                placeholder="e.g. Pure Earth Cleanser"
+              />
+              {productForm.formState.errors.name && (
+                <FieldError>{productForm.formState.errors.name.message}</FieldError>
+              )}
+            </Field>
+
+            <Field data-invalid={!!productForm.formState.errors.slug}>
+              <FieldLabel htmlFor="formSlug">Product Slug</FieldLabel>
+              <Input
+                id="formSlug"
+                {...productForm.register("slug", {
+                  onChange: (e) => {
+                    productForm.setValue(
+                      "slug",
                       e.target.value
                         .toLowerCase()
                         .replace(/ /g, "-")
                         .replace(/[^a-z0-9-]/g, "")
                     )
                   }
-                }}
-                placeholder="e.g. Pure Earth Cleanser"
-                aria-invalid={!!formErrors.name}
-              />
-              {formErrors.name && <FieldError>{formErrors.name}</FieldError>}
-            </Field>
-
-            {/* Slug URL */}
-            <Field data-invalid={!!formErrors.slug}>
-              <FieldLabel htmlFor="formSlug">Product Slug</FieldLabel>
-              <Input
-                id="formSlug"
-                value={formSlug}
-                onChange={(e) => {
-                  setFormSlug(
-                    e.target.value
-                      .toLowerCase()
-                      .replace(/ /g, "-")
-                      .replace(/[^a-z0-9-]/g, "")
-                  )
-                  if (formErrors.slug)
-                    setFormErrors((prev) => ({ ...prev, slug: "" }))
-                }}
+                })}
                 placeholder="pure-earth-cleanser"
-                aria-invalid={!!formErrors.slug}
               />
-              {formErrors.slug && <FieldError>{formErrors.slug}</FieldError>}
+              {productForm.formState.errors.slug && (
+                <FieldError>{productForm.formState.errors.slug.message}</FieldError>
+              )}
             </Field>
 
-            {/* Category selection */}
-            <Field data-invalid={!!formErrors.category}>
+            <Field data-invalid={!!productForm.formState.errors.category_id}>
               <FieldLabel htmlFor="formCategoryId">
                 Assign Category Classification
               </FieldLabel>
-              <Select value={formCategoryId} onValueChange={setFormCategoryId}>
-                <SelectTrigger
-                  id="formCategoryId"
-                  className="w-full"
-                  aria-invalid={!!formErrors.category}
-                >
+              <Select
+                value={productForm.watch("category_id")}
+                onValueChange={(val) => productForm.setValue("category_id", val)}
+              >
+                <SelectTrigger id="formCategoryId" className="w-full">
                   <SelectValue placeholder="Choose Classification..." />
                 </SelectTrigger>
                 <SelectContent>
@@ -1338,36 +977,27 @@ export const ProductsPage = () => {
                   ))}
                 </SelectContent>
               </Select>
-              {formErrors.category && (
-                <FieldError>{formErrors.category}</FieldError>
+              {productForm.formState.errors.category_id && (
+                <FieldError>{productForm.formState.errors.category_id.message}</FieldError>
               )}
             </Field>
 
-            {/* Price Grid */}
             <div className="grid grid-cols-2 gap-4">
-              {/* Base Price */}
-              <Field data-invalid={!!formErrors.price}>
+              <Field data-invalid={!!productForm.formState.errors.price}>
                 <FieldLabel htmlFor="formPrice">
                   Base Retail Price (IDR)
                 </FieldLabel>
                 <Input
                   id="formPrice"
                   type="number"
-                  value={formPrice}
-                  onChange={(e) => {
-                    setFormPrice(e.target.value)
-                    if (formErrors.price)
-                      setFormErrors((prev) => ({ ...prev, price: "" }))
-                  }}
+                  {...productForm.register("price")}
                   placeholder="45000"
-                  aria-invalid={!!formErrors.price}
                 />
-                {formErrors.price && (
-                  <FieldError>{formErrors.price}</FieldError>
+                {productForm.formState.errors.price && (
+                  <FieldError>{productForm.formState.errors.price.message}</FieldError>
                 )}
               </Field>
 
-              {/* Compare Price */}
               <Field>
                 <FieldLabel htmlFor="formComparePrice">
                   Compare-At Price (IDR - Strikeout)
@@ -1375,29 +1005,23 @@ export const ProductsPage = () => {
                 <Input
                   id="formComparePrice"
                   type="number"
-                  value={formComparePrice}
-                  onChange={(e) => setFormComparePrice(e.target.value)}
+                  {...productForm.register("compare_at_price")}
                   placeholder="50000"
                 />
               </Field>
             </div>
 
-            {/* Tags and Order */}
             <div className="grid grid-cols-2 gap-4">
-              {/* Tags */}
               <Field>
                 <FieldLabel htmlFor="formTags">
                   Tags (Comma Separated)
                 </FieldLabel>
                 <Input
                   id="formTags"
-                  value={formTags}
-                  onChange={(e) => setFormTags(e.target.value)}
+                  {...productForm.register("tags")}
                   placeholder="Detox, Organic, Immunity"
                 />
               </Field>
-
-              {/* Display Order */}
               <Field>
                 <FieldLabel htmlFor="formDisplayOrder">
                   Display Order (Sorting)
@@ -1405,54 +1029,48 @@ export const ProductsPage = () => {
                 <Input
                   id="formDisplayOrder"
                   type="number"
-                  value={formDisplayOrder}
-                  onChange={(e) => setFormDisplayOrder(e.target.value)}
+                  {...productForm.register("display_order")}
                   placeholder="10"
                 />
               </Field>
             </div>
 
-            {/* Description */}
             <Field>
               <FieldLabel htmlFor="formDescription">Description</FieldLabel>
               <Textarea
                 id="formDescription"
-                value={formDescription}
-                onChange={(e) => setFormDescription(e.target.value)}
+                {...productForm.register("description")}
                 placeholder="Write premium catalog details about ingredients, taste profile, and health benefits..."
                 rows={4}
               />
             </Field>
 
-            {/* Toggles */}
             <div className="flex gap-6 pt-2">
               <label className="flex items-center gap-2 text-xs font-semibold text-foreground select-none">
                 <Checkbox
-                  checked={formIsAvailable}
-                  onCheckedChange={(c) => setFormIsAvailable(!!c)}
+                  checked={productForm.watch("is_available")}
+                  onCheckedChange={(c) => productForm.setValue("is_available", !!c)}
                 />
                 Is Available (Publish immediately)
               </label>
-
               <label className="flex items-center gap-2 text-xs font-semibold text-foreground select-none">
                 <Checkbox
-                  checked={formIsFeatured}
-                  onCheckedChange={(c) => setFormIsFeatured(!!c)}
+                  checked={productForm.watch("is_featured")}
+                  onCheckedChange={(c) => productForm.setValue("is_featured", !!c)}
                 />
                 Is Featured (Promote on frontpage)
               </label>
             </div>
 
-            {/* Footer triggers */}
             <DialogFooter className="mt-4 gap-2">
               <DialogClose asChild>
                 <Button type="button" variant="outline">
                   Cancel
                 </Button>
               </DialogClose>
-              <Button type="submit" disabled={submittingProduct}>
-                {submittingProduct && <Spinner data-icon="inline-start" />}
-                {submittingProduct
+              <Button type="submit" disabled={isPending}>
+                {isPending && <Spinner data-icon="inline-start" />}
+                {isPending
                   ? "Saving catalogue..."
                   : "Save Product Catalogue"}
               </Button>
@@ -1461,7 +1079,6 @@ export const ProductsPage = () => {
         </DialogContent>
       </Dialog>
 
-      {/* --- VARIANTS MANAGER DIALOG --- */}
       <Dialog open={variantsModalOpen} onOpenChange={setVariantsModalOpen}>
         <DialogContent className="max-h-[90vh] max-w-3xl sm:max-w-3xl overflow-y-auto border bg-card">
           <DialogHeader>
@@ -1474,9 +1091,7 @@ export const ProductsPage = () => {
             </DialogDescription>
           </DialogHeader>
 
-          {/* Core manager layout */}
           <div className="grid gap-6 py-4 text-left md:grid-cols-2">
-            {/* Append Variant form */}
             <Card className="h-fit border border-border/80 bg-card/40">
               <CardHeader className="p-4">
                 <CardTitle className="text-xs font-bold tracking-wider text-foreground uppercase">
@@ -1488,35 +1103,26 @@ export const ProductsPage = () => {
                   onSubmit={handleAddVariant}
                   className="flex flex-col gap-4"
                 >
-                  {/* Variant Size */}
-                  <Field data-invalid={!!varErrors.size}>
+                  <Field data-invalid={!!variantForm.formState.errors.size}>
                     <FieldLabel htmlFor="varSize">
                       Size (Volume/Dimension)
                     </FieldLabel>
                     <Input
                       id="varSize"
-                      value={varSize}
-                      onChange={(e) => {
-                        setVarSize(e.target.value)
-                        if (varErrors.size)
-                          setVarErrors((prev) => ({ ...prev, size: "" }))
-                      }}
+                      {...variantForm.register("size")}
                       placeholder="e.g. 250ml or 500ml"
-                      aria-invalid={!!varErrors.size}
                     />
-                    {varErrors.size && (
-                      <FieldError>{varErrors.size}</FieldError>
+                    {variantForm.formState.errors.size && (
+                      <FieldError>{variantForm.formState.errors.size.message}</FieldError>
                     )}
                   </Field>
 
-                  {/* Color & Color Hex */}
                   <div className="grid grid-cols-2 gap-3">
                     <Field>
                       <FieldLabel htmlFor="varColor">Color Name</FieldLabel>
                       <Input
                         id="varColor"
-                        value={varColor}
-                        onChange={(e) => setVarColor(e.target.value)}
+                        {...variantForm.register("color")}
                         placeholder="Beet Red"
                       />
                     </Field>
@@ -1526,50 +1132,37 @@ export const ProductsPage = () => {
                       </FieldLabel>
                       <Input
                         id="varColorHex"
-                        value={varColorHex}
-                        onChange={(e) => setVarColorHex(e.target.value)}
+                        {...variantForm.register("color_hex")}
                         placeholder="#8b0000"
                       />
                     </Field>
                   </div>
 
-                  {/* SKU */}
-                  <Field data-invalid={!!varErrors.sku}>
+                  <Field data-invalid={!!variantForm.formState.errors.sku}>
                     <FieldLabel htmlFor="varSku">SKU Code</FieldLabel>
                     <Input
                       id="varSku"
-                      value={varSku}
-                      onChange={(e) => {
-                        setVarSku(e.target.value)
-                        if (varErrors.sku)
-                          setVarErrors((prev) => ({ ...prev, sku: "" }))
-                      }}
+                      {...variantForm.register("sku")}
                       placeholder="JUICE-BEET-250"
-                      aria-invalid={!!varErrors.sku}
                     />
-                    {varErrors.sku && <FieldError>{varErrors.sku}</FieldError>}
+                    {variantForm.formState.errors.sku && (
+                      <FieldError>{variantForm.formState.errors.sku.message}</FieldError>
+                    )}
                   </Field>
 
-                  {/* Stock and additional price */}
                   <div className="grid grid-cols-2 gap-3">
-                    <Field data-invalid={!!varErrors.stock}>
+                    <Field data-invalid={!!variantForm.formState.errors.stock}>
                       <FieldLabel htmlFor="varStock">
                         Fulfillment Stock
                       </FieldLabel>
                       <Input
                         id="varStock"
                         type="number"
-                        value={varStock}
-                        onChange={(e) => {
-                          setVarStock(e.target.value)
-                          if (varErrors.stock)
-                            setVarErrors((prev) => ({ ...prev, stock: "" }))
-                        }}
+                        {...variantForm.register("stock")}
                         placeholder="100"
-                        aria-invalid={!!varErrors.stock}
                       />
-                      {varErrors.stock && (
-                        <FieldError>{varErrors.stock}</FieldError>
+                      {variantForm.formState.errors.stock && (
+                        <FieldError>{variantForm.formState.errors.stock.message}</FieldError>
                       )}
                     </Field>
 
@@ -1580,21 +1173,19 @@ export const ProductsPage = () => {
                       <Input
                         id="varAddPrice"
                         type="number"
-                        value={varAddPrice}
-                        onChange={(e) => setVarAddPrice(e.target.value)}
+                        {...variantForm.register("additional_price")}
                         placeholder="+15000"
                       />
                     </Field>
                   </div>
 
-                  {/* Save option */}
                   <Button
                     type="submit"
-                    disabled={submittingVariant}
+                    disabled={isPending}
                     className="mt-2 w-full font-medium"
                   >
-                    {submittingVariant && <Spinner data-icon="inline-start" />}
-                    {submittingVariant
+                    {isPending && <Spinner data-icon="inline-start" />}
+                    {isPending
                       ? "Appending..."
                       : "Append Variant Option"}
                   </Button>
@@ -1602,7 +1193,6 @@ export const ProductsPage = () => {
               </CardContent>
             </Card>
 
-            {/* Existing Variants list */}
             <div className="flex flex-col gap-4">
               <h3 className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
                 Active Variant Combinations
@@ -1647,6 +1237,7 @@ export const ProductsPage = () => {
                       <Button
                         variant="ghost"
                         size="icon"
+                        disabled={isPending}
                         onClick={() => handleDeleteVariant(v.id)}
                         className="size-7 hover:bg-destructive/10 hover:text-destructive"
                       >
@@ -1670,9 +1261,8 @@ export const ProductsPage = () => {
         </DialogContent>
       </Dialog>
 
-      {/* --- MEDIA IMAGE MANAGER DIALOG --- */}
       <Dialog open={imagesModalOpen} onOpenChange={setImagesModalOpen}>
-        <DialogContent className="max-h-[90vh] max-w-2xl sm:max-w-2xl overflow-y-auto border bg-card">
+        <DialogContent className="max-h-[90vh] max-w-2xl sm:max-w-2.5xl overflow-y-auto border bg-card">
           <DialogHeader>
             <DialogTitle className="font-heading text-lg font-bold">
               Boutique Image Assets: {activeProduct?.name}
@@ -1684,7 +1274,6 @@ export const ProductsPage = () => {
           </DialogHeader>
 
           <div className="flex flex-col gap-6 py-4 text-left">
-            {/* Uploader section */}
             <form
               onSubmit={handleImageUploadSubmit}
               className="flex items-end gap-4 rounded-lg border bg-muted/10 p-4"
@@ -1703,14 +1292,13 @@ export const ProductsPage = () => {
               </div>
               <Button
                 type="submit"
-                disabled={uploadingImages || !selectedFiles}
+                disabled={isPending || !selectedFiles}
               >
-                {uploadingImages && <Spinner data-icon="inline-start" />}
-                {uploadingImages ? "Uploading..." : "Upload Assets"}
+                {isPending && <Spinner data-icon="inline-start" />}
+                {isPending ? "Uploading..." : "Upload Assets"}
               </Button>
             </form>
 
-            {/* Thumbnail Grid display */}
             <div className="flex flex-col gap-3">
               <h3 className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
                 Catalog Image Assets
@@ -1731,7 +1319,6 @@ export const ProductsPage = () => {
                           : "border-border"
                       )}
                     >
-                      {/* Image Frame */}
                       <img
                         src={img.image_url}
                         alt="Product option thumbnail"
@@ -1741,22 +1328,18 @@ export const ProductsPage = () => {
                             "/placeholder-product.svg"
                         }}
                       />
-
-                      {/* Display info */}
                       {img.is_primary && (
                         <div className="absolute top-2 left-2 rounded bg-primary px-2 py-0.5 text-[9px] font-bold tracking-wider text-primary-foreground uppercase shadow">
-                          Cover Cover
+                          Cover
                         </div>
                       )}
-
-                      {/* Action buttons panel */}
                       <div className="mt-1 flex w-full items-center justify-between border-t border-border/60 pt-1.5">
                         <Button
                           type="button"
                           variant="ghost"
                           size="xs"
                           onClick={() => handleSetPrimaryImage(img.id)}
-                          disabled={img.is_primary}
+                          disabled={img.is_primary || isPending}
                           className="h-auto p-1.5 text-[10px]"
                         >
                           Set Cover
@@ -1765,6 +1348,7 @@ export const ProductsPage = () => {
                           type="button"
                           variant="ghost"
                           size="icon"
+                          disabled={isPending}
                           onClick={() => handleDeleteImage(img.id)}
                           className="size-7 hover:bg-destructive/10 hover:text-destructive"
                         >

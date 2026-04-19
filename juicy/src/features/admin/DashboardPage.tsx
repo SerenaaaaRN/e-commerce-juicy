@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useTransition } from "react"
 import {
   Card,
   CardContent,
@@ -32,33 +32,24 @@ import {
   AreaChart,
   Area,
 } from "recharts"
+import { PageHeader } from "@/features/admin/components/PageHeader"
 
-const fallbackOverview: AnalyticsOverview = {
-  orders: { total: 184, pending: 8, processing: 14, this_month: 42 },
-  revenue: { total: 245900000, this_month: 56200000 },
-  customers: { total: 89, new_this_month: 12 },
-  products: { total: 14, out_of_stock: 2 },
+const TOOLTIP_CONTENT_STYLE = {
+  backgroundColor: "hsl(var(--background))",
+  borderColor: "hsl(var(--border))",
+  borderRadius: "0.25rem",
 }
 
-const fallbackChart: AnalyticsChartItem[] = [
-  { month: "Jan", order_count: 24, revenue: 32000000 },
-  { month: "Feb", order_count: 28, revenue: 38000000 },
-  { month: "Mar", order_count: 35, revenue: 47000000 },
-  { month: "Apr", order_count: 42, revenue: 56000000 },
-  { month: "May", order_count: 55, revenue: 72000000 },
-  { month: "Jun", order_count: 42, revenue: 56200000 },
-]
+const TOOLTIP_LABEL_STYLE = { fontSize: "11px", fontWeight: "bold" }
 
 export const DashboardPage = () => {
   const [overview, setOverview] = useState<AnalyticsOverview | null>(null)
-  const [chartData, setChartData] = useState<AnalyticsChartItem[]>([])
-  const [loading, setLoading] = useState(true)
-  const [usingFallback, setUsingFallback] = useState(false)
+  const [chartData, setChartData] = useState<AnalyticsChartItem[] | null>(null)
+  const [isPending, startTransition] = useTransition()
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
+    startTransition(async () => {
       try {
-        setLoading(true)
         const [overviewRes, chartRes] = await Promise.all([
           adminApi.getAnalyticsOverview(),
           adminApi.getAnalyticsOrdersChart(),
@@ -66,67 +57,45 @@ export const DashboardPage = () => {
 
         if (overviewRes.success && overviewRes.data) {
           setOverview(overviewRes.data)
-        } else {
-          setOverview(fallbackOverview)
-          setUsingFallback(true)
         }
-
         if (chartRes.success && chartRes.data) {
           setChartData(chartRes.data)
-        } else {
-          setChartData(fallbackChart)
-          setUsingFallback(true)
         }
       } catch {
-        setOverview(fallbackOverview)
-        setChartData(fallbackChart)
-        setUsingFallback(true)
-      } finally {
-        setLoading(false)
+        // silent fail — data stays null
       }
-    }
-
-    fetchDashboardData()
+    })
   }, [])
 
-  if (loading) {
+  if (isPending || !overview || !chartData) {
+    if (isPending) {
+      return (
+        <div className="flex h-[70vh] w-full items-center justify-center">
+          <div className="flex flex-col items-center gap-4 text-center">
+            <Spinner className="size-8 text-primary" />
+            <p className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
+              Fetching Analytics & Charts...
+            </p>
+          </div>
+        </div>
+      )
+    }
+
     return (
       <div className="flex h-[70vh] w-full items-center justify-center">
-        <div className="flex flex-col items-center gap-4 text-center">
-          <Spinner className="size-8 text-primary" />
-          <p className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
-            Fetching Analytics & Charts...
-          </p>
-        </div>
+        <p className="text-xs text-muted-foreground">
+          Failed to load dashboard data.
+        </p>
       </div>
     )
   }
 
-  const currentOverview = overview || fallbackOverview
-  const currentChart = chartData.length > 0 ? chartData : fallbackChart
-
   return (
     <div className="flex flex-col gap-8 text-left">
-      {/* Header section */}
-      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-        <div>
-          <h1 className="font-heading text-3xl font-extrabold tracking-tight text-foreground">
-            Overview
-          </h1>
-          <p className="text-xs text-muted-foreground">
-            Realtime shop metrics, monthly revenue trends, and operations health
-            tracker.
-          </p>
-        </div>
-        {usingFallback && (
-          <Badge
-            variant="outline"
-            className="self-start text-xs font-semibold tracking-wider uppercase"
-          >
-            Offline Demo Mode - Showing Editorial Mock Data
-          </Badge>
-        )}
-      </div>
+      <PageHeader
+        title="Overview"
+        description="Realtime shop metrics, monthly revenue trends, and operations health tracker."
+      />
 
       {/* Grid of stats cards */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -142,11 +111,11 @@ export const DashboardPage = () => {
           </CardHeader>
           <CardContent className="pt-2">
             <div className="text-2xl font-extrabold tracking-tight text-foreground">
-              {formatPrice(currentOverview.revenue.total)}
+              {formatPrice(overview.revenue.total)}
             </div>
             <p className="mt-1 text-[10px] text-muted-foreground">
               <span className="font-bold text-primary">
-                {formatPrice(currentOverview.revenue.this_month)}
+                {formatPrice(overview.revenue.this_month)}
               </span>{" "}
               this month
             </p>
@@ -165,13 +134,13 @@ export const DashboardPage = () => {
           </CardHeader>
           <CardContent className="pt-2">
             <div className="text-2xl font-extrabold tracking-tight text-foreground">
-              {currentOverview.orders.total}
+              {overview.orders.total}
             </div>
             <p className="mt-1 text-[10px] text-muted-foreground">
               <span className="font-semibold text-foreground">
-                {currentOverview.orders.pending} pending
+                {overview.orders.pending} pending
               </span>{" "}
-              • {currentOverview.orders.processing} processing
+              • {overview.orders.processing} processing
             </p>
           </CardContent>
         </Card>
@@ -188,18 +157,18 @@ export const DashboardPage = () => {
           </CardHeader>
           <CardContent className="pt-2">
             <div className="text-2xl font-extrabold tracking-tight text-foreground">
-              {currentOverview.customers.total}
+              {overview.customers.total}
             </div>
             <p className="mt-1 text-[10px] text-muted-foreground">
               <span className="font-bold text-primary">
-                +{currentOverview.customers.new_this_month}
+                +{overview.customers.new_this_month}
               </span>{" "}
               brand new signups
             </p>
           </CardContent>
         </Card>
 
-        {/* Out of Stock Products */}
+        {/* Product Stocks */}
         <Card className="border border-border/60 shadow-sm transition-shadow hover:shadow-md">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
@@ -211,18 +180,19 @@ export const DashboardPage = () => {
           </CardHeader>
           <CardContent className="pt-2">
             <div className="text-2xl font-extrabold tracking-tight text-foreground">
-              {currentOverview.products.total}
+              {overview.products.total}
             </div>
-            <p className="mt-1 text-[10px] text-muted-foreground">
-              {currentOverview.products.out_of_stock > 0 ? (
+            <div className="mt-1 text-[10px] text-muted-foreground">
+              {overview.products.out_of_stock > 0 ? (
                 <span className="font-bold text-destructive">
-                  {currentOverview.products.out_of_stock} variant(s)
-                  out-of-stock
+                  {overview.products.out_of_stock} variant(s) out-of-stock
                 </span>
               ) : (
-                <Badge variant="default">All products in-stock</Badge>
+                <Badge variant="default" className="py-0 h-4 text-[9px]">
+                  All products in-stock
+                </Badge>
               )}
-            </p>
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -241,7 +211,7 @@ export const DashboardPage = () => {
           </CardHeader>
           <CardContent className="h-80 min-h-80 pl-2">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={currentChart}>
+              <BarChart data={chartData}>
                 <CartesianGrid
                   strokeDasharray="3 3"
                   vertical={false}
@@ -266,12 +236,8 @@ export const DashboardPage = () => {
                     formatPrice(Number(value)),
                     "Revenue",
                   ]}
-                  contentStyle={{
-                    backgroundColor: "hsl(var(--background))",
-                    borderColor: "hsl(var(--border))",
-                    borderRadius: "0.25rem",
-                  }}
-                  labelStyle={{ fontSize: "11px", fontWeight: "bold" }}
+                  contentStyle={TOOLTIP_CONTENT_STYLE}
+                  labelStyle={TOOLTIP_LABEL_STYLE}
                 />
                 <Bar
                   dataKey="revenue"
@@ -296,7 +262,7 @@ export const DashboardPage = () => {
           </CardHeader>
           <CardContent className="h-80 min-h-80 pl-2">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={currentChart}>
+              <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="orderGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop
@@ -330,16 +296,9 @@ export const DashboardPage = () => {
                   axisLine={false}
                 />
                 <Tooltip
-                  formatter={(value) => [
-                    value,
-                    "Orders Count",
-                  ]}
-                  contentStyle={{
-                    backgroundColor: "hsl(var(--background))",
-                    borderColor: "hsl(var(--border))",
-                    borderRadius: "0.25rem",
-                  }}
-                  labelStyle={{ fontSize: "11px", fontWeight: "bold" }}
+                  formatter={(value) => [value, "Orders Count"]}
+                  contentStyle={TOOLTIP_CONTENT_STYLE}
+                  labelStyle={TOOLTIP_LABEL_STYLE}
                 />
                 <Area
                   type="monotone"
