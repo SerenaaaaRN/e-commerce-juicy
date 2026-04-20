@@ -5,7 +5,7 @@ import { Footer } from "@/components/layout/Footer"
 import { HomePage } from "@/features/home/HomePage"
 import { CollectionPage } from "@/features/shop/CollectionPage"
 import { ProductPage } from "@/features/shop/ProductPage"
-import { LoginPage } from "@/features/auth/LoginPage"
+import { LoginPageCust } from "@/features/auth/LoginPageCust"
 import { RegisterPage } from "@/features/auth/RegisterPage"
 import { ProfilePage } from "@/features/profile/ProfilePage"
 import { CartPage } from "@/features/cart/CartPage"
@@ -16,7 +16,7 @@ import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
 
 // Admin Routes & Guards
-import { LoginPage as AdminLoginPage } from "@/features/admin/LoginPage"
+import { LoginPageAdmin } from "@/features/auth/LoginPageAdmin"
 import { AdminRoute } from "@/features/admin/components/AdminRoute"
 import { AdminLayout } from "@/components/layout/AdminLayout"
 import { DashboardPage } from "@/features/admin/DashboardPage"
@@ -58,11 +58,11 @@ const AppContent = () => {
           <Route path="/orders" element={<OrderHistoryPage />} />
           <Route path="/orders/:orderNumber" element={<OrderTrackingPage />} />
           <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/login" element={<LoginPage />} />
+          <Route path="/login" element={<LoginPageCust />} />
           <Route path="/register" element={<RegisterPage />} />
 
           {/* Admin Unprotected Routes */}
-          <Route path="/admin/login" element={<AdminLoginPage />} />
+          <Route path="/admin/login" element={<LoginPageAdmin />} />
 
           {/* Protected Console Suite */}
           <Route
@@ -83,7 +83,7 @@ const AppContent = () => {
       </main>
 
       {/* Responsive Typographic Footer */}
-      {!isAdmin && <Footer />}
+      {!isAdmin ? <Footer /> : null}
 
       {/* Toast Notifications */}
       <Toaster />

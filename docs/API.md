@@ -159,6 +159,18 @@ All active categories.
 { "success": true, "data": [ { "id": "uuid", "name": "Dresses", "slug": "dresses", "display_order": 3 } ] }
 ```
 
+> **[PLANNED — Phase 7]** Response akan di-extend dengan nested subcategory dan product count:
+> ```json
+> {
+>   "id": "uuid", "name": "Dresses", "slug": "dresses", "display_order": 3,
+>   "parent_id": null,
+>   "product_count": 24,
+>   "children": [
+>     { "id": "uuid", "name": "Maxi Dresses", "slug": "maxi-dresses", "parent_id": "...", "product_count": 8 }
+>   ]
+> }
+> ```
+
 ---
 
 #### `GET /shop/products`
@@ -170,6 +182,8 @@ All available products. Supports filtering, sorting, and pagination.
 - `tag` — single tag string (e.g. `new-arrival`)
 - `sort` — `price_asc | price_desc | newest | popular`
 - `page`, `per_page`
+- `sizes` — **[PLANNED — Phase 7]** comma-separated size filter (e.g. `sizes=S,M,L`). Filters products that have at least one active variant matching any of the specified sizes.
+- `search` — **[PLANNED — Phase 7]** keyword search across `name` and `description` fields (ILIKE).
 
 ```json
 // Response 200 (paginated)

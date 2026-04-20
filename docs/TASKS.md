@@ -282,6 +282,49 @@
 
 ---
 
+## Phase 7 — Shop Experience Enhancement (Zalora-Style) 📋
+
+> **Status:** Planned — belum diimplementasi.
+> **Prerequisite:** Phase 4 & 6 selesai, backend running.
+> **Referensi:** Zalora, ASOS — advanced filtering & browsing UX.
+
+### 7.1 Backend — Subcategory Support
+- [ ] Migration 013: Tambah `parent_id UUID REFERENCES categories(id)` ke `categories` table
+- [ ] Update `Category` model + DTO — tambah `parent_id`, `children` field
+- [ ] Update `CategoryRepository` — support tree query (parent + children)
+- [ ] Update `GET /api/shop/categories` — return nested structure dengan `children[]`
+- [ ] Update `GET /api/admin/categories` — support `parent_id` di CRUD
+
+### 7.2 Backend — Advanced Product Filters
+- [ ] Tambah query params di `ListProducts` handler:
+  - `sizes` — comma-separated size filter (e.g. `sizes=S,M,L`)
+  - `search` — full-text search di `name` + `description` (ILIKE)
+- [ ] Update `ProductRepository` — join `product_variants` untuk size filtering
+- [ ] Tambah `product_count` per category di `GET /api/shop/categories` response
+
+### 7.3 Frontend — Search Bar
+- [ ] `src/components/layout/Navbar.tsx` — tambah search input di header
+- [ ] Search triggers navigation ke `/shop?search=<query>`
+- [ ] Debounced input (300ms) untuk autocomplete feel
+
+### 7.4 Frontend — Enhanced ProductFilters
+- [ ] Size filter: multi-select checkboxes/pills (XS, S, M, L, XL, XXL)
+- [ ] Subcategory support: collapsible tree di sidebar
+- [ ] Product count badge `(24)` di sebelah nama kategori
+
+### 7.5 Frontend — Grid & Scroll Enhancements
+- [ ] Grid toggle button (2-column / 4-column view) di toolbar CollectionPage
+- [ ] Infinite scroll sebagai alternatif pagination (`IntersectionObserver`)
+- [ ] Skeleton loader improvements untuk infinite scroll
+
+### 7.6 QA & Polish
+- [ ] Verify semua filter params sync ke URL (`useSearchParams`)
+- [ ] Verify mobile responsive — Sheet drawer untuk filters tetap works
+- [ ] Run production build — zero TypeScript errors
+- [ ] Test edge cases: empty results, reset filters, back navigation
+
+---
+
 ## Notes for AI Agents
 
 1. Baca `CONTEXT.md` dan `ARCHITECTURE.md` sebelum mulai phase apapun.

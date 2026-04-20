@@ -58,6 +58,14 @@
 - Mobile app.
 - Real-time inventory sync.
 
+### Planned (Phase 7 — Shop Experience Enhancement)
+- Subcategory hierarchy (`parent_id` on categories table).
+- Size filter (multi-select, join `product_variants`).
+- Text search bar di Navbar (ILIKE on `name` + `description`).
+- Product count per category di category listing.
+- Grid toggle (2-column / 4-column) di CollectionPage.
+- Infinite scroll sebagai alternatif pagination.
+
 ---
 
 ## Tech Stack
@@ -99,6 +107,7 @@
 | 4 | 🔄 In Progress | Public frontend — Landing, Collection, PDP, Cart, Checkout, Order Tracking |
 | 5 | 🔄 In Progress | Customer auth frontend — Register, Login, Profile, Order History |
 | 6 | [ ] | Deployment to Railway |
+| 7 | 📋 Planned | Shop Experience Enhancement — subcategories, size filter, search, grid toggle, infinite scroll |
 
 ---
 

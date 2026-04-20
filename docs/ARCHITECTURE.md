@@ -56,7 +56,7 @@ client/
 │   │   │   ├── components/
 │   │   │   │   ├── ProductCard.tsx           # Card produk: gambar, nama, harga, badge
 │   │   │   │   ├── ProductGrid.tsx           # Grid layout untuk list produk
-│   │   │   │   ├── ProductFilters.tsx        # Filter sidebar: kategori, sort, price range
+│   │   │   │   ├── ProductFilters.tsx        # Filter sidebar: kategori, sort + [PLANNED: subcategory tree, size filter, product count]
 │   │   │   │   ├── ProductImageGallery.tsx   # Main image + thumbnail strip
 │   │   │   │   ├── VariantSelector.tsx       # Size pills + color swatches; OOS state
 │   │   │   │   ├── AddToCartButton.tsx       # Button dengan stock check + loading state
@@ -64,8 +64,10 @@ client/
 │   │   │   │   ├── ReviewsSection.tsx        # Review list + pagination di PDP
 │   │   │   │   ├── ReviewCard.tsx            # Satu review: avatar, rating, body, date
 │   │   │   │   └── StarRating.tsx            # Reusable — display mode + interactive mode
+│   │   │   │   ├── SizeFilter.tsx            # [PLANNED] Multi-select size pills (XS–XXL)
+│   │   │   │   └── GridToggle.tsx            # [PLANNED] Toggle 2-column / 4-column grid view
 │   │   │   ├── types.ts                      # ProductFilters, SortOption, GalleryImage
-│   │   │   ├── CollectionPage.tsx            # /shop — grid + filter + sort + pagination
+│   │   │   ├── CollectionPage.tsx            # /shop — grid + filter + sort + pagination [PLANNED: infinite scroll, grid toggle]
 │   │   │   └── ProductPage.tsx               # /shop/:slug — PDP lengkap
 │   │   │
 │   │   ├── cart/                         # Cart
@@ -151,7 +153,7 @@ client/
 │   │   │   ├── separator.tsx
 │   │   │   └── ...other
 │   │   ├── layout/
-│   │   │   ├── Navbar.tsx                # Public nav: logo + links + cart icon + auth
+│   │   │   ├── Navbar.tsx                # Public nav: logo + links + cart icon + auth [PLANNED: search bar]
 │   │   │   ├── Footer.tsx
 │   │   │   └── AdminLayout.tsx           # Sidebar + Header wrapper untuk admin
 │   │   └── common/

@@ -1,31 +1,56 @@
-import { useTransition } from "react"
-import { useNavigate } from "react-router-dom"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
+import { Link } from "react-router-dom"
+import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { FieldGroup, Field, FieldLabel, FieldError } from "@/components/ui/field"
-import { useCustomerAuthStore } from "@/stores/customerAuthStore"
-import { customerApi } from "@/lib/api/customer"
 import { Spinner } from "@/components/ui/spinner"
-import { toast } from "sonner"
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+  FieldSeparator,
+  FieldError,
+} from "@/components/ui/field"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { AppleIcon, GoogleIcon } from "@hugeicons/core-free-icons"
+import { loginSchema } from "@/features/auth/validations"
+import type { LoginFormValues } from "@/features/auth/types"
 
-const loginSchema = z.object({
-  email: z
-    .string()
-    .min(1, "Email address is required")
-    .email("Please enter a valid email address"),
-  password: z.string().min(1, "Password is required"),
-})
+type LoginFormProps = {
+  onSubmit: (data: LoginFormValues) => void
+  isPending?: boolean
+  emailLabel?: string
+  emailPlaceholder?: string
+  passwordLabel?: string
+  passwordPlaceholder?: string
+  submitText?: string
+  submittingText?: string
+  showForgotPassword?: boolean
+  forgotPasswordUrl?: string
+  showSocialLogins?: boolean
+  registerUrl?: string
+  registerText?: string
+} & Omit<React.ComponentPropsWithoutRef<"form">, "onSubmit">
 
-type LoginFormValues = z.infer<typeof loginSchema>
-
-export const LoginForm = () => {
-  const navigate = useNavigate()
-  const { login } = useCustomerAuthStore()
-  const [isPending, startTransition] = useTransition()
-
+export const LoginForm = ({
+  onSubmit,
+  isPending = false,
+  emailLabel = "Email Address",
+  emailPlaceholder = "you@example.com",
+  passwordLabel = "Password",
+  passwordPlaceholder = "••••••••",
+  submitText = "Sign In to Account",
+  submittingText = "Authenticating...",
+  showForgotPassword = false,
+  forgotPasswordUrl = "/forgot-password",
+  showSocialLogins = false,
+  registerUrl,
+  registerText = "Don't have an account? Create Account",
+  className,
+  ...props
+}: LoginFormProps) => {
   const {
     register,
     handleSubmit,
@@ -38,35 +63,20 @@ export const LoginForm = () => {
     },
   })
 
-  const onSubmit = (data: LoginFormValues) => {
-    startTransition(async () => {
-      try {
-        const res = await customerApi.login(data)
-        if (res.success && res.data) {
-          const { token, customer } = res.data
-          login(token, customer)
-          toast.success(`Welcome back, ${customer.full_name}!`)
-          navigate("/shop")
-        } else {
-          toast.error(res.message || "Invalid credentials. Please try again.")
-        }
-      } catch {
-        toast.error("Failed to authenticate. Please check your credentials.")
-      }
-    })
-  }
-
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="text-left w-full">
-      <FieldGroup className="gap-6">
-        
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className={cn("w-full text-left", className)}
+      {...props}
+    >
+      <FieldGroup className="gap-4">
         {/* Email Field */}
         <Field data-invalid={!!errors.email}>
-          <FieldLabel htmlFor="email">Email Address</FieldLabel>
+          <FieldLabel htmlFor="email">{emailLabel}</FieldLabel>
           <Input
             id="email"
             type="email"
-            placeholder="you@example.com"
+            placeholder={emailPlaceholder}
             autoComplete="email"
             aria-invalid={!!errors.email}
             {...register("email")}
@@ -76,13 +86,21 @@ export const LoginForm = () => {
 
         {/* Password Field */}
         <Field data-invalid={!!errors.password}>
-          <div className="flex justify-between items-center w-full">
-            <FieldLabel htmlFor="password">Password</FieldLabel>
+          <div className="flex items-center justify-between">
+            <FieldLabel htmlFor="password">{passwordLabel}</FieldLabel>
+            {showForgotPassword && forgotPasswordUrl && (
+              <Link
+                to={forgotPasswordUrl}
+                className="ml-auto text-xs text-muted-foreground underline-offset-2 hover:underline"
+              >
+                Forgot your password?
+              </Link>
+            )}
           </div>
           <Input
             id="password"
             type="password"
-            placeholder="••••••••"
+            placeholder={passwordPlaceholder}
             autoComplete="current-password"
             aria-invalid={!!errors.password}
             {...register("password")}
@@ -90,17 +108,44 @@ export const LoginForm = () => {
           {errors.password && <FieldError>{errors.password.message}</FieldError>}
         </Field>
 
-        {/* Action Trigger */}
-        <Button
-          type="submit"
-          disabled={isPending}
-          size="lg"
-          className="w-full mt-2 font-medium uppercase tracking-widest text-xs py-6 h-auto cursor-pointer"
-        >
-          {isPending && <Spinner data-icon="inline-start" />}
-          {isPending ? "Authenticating..." : "Sign In to Account"}
-        </Button>
+        {/* Submit Button */}
+        <Field className="mt-2">
+          <Button type="submit" disabled={isPending} className="w-full">
+            {isPending && <Spinner data-icon="inline-start" />}
+            {isPending ? submittingText : submitText}
+          </Button>
+        </Field>
 
+        {/* OAuth Separator */}
+        {showSocialLogins ? (
+          <>
+            <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card text-xs text-muted-foreground">
+              Or continue with
+            </FieldSeparator>
+
+            {/* OAuth Buttons */}
+            <Field className="grid grid-cols-2 gap-4">
+              <Button variant="outline" type="button" className="cursor-pointer">
+                <HugeiconsIcon icon={AppleIcon} />
+                <span className="sr-only">Login with Apple</span>
+              </Button>
+              <Button variant="outline" type="button" className="cursor-pointer">
+                <HugeiconsIcon icon={GoogleIcon} />
+                <span className="sr-only">Login with Google</span>
+              </Button>
+            </Field>
+          </>
+        ): null}
+
+        {/* Link to Register */}
+        {registerUrl ? (
+          <FieldDescription className="text-center text-xs mt-2">
+            Don&apos;t have an account?{" "}
+            <Link to={registerUrl} className="text-primary font-bold hover:underline">
+              Create Account
+            </Link>
+          </FieldDescription>
+        ):null}
       </FieldGroup>
     </form>
   )

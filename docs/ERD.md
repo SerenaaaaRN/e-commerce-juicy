@@ -65,6 +65,9 @@
 │ created_at           │ TSTZ    │ compare_at_price                 │ NUMERIC(12,2) -- original/crossed-out price
 │ updated_at           │ TSTZ    │ is_available                     │ BOOLEAN DEFAULT true
 └──────────┬───────────┘         │ is_featured                      │ BOOLEAN DEFAULT false
+
+> **[PLANNED — Phase 7]** `categories` table akan ditambah:
+> - `parent_id UUID REFERENCES categories(id) ON DELETE SET NULL` — self-referencing FK untuk subcategory hierarchy.
            │                     │ tags                             │ JSONB DEFAULT '[]'
            │ 1                   │ display_order                    │ INT DEFAULT 0
            └────────────────────►│ created_at                       │ TIMESTAMPTZ
@@ -194,6 +197,7 @@ CREATE TYPE payment_status AS ENUM (
 | 010 | `create_orders` | Orders table |
 | 011 | `create_order_items` | Order line items table |
 | 012 | `create_reviews` | Product reviews table |
+| 013 | `alter_categories_add_parent_id` | **[PLANNED]** Add `parent_id` for subcategory hierarchy |
 
 ---
 
@@ -404,6 +408,14 @@ CREATE TABLE reviews (
 
 CREATE INDEX idx_reviews_product_id ON reviews(product_id);
 CREATE INDEX idx_reviews_customer_id ON reviews(customer_id);
+```
+
+### 013 — Alter Categories Add Parent ID **[PLANNED]**
+```sql
+ALTER TABLE categories
+  ADD COLUMN parent_id UUID REFERENCES categories(id) ON DELETE SET NULL;
+
+CREATE INDEX idx_categories_parent_id ON categories(parent_id);
 ```
 
 ---

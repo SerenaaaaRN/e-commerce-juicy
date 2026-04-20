@@ -1,11 +1,6 @@
-export type LoginFormValues = {
-  email: string
-  password?: string
-}
+import { z } from "zod"
+import { loginSchema, registerSchema } from "./validations"
 
-export type RegisterFormValues = {
-  email: string
-  password?: string
-  full_name: string
-  phone?: string
-}
+export type LoginFormValues = z.infer<typeof loginSchema>
+export type RegisterFormValues = z.infer<typeof registerSchema>
+
