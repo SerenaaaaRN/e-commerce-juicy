@@ -41,8 +41,10 @@ func (s *productService) ListProducts(
 	sort string,
 	page, perPage int,
 	includeUnavailable bool,
+	sizes []string,
+	search string,
 ) ([]dto.ProductResponse, int64, error) {
-	products, total, err := s.repo.FindAll(ctx, categorySlug, featuredOnly, tag, sort, page, perPage, includeUnavailable)
+	products, total, err := s.repo.FindAll(ctx, categorySlug, featuredOnly, tag, sort, page, perPage, includeUnavailable, sizes, search)
 	if err != nil {
 		return nil, 0, err
 	}

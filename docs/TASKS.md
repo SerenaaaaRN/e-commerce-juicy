@@ -328,16 +328,15 @@
 ## Notes for AI Agents
 
 1. Baca `CONTEXT.md` dan `ARCHITECTURE.md` sebelum mulai phase apapun.
-2. `DESIGN.md` sudah retired — jangan gunakan. UI menggunakan shadcn/ui default dengan accent terracotta `#b5633a`.
-3. `ERD.md` hanya relevan di Phase 1 & 2 — schema sudah settled.
-4. Referensi `API.md` untuk field names — jangan tebak sendiri.
-5. Referensi `ENV.md` untuk nama env var — jangan hardcode nilai apapun.
-6. Kerjakan satu subphase per sesi.
-7. Semua Go struct wajib punya GORM tag + JSON tag.
-8. Semua React component wajib typed — gunakan `type` bukan `interface` untuk props dan form values. Tidak ada `any`.
-9. Folder baru diletakkan sesuai `ARCHITECTURE.md` — jangan improvisasi struktur.
-10. Response backend selalu pakai envelope: `{ success, data, message/error }`.
-11. **Admin auth dan Customer auth adalah dua flow terpisah** — JWT secret berbeda, middleware berbeda, Zustand store berbeda, Axios instance berbeda.
-12. **Stock decrement selalu dalam transaction** — `SELECT FOR UPDATE` sebelum decrement.
-13. **Order items wajib snapshot** — salin `product_name`, `variant_size`, `variant_color`, `image_url`, `unit_price` saat order dibuat.
-14. **Reviews wajib purchase-verified** — validasi `order_id` milik customer + order status `delivered`.
+2. `ERD.md` hanya relevan di Phase 1 & 2 — schema sudah settled.
+3. Referensi `API.md` untuk field names — jangan tebak sendiri.
+4. Referensi `ENV.md` untuk nama env var — jangan hardcode nilai apapun.
+5. Kerjakan satu subphase per sesi.
+6. Semua Go struct wajib punya GORM tag + JSON tag.
+7. Semua React component wajib typed — gunakan `type` bukan `interface` untuk props dan form values. Tidak ada `any`.
+8. Folder baru diletakkan sesuai `ARCHITECTURE.md` — jangan improvisasi struktur.
+9. Response backend selalu pakai envelope: `{ success, data, message/error }`.
+10. **Admin auth dan Customer auth adalah dua flow terpisah** — JWT secret berbeda, middleware berbeda, Zustand store berbeda, Axios instance berbeda.
+11. **Stock decrement selalu dalam transaction** — `SELECT FOR UPDATE` sebelum decrement.
+12. **Order items wajib snapshot** — salin `product_name`, `variant_size`, `variant_color`, `image_url`, `unit_price` saat order dibuat.
+13. **Reviews wajib purchase-verified** — validasi `order_id` milik customer + order status `delivered`.

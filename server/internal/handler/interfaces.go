@@ -36,7 +36,7 @@ type AddressService interface {
 }
 
 type CategoryService interface {
-	ListActiveCategories(ctx context.Context) ([]model.Category, error)
+	ListActiveCategories(ctx context.Context) ([]dto.CategoryTreeResponse, error)
 	ListAllCategories(ctx context.Context) ([]model.Category, error)
 	GetCategoryByID(ctx context.Context, id uuid.UUID) (*model.Category, error)
 	CreateCategory(ctx context.Context, req dto.CategoryRequest) (*model.Category, error)
@@ -45,7 +45,7 @@ type CategoryService interface {
 }
 
 type ProductService interface {
-	ListProducts(ctx context.Context, categorySlug string, featuredOnly bool, tag string, sort string, page, perPage int, includeUnavailable bool) ([]dto.ProductResponse, int64, error)
+	ListProducts(ctx context.Context, categorySlug string, featuredOnly bool, tag string, sort string, page, perPage int, includeUnavailable bool, sizes []string, search string) ([]dto.ProductResponse, int64, error)
 	GetProductBySlug(ctx context.Context, slug string) (*dto.ProductDetailResponse, error)
 	GetProductByID(ctx context.Context, id uuid.UUID) (*dto.ProductDetailResponse, error)
 	CreateProduct(ctx context.Context, product *model.Product) (*model.Product, error)

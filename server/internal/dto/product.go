@@ -7,11 +7,24 @@ import (
 )
 
 type CategoryRequest struct {
-	Name         string  `json:"name" binding:"required"`
-	Slug         string  `json:"slug" binding:"required"`
-	Description  *string `json:"description" binding:"omitempty"`
-	DisplayOrder int     `json:"display_order"`
-	IsActive     bool    `json:"is_active"`
+	Name         string     `json:"name" binding:"required"`
+	Slug         string     `json:"slug" binding:"required"`
+	Description  *string    `json:"description" binding:"omitempty"`
+	DisplayOrder int        `json:"display_order"`
+	IsActive     bool       `json:"is_active"`
+	ParentID     *uuid.UUID `json:"parent_id" binding:"omitempty"`
+}
+
+type CategoryTreeResponse struct {
+	ID           uuid.UUID              `json:"id"`
+	Name         string                 `json:"name"`
+	Slug         string                 `json:"slug"`
+	Description  *string                `json:"description,omitempty"`
+	DisplayOrder int                    `json:"display_order"`
+	IsActive     bool                   `json:"is_active"`
+	ParentID     *uuid.UUID             `json:"parent_id"`
+	ProductCount int64                  `json:"product_count"`
+	Children     []CategoryTreeResponse `json:"children,omitempty"`
 }
 
 type ProductVariantRequest struct {

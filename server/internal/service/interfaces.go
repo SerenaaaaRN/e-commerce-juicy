@@ -41,7 +41,7 @@ type CategoryRepository interface {
 }
 
 type ProductRepository interface {
-	FindAll(ctx context.Context, categorySlug string, featuredOnly bool, tag string, sort string, page, perPage int, includeUnavailable bool) ([]model.Product, int64, error)
+	FindAll(ctx context.Context, categorySlug string, featuredOnly bool, tag string, sort string, page, perPage int, includeUnavailable bool, sizes []string, search string) ([]model.Product, int64, error)
 	FindBySlug(ctx context.Context, slug string) (*model.Product, error)
 	FindByID(ctx context.Context, id uuid.UUID) (*model.Product, error)
 	Create(ctx context.Context, product *model.Product) error

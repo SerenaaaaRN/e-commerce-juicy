@@ -12,6 +12,7 @@ import (
 	"github.com/SerenaaaaRN/juicy/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"strings"
 )
 
 type ProductHandler struct {
@@ -40,7 +41,17 @@ func (h *ProductHandler) ListProducts(c *gin.Context) {
 		includeUnavailable = true
 	}
 
-	products, total, err := h.srv.ListProducts(c.Request.Context(), category, featured, tag, sort, page, perPage, includeUnavailable)
+	var sizes []string
+	if sizesStr := c.Query("sizes"); sizesStr != "" {
+		for _, s := range strings.Split(sizesStr, ",") {
+			if trimmed := strings.TrimSpace(s); trimmed != "" {
+				sizes = append(sizes, trimmed)
+			}
+		}
+	}
+	search := c.Query("search")
+
+	products, total, err := h.srv.ListProducts(c.Request.Context(), category, featured, tag, sort, page, perPage, includeUnavailable, sizes, search)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
@@ -51,13 +62,19 @@ func (h *ProductHandler) ListProducts(c *gin.Context) {
 		return
 	}
 
+	totalPages := (int(total) + perPage - 1) / perPage
+	if totalPages == 0 {
+		totalPages = 1
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"data":    products,
 		"meta": gin.H{
-			"total":    total,
-			"page":     page,
-			"per_page": perPage,
+			"total":       total,
+			"page":        page,
+			"per_page":    perPage,
+			"total_pages": totalPages,
 		},
 	})
 }

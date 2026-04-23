@@ -25,6 +25,8 @@ func (r *productRepo) FindAll(
 	sort string,
 	page, perPage int,
 	includeUnavailable bool,
+	sizes []string,
+	search string,
 ) ([]model.Product, int64, error) {
 	var products []model.Product
 	var total int64
@@ -36,8 +38,37 @@ func (r *productRepo) FindAll(
 	}
 
 	if categorySlug != "" {
-		query = query.Joins("JOIN categories ON categories.id = products.category_id").
-			Where("categories.slug = ?", categorySlug)
+		var cat model.Category
+		if err := r.db.WithContext(ctx).Where("slug = ?", categorySlug).First(&cat).Error; err == nil {
+			var descendants []uuid.UUID
+			err = r.db.WithContext(ctx).Raw(`
+				WITH RECURSIVE cat_tree AS (
+					SELECT id FROM categories WHERE id = ?
+					UNION ALL
+					SELECT c.id FROM categories c
+					JOIN cat_tree ct ON c.parent_id = ct.id
+				)
+				SELECT id FROM cat_tree
+			`, cat.ID).Scan(&descendants).Error
+
+			if err == nil && len(descendants) > 0 {
+				query = query.Where("category_id IN ?", descendants)
+			} else {
+				query = query.Where("category_id = ?", cat.ID)
+			}
+		} else {
+			query = query.Joins("JOIN categories ON categories.id = products.category_id").
+				Where("categories.slug = ?", categorySlug)
+		}
+	}
+
+	if len(sizes) > 0 {
+		query = query.Where("EXISTS (SELECT 1 FROM product_variants pv WHERE pv.product_id = products.id AND pv.is_active = ? AND pv.size IN ?)", true, sizes)
+	}
+
+	if search != "" {
+		searchTerm := "%" + strings.ToLower(search) + "%"
+		query = query.Where("LOWER(products.name) LIKE ? OR LOWER(products.description) LIKE ?", searchTerm, searchTerm)
 	}
 
 	if featuredOnly {

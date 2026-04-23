@@ -54,7 +54,7 @@ func main() {
 	adminService := service.NewAdminService(adminRepo, cfg)
 	customerService := service.NewCustomerService(customerRepo, cfg)
 	addressService := service.NewAddressService(addressRepo)
-	categoryService := service.NewCategoryService(categoryRepo)
+	categoryService := service.NewCategoryService(categoryRepo, db)
 	productService := service.NewProductService(productRepo, cldService, db)
 	cartService := service.NewCartService(cartRepo, productRepo)
 	orderService := service.NewOrderService(orderRepo, cartRepo, addressRepo, productRepo, customerRepo, emailService, worker, db)
