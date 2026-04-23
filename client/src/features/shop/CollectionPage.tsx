@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useEffect, useState, useRef } from "react"
 import { useSearchParams } from "react-router-dom"
 import { useProductStore } from "@/stores/productStore"
 import { ProductFilters } from "./components/ProductFilters"
@@ -16,29 +16,88 @@ import {
 } from "@/components/ui/pagination"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { FilterIcon } from "@hugeicons/core-free-icons"
+import { cn } from "@/lib/utils"
 
 export const CollectionPage = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const { products, categories, meta, isLoading, fetchCategories, fetchProducts } = useProductStore()
 
+  // Local toolbar preferences
+  const [cols, setCols] = useState<2 | 4>(4)
+  const [isInfiniteScroll, setIsInfiniteScroll] = useState(false)
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
+
   // Parse parameters from search params
   const currentCategory = searchParams.get("category") || ""
-  const currentSort = (searchParams.get("sort") as "price_asc" | "price_desc" | "newest" | "popular" | "") || ""
+  const currentSort = (searchParams.get("sort") as any) || ""
   const currentPage = Number(searchParams.get("page")) || 1
-  const perPage = 6
+  const currentSizesStr = searchParams.get("sizes") || ""
+  const currentSearch = searchParams.get("search") || ""
+  const perPage = 8
+
+  const currentSizes = currentSizesStr ? currentSizesStr.split(",") : []
 
   useEffect(() => {
     fetchCategories()
   }, [fetchCategories])
 
+  // Sync main product fetching
   useEffect(() => {
-    fetchProducts({
-      category: currentCategory || undefined,
-      sort: currentSort || undefined,
-      page: currentPage,
-      per_page: perPage,
-    })
-  }, [fetchProducts, currentCategory, currentSort, currentPage])
+    // If infinite scroll is on and page > 1, the IntersectionObserver sentinel handles fetching the next page,
+    // so we skip this flat fetch to avoid replacing our accumulated list.
+    if (isInfiniteScroll && currentPage > 1) {
+      return
+    }
+
+    fetchProducts(
+      {
+        category: currentCategory || undefined,
+        sort: currentSort || undefined,
+        sizes: currentSizesStr || undefined,
+        search: currentSearch || undefined,
+        page: currentPage,
+        per_page: perPage,
+      },
+      false
+    )
+  }, [fetchProducts, currentCategory, currentSort, currentSizesStr, currentSearch, currentPage, isInfiniteScroll])
+
+  // Infinite Scroll sentinel observer
+  useEffect(() => {
+    if (!isInfiniteScroll || !meta || meta.page >= meta.total_pages) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isLoading) {
+          const nextPage = meta.page + 1
+
+          fetchProducts(
+            {
+              category: currentCategory || undefined,
+              sort: currentSort || undefined,
+              sizes: currentSizesStr || undefined,
+              search: currentSearch || undefined,
+              page: nextPage,
+              per_page: perPage,
+            },
+            true // append products
+          )
+
+          // Keep URL parameter in sync
+          const updated = new URLSearchParams(searchParams)
+          updated.set("page", String(nextPage))
+          setSearchParams(updated, { replace: true })
+        }
+      },
+      { threshold: 0.1 }
+    )
+
+    if (sentinelRef.current) {
+      observer.observe(sentinelRef.current)
+    }
+
+    return () => observer.disconnect()
+  }, [isInfiniteScroll, meta, isLoading, searchParams, setSearchParams, fetchProducts, currentCategory, currentSort, currentSizesStr, currentSearch])
 
   // Helper to update query params
   const updateParams = (newParams: Record<string, string | number | null>) => {
@@ -50,8 +109,8 @@ export const CollectionPage = () => {
         updated.set(key, String(val))
       }
     })
-    // Reset page to 1 on category/sort change
-    if (newParams.category !== undefined || newParams.sort !== undefined) {
+    // Reset page to 1 on category/sort/sizes change
+    if (newParams.category !== undefined || newParams.sort !== undefined || newParams.sizes !== undefined || newParams.search !== undefined) {
       updated.set("page", "1")
     }
     setSearchParams(updated)
@@ -61,8 +120,12 @@ export const CollectionPage = () => {
     updateParams({ category })
   }
 
-  const handleSortChange = (sort: "price_asc" | "price_desc" | "newest" | "popular" | "") => {
+  const handleSortChange = (sort: any) => {
     updateParams({ sort })
+  }
+
+  const handleSizesChange = (sizes: string[]) => {
+    updateParams({ sizes: sizes.length > 0 ? sizes.join(",") : null })
   }
 
   const handlePageChange = (page: number) => {
@@ -82,11 +145,11 @@ export const CollectionPage = () => {
           <span className="text-xs font-semibold tracking-wider text-primary uppercase">
             Atelier Curated Catalog
           </span>
-          <h1 className="text-4xl font-bold tracking-tight text-foreground">
+          <h1 className="text-4xl font-bold tracking-tight text-foreground uppercase">
             The Shop
           </h1>
           <p className="text-sm text-muted-foreground max-w-md leading-relaxed">
-            Browse our complete collection of pure raw textures and high-fashion linen silhouettes.
+            Browse our complete collection of pure raw textures and high-fashion silhouettes.
           </p>
         </div>
 
@@ -103,52 +166,143 @@ export const CollectionPage = () => {
               onCategoryChange={handleCategoryChange}
               selectedSort={currentSort}
               onSortChange={handleSortChange}
+              selectedSizes={currentSizes}
+              onSizesChange={handleSizesChange}
               onReset={handleReset}
             />
           </aside>
 
           {/* Main Grid Area */}
-          <main className="col-span-12 lg:col-span-9 flex flex-col gap-8">
+          <main className="col-span-12 lg:col-span-9 flex flex-col gap-6">
             
+            {/* Search results banner if active */}
+            {currentSearch && (
+              <div className="flex items-center justify-between bg-primary/5 px-4 py-3 border border-primary/20 rounded-none text-left mb-2 animate-in fade-in slide-in-from-top-1 duration-300">
+                <span className="text-xs text-foreground font-semibold">
+                  Search Results for: <span className="text-primary italic">"{currentSearch}"</span>
+                </span>
+                <button
+                  onClick={() => updateParams({ search: null, page: 1 })}
+                  className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground hover:text-foreground cursor-pointer"
+                >
+                  Clear Search
+                </button>
+              </div>
+            )}
+
             {/* Toolbar row */}
-            <div className="flex items-center justify-between bg-muted/40 px-4 py-3 border border-border rounded-md">
-              <span className="text-xs text-muted-foreground font-medium">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-muted/40 px-4 py-3 border border-border rounded-none">
+              <span className="text-xs text-muted-foreground font-medium text-left">
                 Showing {products.length} of {meta?.total || products.length} Silhouettes
               </span>
               
-              {/* Mobile filter drawer trigger */}
-              <div className="lg:hidden">
-                <Sheet>
-                  <SheetTrigger asChild>
-                    <Button variant="outline" size="sm" className="gap-2 cursor-pointer">
-                      <HugeiconsIcon icon={FilterIcon} strokeWidth={1.8} data-icon="inline-start" />
-                      Filters
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent side="left" className="w-80">
-                    <SheetHeader>
-                      <SheetTitle className="sr-only">Catalog Filters</SheetTitle>
-                    </SheetHeader>
-                    <div className="pt-6">
-                      <ProductFilters
-                        categories={categories}
-                        selectedCategory={currentCategory}
-                        onCategoryChange={handleCategoryChange}
-                        selectedSort={currentSort}
-                        onSortChange={handleSortChange}
-                        onReset={handleReset}
-                      />
-                    </div>
-                  </SheetContent>
-                </Sheet>
+              {/* Toolbar Controls */}
+              <div className="flex items-center justify-end flex-wrap gap-4">
+                {/* Grid columns toggle */}
+                <div className="hidden sm:flex items-center gap-1.5 border-r border-border pr-4">
+                  <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground mr-1">Grid:</span>
+                  <button
+                    onClick={() => setCols(2)}
+                    className={cn(
+                      "px-2.5 py-1 text-[10px] uppercase font-bold tracking-wider border cursor-pointer transition-colors duration-200 rounded-none",
+                      cols === 2
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-transparent text-muted-foreground border-border hover:border-foreground"
+                    )}
+                  >
+                    2 Cols
+                  </button>
+                  <button
+                    onClick={() => setCols(4)}
+                    className={cn(
+                      "px-2.5 py-1 text-[10px] uppercase font-bold tracking-wider border cursor-pointer transition-colors duration-200 rounded-none",
+                      cols === 4
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-transparent text-muted-foreground border-border hover:border-foreground"
+                    )}
+                  >
+                    4 Cols
+                  </button>
+                </div>
+
+                {/* Scroll Mode Toggle */}
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground mr-1">Mode:</span>
+                  <button
+                    onClick={() => {
+                      setIsInfiniteScroll(false)
+                      updateParams({ page: 1 })
+                    }}
+                    className={cn(
+                      "px-2.5 py-1 text-[10px] uppercase font-bold tracking-wider border cursor-pointer transition-colors duration-200 rounded-none",
+                      !isInfiniteScroll
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-transparent text-muted-foreground border-border hover:border-foreground"
+                    )}
+                  >
+                    Pages
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsInfiniteScroll(true)
+                      updateParams({ page: 1 })
+                    }}
+                    className={cn(
+                      "px-2.5 py-1 text-[10px] uppercase font-bold tracking-wider border cursor-pointer transition-colors duration-200 rounded-none",
+                      isInfiniteScroll
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-transparent text-muted-foreground border-border hover:border-foreground"
+                    )}
+                  >
+                    Scroll
+                  </button>
+                </div>
+
+                {/* Mobile filter drawer trigger */}
+                <div className="lg:hidden">
+                  <Sheet>
+                    <SheetTrigger asChild>
+                      <Button variant="outline" size="sm" className="gap-2 cursor-pointer h-7 text-[10px] uppercase tracking-wider rounded-none">
+                        <HugeiconsIcon icon={FilterIcon} strokeWidth={1.8} className="size-3" />
+                        Filters
+                      </Button>
+                    </SheetTrigger>
+                    <SheetContent side="left" className="w-80">
+                      <SheetHeader>
+                        <SheetTitle className="sr-only">Catalog Filters</SheetTitle>
+                      </SheetHeader>
+                      <div className="pt-6 overflow-y-auto h-full pb-10">
+                        <ProductFilters
+                          categories={categories}
+                          selectedCategory={currentCategory}
+                          onCategoryChange={handleCategoryChange}
+                          selectedSort={currentSort}
+                          onSortChange={handleSortChange}
+                          selectedSizes={currentSizes}
+                          onSizesChange={handleSizesChange}
+                          onReset={handleReset}
+                        />
+                      </div>
+                    </SheetContent>
+                  </Sheet>
+                </div>
               </div>
             </div>
 
             {/* Products Grid */}
-            <ProductGrid products={products} isLoading={isLoading} />
+            <ProductGrid products={products} isLoading={isLoading} cols={cols} />
+
+            {/* Infinite Scroll Sentinel indicator */}
+            {isInfiniteScroll && (
+              <div ref={sentinelRef} className="h-10 w-full flex items-center justify-center">
+                {isLoading && (
+                  <div className="size-5 border-2 border-t-primary border-r-transparent border-b-transparent border-l-transparent animate-spin rounded-full" />
+                )}
+              </div>
+            )}
 
             {/* Pagination Controls */}
-            {meta && meta.total_pages > 1 && (
+            {!isInfiniteScroll && meta && meta.total_pages > 1 && (
               <Pagination className="mt-8">
                 <PaginationContent>
                   

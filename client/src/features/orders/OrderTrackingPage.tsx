@@ -147,9 +147,9 @@ export const OrderTrackingPage = () => {
                 </h3>
                 <Separator />
                 <div className="flex flex-col">
-                  {order.items.map((item) => (
+                  {order.items.map((item, index) => (
                     <OrderItemRow
-                      key={item.id}
+                      key={`${item.product_name}-${item.variant_size}-${item.variant_color}-${index}`}
                       item={item}
                       orderId={order.id}
                       orderStatus={order.status}

@@ -6,11 +6,12 @@ import type { CatalogProduct } from "@/types"
 type ProductGridProps = {
   products: CatalogProduct[]
   isLoading: boolean
+  cols?: 2 | 4
 }
 
-export const ProductGrid = ({ products, isLoading }: ProductGridProps) => {
-  if (isLoading) {
-    return <ProductGridSkeleton count={6} />
+export const ProductGrid = ({ products, isLoading, cols = 4 }: ProductGridProps) => {
+  if (isLoading && products.length === 0) {
+    return <ProductGridSkeleton count={cols === 2 ? 4 : 8} />
   }
 
   if (products.length === 0) {
@@ -31,7 +32,13 @@ export const ProductGrid = ({ products, isLoading }: ProductGridProps) => {
   }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-6 lg:gap-8">
+    <div
+      className={
+        cols === 2
+          ? "grid grid-cols-1 sm:grid-cols-2 gap-8 lg:gap-12"
+          : "grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8"
+      }
+    >
       {products.map((product) => (
         <ProductCard key={product.id} product={product} />
       ))}

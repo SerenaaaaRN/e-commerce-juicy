@@ -17,7 +17,7 @@ type ProductState = {
   } | null
 
   fetchCategories: () => Promise<void>
-  fetchProducts: (params?: ProductFiltersParams) => Promise<void>
+  fetchProducts: (params?: ProductFiltersParams, append?: boolean) => Promise<void>
   fetchFeaturedProducts: () => Promise<void>
   fetchProductBySlug: (slug: string) => Promise<void>
   clearCurrentProduct: () => void
@@ -46,12 +46,16 @@ export const useProductStore = create<ProductState>((set) => ({
     }
   },
 
-  fetchProducts: async (params) => {
+  fetchProducts: async (params, append = false) => {
     set({ isLoading: true, error: null })
     try {
       const res = await productApi.getProducts(params)
       if (res.success) {
-        set({ products: res.data, meta: res.meta, isLoading: false })
+        set((state) => ({
+          products: append ? [...state.products, ...res.data] : res.data,
+          meta: res.meta,
+          isLoading: false,
+        }))
       } else {
         set({ error: "Failed to load products", isLoading: false })
       }

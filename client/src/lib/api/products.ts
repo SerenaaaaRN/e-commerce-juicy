@@ -5,9 +5,11 @@ export type ProductFiltersParams = {
   category?: string
   featured?: boolean
   tag?: string
-  sort?: "price_asc" | "price_desc" | "newest" | "popular"
+  sort?: "price_asc" | "price_desc" | "newest" | "popular" | ""
   page?: number
   per_page?: number
+  sizes?: string
+  search?: string
 }
 
 export const productApi = {

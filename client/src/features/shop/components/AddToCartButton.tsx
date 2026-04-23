@@ -23,7 +23,7 @@ export const AddToCartButton = ({
       onClick={onClick}
       disabled={disabled || isOutOfStock || isLoading}
       size="lg"
-      className="w-full font-medium uppercase tracking-widest text-xs py-6 h-auto cursor-pointer transition-transform hover:scale-[1.01] active:scale-95 duration-200"
+     
     >
       {isLoading ? (
         <Spinner data-icon="inline-start" />

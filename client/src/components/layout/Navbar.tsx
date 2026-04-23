@@ -1,13 +1,14 @@
-import { useState } from "react"
-import { Link, useLocation } from "react-router-dom"
+import { useState, useEffect } from "react"
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom"
 import { useCartStore } from "@/stores/cartStore"
 import { useCustomerAuthStore } from "@/stores/customerAuthStore"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
+import { Input } from "@/components/ui/input"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { ShoppingBag01Icon, UserIcon, Menu01Icon, Cancel01Icon } from "@hugeicons/core-free-icons"
+import { ShoppingBag01Icon, UserIcon, Menu01Icon, Cancel01Icon, SearchIcon } from "@hugeicons/core-free-icons"
 
 export const Navbar = () => {
   const location = useLocation()
@@ -15,6 +16,44 @@ export const Navbar = () => {
   
   const totalItems = useCartStore((state) => state.totalItems)()
   const { isAuthenticated, customer, logout } = useCustomerAuthStore()
+
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "")
+
+  // Sync search input when URL param changes (e.g. cleared filters)
+  useEffect(() => {
+    setSearchQuery(searchParams.get("search") || "")
+  }, [searchParams])
+
+  // Debounced navigation/search trigger
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      const currentQuery = searchParams.get("search") || ""
+      if (searchQuery.trim() !== "") {
+        if (searchQuery !== currentQuery) {
+          if (location.pathname === "/shop") {
+            const updated = new URLSearchParams(searchParams)
+            updated.set("search", searchQuery)
+            updated.set("page", "1")
+            navigate(`/shop?${updated.toString()}`, { replace: true })
+          } else {
+            navigate(`/shop?search=${encodeURIComponent(searchQuery)}`)
+          }
+        }
+      } else {
+        if (currentQuery !== "") {
+          if (location.pathname === "/shop") {
+            const updated = new URLSearchParams(searchParams)
+            updated.delete("search")
+            navigate(`/shop?${updated.toString()}`, { replace: true })
+          }
+        }
+      }
+    }, 300)
+
+    return () => clearTimeout(delayDebounceFn)
+  }, [searchQuery, navigate, location.pathname, searchParams])
 
   const navLinks = [
     { name: "Atelier", path: "/" },
@@ -68,6 +107,20 @@ export const Navbar = () => {
         {/* Action Controls */}
         <div className="flex items-center gap-2 md:gap-4">
           
+          {/* Desktop Search Bar */}
+          <div className="hidden md:flex relative max-w-[200px] lg:max-w-[240px] w-full">
+            <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
+              <HugeiconsIcon icon={SearchIcon} className="size-4" />
+            </span>
+            <Input
+              type="text"
+              placeholder="Search silhouettes..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-muted/40 border border-input pl-9 pr-4 py-1 h-8 text-xs rounded-none transition-all duration-200"
+            />
+          </div>
+
           {/* Cart Badge */}
           <Link to="/cart" className="relative p-2 text-foreground hover:text-primary transition-colors duration-200">
             <HugeiconsIcon icon={ShoppingBag01Icon} strokeWidth={1.8} />
@@ -127,8 +180,23 @@ export const Navbar = () => {
 
       {/* Mobile Drawer menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-background px-4 py-4 animate-in fade-in slide-in-from-top-4 duration-300">
-          <Separator className="mb-4" />
+        <div className="md:hidden bg-background px-4 py-4 animate-in fade-in slide-in-from-top-4 duration-300 flex flex-col gap-4">
+          
+          {/* Mobile Search Bar */}
+          <div className="relative w-full">
+            <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
+              <HugeiconsIcon icon={SearchIcon} className="size-4" />
+            </span>
+            <Input
+              type="text"
+              placeholder="Search silhouettes..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-muted/40 border border-input pl-9 pr-4 py-2 h-9 text-xs rounded-none transition-all duration-200"
+            />
+          </div>
+
+          <Separator />
           <nav className="flex flex-col gap-4 uppercase tracking-widest text-sm">
             {navLinks.map((link) => (
               <Link

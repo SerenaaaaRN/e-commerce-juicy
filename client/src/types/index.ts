@@ -26,6 +26,9 @@ export type Category = {
   description?: string
   display_order: number
   is_active?: boolean
+  parent_id?: string | null
+  product_count?: number
+  children?: Category[]
 }
 
 export type ProductImage = {
