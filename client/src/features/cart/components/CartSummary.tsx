@@ -10,8 +10,7 @@ type CartSummaryProps = {
 
 export const CartSummary = ({ subtotal, onCheckout }: CartSummaryProps) => {
 
-  // Shipping cost placeholder details (COD MVP stub)
-  const shippingFee = 0 // Free Shipping for first release
+  const shippingFee = 0
   const grandTotal = subtotal + shippingFee
 
   return (
@@ -57,7 +56,7 @@ export const CartSummary = ({ subtotal, onCheckout }: CartSummaryProps) => {
         {/* Checkout CTA */}
         <Button
           onClick={onCheckout}
-          className="w-full font-medium uppercase tracking-widest text-xs py-6 h-auto cursor-pointer transition-transform hover:scale-[1.01] active:scale-95 duration-200 mt-2"
+          size="lg"
         >
           Proceed to Checkout
         </Button>

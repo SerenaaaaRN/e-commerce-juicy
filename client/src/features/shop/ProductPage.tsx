@@ -10,6 +10,14 @@ import { ReviewsSection } from "./components/ReviewsSection"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty"
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
 import { toast } from "sonner"
 
 export const ProductPage = () => {
@@ -81,8 +89,8 @@ export const ProductPage = () => {
   )
 
   // Settle active unit price (base product price + variant specific surcharge if any)
-  const unitPrice = activeVariant 
-    ? currentProduct.price + activeVariant.additional_price 
+  const unitPrice = activeVariant
+    ? currentProduct.price + activeVariant.additional_price
     : currentProduct.price
 
   // Stock tracking details
@@ -96,19 +104,14 @@ export const ProductPage = () => {
       return
     }
 
-    const primaryImage = currentProduct.images?.[0]?.image_url || ""
+    const variantId = activeVariant?.id || currentProduct.variants?.[0]?.id
+    if (!variantId) {
+      toast.error("No active variant found for this product.")
+      return
+    }
 
     try {
-      await addItem({
-        id: activeVariant?.id || currentProduct.id,
-        variant_id: activeVariant?.id || "",
-        product_name: currentProduct.name,
-        variant_size: selectedSize,
-        variant_color: selectedColor,
-        image_url: primaryImage,
-        unit_price: unitPrice,
-        quantity: 1,
-      })
+      await addItem(variantId, 1)
       toast.success(`${currentProduct.name} has been added to your cart.`)
     } catch {
       toast.error("Failed to add silhouette to cart. Please try again.")
@@ -118,19 +121,33 @@ export const ProductPage = () => {
   return (
     <div className="bg-background py-12">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        
+
         {/* Navigation Breadcrumb trail */}
-        <div className="flex items-center gap-2 text-xs text-muted-foreground mb-8 text-left uppercase tracking-widest font-semibold">
-          <Link to="/" className="hover:text-foreground">Home</Link>
-          <span>/</span>
-          <Link to="/shop" className="hover:text-foreground">Shop</Link>
-          <span>/</span>
-          <span className="text-foreground truncate">{currentProduct.name}</span>
-        </div>
+        <Breadcrumb className="mb-8 text-left uppercase tracking-widest font-semibold">
+          <BreadcrumbList className="text-xs">
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/">Home</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/shop">Shop</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage className="truncate max-w-[200px] sm:max-w-none uppercase">
+                {currentProduct.name}
+              </BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
 
         {/* PDP Two-Column Split Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
-          
+
           {/* Visual Column */}
           <div className="lg:col-span-6 w-full">
             <ProductImageGallery
@@ -141,7 +158,7 @@ export const ProductPage = () => {
 
           {/* Details & Selection Column */}
           <div className="lg:col-span-6 flex flex-col gap-6 w-full">
-            
+
             {/* Base Product Info Details */}
             <ProductInfo
               name={currentProduct.name}
@@ -155,7 +172,7 @@ export const ProductPage = () => {
             />
 
             {/* Variant Pills Selector */}
-            {hasVariants && (
+            {hasVariants ? (
               <VariantSelector
                 variants={variants}
                 selectedSize={selectedSize}
@@ -163,7 +180,7 @@ export const ProductPage = () => {
                 selectedColor={selectedColor}
                 onColorChange={setSelectedColor}
               />
-            )}
+            ) : null}
 
             {/* Cart trigger block */}
             <div className="pt-4 flex flex-col gap-3">

@@ -1,4 +1,5 @@
 import { create } from "zustand"
+import { persist } from "zustand/middleware"
 import type { Customer } from "@/types"
 
 type CustomerAuthState = {
@@ -13,33 +14,40 @@ type CustomerAuthState = {
   setError: (error: string | null) => void
 }
 
-export const useCustomerAuthStore = create<CustomerAuthState>((set) => ({
-  token: null,
-  customer: null,
-  isAuthenticated: false,
-  isLoading: false,
-  error: null,
-
-  login: (token, customer) => {
-    set({
-      token,
-      customer,
-      isAuthenticated: true,
-      error: null,
-    })
-  },
-
-  logout: () => {
-    set({
+export const useCustomerAuthStore = create<CustomerAuthState>()(
+  persist(
+    (set) => ({
       token: null,
       customer: null,
       isAuthenticated: false,
+      isLoading: false,
       error: null,
-    })
-  },
 
-  setLoading: (loading) => set({ isLoading: loading }),
-  setError: (error) => set({ error }),
-}))
+      login: (token, customer) => {
+        set({
+          token,
+          customer,
+          isAuthenticated: true,
+          error: null,
+        })
+      },
+
+      logout: () => {
+        set({
+          token: null,
+          customer: null,
+          isAuthenticated: false,
+          error: null,
+        })
+      },
+
+      setLoading: (loading) => set({ isLoading: loading }),
+      setError: (error) => set({ error }),
+    }),
+    {
+      name: "juicy-customer-auth",
+    }
+  )
+)
 
 export default useCustomerAuthStore

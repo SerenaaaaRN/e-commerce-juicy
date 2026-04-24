@@ -6,6 +6,9 @@ import { ProductGrid } from "./components/ProductGrid"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+import { Spinner } from "@/components/ui/spinner"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import {
   Pagination,
   PaginationContent,
@@ -139,7 +142,7 @@ export const CollectionPage = () => {
   return (
     <div className="bg-background py-12">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        
+
         {/* Typographic Header */}
         <div className="text-left flex flex-col gap-2">
           <span className="text-xs font-semibold tracking-wider text-primary uppercase">
@@ -157,7 +160,7 @@ export const CollectionPage = () => {
 
         {/* Content Layout Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          
+
           {/* Desktop Filter Sidebar */}
           <aside className="hidden lg:block lg:col-span-3">
             <ProductFilters
@@ -174,20 +177,20 @@ export const CollectionPage = () => {
 
           {/* Main Grid Area */}
           <main className="col-span-12 lg:col-span-9 flex flex-col gap-6">
-            
+
             {/* Search results banner if active */}
             {currentSearch && (
-              <div className="flex items-center justify-between bg-primary/5 px-4 py-3 border border-primary/20 rounded-none text-left mb-2 animate-in fade-in slide-in-from-top-1 duration-300">
-                <span className="text-xs text-foreground font-semibold">
+              <Alert className="flex items-center justify-between bg-primary/5 px-4 py-3 border border-primary/20 rounded-none text-left mb-2 animate-in fade-in slide-in-from-top-1 duration-300">
+                <AlertDescription className="text-xs text-foreground font-semibold">
                   Search Results for: <span className="text-primary italic">"{currentSearch}"</span>
-                </span>
+                </AlertDescription>
                 <button
                   onClick={() => updateParams({ search: null, page: 1 })}
                   className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground hover:text-foreground cursor-pointer"
                 >
                   Clear Search
                 </button>
-              </div>
+              </Alert>
             )}
 
             {/* Toolbar row */}
@@ -195,67 +198,64 @@ export const CollectionPage = () => {
               <span className="text-xs text-muted-foreground font-medium text-left">
                 Showing {products.length} of {meta?.total || products.length} Silhouettes
               </span>
-              
+
               {/* Toolbar Controls */}
               <div className="flex items-center justify-end flex-wrap gap-4">
                 {/* Grid columns toggle */}
                 <div className="hidden sm:flex items-center gap-1.5 border-r border-border pr-4">
                   <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground mr-1">Grid:</span>
-                  <button
-                    onClick={() => setCols(2)}
-                    className={cn(
-                      "px-2.5 py-1 text-[10px] uppercase font-bold tracking-wider border cursor-pointer transition-colors duration-200 rounded-none",
-                      cols === 2
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-transparent text-muted-foreground border-border hover:border-foreground"
-                    )}
+                  <ToggleGroup
+                    type="single"
+                    variant="outline"
+                    value={cols.toString()}
+                    onValueChange={(val) => {
+                      if (val) setCols(Number(val) as 2 | 4)
+                    }}
+                    className="flex gap-1"
                   >
-                    2 Cols
-                  </button>
-                  <button
-                    onClick={() => setCols(4)}
-                    className={cn(
-                      "px-2.5 py-1 text-[10px] uppercase font-bold tracking-wider border cursor-pointer transition-colors duration-200 rounded-none",
-                      cols === 4
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-transparent text-muted-foreground border-border hover:border-foreground"
-                    )}
-                  >
-                    4 Cols
-                  </button>
+                    <ToggleGroupItem
+                      value="2"
+                      className="px-2.5 h-7 text-[10px] uppercase font-bold tracking-wider rounded-none cursor-pointer"
+                    >
+                      2 Cols
+                    </ToggleGroupItem>
+                    <ToggleGroupItem
+                      value="4"
+                      className="px-2.5 h-7 text-[10px] uppercase font-bold tracking-wider rounded-none cursor-pointer"
+                    >
+                      4 Cols
+                    </ToggleGroupItem>
+                  </ToggleGroup>
                 </div>
 
                 {/* Scroll Mode Toggle */}
                 <div className="flex items-center gap-1.5">
                   <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground mr-1">Mode:</span>
-                  <button
-                    onClick={() => {
-                      setIsInfiniteScroll(false)
-                      updateParams({ page: 1 })
+                  <ToggleGroup
+                    type="single"
+                    variant="outline"
+                    value={isInfiniteScroll ? "scroll" : "pages"}
+                    onValueChange={(val) => {
+                      if (val) {
+                        setIsInfiniteScroll(val === "scroll")
+                        updateParams({ page: 1 })
+                      }
                     }}
-                    className={cn(
-                      "px-2.5 py-1 text-[10px] uppercase font-bold tracking-wider border cursor-pointer transition-colors duration-200 rounded-none",
-                      !isInfiniteScroll
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-transparent text-muted-foreground border-border hover:border-foreground"
-                    )}
+                    className="flex gap-1"
                   >
-                    Pages
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsInfiniteScroll(true)
-                      updateParams({ page: 1 })
-                    }}
-                    className={cn(
-                      "px-2.5 py-1 text-[10px] uppercase font-bold tracking-wider border cursor-pointer transition-colors duration-200 rounded-none",
-                      isInfiniteScroll
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-transparent text-muted-foreground border-border hover:border-foreground"
-                    )}
-                  >
-                    Scroll
-                  </button>
+                    <ToggleGroupItem
+                      value="pages"
+                      className="px-2.5 h-7 text-[10px] uppercase font-bold tracking-wider rounded-none cursor-pointer"
+                    >
+                      Pages
+                    </ToggleGroupItem>
+                    <ToggleGroupItem
+                      value="scroll"
+                      className="px-2.5 h-7 text-[10px] uppercase font-bold tracking-wider rounded-none cursor-pointer"
+                    >
+                      Scroll
+                    </ToggleGroupItem>
+                  </ToggleGroup>
                 </div>
 
                 {/* Mobile filter drawer trigger */}
@@ -296,7 +296,7 @@ export const CollectionPage = () => {
             {isInfiniteScroll && (
               <div ref={sentinelRef} className="h-10 w-full flex items-center justify-center">
                 {isLoading && (
-                  <div className="size-5 border-2 border-t-primary border-r-transparent border-b-transparent border-l-transparent animate-spin rounded-full" />
+                  <Spinner size={20} className="text-primary" />
                 )}
               </div>
             )}
@@ -305,7 +305,7 @@ export const CollectionPage = () => {
             {!isInfiniteScroll && meta && meta.total_pages > 1 && (
               <Pagination className="mt-8">
                 <PaginationContent>
-                  
+
                   {/* Previous button */}
                   {meta.page > 1 && (
                     <PaginationItem className="cursor-pointer">

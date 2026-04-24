@@ -1,4 +1,5 @@
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { Separator } from "@/components/ui/separator"
 import type { ProductVariant } from "@/types"
 
 type VariantSelectorProps = {
@@ -46,7 +47,8 @@ export const VariantSelector = ({
   )
 
   return (
-    <div className="flex flex-col gap-5 text-left border-t border-foreground/5 pt-5">
+    <div className="flex flex-col gap-5 text-left">
+      <Separator />
       
       {/* Sizes Section */}
       {uniqueSizes.length > 0 && (

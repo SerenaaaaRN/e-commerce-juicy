@@ -21,7 +21,6 @@ func (r *cartRepo) FindByCustomerID(ctx context.Context, customerID uuid.UUID) (
 	var items []model.CartItem
 	err := r.db.WithContext(ctx).
 		Preload("Variant").
-		Preload("Variant.ProductID").
 		Where("customer_id = ?", customerID).
 		Order("created_at DESC").
 		Find(&items).Error

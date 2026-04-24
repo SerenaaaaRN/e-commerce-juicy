@@ -25,6 +25,10 @@ import { OrdersPage } from "@/features/admin/OrdersPage"
 import { CustomersPage } from "@/features/admin/CustomersPage"
 import { ReviewsPage } from "@/features/admin/ReviewsPage"
 
+import { useCustomerAuthStore } from "@/stores/customerAuthStore"
+import { useCartStore } from "@/stores/cartStore"
+import { customerApi } from "@/lib/api"
+
 // ScrollToTop component to reset viewport on route transition
 const ScrollToTop = () => {
   const { pathname } = useLocation()
@@ -39,10 +43,31 @@ const ScrollToTop = () => {
 const AppContent = () => {
   const location = useLocation()
   const isAdmin = location.pathname.startsWith("/admin")
+  const { isAuthenticated, logout } = useCustomerAuthStore()
+  const { fetchCart } = useCartStore()
+
+  // Auto-rehydrate profile and load cart from database
+  useEffect(() => {
+    const initializeAuthAndCart = async () => {
+      if (isAuthenticated) {
+        try {
+          const profileRes = await customerApi.getProfile()
+          if (profileRes.success) {
+            fetchCart()
+          } else {
+            logout()
+          }
+        } catch {
+          // If profile fails, dynamic response interceptor handles 401 logouts
+        }
+      }
+    }
+    initializeAuthAndCart()
+  }, [isAuthenticated, fetchCart, logout])
 
   return (
     <div className="relative flex min-h-screen flex-col bg-background font-sans text-foreground antialiased selection:bg-primary/10 selection:text-primary">
-      
+
       {/* Responsive Public Header */}
       {!isAdmin && <Navbar />}
 
@@ -87,7 +112,7 @@ const AppContent = () => {
 
       {/* Toast Notifications */}
       <Toaster />
-      
+
     </div>
   )
 }

@@ -41,7 +41,8 @@ export const ReviewsSection = ({ slug, avgRating, reviewCount }: ReviewsSectionP
   }, [slug, page])
 
   return (
-    <div className="flex flex-col gap-6 text-left border-t border-foreground/5 pt-10 mt-10">
+    <div className="flex flex-col gap-6 text-left mt-10">
+      <Separator />
       
       {/* Reviews Summary Header Block */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">

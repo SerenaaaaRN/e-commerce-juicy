@@ -9,11 +9,20 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { Input } from "@/components/ui/input"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { ShoppingBag01Icon, UserIcon, Menu01Icon, Cancel01Icon, SearchIcon } from "@hugeicons/core-free-icons"
+import { useDebounce } from "@/hooks/useDebounce"
+
+const navLinks = [
+  { name: "Atelier", path: "/" },
+  { name: "Shop", path: "/shop" },
+]
+
+const activeLinkClass = "text-primary font-medium"
+const inactiveLinkClass = "text-muted-foreground hover:text-foreground transition-colors duration-200"
 
 export const Navbar = () => {
   const location = useLocation()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  
+
   const totalItems = useCartStore((state) => state.totalItems)()
   const { isAuthenticated, customer, logout } = useCustomerAuthStore()
 
@@ -21,54 +30,47 @@ export const Navbar = () => {
   const [searchParams] = useSearchParams()
   const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "")
 
-  // Sync search input when URL param changes (e.g. cleared filters)
-  useEffect(() => {
-    setSearchQuery(searchParams.get("search") || "")
-  }, [searchParams])
+  const urlQuery = searchParams.get("search") || ""
 
-  // Debounced navigation/search trigger
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      const currentQuery = searchParams.get("search") || ""
-      if (searchQuery.trim() !== "") {
-        if (searchQuery !== currentQuery) {
-          if (location.pathname === "/shop") {
-            const updated = new URLSearchParams(searchParams)
-            updated.set("search", searchQuery)
-            updated.set("page", "1")
-            navigate(`/shop?${updated.toString()}`, { replace: true })
-          } else {
-            navigate(`/shop?search=${encodeURIComponent(searchQuery)}`)
-          }
-        }
-      } else {
-        if (currentQuery !== "") {
-          if (location.pathname === "/shop") {
-            const updated = new URLSearchParams(searchParams)
-            updated.delete("search")
-            navigate(`/shop?${updated.toString()}`, { replace: true })
-          }
-        }
+    setSearchQuery(urlQuery)
+  }, [urlQuery])
+
+  const debouncedSearchQuery = useDebounce(searchQuery, 300)
+
+  useEffect(() => {
+    const currentQuery = searchParams.get("search") || ""
+    const trimmedQuery = debouncedSearchQuery.trim()
+
+    if (trimmedQuery === "") {
+      if (currentQuery !== "" && location.pathname === "/shop") {
+        const updated = new URLSearchParams(searchParams)
+        updated.delete("search")
+        navigate(`/shop?${updated.toString()}`, { replace: true })
       }
-    }, 300)
+      return
+    }
 
-    return () => clearTimeout(delayDebounceFn)
-  }, [searchQuery, navigate, location.pathname, searchParams])
+    if (trimmedQuery === currentQuery) {
+      return
+    }
+    if (location.pathname === "/shop") {
+      const updated = new URLSearchParams(searchParams)
+      updated.set("search", trimmedQuery)
+      updated.set("page", "1")
+      navigate(`/shop?${updated.toString()}`, { replace: true })
+      return
+    }
 
-  const navLinks = [
-    { name: "Atelier", path: "/" },
-    { name: "Shop", path: "/shop" },
-  ]
-
-  const activeLinkClass = "text-primary font-medium"
-  const inactiveLinkClass = "text-muted-foreground hover:text-foreground transition-colors duration-200"
+    navigate(`/shop?search=${encodeURIComponent(trimmedQuery)}`)
+  }, [debouncedSearchQuery, navigate, location.pathname, searchParams])
 
   const toggleMobileMenu = () => setMobileMenuOpen((prev) => !prev)
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md">
       <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        
+
         {/* Mobile Navigation Trigger */}
         <button
           onClick={toggleMobileMenu}
@@ -106,7 +108,7 @@ export const Navbar = () => {
 
         {/* Action Controls */}
         <div className="flex items-center gap-2 md:gap-4">
-          
+
           {/* Desktop Search Bar */}
           <div className="hidden md:flex relative max-w-[200px] lg:max-w-[240px] w-full">
             <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
@@ -181,7 +183,7 @@ export const Navbar = () => {
       {/* Mobile Drawer menu */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-background px-4 py-4 animate-in fade-in slide-in-from-top-4 duration-300 flex flex-col gap-4">
-          
+
           {/* Mobile Search Bar */}
           <div className="relative w-full">
             <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
@@ -205,8 +207,8 @@ export const Navbar = () => {
                 onClick={toggleMobileMenu}
                 className={cn(
                   "py-2 px-1 text-xs rounded-md block transition-colors",
-                  location.pathname === link.path 
-                    ? "text-primary font-semibold bg-accent/20" 
+                  location.pathname === link.path
+                    ? "text-primary font-semibold bg-accent/20"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >

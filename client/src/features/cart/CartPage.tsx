@@ -50,13 +50,15 @@ export const CartPage = () => {
           
           {/* Items List Column */}
           <div className="lg:col-span-8 flex flex-col">
-            {items.map((item) => (
-              <CartItem
-                key={item.id}
-                item={item}
-                onUpdateQty={updateQty}
-                onRemove={removeItem}
-              />
+            {items.map((item, index) => (
+              <div key={item.id}>
+                {index > 0 && <Separator />}
+                <CartItem
+                  item={item}
+                  onUpdateQty={updateQty}
+                  onRemove={removeItem}
+                />
+              </div>
             ))}
           </div>
 

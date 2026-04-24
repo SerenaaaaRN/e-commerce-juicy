@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { cn } from "@/lib/utils"
 import type { Category } from "@/types"
 
@@ -117,7 +118,7 @@ export const ProductFilters = ({
           Categories
         </h3>
         <Separator />
-        
+
         <div className="flex flex-col gap-1">
           {/* All Apparel link */}
           <button
@@ -142,30 +143,23 @@ export const ProductFilters = ({
           Filter by Size
         </h3>
         <Separator />
-        <div className="flex flex-wrap gap-2">
-          {AVAILABLE_SIZES.map((size) => {
-            const isSelected = selectedSizes.includes(size)
-            return (
-              <button
-                key={size}
-                onClick={() => {
-                  const next = isSelected
-                    ? selectedSizes.filter((s) => s !== size)
-                    : [...selectedSizes, size]
-                  onSizesChange(next)
-                }}
-                className={cn(
-                  "min-w-[42px] h-9 flex items-center justify-center border text-xs font-semibold uppercase tracking-wider transition-all duration-200 cursor-pointer rounded-none",
-                  isSelected
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-transparent text-foreground border-border hover:border-foreground"
-                )}
-              >
-                {size}
-              </button>
-            )
-          })}
-        </div>
+        <ToggleGroup
+          type="multiple"
+          variant="outline"
+          value={selectedSizes}
+          onValueChange={onSizesChange}
+          className="flex flex-wrap gap-2 justify-start"
+        >
+          {AVAILABLE_SIZES.map((size) => (
+            <ToggleGroupItem
+              key={size}
+              value={size}
+              className="min-w-[42px] h-9 text-xs font-semibold uppercase tracking-wider rounded-none cursor-pointer data-[state=on]:bg-zinc-900 data-[state=on]:text-zinc-50 dark:data-[state=on]:bg-zinc-50 dark:data-[state=on]:text-zinc-900 data-[state=on]:border-zinc-900 dark:data-[state=on]:border-zinc-50"
+            >
+              {size}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
       </div>
 
       {/* Sorting Section */}
@@ -174,25 +168,22 @@ export const ProductFilters = ({
           Sort By
         </h3>
         <Separator />
-        <div className="flex flex-col gap-1">
-          {sortOptions.map((opt) => {
-            const isSelected = selectedSort === opt.value
-            return (
-              <button
-                key={opt.value}
-                onClick={() => onSortChange(isSelected ? "" : (opt.value as any))}
-                className={cn(
-                  "text-left py-1.5 px-2 text-xs uppercase tracking-wider font-medium rounded-none cursor-pointer border-l-2",
-                  isSelected
-                    ? "bg-primary/10 text-primary border-primary"
-                    : "text-muted-foreground hover:text-foreground border-transparent hover:bg-muted/30"
-                )}
-              >
-                {opt.label}
-              </button>
-            )
-          })}
-        </div>
+        <ToggleGroup
+          type="single"
+          value={selectedSort}
+          onValueChange={(val) => onSortChange((val || "") as any)}
+          className="flex flex-col items-stretch gap-1"
+        >
+          {sortOptions.map((opt) => (
+            <ToggleGroupItem
+              key={opt.value}
+              value={opt.value}
+              className="justify-start py-1.5 px-2 h-auto text-xs uppercase tracking-wider font-medium rounded-none cursor-pointer border-l-2 text-muted-foreground hover:text-foreground border-transparent hover:bg-muted/30 data-[state=on]:bg-zinc-100 data-[state=on]:text-zinc-900 data-[state=on]:border-zinc-900 dark:data-[state=on]:bg-zinc-800 dark:data-[state=on]:text-zinc-50 dark:data-[state=on]:border-zinc-50"
+            >
+              {opt.label}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
       </div>
 
       {/* Reset Action */}

@@ -21,7 +21,7 @@ export const CartItem = ({ item, onUpdateQty, onRemove }: CartItemProps) => {
   }
 
   return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 py-6 border-b border-border text-left">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 py-6 text-left">
       
       {/* Product Image & Info Details */}
       <div className="flex items-center gap-4 flex-1">
@@ -97,7 +97,7 @@ export const CartItem = ({ item, onUpdateQty, onRemove }: CartItemProps) => {
           onClick={() => onRemove(item.id)}
           className="text-muted-foreground hover:text-destructive cursor-pointer size-8 rounded-full"
         >
-          <HugeiconsIcon icon={Cancel01Icon} strokeWidth={1.8} className="size-4" />
+          <HugeiconsIcon icon={Cancel01Icon} strokeWidth={1.8} className="size-4" data-icon />
         </Button>
 
       </div>

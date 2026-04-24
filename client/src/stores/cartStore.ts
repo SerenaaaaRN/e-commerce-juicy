@@ -1,5 +1,6 @@
 import { create } from "zustand"
 import type { CartItem } from "@/types"
+import { cartApi } from "@/lib/api"
 
 type CartState = {
   items: CartItem[]
@@ -12,10 +13,10 @@ type CartState = {
 
   // Actions
   fetchCart: () => Promise<void>
-  addItem: (item: Omit<CartItem, "subtotal">) => Promise<void>
+  addItem: (variantId: string, quantity: number) => Promise<void>
   updateQty: (itemId: string, quantity: number) => Promise<void>
   removeItem: (itemId: string) => Promise<void>
-  clearCart: () => void
+  clearCart: () => Promise<void>
 }
 
 export const useCartStore = create<CartState>((set, get) => ({
@@ -32,48 +33,109 @@ export const useCartStore = create<CartState>((set, get) => ({
   },
 
   fetchCart: async () => {
-    // Stub or actual call. Since this is Milestone 1 setup, we do a basic fetch or keep local.
-    set({ isLoading: true })
+    set({ isLoading: true, error: null })
     try {
-      // Fetch cart from backend if authenticated
-      set({ isLoading: false })
-    } catch {
+      const res = await cartApi.getCart()
+      if (res.success) {
+        set({ items: res.data.items || [], isLoading: false })
+      } else {
+        const errMsg = res.message || "Failed to load cart"
+        set({ error: errMsg, isLoading: false })
+      }
+    } catch (err) {
       set({ error: "Failed to load cart", isLoading: false })
     }
   },
 
-  addItem: async (item) => {
-    set({ isLoading: true })
+  addItem: async (variantId, quantity) => {
+    set({ isLoading: true, error: null })
     try {
-      const existing = get().items.find((i) => i.variant_id === item.variant_id)
-      let newItems: CartItem[]
-
-      if (existing) {
-        newItems = get().items.map((i) =>
-          i.variant_id === item.variant_id
-            ? { ...i, quantity: i.quantity + item.quantity, subtotal: (i.quantity + item.quantity) * i.unit_price }
-            : i
-        )
+      const res = await cartApi.addItem({ variant_id: variantId, quantity })
+      if (res.success) {
+        const freshCart = await cartApi.getCart()
+        if (freshCart.success) {
+          set({ items: freshCart.data.items || [], isLoading: false })
+        } else {
+          set({ isLoading: false })
+        }
       } else {
-        newItems = [...get().items, { ...item, subtotal: item.quantity * item.unit_price }]
+        const errMsg = res.message || "Failed to add item"
+        set({ error: errMsg, isLoading: false })
+        console.error("addItem failed:", errMsg)
+        throw new Error(errMsg)
       }
-
-      set({ items: newItems, isLoading: false })
-    } catch {
-      set({ error: "Failed to add item", isLoading: false })
+    } catch (err: any) {
+      console.error("addItem error:", err)
+      set({ error: err.message || "Failed to add item", isLoading: false })
+      throw err
     }
   },
 
   updateQty: async (itemId, quantity) => {
-    set({ items: get().items.map((i) => i.id === itemId ? { ...i, quantity, subtotal: quantity * i.unit_price } : i) })
+    set({ isLoading: true, error: null })
+    try {
+      const res = await cartApi.updateQuantity(itemId, { quantity })
+      if (res.success) {
+        const freshCart = await cartApi.getCart()
+        if (freshCart.success) {
+          set({ items: freshCart.data.items || [], isLoading: false })
+        } else {
+          set({ isLoading: false })
+        }
+      } else {
+        const errMsg = res.message || "Failed to update quantity"
+        set({ error: errMsg, isLoading: false })
+        console.error("updateQty failed:", errMsg)
+        throw new Error(errMsg)
+      }
+    } catch (err: any) {
+      console.error("updateQty error:", err)
+      set({ error: err.message || "Failed to update quantity", isLoading: false })
+      throw err
+    }
   },
 
   removeItem: async (itemId) => {
-    set({ items: get().items.filter((i) => i.id !== itemId) })
+    set({ isLoading: true, error: null })
+    try {
+      const res = await cartApi.removeItem(itemId)
+      if (res.success) {
+        const freshCart = await cartApi.getCart()
+        if (freshCart.success) {
+          set({ items: freshCart.data.items || [], isLoading: false })
+        } else {
+          set({ isLoading: false })
+        }
+      } else {
+        const errMsg = res.message || "Failed to remove item"
+        set({ error: errMsg, isLoading: false })
+        console.error("removeItem failed:", errMsg)
+        throw new Error(errMsg)
+      }
+    } catch (err: any) {
+      console.error("removeItem error:", err)
+      set({ error: err.message || "Failed to remove item", isLoading: false })
+      throw err
+    }
   },
 
-  clearCart: () => {
-    set({ items: [] })
+  clearCart: async () => {
+    set({ isLoading: true, error: null })
+    try {
+      const res = await cartApi.clearCart()
+      if (res.success) {
+        set({ items: [], isLoading: false })
+      } else {
+        const errMsg = res.message || "Failed to clear cart"
+        set({ error: errMsg, isLoading: false })
+        console.error("clearCart failed:", errMsg)
+        throw new Error(errMsg)
+      }
+    } catch (err: any) {
+      console.error("clearCart error:", err)
+      set({ error: err.message || "Failed to clear cart", isLoading: false })
+      throw err
+    }
   },
 }))
 

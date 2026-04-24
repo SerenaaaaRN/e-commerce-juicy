@@ -1,5 +1,6 @@
 import { StarRating } from "./StarRating"
 import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
 import { formatPrice } from "@/lib/utils"
 
 type ProductInfoProps = {
@@ -57,8 +58,10 @@ export const ProductInfo = ({
         )}
       </div>
 
+      <Separator />
+
       {/* Prices List */}
-      <div className="flex items-baseline gap-3 pt-2 font-mono border-t border-foreground/5">
+      <div className="flex items-baseline gap-3 pt-2 font-mono">
         <span className="text-2xl font-bold text-foreground">
           {formatPrice(price)}
         </span>
@@ -71,9 +74,12 @@ export const ProductInfo = ({
 
       {/* Description */}
       {description && (
-        <div className="pt-4 border-t border-foreground/5 text-sm text-muted-foreground leading-relaxed">
-          <p>{description}</p>
-        </div>
+        <>
+          <Separator />
+          <div className="pt-2 text-sm text-muted-foreground leading-relaxed">
+            <p>{description}</p>
+          </div>
+        </>
       )}
 
     </div>
