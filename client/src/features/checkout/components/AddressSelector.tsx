@@ -1,5 +1,6 @@
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import type { Address } from "@/types"
 
 type AddressSelectorProps = {
@@ -64,9 +65,9 @@ export const AddressSelector = ({
                     {addr.label}
                   </span>
                   {addr.is_default && (
-                    <span className="text-[10px] bg-primary/10 text-primary font-bold px-1.5 py-0.5 rounded">
+                    <Badge variant="secondary" className="text-[10px] font-bold px-1.5 py-0.5 rounded uppercase">
                       DEFAULT
-                    </span>
+                    </Badge>
                   )}
                 </div>
                 

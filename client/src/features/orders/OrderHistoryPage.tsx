@@ -6,7 +6,9 @@ import { ordersApi } from "@/lib/api/orders"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { Separator } from "@/components/ui/separator"
-import { Empty, EmptyHeader, EmptyDescription, EmptyContent } from "@/components/ui/empty"
+import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyContent, EmptyMedia } from "@/components/ui/empty"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { ShoppingBag01Icon } from "@hugeicons/core-free-icons"
 import { toast } from "sonner"
 import type { Order } from "@/types"
 
@@ -68,7 +70,7 @@ export const OrderHistoryPage = () => {
           <span className="text-xs font-semibold tracking-wider text-primary uppercase">
             Atelier Account Details
           </span>
-          <h1 className="text-4xl font-bold tracking-tight text-foreground">
+          <h1 className="text-4xl font-bold tracking-tight text-foreground font-heading">
             My Orders
           </h1>
           <p className="text-sm text-muted-foreground max-w-md leading-relaxed font-sans">
@@ -80,14 +82,20 @@ export const OrderHistoryPage = () => {
 
         {/* Main Orders List Stack */}
         {orders.length === 0 ? (
-          <Empty className="border border-dashed border-border/85 p-8 max-w-md mx-auto bg-transparent">
+          <Empty className="border-none max-w-md mx-auto bg-transparent">
             <EmptyHeader>
-              <EmptyDescription className="text-sm text-muted-foreground">
-                You haven't placed any custom silhouette orders yet.
+              <EmptyMedia variant="icon" className="bg-primary/5 text-primary size-12 rounded-full mb-3 flex items-center justify-center">
+                <HugeiconsIcon icon={ShoppingBag01Icon} strokeWidth={1.8} className="size-6 text-primary" />
+              </EmptyMedia>
+              <EmptyTitle className="text-2xl font-bold tracking-tight">
+                No Orders Placed
+              </EmptyTitle>
+              <EmptyDescription className="text-sm text-muted-foreground mt-2">
+                You haven't placed any custom silhouette orders yet. Explore our latest designs to build your style foundation.
               </EmptyDescription>
             </EmptyHeader>
-            <EmptyContent className="mt-4">
-              <Button asChild size="sm">
+            <EmptyContent className="mt-6">
+              <Button asChild size="lg">
                 <Link to="/shop">Explore Atelier</Link>
               </Button>
             </EmptyContent>

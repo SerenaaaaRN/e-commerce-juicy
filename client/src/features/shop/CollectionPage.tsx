@@ -148,7 +148,7 @@ export const CollectionPage = () => {
           <span className="text-xs font-semibold tracking-wider text-primary uppercase">
             Atelier Curated Catalog
           </span>
-          <h1 className="text-4xl font-bold tracking-tight text-foreground uppercase">
+          <h1 className="text-4xl font-bold tracking-tight text-foreground uppercase font-heading">
             The Shop
           </h1>
           <p className="text-sm text-muted-foreground max-w-md leading-relaxed">
@@ -263,7 +263,7 @@ export const CollectionPage = () => {
                   <Sheet>
                     <SheetTrigger asChild>
                       <Button variant="outline" size="sm" className="gap-2 cursor-pointer h-7 text-[10px] uppercase tracking-wider rounded-none">
-                        <HugeiconsIcon icon={FilterIcon} strokeWidth={1.8} className="size-3" />
+                        <HugeiconsIcon icon={FilterIcon} strokeWidth={1.8} data-icon="inline-start" />
                         Filters
                       </Button>
                     </SheetTrigger>

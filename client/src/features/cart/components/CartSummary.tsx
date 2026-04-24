@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { ArrowRight01Icon } from "@hugeicons/core-free-icons"
 import { formatPrice } from "@/lib/utils"
 
 type CartSummaryProps = {
@@ -9,20 +11,18 @@ type CartSummaryProps = {
 }
 
 export const CartSummary = ({ subtotal, onCheckout }: CartSummaryProps) => {
-
   const shippingFee = 0
   const grandTotal = subtotal + shippingFee
 
   return (
     <Card className="border border-border/80 shadow-md">
-      <CardContent className="p-6 flex flex-col gap-5 text-left">
-        
-        <h3 className="text-sm font-semibold tracking-tight text-foreground uppercase">
+      <CardHeader className="pb-0">
+        <CardTitle className="text-sm font-semibold tracking-tight text-foreground uppercase">
           Order Summary
-        </h3>
-        
-        <Separator />
-
+        </CardTitle>
+      </CardHeader>
+      
+      <CardContent className="flex flex-col gap-4 text-left">
         <div className="flex flex-col gap-3 text-xs text-muted-foreground uppercase tracking-wider font-medium">
           
           {/* Subtotal row */}
@@ -36,7 +36,7 @@ export const CartSummary = ({ subtotal, onCheckout }: CartSummaryProps) => {
           {/* Shipping row */}
           <div className="flex justify-between">
             <span>Shipping</span>
-            <span className="text-emerald-700 font-semibold">
+            <span className="text-emerald-700 font-semibold animate-pulse">
               FREE
             </span>
           </div>
@@ -52,16 +52,19 @@ export const CartSummary = ({ subtotal, onCheckout }: CartSummaryProps) => {
             {formatPrice(grandTotal)}
           </span>
         </div>
+      </CardContent>
 
+      <CardFooter className="p-4">
         {/* Checkout CTA */}
         <Button
           onClick={onCheckout}
           size="lg"
+          className="w-full"
         >
           Proceed to Checkout
+          <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={1.8} data-icon="inline-end" />
         </Button>
-
-      </CardContent>
+      </CardFooter>
     </Card>
   )
 }

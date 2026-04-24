@@ -4,7 +4,9 @@ import { AddressFormModal } from "./AddressFormModal"
 import { ordersApi } from "@/lib/api/orders"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
-import { Empty, EmptyHeader, EmptyDescription, EmptyContent } from "@/components/ui/empty"
+import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyContent, EmptyMedia } from "@/components/ui/empty"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { ShoppingBag01Icon } from "@hugeicons/core-free-icons"
 import { toast } from "sonner"
 import type { Address } from "@/types"
 
@@ -90,14 +92,20 @@ export const AddressList = () => {
 
       {/* Main Address Cards Grid */}
       {addresses.length === 0 ? (
-        <Empty className="border border-dashed border-border/80 p-8 max-w-md mx-auto bg-transparent">
+        <Empty className="border-none max-w-md mx-auto bg-transparent">
           <EmptyHeader>
-            <EmptyDescription className="text-sm text-muted-foreground">
-              You haven't saved any delivery destinations yet.
+            <EmptyMedia variant="icon" className="bg-primary/5 text-primary size-12 rounded-full mb-3 flex items-center justify-center">
+              <HugeiconsIcon icon={ShoppingBag01Icon} strokeWidth={1.8} className="size-6 text-primary" />
+            </EmptyMedia>
+            <EmptyTitle className="text-xl font-bold tracking-tight">
+              No Addresses Saved
+            </EmptyTitle>
+            <EmptyDescription className="text-sm text-muted-foreground mt-2">
+              You haven't saved any delivery destinations yet. Add a new address to speed up your checkout flow.
             </EmptyDescription>
           </EmptyHeader>
-          <EmptyContent className="mt-4">
-            <Button onClick={() => setIsModalOpen(true)} size="sm" className="cursor-pointer">
+          <EmptyContent className="mt-6">
+            <Button onClick={() => setIsModalOpen(true)} size="lg" className="cursor-pointer">
               Add New Address
             </Button>
           </EmptyContent>

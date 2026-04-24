@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
-import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty"
+import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyContent, EmptyMedia } from "@/components/ui/empty"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { ShoppingBag01Icon } from "@hugeicons/core-free-icons"
 
 export const EmptyCart = () => {
   return (
@@ -8,6 +10,9 @@ export const EmptyCart = () => {
       <Empty className="border-none max-w-md bg-transparent">
         
         <EmptyHeader>
+          <EmptyMedia variant="icon" className="bg-primary/5 text-primary size-12 rounded-full mb-3 flex items-center justify-center">
+            <HugeiconsIcon icon={ShoppingBag01Icon} strokeWidth={1.8} className="size-6 text-primary" />
+          </EmptyMedia>
           <EmptyTitle className="text-2xl font-bold tracking-tight">
             Your Cart is Empty
           </EmptyTitle>

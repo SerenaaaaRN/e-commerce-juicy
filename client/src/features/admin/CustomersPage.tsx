@@ -89,7 +89,7 @@ export const CustomersPage = () => {
       </DefferedContainer>
 
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-        <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto border bg-card">
+        <DialogContent className="max-h-[90vh] max-w-3xl sm:max-w-3xl overflow-y-auto border bg-card">
           <DialogHeader>
             <DialogTitle className="font-heading text-lg font-bold">Client CRM File: {activeClient?.full_name}</DialogTitle>
             <DialogDescription className="text-xs">Check historically placed orders, lifecycle totals spent, and account status modifications.</DialogDescription>

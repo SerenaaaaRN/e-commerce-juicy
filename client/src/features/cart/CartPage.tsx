@@ -5,6 +5,7 @@ import { CartItem } from "./components/CartItem"
 import { CartSummary } from "./components/CartSummary"
 import { EmptyCart } from "./components/EmptyCart"
 import { Separator } from "@/components/ui/separator"
+import { toast } from "sonner"
 
 export const CartPage = () => {
   const navigate = useNavigate()
@@ -22,6 +23,24 @@ export const CartPage = () => {
     return <EmptyCart />
   }
 
+  const handleUpdateQty = async (itemId: string, qty: number, name: string) => {
+    try {
+      await updateQty(itemId, qty)
+      toast.success(`Updated ${name} quantity to ${qty}`)
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update quantity")
+    }
+  }
+
+  const handleRemoveItem = async (itemId: string, name: string) => {
+    try {
+      await removeItem(itemId)
+      toast.success(`${name} removed from cart`)
+    } catch (err: any) {
+      toast.error(err.message || "Failed to remove item")
+    }
+  }
+
   const handleCheckout = () => {
     navigate("/checkout")
   }
@@ -35,7 +54,7 @@ export const CartPage = () => {
           <span className="text-xs font-semibold tracking-wider text-primary uppercase">
             Atelier Customer Cart
           </span>
-          <h1 className="text-4xl font-bold tracking-tight text-foreground">
+          <h1 className="text-4xl font-bold tracking-tight text-foreground font-heading">
             Shopping Cart
           </h1>
           <p className="text-sm text-muted-foreground max-w-md leading-relaxed">
@@ -55,8 +74,8 @@ export const CartPage = () => {
                 {index > 0 && <Separator />}
                 <CartItem
                   item={item}
-                  onUpdateQty={updateQty}
-                  onRemove={removeItem}
+                  onUpdateQty={(itemId, qty) => handleUpdateQty(itemId, qty, item.product_name)}
+                  onRemove={(itemId) => handleRemoveItem(itemId, item.product_name)}
                 />
               </div>
             ))}

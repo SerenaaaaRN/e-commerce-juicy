@@ -20,7 +20,7 @@ export const AddressCard = ({ address, onDelete, onSetDefault }: AddressCardProp
             {address.label}
           </span>
           {address.is_default && (
-            <Badge className="font-bold text-[9px] px-1.5 py-0.5 border-none">
+            <Badge variant="secondary" className="font-bold text-[9px] px-1.5 py-0.5 border-none">
               DEFAULT
             </Badge>
           )}

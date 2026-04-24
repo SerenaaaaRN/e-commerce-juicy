@@ -20,7 +20,7 @@ export const StarRating = ({
   const stars = Array.from({ length: maxStars })
 
   return (
-    <div className={cn("flex items-center gap-1", className)}>
+    <div className={cn("flex items-center gap-1 [&_svg]:size-4", className)}>
       {stars.map((_, i) => {
         const starValue = i + 1
         const isFilled = starValue <= rating
@@ -40,7 +40,7 @@ export const StarRating = ({
               icon={StarIcon}
               strokeWidth={2}
               className={cn(
-                "size-4 transition-all duration-300",
+                "transition-all duration-300",
                 isFilled
                   ? "fill-primary text-primary"
                   : "text-muted-foreground/35 fill-none"

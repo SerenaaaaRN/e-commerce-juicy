@@ -1,5 +1,6 @@
 import { Separator } from "@/components/ui/separator"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { AspectRatio } from "@/components/ui/aspect-ratio"
 import { formatPrice } from "@/lib/utils"
 import type { CartItem } from "@/types"
 
@@ -9,31 +10,31 @@ type OrderSummaryProps = {
 }
 
 export const OrderSummary = ({ items, subtotal }: OrderSummaryProps) => {
-
   const shippingFee = 0
   const grandTotal = subtotal + shippingFee
 
   return (
     <Card className="border border-border/80 shadow-md">
-      <CardContent className="p-6 flex flex-col gap-5 text-left">
-        
-        <h3 className="text-sm font-semibold tracking-tight text-foreground uppercase">
+      <CardHeader className="pb-0">
+        <CardTitle className="text-sm font-semibold tracking-tight text-foreground uppercase">
           Review Silhouettes
-        </h3>
-        
-        <Separator />
-
+        </CardTitle>
+      </CardHeader>
+      
+      <CardContent className="flex flex-col gap-5 text-left">
         {/* Purchase Items List */}
         <div className="flex flex-col max-h-72 overflow-y-auto pr-1 scrollbar-thin">
           {items.map((item) => (
             <div key={item.id} className="flex items-center justify-between gap-4 py-3 border-b border-border/40 last:border-b-0">
               <div className="flex items-center gap-3">
-                <div className="relative aspect-[3/4] w-12 overflow-hidden bg-muted rounded border border-border/40">
-                  <img
-                    src={item.image_url}
-                    alt={item.product_name}
-                    className="size-full object-cover object-center"
-                  />
+                <div className="w-12">
+                  <AspectRatio ratio={3 / 4} className="overflow-hidden bg-muted rounded border border-border/40">
+                    <img
+                      src={item.image_url || "/placeholder.webp"}
+                      alt={item.product_name}
+                      className="size-full object-cover object-center"
+                    />
+                  </AspectRatio>
                 </div>
                 <div className="flex flex-col">
                   <span className="text-xs font-semibold text-foreground truncate max-w-[150px]">
@@ -67,7 +68,7 @@ export const OrderSummary = ({ items, subtotal }: OrderSummaryProps) => {
           </div>
           <div className="flex justify-between">
             <span>Shipping</span>
-            <span className="text-emerald-700 font-semibold">FREE</span>
+            <span className="text-emerald-700 font-semibold animate-pulse">FREE</span>
           </div>
         </div>
 
@@ -80,7 +81,6 @@ export const OrderSummary = ({ items, subtotal }: OrderSummaryProps) => {
             {formatPrice(grandTotal)}
           </span>
         </div>
-
       </CardContent>
     </Card>
   )

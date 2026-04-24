@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { AspectRatio } from "@/components/ui/aspect-ratio"
 import type { ProductImage } from "@/types"
 import {
   Carousel,
@@ -40,14 +41,16 @@ export const ProductImageGallery = ({ images, fallbackImage }: ProductImageGalle
         <CarouselContent className="-ml-0">
           {displayImages.map((imgUrl, index) => (
             <CarouselItem key={index} className="pl-0 basis-full">
-              <div className="relative aspect-[3/4] w-full overflow-hidden bg-muted shadow-md rounded-md select-none border border-foreground/5">
-                <img
-                  src={imgUrl}
-                  alt={`Product detail view ${index + 1}`}
-                  className="size-full object-cover object-center"
-                />
-                {/* Editorial internal border frame */}
-                <div className="absolute inset-4 border border-white/10 pointer-events-none transition-all duration-300 group-hover:inset-5" />
+              <div className="relative w-full overflow-hidden bg-muted shadow-md rounded-md select-none border border-foreground/5">
+                <AspectRatio ratio={3 / 4}>
+                  <img
+                    src={imgUrl}
+                    alt={`Product detail view ${index + 1}`}
+                    className="size-full object-cover object-center"
+                  />
+                  {/* Editorial internal border frame */}
+                  <div className="absolute inset-4 border border-white/10 pointer-events-none transition-all duration-300 group-hover:inset-5" />
+                </AspectRatio>
               </div>
             </CarouselItem>
           ))}
@@ -69,16 +72,18 @@ export const ProductImageGallery = ({ images, fallbackImage }: ProductImageGalle
             <button
               key={index}
               onClick={() => api?.scrollTo(index)}
-              className="relative aspect-[3/4] w-20 overflow-hidden bg-muted cursor-pointer border hover:border-primary/50 transition-all rounded-md"
+              className="w-20 overflow-hidden bg-muted cursor-pointer border hover:border-primary/50 transition-all rounded-md relative"
             >
-              <img
-                src={imgUrl}
-                alt={`Detail thumbnail ${index + 1}`}
-                className="size-full object-cover object-center"
-              />
-              {current === index && (
-                <div className="absolute inset-0 bg-black/5 border-2 border-primary rounded-md" />
-              )}
+              <AspectRatio ratio={3 / 4}>
+                <img
+                  src={imgUrl}
+                  alt={`Detail thumbnail ${index + 1}`}
+                  className="size-full object-cover object-center"
+                />
+                {current === index && (
+                  <div className="absolute inset-0 bg-black/5 border-2 border-primary rounded-md" />
+                )}
+              </AspectRatio>
             </button>
           ))}
         </div>

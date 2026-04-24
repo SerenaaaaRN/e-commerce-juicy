@@ -1,6 +1,8 @@
 import { ProductCard } from "./ProductCard"
 import { ProductGridSkeleton } from "@/components/common/LoadingSkeleton"
-import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from "@/components/ui/empty"
+import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyMedia } from "@/components/ui/empty"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { ShoppingBag01Icon } from "@hugeicons/core-free-icons"
 import type { CatalogProduct } from "@/types"
 
 type ProductGridProps = {
@@ -19,7 +21,10 @@ export const ProductGrid = ({ products, isLoading, cols = 4 }: ProductGridProps)
       <div className="flex justify-center items-center py-20 w-full">
         <Empty className="border-none max-w-md bg-transparent">
           <EmptyHeader>
-            <EmptyTitle className="text-lg font-bold">
+            <EmptyMedia variant="icon" className="bg-primary/5 text-primary size-12 rounded-full mb-3 flex items-center justify-center">
+              <HugeiconsIcon icon={ShoppingBag01Icon} strokeWidth={1.8} className="size-6 text-primary" />
+            </EmptyMedia>
+            <EmptyTitle className="text-xl font-bold tracking-tight">
               No Items Found
             </EmptyTitle>
             <EmptyDescription className="text-sm text-muted-foreground mt-2">

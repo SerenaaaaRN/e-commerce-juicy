@@ -13,6 +13,11 @@ import {
   SidebarMenuButton,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
+import {
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent,
+} from "@/components/ui/collapsible"
 import { Separator } from "@/components/ui/separator"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
@@ -23,6 +28,7 @@ import {
   StarIcon,
   ArrowLeft01Icon,
   DeliveryTruck02Icon,
+  ArrowDown01Icon,
 } from "@hugeicons/core-free-icons"
 import { toast } from "sonner"
 
@@ -92,43 +98,57 @@ export const AdminLayout = () => {
         <Sidebar collapsible="icon" className="border-r border-border">
           
           {/* Header section */}
-          <SidebarHeader className="h-16 flex items-center justify-between px-6 border-b border-border">
+          <SidebarHeader className="h-12 flex items-center justify-center group-data-[collapsible=icon]:p-2 px-6 border-b border-border transition-all duration-200">
             <div className="flex items-center gap-3">
-              <span className="font-heading font-extrabold text-lg tracking-[0.2em] text-primary">
+              <span className="font-heading font-extrabold text-lg tracking-[0.2em] text-primary group-data-[collapsible=icon]:hidden">
                 JUICY
-              </span>
-              <span className="text-[10px] font-bold tracking-widest uppercase bg-primary/10 text-primary px-2 py-0.5 rounded">
-                Console
               </span>
             </div>
           </SidebarHeader>
 
           {/* Navigation items list */}
-          <SidebarContent className="py-6 px-3 flex flex-col gap-2">
+          <SidebarContent className="py-4 px-3 flex flex-col gap-2">
             <SidebarMenu>
-              {menuItems.map((item) => {
-                const isActive = activePath === item.path
-                return (
-                  <SidebarMenuItem key={item.path} className="mb-1">
-                    <SidebarMenuButton
-                      asChild
-                      isActive={isActive}
-                      tooltip={item.name}
-                      className={cn(
-                        "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors",
-                        isActive
-                          ? "bg-primary text-primary-foreground font-semibold"
-                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                      )}
-                    >
-                      <Link to={item.path}>
-                        {item.icon()}
-                        <span>{item.name}</span>
-                      </Link>
+              <Collapsible defaultOpen className="group/collapsible w-full">
+                <SidebarMenuItem>
+                  <CollapsibleTrigger asChild className="group-data-[collapsible=icon]:hidden">
+                    <SidebarMenuButton className="flex items-center gap-3 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:bg-muted hover:text-foreground rounded-md w-full cursor-pointer">
+                      <span>Console Suite</span>
+                      <HugeiconsIcon
+                        icon={ArrowDown01Icon}
+                        className="ml-auto size-3.5 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-180"
+                      />
                     </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )
-              })}
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-1">
+                    <SidebarMenu className="pl-2 group-data-[collapsible=icon]:pl-0">
+                      {menuItems.map((item) => {
+                        const isActive = activePath === item.path
+                        return (
+                          <SidebarMenuItem key={item.path} className="mb-1">
+                            <SidebarMenuButton
+                              asChild
+                              isActive={isActive}
+                              tooltip={item.name}
+                              className={cn(
+                                "flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                                isActive
+                                  ? "bg-primary text-primary-foreground font-semibold"
+                                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                              )}
+                            >
+                              <Link to={item.path}>
+                                {item.icon()}
+                                <span>{item.name}</span>
+                              </Link>
+                            </SidebarMenuButton>
+                          </SidebarMenuItem>
+                        )
+                      })}
+                    </SidebarMenu>
+                  </CollapsibleContent>
+                </SidebarMenuItem>
+              </Collapsible>
             </SidebarMenu>
 
             <Separator className="my-4 bg-border" />
@@ -151,12 +171,12 @@ export const AdminLayout = () => {
           </SidebarContent>
 
           {/* Sidebar Footer displaying authenticated user */}
-          <SidebarFooter className="p-4 border-t border-border bg-sidebar-accent/30">
-            <div className="flex items-center gap-3">
-              <div className="flex size-9 items-center justify-center rounded-full bg-primary text-xs font-bold text-white uppercase">
+          <SidebarFooter className="p-4 group-data-[collapsible=icon]:p-2 border-t border-border bg-sidebar-accent/30 transition-all duration-200">
+            <div className="flex items-center gap-3 justify-center">
+              <div className="flex size-9 min-w-9 items-center justify-center rounded-full bg-primary text-xs font-bold text-white uppercase shrink-0">
                 {admin?.name?.substring(0, 2) || "AD"}
               </div>
-              <div className="flex flex-col text-left truncate flex-1">
+              <div className="flex flex-col text-left truncate flex-1 group-data-[collapsible=icon]:hidden">
                 <span className="text-xs font-semibold text-foreground truncate">
                   {admin?.name || "Administrator"}
                 </span>
@@ -173,7 +193,7 @@ export const AdminLayout = () => {
         <SidebarInset className="flex-1 flex flex-col overflow-hidden bg-background">
           
           {/* Admin Header */}
-          <header className="h-16 min-h-16 flex items-center justify-between px-6 border-b border-border bg-card">
+          <header className="h-12 min-h-12 flex items-center justify-between px-6 border-b border-border bg-card">
             <div className="flex items-center gap-4">
               <SidebarTrigger />
               <Separator orientation="vertical" className="h-4 bg-border" />

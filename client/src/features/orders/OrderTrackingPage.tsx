@@ -8,8 +8,10 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Spinner } from "@/components/ui/spinner"
 import { Separator } from "@/components/ui/separator"
-import { Card, CardContent } from "@/components/ui/card"
-import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyContent, EmptyMedia } from "@/components/ui/empty"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { ShoppingBag01Icon } from "@hugeicons/core-free-icons"
 import { toast } from "sonner"
 import { cn, formatPrice, formatDate, getOrderStatusLabel, getOrderStatusColor, getPaymentStatusLabel } from "@/lib/utils"
 import type { OrderDetail } from "@/types"
@@ -65,6 +67,9 @@ export const OrderTrackingPage = () => {
       <div className="container mx-auto flex min-h-[60vh] max-w-7xl items-center justify-center py-20 px-4">
         <Empty className="border-none max-w-md bg-transparent">
           <EmptyHeader>
+            <EmptyMedia variant="icon" className="bg-primary/5 text-primary size-12 rounded-full mb-3 flex items-center justify-center">
+              <HugeiconsIcon icon={ShoppingBag01Icon} strokeWidth={1.8} className="size-6 text-primary" />
+            </EmptyMedia>
             <EmptyTitle className="text-2xl font-bold tracking-tight">
               Order File Not Found
             </EmptyTitle>
@@ -106,7 +111,7 @@ export const OrderTrackingPage = () => {
               <span className="text-xs font-semibold tracking-wider text-primary uppercase">
                 Order Tracking
               </span>
-              <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
+              <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground font-heading">
                 Order Reference: #{order.order_number}
               </h1>
               <span className="text-xs text-muted-foreground uppercase font-medium mt-1">
@@ -141,11 +146,12 @@ export const OrderTrackingPage = () => {
 
             {/* List of Purchased Items */}
             <Card className="border border-border/80 shadow-md">
-              <CardContent className="p-6 flex flex-col gap-4">
-                <h3 className="text-sm font-semibold tracking-tight text-foreground uppercase text-left">
+              <CardHeader className="pb-0">
+                <CardTitle className="text-sm font-semibold tracking-tight text-foreground uppercase text-left">
                   Itemized Silhouette Summary
-                </h3>
-                <Separator />
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col pt-4">
                 <div className="flex flex-col">
                   {order.items.map((item, index) => (
                     <OrderItemRow
@@ -166,14 +172,12 @@ export const OrderTrackingPage = () => {
             
             {/* Delivery address card */}
             <Card className="border border-border/80 shadow-md">
-              <CardContent className="p-6 flex flex-col gap-4">
-                
-                <h3 className="text-sm font-semibold tracking-tight text-foreground uppercase">
+              <CardHeader className="pb-0">
+                <CardTitle className="text-sm font-semibold tracking-tight text-foreground uppercase">
                   Shipping Destination
-                </h3>
-                
-                <Separator />
-
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-4 pt-4">
                 {shippingAddress ? (
                   <div className="flex flex-col gap-1 text-xs">
                     <span className="font-bold text-sm text-foreground">
@@ -191,20 +195,17 @@ export const OrderTrackingPage = () => {
                     No destination address specified.
                   </span>
                 )}
-
               </CardContent>
             </Card>
 
             {/* Financial totals Card */}
             <Card className="border border-border/80 shadow-md">
-              <CardContent className="p-6 flex flex-col gap-4">
-                
-                <h3 className="text-sm font-semibold tracking-tight text-foreground uppercase">
+              <CardHeader className="pb-0">
+                <CardTitle className="text-sm font-semibold tracking-tight text-foreground uppercase">
                   Pricing Breakdown
-                </h3>
-                
-                <Separator />
-
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-col gap-4 pt-4">
                 <div className="flex flex-col gap-2.5 text-xs text-muted-foreground uppercase tracking-wider font-medium">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
@@ -228,7 +229,6 @@ export const OrderTrackingPage = () => {
                     {formatPrice(grandTotal)}
                   </span>
                 </div>
-
               </CardContent>
             </Card>
 

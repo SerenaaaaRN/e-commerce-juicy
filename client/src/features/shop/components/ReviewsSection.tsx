@@ -5,7 +5,9 @@ import { StarRating } from "./StarRating"
 import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
-import { Empty, EmptyHeader, EmptyDescription } from "@/components/ui/empty"
+import { Empty, EmptyHeader, EmptyDescription, EmptyMedia } from "@/components/ui/empty"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { ShoppingBag01Icon } from "@hugeicons/core-free-icons"
 import type { Review } from "@/types"
 
 type ReviewsSectionProps = {
@@ -85,8 +87,11 @@ export const ReviewsSection = ({ slug, avgRating, reviewCount }: ReviewsSectionP
       ) : reviews.length === 0 ? (
         <Empty className="border-none max-w-md bg-transparent mx-auto py-10">
           <EmptyHeader>
-            <EmptyDescription className="text-sm text-muted-foreground">
-              No reviews available for this silhouette yet.
+            <EmptyMedia variant="icon" className="bg-primary/5 text-primary size-12 rounded-full mb-3 flex items-center justify-center">
+              <HugeiconsIcon icon={ShoppingBag01Icon} strokeWidth={1.8} className="size-6 text-primary" />
+            </EmptyMedia>
+            <EmptyDescription className="text-sm text-muted-foreground mt-2">
+              No reviews available for this silhouette yet. Be the first to share your experience after purchasing!
             </EmptyDescription>
           </EmptyHeader>
         </Empty>

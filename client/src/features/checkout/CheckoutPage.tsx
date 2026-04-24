@@ -10,7 +10,9 @@ import { ordersApi } from "@/lib/api/orders"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Spinner } from "@/components/ui/spinner"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { ShoppingBag01Icon } from "@hugeicons/core-free-icons"
 import { toast } from "sonner"
 import type { Address } from "@/types"
 
@@ -75,6 +77,7 @@ export const CheckoutPage = () => {
       const res = await ordersApi.checkout({
         address_id: selectedAddressId,
         notes: "Checkout from storefront customer app",
+        payment_method: paymentMethod,
       })
 
       if (res.success && res.data) {
@@ -99,9 +102,9 @@ export const CheckoutPage = () => {
         {/* Page Title */}
         <div className="text-left flex flex-col gap-2">
           <span className="text-xs font-semibold tracking-wider text-primary uppercase">
-            Protected Checkout Flow
+            Atelier Checkout Flow
           </span>
-          <h1 className="text-4xl font-bold tracking-tight text-foreground">
+          <h1 className="text-4xl font-bold tracking-tight text-foreground font-heading">
             Checkout
           </h1>
           <p className="text-sm text-muted-foreground max-w-md leading-relaxed">
@@ -119,11 +122,12 @@ export const CheckoutPage = () => {
 
             {showAddressForm ? (
               <Card className="border border-border/80 shadow-md">
-                <CardContent className="p-6 flex flex-col gap-4">
-                  <h3 className="text-sm font-semibold tracking-tight text-foreground uppercase text-left">
+                <CardHeader className="pb-0">
+                  <CardTitle className="text-sm font-semibold tracking-tight text-foreground uppercase text-left">
                     Create New Address
-                  </h3>
-                  <Separator />
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-col gap-4 pt-4">
                   <AddressForm
                     onSubmitSuccess={() => {
                       setShowAddressForm(false)
@@ -169,11 +173,13 @@ export const CheckoutPage = () => {
                 onClick={handlePlaceOrder}
                 disabled={loading || !selectedAddressId || showAddressForm}
                 size="lg"
-                className="w-full font-medium uppercase tracking-widest text-xs py-6 h-auto cursor-pointer transition-transform hover:scale-[1.01] active:scale-95 duration-200"
+                className="w-full"
               >
                 {loading ? (
                   <Spinner data-icon="inline-start" />
-                ) : null}
+                ) : (
+                  <HugeiconsIcon icon={ShoppingBag01Icon} strokeWidth={1.8} data-icon="inline-start" />
+                )}
                 {loading ? "Placing Order..." : "Confirm & Place Order"}
               </Button>
               {(!selectedAddressId && !showAddressForm) && (

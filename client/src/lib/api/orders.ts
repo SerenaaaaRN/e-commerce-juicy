@@ -4,6 +4,7 @@ import type { ApiResponse, Address, OrderDetail, Order } from "@/types"
 type CheckoutPayload = {
   address_id: string
   notes?: string
+  payment_method: string
 }
 
 type AddressPayload = Omit<Address, "id" | "customer_id" | "is_default">

@@ -112,7 +112,7 @@ export const OrdersPage = () => {
       </DefferedContainer>
 
       <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-        <DialogContent className="max-w-3xl bg-card border overflow-y-auto max-h-[90vh]">
+        <DialogContent className="max-w-3xl sm:min-w-3xl bg-card border overflow-y-auto max-h-[90vh]">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold font-heading">Invoice Order Detail: {activeOrder?.order_number || "Fulfillment"}</DialogTitle>
             <DialogDescription className="text-xs">Review line-items, verify payments capture, print packing labels, and coordinate delivery shipments.</DialogDescription>

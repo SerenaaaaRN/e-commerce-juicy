@@ -44,7 +44,7 @@ export const ProductFormDialog = ({
   isPending,
 }: ProductFormDialogProps) => (
   <Dialog open={open} onOpenChange={onOpenChange}>
-    <DialogContent className="max-h-[90vh] max-w-xl sm:max-w-2xl overflow-y-auto border bg-card">
+    <DialogContent className="max-h-[90vh] max-w-xl sm:max-w-3xl overflow-y-auto border bg-card">
       <DialogHeader>
         <DialogTitle className="font-heading text-lg font-bold">
           {activeProduct

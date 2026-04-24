@@ -1,4 +1,5 @@
 import { Separator } from "@/components/ui/separator"
+import { AspectRatio } from "@/components/ui/aspect-ratio"
 
 export const EditorialSection = () => {
   return (
@@ -10,14 +11,16 @@ export const EditorialSection = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
 
           {/* Main Visual Campaign Image */}
-          <div className="lg:col-span-7 relative aspect-[4/3] md:aspect-[16/10] w-full overflow-hidden bg-muted shadow-2xl rounded-none select-none group">
-            <img
-              src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1200&auto=format&fit=crop"
-              alt="Editorial Brand Lookbook Showcase"
-              className="absolute inset-0 size-full object-cover transition-transform duration-[2500ms] ease-out group-hover:scale-105"
-            />
-            {/* Outer editorial frame */}
-            <div className="absolute inset-4 border border-white/20 pointer-events-none transition-all duration-500 group-hover:inset-6" />
+          <div className="lg:col-span-7 w-full select-none group">
+            <AspectRatio ratio={16 / 10} className="overflow-hidden bg-muted shadow-2xl relative">
+              <img
+                src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=1200&auto=format&fit=crop"
+                alt="Editorial Brand Lookbook Showcase"
+                className="absolute inset-0 size-full object-cover transition-transform duration-[2500ms] ease-out group-hover:scale-105"
+              />
+              {/* Outer editorial frame */}
+              <div className="absolute inset-4 border border-white/20 pointer-events-none transition-all duration-500 group-hover:inset-6" />
+            </AspectRatio>
           </div>
 
           {/* Text/Editorial Copy column */}

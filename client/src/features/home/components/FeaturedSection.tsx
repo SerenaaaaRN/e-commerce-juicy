@@ -80,7 +80,7 @@ export const FeaturedSection = () => {
             <span className="text-xs font-semibold tracking-wider text-primary uppercase">
               Atelier Curator Highlights
             </span>
-            <h2 className="text-3xl font-bold tracking-tight text-foreground">
+            <h2 className="text-3xl font-bold tracking-tight text-foreground font-heading">
               Bestseller Silhouettes
             </h2>
           </div>

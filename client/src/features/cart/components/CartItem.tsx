@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { AspectRatio } from "@/components/ui/aspect-ratio"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Cancel01Icon } from "@hugeicons/core-free-icons"
 import { formatPrice } from "@/lib/utils"
@@ -25,12 +26,14 @@ export const CartItem = ({ item, onUpdateQty, onRemove }: CartItemProps) => {
       
       {/* Product Image & Info Details */}
       <div className="flex items-center gap-4 flex-1">
-        <div className="relative aspect-[3/4] w-20 overflow-hidden bg-muted rounded-md border border-border/60">
-          <img
-            src={item.image_url || "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?q=80&w=400&auto=format&fit=crop"}
-            alt={item.product_name}
-            className="size-full object-cover object-center"
-          />
+        <div className="w-20">
+          <AspectRatio ratio={3 / 4} className="overflow-hidden bg-muted rounded-md border border-border/60">
+            <img
+              src={item.image_url || "/placeholder.webp"}
+              alt={item.product_name}
+              className="size-full object-cover object-center"
+            />
+          </AspectRatio>
         </div>
 
         <div className="flex flex-col gap-1">
@@ -86,8 +89,15 @@ export const CartItem = ({ item, onUpdateQty, onRemove }: CartItemProps) => {
         </div>
 
         {/* Item Total (Price * Qty) */}
-        <div className="hidden sm:block text-right min-w-[100px] font-mono text-sm font-semibold">
-          {formatPrice(item.subtotal)}
+        <div className="hidden sm:flex flex-col items-end min-w-[100px] gap-0.5 text-right">
+          <span className="font-mono text-sm font-semibold text-foreground">
+            {formatPrice(item.subtotal)}
+          </span>
+          {item.quantity > 1 && (
+            <span className="text-[10px] text-muted-foreground font-mono font-medium">
+              {formatPrice(item.unit_price)} each
+            </span>
+          )}
         </div>
 
         {/* Delete Trigger */}
@@ -97,7 +107,7 @@ export const CartItem = ({ item, onUpdateQty, onRemove }: CartItemProps) => {
           onClick={() => onRemove(item.id)}
           className="text-muted-foreground hover:text-destructive cursor-pointer size-8 rounded-full"
         >
-          <HugeiconsIcon icon={Cancel01Icon} strokeWidth={1.8} className="size-4" data-icon />
+          <HugeiconsIcon icon={Cancel01Icon} strokeWidth={1.8} data-icon />
         </Button>
 
       </div>

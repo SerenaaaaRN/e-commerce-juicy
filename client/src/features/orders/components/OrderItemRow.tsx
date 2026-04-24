@@ -1,4 +1,5 @@
 import { WriteReviewCta } from "./WriteReviewCta"
+import { AspectRatio } from "@/components/ui/aspect-ratio"
 import { formatPrice } from "@/lib/utils"
 import type { OrderItem } from "@/types"
 
@@ -16,12 +17,14 @@ export const OrderItemRow = ({ item, orderId, orderStatus }: OrderItemRowProps) 
       
       {/* Product Image & Specs Details */}
       <div className="flex items-center gap-4 flex-1">
-        <div className="relative aspect-[3/4] w-14 overflow-hidden bg-muted rounded border border-border/40">
-          <img
-            src={item.image_url || "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?q=80&w=400&auto=format&fit=crop"}
-            alt={item.product_name}
-            className="size-full object-cover object-center"
-          />
+        <div className="w-14">
+          <AspectRatio ratio={3 / 4} className="overflow-hidden bg-muted rounded border border-border/40">
+            <img
+              src={item.image_url || "/placeholder.webp"}
+              alt={item.product_name}
+              className="size-full object-cover object-center"
+            />
+          </AspectRatio>
         </div>
 
         <div className="flex flex-col gap-0.5">

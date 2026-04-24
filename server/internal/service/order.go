@@ -113,7 +113,7 @@ func (s *orderService) Checkout(ctx context.Context, customerID uuid.UUID, req d
 	var shippingFee float64 = 25000
 	total := subtotal + shippingFee
 
-	dateStr := time.Now().Format("20060102")
+	dateStr := time.Now().Format("060102")
 	orderNumber := fmt.Sprintf("JUICY-%s-%s", dateStr, generateRandomAlphanumeric(6))
 
 	order := &model.Order{

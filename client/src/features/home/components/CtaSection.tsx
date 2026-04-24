@@ -13,7 +13,7 @@ export const CtaSection = () => {
           Seasonal Release
         </span>
         
-        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground leading-tight">
+        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground leading-tight font-heading">
           Adorn Yourself in <br />
           <span className="text-primary">Artisanal Simplicity</span>
         </h2>

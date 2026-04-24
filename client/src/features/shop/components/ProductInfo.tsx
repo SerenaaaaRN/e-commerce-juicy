@@ -42,7 +42,7 @@ export const ProductInfo = ({
       </div>
 
       {/* Product Title */}
-      <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">
+      <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground font-heading">
         {name}
       </h1>
 

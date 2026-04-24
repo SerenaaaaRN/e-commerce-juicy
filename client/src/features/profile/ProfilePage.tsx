@@ -31,7 +31,7 @@ export const ProfilePage = () => {
           <span className="text-xs font-semibold tracking-wider text-primary uppercase">
             Atelier Customer Center
           </span>
-          <h1 className="text-4xl font-bold tracking-tight text-foreground">
+          <h1 className="text-4xl font-bold tracking-tight text-foreground font-heading">
             My Account
           </h1>
           <p className="text-sm text-muted-foreground max-w-md leading-relaxed font-sans">

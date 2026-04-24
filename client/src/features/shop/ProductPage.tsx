@@ -9,7 +9,9 @@ import { AddToCartButton } from "./components/AddToCartButton"
 import { ReviewsSection } from "./components/ReviewsSection"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
-import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyContent } from "@/components/ui/empty"
+import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyContent, EmptyMedia } from "@/components/ui/empty"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { ShoppingBag01Icon } from "@hugeicons/core-free-icons"
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -65,6 +67,9 @@ export const ProductPage = () => {
       <div className="container mx-auto flex min-h-[60vh] max-w-7xl items-center justify-center py-20 px-4">
         <Empty className="border-none max-w-md bg-transparent">
           <EmptyHeader>
+            <EmptyMedia variant="icon" className="bg-primary/5 text-primary size-12 rounded-full mb-3 flex items-center justify-center">
+              <HugeiconsIcon icon={ShoppingBag01Icon} strokeWidth={1.8} className="size-6 text-primary" />
+            </EmptyMedia>
             <EmptyTitle className="text-2xl font-bold tracking-tight">
               Silhouette Not Found
             </EmptyTitle>
@@ -152,7 +157,7 @@ export const ProductPage = () => {
           <div className="lg:col-span-6 w-full">
             <ProductImageGallery
               images={currentProduct.images || []}
-              fallbackImage="https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?q=80&w=800&auto=format&fit=crop"
+              fallbackImage="/placeholder.webp"
             />
           </div>
 

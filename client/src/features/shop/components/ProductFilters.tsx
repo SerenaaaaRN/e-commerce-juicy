@@ -2,6 +2,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion"
 import { cn } from "@/lib/utils"
 import type { Category } from "@/types"
 
@@ -112,85 +113,87 @@ export const ProductFilters = ({
 
   return (
     <div className="flex flex-col gap-6 text-left">
-      {/* Category Section */}
-      <div className="flex flex-col gap-3">
-        <h3 className="text-sm font-semibold tracking-tight text-foreground uppercase">
-          Categories
-        </h3>
-        <Separator />
+      <Accordion type="multiple" defaultValue={["categories", "sizes", "sort"]} className="w-full">
+        {/* Categories Section */}
+        <AccordionItem value="categories" className="border-b border-border/80 pb-3 mb-3">
+          <AccordionTrigger className="text-xs uppercase tracking-widest font-bold text-foreground py-2 hover:no-underline hover:text-primary">
+            Categories
+          </AccordionTrigger>
+          <AccordionContent className="pt-2 pb-1">
+            <div className="flex flex-col gap-1">
+              <button
+                onClick={() => onCategoryChange("")}
+                className={cn(
+                  "text-left py-1.5 px-2 text-xs uppercase tracking-wider font-semibold rounded-none cursor-pointer border-l-2",
+                  selectedCategory === ""
+                    ? "bg-primary/10 text-primary border-primary"
+                    : "text-muted-foreground hover:text-foreground border-transparent hover:bg-muted/30"
+                )}
+              >
+                All Apparel
+              </button>
+              {rootCategories.map((cat) => renderCategoryNode(cat, 0))}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
 
-        <div className="flex flex-col gap-1">
-          {/* All Apparel link */}
-          <button
-            onClick={() => onCategoryChange("")}
-            className={cn(
-              "text-left py-1.5 px-2 text-xs uppercase tracking-wider font-semibold rounded-none cursor-pointer border-l-2",
-              selectedCategory === ""
-                ? "bg-primary/10 text-primary border-primary"
-                : "text-muted-foreground hover:text-foreground border-transparent hover:bg-muted/30"
-            )}
-          >
-            All Apparel
-          </button>
-
-          {rootCategories.map((cat) => renderCategoryNode(cat, 0))}
-        </div>
-      </div>
-
-      {/* Size Pills Section */}
-      <div className="flex flex-col gap-3">
-        <h3 className="text-sm font-semibold tracking-tight text-foreground uppercase">
-          Filter by Size
-        </h3>
-        <Separator />
-        <ToggleGroup
-          type="multiple"
-          variant="outline"
-          value={selectedSizes}
-          onValueChange={onSizesChange}
-          className="flex flex-wrap gap-2 justify-start"
-        >
-          {AVAILABLE_SIZES.map((size) => (
-            <ToggleGroupItem
-              key={size}
-              value={size}
-              className="min-w-[42px] h-9 text-xs font-semibold uppercase tracking-wider rounded-none cursor-pointer data-[state=on]:bg-zinc-900 data-[state=on]:text-zinc-50 dark:data-[state=on]:bg-zinc-50 dark:data-[state=on]:text-zinc-900 data-[state=on]:border-zinc-900 dark:data-[state=on]:border-zinc-50"
+        {/* Size Pills Section */}
+        <AccordionItem value="sizes" className="border-b border-border/80 pb-3 mb-3">
+          <AccordionTrigger className="text-xs uppercase tracking-widest font-bold text-foreground py-2 hover:no-underline hover:text-primary">
+            Filter by Size
+          </AccordionTrigger>
+          <AccordionContent className="pt-2 pb-1">
+            <ToggleGroup
+              type="multiple"
+              variant="outline"
+              value={selectedSizes}
+              onValueChange={onSizesChange}
+              className="flex flex-wrap gap-2 justify-start"
             >
-              {size}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-      </div>
+              {AVAILABLE_SIZES.map((size) => (
+                <ToggleGroupItem
+                  key={size}
+                  value={size}
+                  className="min-w-[42px] h-9 text-xs font-semibold uppercase tracking-wider rounded-none cursor-pointer data-[state=on]:bg-zinc-900 data-[state=on]:text-zinc-50 dark:data-[state=on]:bg-zinc-50 dark:data-[state=on]:text-zinc-900 data-[state=on]:border-zinc-900 data-[state=on]:border-zinc-50"
+                >
+                  {size}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+          </AccordionContent>
+        </AccordionItem>
 
-      {/* Sorting Section */}
-      <div className="flex flex-col gap-3">
-        <h3 className="text-sm font-semibold tracking-tight text-foreground uppercase">
-          Sort By
-        </h3>
-        <Separator />
-        <ToggleGroup
-          type="single"
-          value={selectedSort}
-          onValueChange={(val) => onSortChange((val || "") as any)}
-          className="flex flex-col items-stretch gap-1"
-        >
-          {sortOptions.map((opt) => (
-            <ToggleGroupItem
-              key={opt.value}
-              value={opt.value}
-              className="justify-start py-1.5 px-2 h-auto text-xs uppercase tracking-wider font-medium rounded-none cursor-pointer border-l-2 text-muted-foreground hover:text-foreground border-transparent hover:bg-muted/30 data-[state=on]:bg-zinc-100 data-[state=on]:text-zinc-900 data-[state=on]:border-zinc-900 dark:data-[state=on]:bg-zinc-800 dark:data-[state=on]:text-zinc-50 dark:data-[state=on]:border-zinc-50"
+        {/* Sorting Section */}
+        <AccordionItem value="sort" className="pb-3">
+          <AccordionTrigger className="text-xs uppercase tracking-widest font-bold text-foreground py-2 hover:no-underline hover:text-primary">
+            Sort By
+          </AccordionTrigger>
+          <AccordionContent className="pt-2 pb-1">
+            <ToggleGroup
+              type="single"
+              value={selectedSort}
+              onValueChange={(val) => onSortChange((val || "") as any)}
+              className="flex flex-col items-stretch gap-1"
             >
-              {opt.label}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-      </div>
+              {sortOptions.map((opt) => (
+                <ToggleGroupItem
+                  key={opt.value}
+                  value={opt.value}
+                  className="justify-start py-1.5 px-2 h-auto text-xs uppercase tracking-wider font-medium rounded-none cursor-pointer border-l-2 text-muted-foreground hover:text-foreground border-transparent hover:bg-muted/30 data-[state=on]:bg-zinc-100 data-[state=on]:text-zinc-900 data-[state=on]:border-zinc-900 dark:data-[state=on]:bg-zinc-800 dark:data-[state=on]:text-zinc-50 dark:data-[state=on]:border-zinc-50"
+                >
+                  {opt.label}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
 
       {/* Reset Action */}
       <Button
         variant="outline"
         onClick={onReset}
-        className="cursor-pointer mt-2 w-full rounded-none font-semibold text-xs uppercase tracking-wider py-5"
+        className="cursor-pointer w-full rounded-none font-semibold text-xs uppercase tracking-wider py-5"
       >
         Clear Filters
       </Button>
