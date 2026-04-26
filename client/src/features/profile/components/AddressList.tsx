@@ -8,12 +8,15 @@ import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyContent, EmptyMe
 import { HugeiconsIcon } from "@hugeicons/react"
 import { ShoppingBag01Icon } from "@hugeicons/core-free-icons"
 import { toast } from "sonner"
+import { useConfirm } from "@/hooks/useConfirm"
 import type { Address } from "@/types"
 
 export const AddressList = () => {
   const [addresses, setAddresses] = useState<Address[]>([])
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [editingAddress, setEditingAddress] = useState<Address | undefined>(undefined)
+  const { confirm: confirmDelete, dialog: confirmDialog } = useConfirm()
 
   const loadAddresses = async () => {
     setLoading(true)
@@ -34,6 +37,11 @@ export const AddressList = () => {
   }, [])
 
   const handleDelete = async (id: string) => {
+    const confirmed = await confirmDelete(
+      "Are you sure you want to delete this shipping address? This action cannot be undone."
+    )
+    if (!confirmed) return
+
     try {
       const res = await ordersApi.deleteAddress(id)
       if (res.success) {
@@ -118,6 +126,10 @@ export const AddressList = () => {
               address={addr}
               onDelete={handleDelete}
               onSetDefault={handleSetDefault}
+              onEdit={(addr) => {
+                setEditingAddress(addr)
+                setIsModalOpen(true)
+              }}
             />
           ))}
         </div>
@@ -126,9 +138,15 @@ export const AddressList = () => {
       {/* modal overlay trigger */}
       <AddressFormModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false)
+          setEditingAddress(undefined)
+        }}
         onSuccess={loadAddresses}
+        initialData={editingAddress}
       />
+
+      {confirmDialog}
 
     </div>
   )

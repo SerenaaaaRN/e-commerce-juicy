@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { useParams, Link } from "react-router-dom"
 import { useProductStore } from "@/stores/productStore"
 import { useCartStore } from "@/stores/cartStore"
+import { useRecentlyViewed } from "@/hooks/useRecentlyViewed"
 import { ProductImageGallery } from "./components/ProductImageGallery"
 import { ProductInfo } from "./components/ProductInfo"
 import { VariantSelector } from "./components/VariantSelector"
@@ -26,6 +27,7 @@ export const ProductPage = () => {
   const { slug } = useParams<{ slug: string }>()
   const { currentProduct, isLoading, error, fetchProductBySlug, clearCurrentProduct } = useProductStore()
   const { addItem, isLoading: isAddingToCart } = useCartStore()
+  const { addItem: addToRecentlyViewed } = useRecentlyViewed()
 
   // Selections state
   const [selectedSize, setSelectedSize] = useState("")
@@ -46,8 +48,15 @@ export const ProductPage = () => {
     if (currentProduct) {
       setSelectedSize("")
       setSelectedColor("")
+      addToRecentlyViewed({
+        slug: currentProduct.slug,
+        name: currentProduct.name,
+        image_url: currentProduct.images?.find((i) => i.is_primary)?.image_url || "",
+        price: currentProduct.price,
+        category_name: currentProduct.category?.name || "",
+      })
     }
-  }, [currentProduct])
+  }, [currentProduct, addToRecentlyViewed])
 
   if (isLoading) {
     return (

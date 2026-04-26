@@ -20,9 +20,9 @@ import {
   DialogClose,
 } from "@/components/ui/dialog"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Delete02Icon } from "@hugeicons/core-free-icons"
+import { Edit01Icon, Delete02Icon } from "@hugeicons/core-free-icons"
 import { formatPrice } from "@/lib/utils/format"
-import type { ProductDetail } from "@/types"
+import type { ProductDetail, ProductVariant } from "@/types"
 import type { VariantFormValues } from "@/features/admin/types"
 
 type VariantManagerDialogProps = {
@@ -32,6 +32,9 @@ type VariantManagerDialogProps = {
   form: UseFormReturn<VariantFormValues>
   onSubmit: (e?: React.BaseSyntheticEvent) => Promise<void>
   onDeleteVariant: (variantId: string) => void
+  onEditVariant: (variant: ProductVariant) => void
+  onCancelEdit: () => void
+  editingVariant: ProductVariant | null
   isPending: boolean
 }
 
@@ -42,6 +45,9 @@ export const VariantManagerDialog = ({
   form,
   onSubmit,
   onDeleteVariant,
+  onEditVariant,
+  onCancelEdit,
+  editingVariant,
   isPending,
 }: VariantManagerDialogProps) => (
   <Dialog open={open} onOpenChange={onOpenChange}>
@@ -60,7 +66,7 @@ export const VariantManagerDialog = ({
         <Card className="h-fit border border-border/80 bg-card/40">
           <CardHeader className="p-4">
             <CardTitle className="text-xs font-bold tracking-wider text-foreground uppercase">
-              Add New Variant option
+              {editingVariant ? "Edit Variant Option" : "Add New Variant option"}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0">
@@ -144,16 +150,31 @@ export const VariantManagerDialog = ({
                 </Field>
               </div>
 
-              <Button
-                type="submit"
-                disabled={isPending}
-                className="mt-2 w-full font-medium"
-              >
-                {isPending && <Spinner data-icon="inline-start" />}
-                {isPending
-                  ? "Appending..."
-                  : "Append Variant Option"}
-              </Button>
+              <div className="flex gap-2 mt-2">
+                {editingVariant && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onCancelEdit}
+                    disabled={isPending}
+                    className="flex-1 font-medium"
+                  >
+                    Cancel
+                  </Button>
+                )}
+                <Button
+                  type="submit"
+                  disabled={isPending}
+                  className={editingVariant ? "flex-1 font-medium" : "w-full font-medium"}
+                >
+                  {isPending && <Spinner data-icon="inline-start" />}
+                  {isPending
+                    ? "Saving..."
+                    : editingVariant
+                    ? "Update Variant"
+                    : "Append Variant Option"}
+                </Button>
+              </div>
             </form>
           </CardContent>
         </Card>
@@ -199,18 +220,23 @@ export const VariantManagerDialog = ({
                       </span>
                     </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    disabled={isPending}
-                    onClick={() => onDeleteVariant(v.id)}
-                    className="size-7 hover:bg-destructive/10 hover:text-destructive"
-                  >
-                    <HugeiconsIcon
-                      icon={Delete02Icon}
-                      className="size-3.5"
-                    />
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onEditVariant(v)}
+                    >
+                      <HugeiconsIcon icon={Edit01Icon} />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      disabled={isPending}
+                      onClick={() => onDeleteVariant(v.id)}
+                    >
+                      <HugeiconsIcon icon={Delete02Icon} />
+                    </Button>
+                  </div>
                 </div>
               ))
             )}

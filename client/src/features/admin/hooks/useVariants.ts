@@ -1,10 +1,10 @@
-import { useTransition, useCallback } from "react"
+import { useState, useTransition, useCallback } from "react"
 import { useForm, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { adminApi } from "@/lib/api/admin"
 import { toast } from "sonner"
 import { variantSchema } from "@/features/admin/validations"
-import type { ProductDetail } from "@/types"
+import type { ProductDetail, ProductVariant } from "@/types"
 import type { VariantFormValues } from "@/features/admin/types"
 
 export const useVariants = (
@@ -13,6 +13,7 @@ export const useVariants = (
   loadData: () => void
 ) => {
   const [isPending, startTransition] = useTransition()
+  const [editingVariant, setEditingVariant] = useState<ProductVariant | null>(null)
 
   const variantForm = useForm<VariantFormValues>({
     resolver: zodResolver(variantSchema) as unknown as Resolver<VariantFormValues>,
@@ -27,6 +28,7 @@ export const useVariants = (
   })
 
   const resetVariantForm = useCallback(() => {
+    setEditingVariant(null)
     variantForm.reset({
       size: "",
       color: "",
@@ -36,6 +38,25 @@ export const useVariants = (
       additional_price: 0,
     })
   }, [variantForm])
+
+  const handleOpenEditVariant = useCallback(
+    (variant: ProductVariant) => {
+      setEditingVariant(variant)
+      variantForm.reset({
+        size: variant.size,
+        color: variant.color || "",
+        color_hex: variant.color_hex || "",
+        sku: variant.sku,
+        stock: variant.stock,
+        additional_price: variant.additional_price,
+      })
+    },
+    [variantForm]
+  )
+
+  const handleCancelEditVariant = useCallback(() => {
+    resetVariantForm()
+  }, [resetVariantForm])
 
   const handleAddVariant = variantForm.handleSubmit(async (values) => {
     if (!activeProduct) return
@@ -52,20 +73,31 @@ export const useVariants = (
       }
 
       try {
-        const res = await adminApi.addVariant(activeProduct.id, payload)
-        if (res.success && res.data) {
-          toast.success("Variant appended successfully!")
-          const updatedV = [...(activeProduct.variants || []), res.data]
-          setActiveProduct((prev) =>
-            prev ? { ...prev, variants: updatedV } : null
-          )
-          loadData()
-          resetVariantForm()
+        if (editingVariant) {
+          const res = await adminApi.updateVariant(activeProduct.id, editingVariant.id, payload)
+          if (res.success) {
+            toast.success("Variant updated successfully!")
+            resetVariantForm()
+            loadData()
+          } else {
+            toast.error(res.message || "Failed to update variant.")
+          }
         } else {
-          toast.error(res.message || "Failed to append variant option.")
+          const res = await adminApi.addVariant(activeProduct.id, payload)
+          if (res.success && res.data) {
+            toast.success("Variant appended successfully!")
+            const updatedV = [...(activeProduct.variants || []), res.data]
+            setActiveProduct((prev) =>
+              prev ? { ...prev, variants: updatedV } : null
+            )
+            loadData()
+            resetVariantForm()
+          } else {
+            toast.error(res.message || "Failed to append variant option.")
+          }
         }
       } catch {
-        toast.error("Failed to append variant.")
+        toast.error(editingVariant ? "Failed to update variant." : "Failed to append variant.")
       }
     })
   })
@@ -104,8 +136,11 @@ export const useVariants = (
   return {
     isPending,
     variantForm,
+    editingVariant,
     resetVariantForm,
     handleAddVariant,
     handleDeleteVariant,
+    handleOpenEditVariant,
+    handleCancelEditVariant,
   }
 }

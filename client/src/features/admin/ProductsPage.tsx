@@ -36,6 +36,11 @@ import type { ProductDetail } from "@/types"
 export const ProductsPage = () => {
   const ctx = useProducts()
   const { confirm: confirmDelete, dialog: confirmDialog } = useConfirm()
+  const {
+    editingCategory,
+    handleOpenEditCategory,
+    handleCancelEditCategory,
+  } = ctx
 
   const [variantsModalOpen, setVariantsModalOpen] = useState(false)
   const [imagesModalOpen, setImagesModalOpen] = useState(false)
@@ -141,11 +146,11 @@ export const ProductsPage = () => {
                         <div className="flex items-center justify-end gap-2">
                           <Button variant="ghost" size="xs" onClick={() => openVariants(prod)} className="border px-2.5 text-xs font-medium hover:bg-muted">Variants</Button>
                           <Button variant="ghost" size="xs" onClick={() => openImages(prod)} className="border px-2.5 text-xs font-medium hover:bg-muted">Media</Button>
-                          <Button variant="ghost" size="icon" onClick={() => ctx.handleOpenEditProduct(prod)} className="hover:bg-muted">
-                            <HugeiconsIcon icon={Edit01Icon} className="size-4 text-muted-foreground" />
+                          <Button variant="ghost" size="icon" onClick={() => ctx.handleOpenEditProduct(prod)}>
+                            <HugeiconsIcon icon={Edit01Icon} />
                           </Button>
-                          <Button variant="ghost" size="icon" disabled={ctx.isPending} onClick={() => ctx.handleDeleteProduct(prod.id, confirmDelete)} className="hover:bg-destructive/10 hover:text-destructive">
-                            <HugeiconsIcon icon={Delete02Icon} className="size-4" />
+                          <Button variant="ghost" size="icon" disabled={ctx.isPending} onClick={() => ctx.handleDeleteProduct(prod.id, confirmDelete)}>
+                            <HugeiconsIcon icon={Delete02Icon} />
                           </Button>
                         </div>
                       </TableCell>
@@ -159,11 +164,15 @@ export const ProductsPage = () => {
 
         <TabsContent value="categories">
           <div className="grid gap-8 lg:grid-cols-3">
-            <Card className="h-fit border border-border/60 bg-card shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-sm font-bold tracking-wider text-foreground uppercase">Add New Category</CardTitle>
-                <CardDescription className="text-xs">Create classifications to group organic juices &amp; wellness products.</CardDescription>
-              </CardHeader>
+              <Card className="h-fit border border-border/60 bg-card shadow-sm">
+                <CardHeader>
+                  <CardTitle className="text-sm font-bold tracking-wider text-foreground uppercase">
+                    {editingCategory ? "Edit Category" : "Add New Category"}
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    {editingCategory ? `Modifying: ${editingCategory.name}` : "Create classifications to group organic juices & wellness products."}
+                  </CardDescription>
+                </CardHeader>
               <CardContent>
                 <form onSubmit={ctx.handleCategorySubmit} className="flex flex-col gap-5 text-left">
                   <Field data-invalid={!!ctx.categoryForm.formState.errors.name}>
@@ -184,10 +193,17 @@ export const ProductsPage = () => {
                     <FieldLabel htmlFor="catOrder">Display Order</FieldLabel>
                     <Input id="catOrder" type="number" {...ctx.categoryForm.register("display_order")} placeholder="1" />
                   </Field>
-                  <Button type="submit" disabled={ctx.isPending} className="mt-2 w-full font-medium">
-                    {ctx.isPending && <Spinner data-icon="inline-start" />}
-                    {ctx.isPending ? "Creating..." : "Save Classification"}
-                  </Button>
+                  <div className="flex gap-2 mt-2">
+                    {editingCategory && (
+                      <Button type="button" variant="outline" onClick={handleCancelEditCategory} disabled={ctx.isPending} className="flex-1 font-medium">
+                        Cancel
+                      </Button>
+                    )}
+                    <Button type="submit" disabled={ctx.isPending} className={editingCategory ? "flex-1 font-medium" : "w-full font-medium"}>
+                      {ctx.isPending && <Spinner data-icon="inline-start" />}
+                      {ctx.isPending ? "Saving..." : editingCategory ? "Update Category" : "Save Classification"}
+                    </Button>
+                  </div>
                 </form>
               </CardContent>
             </Card>
@@ -213,9 +229,14 @@ export const ProductsPage = () => {
                       <TableCell className="max-w-xs truncate px-6 py-4 text-muted-foreground">{cat.description || "-"}</TableCell>
                       <TableCell className="px-6 py-4 font-medium text-foreground">{cat.display_order}</TableCell>
                       <TableCell className="px-6 py-4 text-right">
-                        <Button variant="ghost" size="icon" disabled={ctx.isPending} onClick={() => ctx.handleDeleteCategory(cat.id, confirmDelete)} className="hover:bg-destructive/10 hover:text-destructive">
-                          <HugeiconsIcon icon={Delete02Icon} className="size-4" />
-                        </Button>
+                        <div className="flex items-center justify-end gap-1">
+                          <Button variant="ghost" size="icon" onClick={() => handleOpenEditCategory(cat)}>
+                            <HugeiconsIcon icon={Edit01Icon} />
+                          </Button>
+                          <Button variant="ghost" size="icon" disabled={ctx.isPending} onClick={() => ctx.handleDeleteCategory(cat.id, confirmDelete)}>
+                            <HugeiconsIcon icon={Delete02Icon} />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -227,7 +248,7 @@ export const ProductsPage = () => {
       </Tabs>
 
       <ProductFormDialog open={ctx.productModalOpen} onOpenChange={ctx.setProductModalOpen} activeProduct={ctx.activeProduct} categories={ctx.categories} form={ctx.productForm} onSubmit={ctx.handleProductSubmit} isPending={ctx.isPending} />
-      <VariantManagerDialog open={variantsModalOpen} onOpenChange={setVariantsModalOpen} activeProduct={ctx.activeProduct} form={variantCtx.variantForm} onSubmit={variantCtx.handleAddVariant} onDeleteVariant={(vId) => variantCtx.handleDeleteVariant(vId, confirmDelete)} isPending={variantCtx.isPending} />
+      <VariantManagerDialog open={variantsModalOpen} onOpenChange={setVariantsModalOpen} activeProduct={ctx.activeProduct} form={variantCtx.variantForm} onSubmit={variantCtx.handleAddVariant} onDeleteVariant={(vId) => variantCtx.handleDeleteVariant(vId, confirmDelete)} onEditVariant={variantCtx.handleOpenEditVariant} onCancelEdit={variantCtx.handleCancelEditVariant} editingVariant={variantCtx.editingVariant} isPending={variantCtx.isPending} />
       <ImageManagerDialog open={imagesModalOpen} onOpenChange={setImagesModalOpen} activeProduct={ctx.activeProduct} selectedFiles={imageCtx.selectedFiles} onFileChange={imageCtx.setSelectedFiles} onUploadSubmit={imageCtx.handleImageUploadSubmit} onSetPrimary={imageCtx.handleSetPrimaryImage} onDeleteImage={(imgId) => imageCtx.handleDeleteImage(imgId, confirmDelete)} isPending={imageCtx.isPending} />
       {confirmDialog}
     </div>

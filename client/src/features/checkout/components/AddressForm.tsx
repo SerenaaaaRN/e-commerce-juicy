@@ -4,25 +4,29 @@ import { Input } from "@/components/ui/input"
 import { FieldGroup, Field, FieldLabel, FieldError } from "@/components/ui/field"
 import { ordersApi } from "@/lib/api/orders"
 import { toast } from "sonner"
+import type { Address } from "@/types"
 
 type AddressFormProps = {
   onSubmitSuccess: () => void
   onCancel?: () => void
+  initialData?: Address
 }
 
-export const AddressForm = ({ onSubmitSuccess, onCancel }: AddressFormProps) => {
+export const AddressForm = ({ onSubmitSuccess, onCancel, initialData }: AddressFormProps) => {
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
+  const isEditing = !!initialData
+
   // Form states
   const [formData, setFormData] = useState({
-    label: "",
-    recipient_name: "",
-    phone: "",
-    address_line: "",
-    city: "",
-    province: "",
-    postal_code: "",
+    label: initialData?.label || "",
+    recipient_name: initialData?.recipient_name || "",
+    phone: initialData?.phone || "",
+    address_line: initialData?.address_line || "",
+    city: initialData?.city || "",
+    province: initialData?.province || "",
+    postal_code: initialData?.postal_code || "",
   })
 
   const handleChange = (field: keyof typeof formData, value: string) => {
@@ -56,9 +60,11 @@ export const AddressForm = ({ onSubmitSuccess, onCancel }: AddressFormProps) => 
 
     setLoading(true)
     try {
-      const res = await ordersApi.createAddress(formData)
+      const res = isEditing
+        ? await ordersApi.updateAddress(initialData.id, formData)
+        : await ordersApi.createAddress(formData)
       if (res.success) {
-        toast.success("Shipping address saved successfully.")
+        toast.success(isEditing ? "Shipping address updated." : "Shipping address saved.")
         onSubmitSuccess()
       } else {
         toast.error(res.message || "Failed to save shipping address.")
@@ -182,7 +188,7 @@ export const AddressForm = ({ onSubmitSuccess, onCancel }: AddressFormProps) => 
             </Button>
           )}
           <Button type="submit" disabled={loading} className="cursor-pointer">
-            {loading ? "Saving..." : "Save Address"}
+            {loading ? "Saving..." : isEditing ? "Update Address" : "Save Address"}
           </Button>
         </div>
 

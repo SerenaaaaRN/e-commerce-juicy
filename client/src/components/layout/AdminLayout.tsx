@@ -1,5 +1,6 @@
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom"
 import { useAdminAuthStore } from "@/stores/adminAuthStore"
+import { adminApi } from "@/lib/api"
 import { cn } from "@/lib/utils"
 import {
   Sidebar,
@@ -37,7 +38,12 @@ export const AdminLayout = () => {
   const navigate = useNavigate()
   const { admin, logout } = useAdminAuthStore()
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await adminApi.logout()
+    } catch {
+      // Proceed with local logout even if API call fails
+    }
     logout()
     toast.success("Logged out from admin console.")
     navigate("/admin/login")

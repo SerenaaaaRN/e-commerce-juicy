@@ -56,6 +56,7 @@ export const useOrderStore = create<OrderState>((set) => ({
       const res = await ordersApi.checkout({
         address_id: payload.address_id,
         notes: payload.notes,
+        payment_method: payload.payment_method,
       })
       return res
     } catch {

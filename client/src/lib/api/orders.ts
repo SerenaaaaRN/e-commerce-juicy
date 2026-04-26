@@ -22,6 +22,12 @@ export const ordersApi = {
     return response.data
   },
 
+  // Update an existing address
+  updateAddress: async (id: string, payload: AddressPayload): Promise<ApiResponse<Address>> => {
+    const response = await customerClient.put<ApiResponse<Address>>(`/addresses/${id}`, payload)
+    return response.data
+  },
+
   // Submit checkout order
   checkout: async (payload: CheckoutPayload): Promise<ApiResponse<{ order_number: string }>> => {
     const response = await customerClient.post<ApiResponse<{ order_number: string }>>("/orders/checkout", payload)

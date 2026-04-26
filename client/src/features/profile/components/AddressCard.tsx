@@ -7,9 +7,10 @@ type AddressCardProps = {
   address: Address
   onDelete: (id: string) => void
   onSetDefault: (id: string) => void
+  onEdit: (address: Address) => void
 }
 
-export const AddressCard = ({ address, onDelete, onSetDefault }: AddressCardProps) => {
+export const AddressCard = ({ address, onDelete, onSetDefault, onEdit }: AddressCardProps) => {
   return (
     <Card className="border border-border/80 shadow-sm relative hover:shadow-md transition-all duration-200">
       <CardContent className="p-5 flex flex-col items-start text-left gap-2.5">
@@ -51,6 +52,14 @@ export const AddressCard = ({ address, onDelete, onSetDefault }: AddressCardProp
               Set Default
             </Button>
           )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onEdit(address)}
+            className="text-[10px] uppercase font-semibold text-muted-foreground hover:text-foreground h-8 cursor-pointer"
+          >
+            Edit
+          </Button>
           <Button
             variant="ghost"
             size="sm"

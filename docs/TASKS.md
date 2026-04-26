@@ -303,9 +303,9 @@
 - [ ] Tambah `product_count` per category di `GET /api/shop/categories` response
 
 ### 7.3 Frontend — Search Bar
-- [ ] `src/components/layout/Navbar.tsx` — tambah search input di header
-- [ ] Search triggers navigation ke `/shop?search=<query>`
-- [ ] Debounced input (300ms) untuk autocomplete feel
+- [x] `src/components/layout/Navbar.tsx` — tambah search input di header
+- [x] Search triggers navigation ke `/shop?search=<query>`
+- [x] Debounced input (300ms) untuk autocomplete feel
 
 ### 7.4 Frontend — Enhanced ProductFilters
 - [ ] Size filter: multi-select checkboxes/pills (XS, S, M, L, XL, XXL)
@@ -322,6 +322,22 @@
 - [ ] Verify mobile responsive — Sheet drawer untuk filters tetap works
 - [ ] Run production build — zero TypeScript errors
 - [ ] Test edge cases: empty results, reset filters, back navigation
+
+---
+
+## Phase 8 — Storefront Core & Bug Fixes (Technical Enhancements) ✅
+
+### 8.1 API & Checkout Schema Integration
+- [x] Add required `payment_method` parameter to `CheckoutPayload` type definition in frontend API client (`src/lib/api/orders.ts`)
+- [x] Bind active `paymentMethod` state from `<PaymentSelector />` into checkout payload submission in `CheckoutPage.tsx` to satisfy Gin bindings and fix `422 Unprocessable Entity` errors
+
+### 8.2 Database & GORM Integrity Refinements
+- [x] Resolve checkout insert failure on `orders` table due to PostgreSQL `VARCHAR(20)` length overflow (`500 Internal Server Error`)
+- [x] Shorten generated `order_number` code by shifting date suffix format string from `20060102` (8 characters) to `060102` (6 characters) inside `server/internal/service/order.go`
+
+### 8.3 Live Scrolling Layout Overlay
+- [x] Implement scroll status state hooks and scroll event listeners in `Navbar.tsx`
+- [x] Style header to render absolutely on the homepage hero (`scrollY < 20`) with transparent background, seamlessly switching to a solid glassmorphic header upon scroll
 
 ---
 

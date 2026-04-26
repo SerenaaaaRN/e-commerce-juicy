@@ -16,6 +16,7 @@ export const useProducts = () => {
   const [productModalOpen, setProductModalOpen] = useState(false)
   const [activeProduct, setActiveProduct] = useState<ProductDetail | null>(null)
   const [categoryFilter, setCategoryFilter] = useState("all")
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null)
 
   // Cast schemas through Resolver type to handle Zod number/coercion input type divergence smoothly
   const productForm = useForm<ProductFormValues>({
@@ -188,24 +189,60 @@ export const useProducts = () => {
       }
 
       try {
-        const res = await adminApi.createCategory(payload)
-        if (res.success && res.data) {
-          toast.success("Category created successfully!")
-          setCategories((curr) => [...curr, res.data])
+        if (editingCategory) {
+          const res = await adminApi.updateCategory(editingCategory.id, payload)
+          if (res.success) {
+            toast.success("Category updated successfully!")
+            setEditingCategory(null)
+            loadData()
+          } else {
+            toast.error(res.message || "Failed to update category.")
+          }
+        } else {
+          const res = await adminApi.createCategory(payload)
+          if (res.success && res.data) {
+            toast.success("Category created successfully!")
+            setCategories((curr) => [...curr, res.data])
+          } else {
+            toast.error(res.message || "Failed to create category.")
+          }
+        }
+        if (!editingCategory) {
           categoryForm.reset({
             name: "",
             slug: "",
             description: "",
             display_order: 1,
           })
-        } else {
-          toast.error(res.message || "Failed to create category.")
         }
       } catch {
-        toast.error("Failed to append category.")
+        toast.error(editingCategory ? "Failed to update category." : "Failed to append category.")
       }
     })
   })
+
+  const handleOpenEditCategory = useCallback(
+    (cat: Category) => {
+      setEditingCategory(cat)
+      categoryForm.reset({
+        name: cat.name,
+        slug: cat.slug,
+        description: cat.description || "",
+        display_order: cat.display_order,
+      })
+    },
+    [categoryForm]
+  )
+
+  const handleCancelEditCategory = useCallback(() => {
+    setEditingCategory(null)
+    categoryForm.reset({
+      name: "",
+      slug: "",
+      description: "",
+      display_order: 1,
+    })
+  }, [categoryForm])
 
   const handleDeleteCategory = useCallback(
     async (id: string, confirmFn: (msg: string) => Promise<boolean>) => {
@@ -246,11 +283,14 @@ export const useProducts = () => {
     setCategoryFilter,
     productForm,
     categoryForm,
+    editingCategory,
     handleOpenAddProduct,
     handleOpenEditProduct,
     handleProductSubmit,
     handleDeleteProduct,
     handleCategorySubmit,
+    handleOpenEditCategory,
+    handleCancelEditCategory,
     handleDeleteCategory,
     loadData,
   }

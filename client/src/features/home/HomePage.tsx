@@ -1,6 +1,7 @@
 import { HeroSection } from "./components/HeroSection"
 import { FeaturedSection } from "./components/FeaturedSection"
 import { CollectionPreview } from "./components/CollectionPreview"
+import { RecentlyViewedSection } from "./components/RecentlyViewedSection"
 import { EditorialSection } from "./components/EditorialSection"
 import { CtaSection } from "./components/CtaSection"
 
@@ -16,6 +17,9 @@ export const HomePage = () => {
 
       {/* category filters previews */}
       <CollectionPreview />
+
+      {/* recently viewed items */}
+      <RecentlyViewedSection />
 
       {/* campaign lookbook block */}
       <EditorialSection />
