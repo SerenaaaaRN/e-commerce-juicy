@@ -341,6 +341,43 @@
 
 ---
 
+## Phase 9 — Shop Experience (Cancel Order, Wishlist, Recently Viewed, Edit) ✅
+
+> **Status:** Done — 2026-05-26
+
+### 9.1 Edit Address, Category, Variant (Bug Fixes)
+- [x] Backend: `PUT /api/addresses/:id` endpoint
+- [x] Frontend: Address edit mode in `AddressForm.tsx`, `AddressCard.tsx`, `AddressList.tsx`
+- [x] Frontend: Edit category state in `useProducts.ts` + UI in `ProductsPage.tsx`
+- [x] Frontend: Edit variant state in `useVariants.ts` + UI in `VariantManagerDialog.tsx`
+
+### 9.2 Wishlist
+- [x] Backend: Migration 000014 (wishlist_items table)
+- [x] Backend: Model, DTO, Repository, Service, Handler, Routes
+- [x] Frontend: API service (`src/lib/api/wishlist.ts`)
+- [x] Frontend: Zustand store (`wishlistStore.ts`)
+- [x] Frontend: Heart toggle on `ProductPage.tsx`
+- [x] Frontend: `WishlistPage.tsx` — grid view
+- [x] Frontend: Route `/wishlist` + Navbar link
+- [x] Frontend: `fetchWishlist` on auth init in `App.tsx`
+
+### 9.3 Cancel Order
+- [x] Backend: `POST /api/orders/:orderNumber/cancel` (stock restore via transaction)
+- [x] Frontend: API service + cancel button on `OrderTrackingPage.tsx`
+- [x] Only allowed for `pending`/`confirmed` status
+
+### 9.4 Recently Viewed
+- [x] Frontend: `useRecentlyViewed` hook (localStorage, max 8)
+- [x] Frontend: Track on `ProductPage.tsx` mount
+- [x] Frontend: `RecentlyViewedSection.tsx` on HomePage (shadcn Card grid)
+
+### 9.5 Shadcn Rule Compliance
+- [x] Fix icon sizing inside `Button size="icon"` in `VariantManagerDialog.tsx`, `ProductsPage.tsx`
+- [x] Fix duplicate `try` block in `ProductPage.tsx` (Vite 500 fix)
+- [x] Fix `Heart02Icon` → `HeartAddIcon` (wrong icon name)
+
+---
+
 ## Notes for AI Agents
 
 1. Baca `CONTEXT.md` dan `ARCHITECTURE.md` sebelum mulai phase apapun.

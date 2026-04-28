@@ -51,7 +51,6 @@
 
 ### Out of Scope (Post-MVP)
 - Payment gateway integration (Midtrans / Xendit / Stripe).
-- Wishlist / save for later.
 - Discount codes & promotions.
 - Multi-language / multi-currency support.
 - CMS integration.
@@ -104,10 +103,13 @@
 | 1 | ✅ Done | Database schema, migrations, pgAdmin setup |
 | 2 | ✅ Done | Backend API (Golang Gin) — all endpoints |
 | 3 | ✅ Done | Admin dashboard (React) — refactored to clean architecture (hooks + components + validations) |
-| 4 | 🔄 In Progress | Public frontend — Landing, Collection, PDP, Cart, Checkout, Order Tracking |
-| 5 | 🔄 In Progress | Customer auth frontend — Register, Login, Profile, Order History |
+| 4 | ✅ Done | Public frontend — Landing, Collection, PDP, Cart, Checkout, Order Tracking |
+| 5 | ✅ Done | Customer auth frontend — Register, Login, Profile, Order History |
 | 6 | [ ] | Deployment to Railway |
 | 7 | 📋 Planned | Shop Experience Enhancement — subcategories, size filter, search, grid toggle, infinite scroll |
+| 8 | ✅ Done | Storefront Core & Bug Fixes — checkout schema, GORM integrity, scroll layout |
+| 9 | ✅ Done | Shop Experience — Cancel Order, Wishlist, Recently Viewed, Edit Address/Variant/Category |
+| 10 | 📋 Planned | Priority 4 — Bulk actions, Export CSV, Coupons, Sales Report |
 
 ---
 
@@ -123,6 +125,7 @@ juicy/
 │   ├── ERD.md
 │   ├── API.md
 │   ├── TASKS.md
+│   ├── CHANGELOG.md
 │   └── ENV.md
 └── README.md
 ```

@@ -46,6 +46,7 @@ func main() {
 	cartRepo := repository.NewCartRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
 	reviewRepo := repository.NewReviewRepository(db)
+	wishlistRepo := repository.NewWishlistRepository(db)
 
 	worker := service.NewBackgroundWorker(context.Background(), 5, 100)
 	cldService := service.NewCloudinaryService(cfg)
@@ -59,6 +60,7 @@ func main() {
 	cartService := service.NewCartService(cartRepo, productRepo)
 	orderService := service.NewOrderService(orderRepo, cartRepo, addressRepo, productRepo, customerRepo, emailService, worker, db)
 	reviewService := service.NewReviewService(reviewRepo, orderRepo, productRepo, customerRepo)
+	wishlistService := service.NewWishlistService(wishlistRepo, db)
 	analyticsService := service.NewAnalyticsService(db)
 
 	adminHandler := handler.NewAdminHandler(adminService, cfg)
@@ -69,6 +71,7 @@ func main() {
 	cartHandler := handler.NewCartHandler(cartService)
 	orderHandler := handler.NewOrderHandler(orderService)
 	reviewHandler := handler.NewReviewHandler(reviewService)
+	wishlistHandler := handler.NewWishlistHandler(wishlistService)
 	analyticsHandler := handler.NewAnalyticsHandler(analyticsService)
 
 	ginEngine := gin.Default()
@@ -81,6 +84,7 @@ func main() {
 		cartHandler,
 		orderHandler,
 		reviewHandler,
+		wishlistHandler,
 		analyticsHandler,
 		cfg,
 	)

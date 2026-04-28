@@ -85,6 +85,8 @@ type ProductVariant struct {
 	IsActive        bool      `gorm:"not null;default:true" json:"is_active"`
 	CreatedAt       time.Time `gorm:"not null;default:now()" json:"created_at"`
 	UpdatedAt       time.Time `gorm:"not null;default:now()" json:"updated_at"`
+
+	Product *Product `gorm:"foreignKey:ProductID" json:"product,omitempty"`
 }
 
 func (ProductVariant) TableName() string {

@@ -74,6 +74,7 @@ type OrderService interface {
 	Checkout(ctx context.Context, customerID uuid.UUID, req dto.CheckoutRequest) (*dto.OrderCheckoutResponse, error)
 	GetCustomerOrders(ctx context.Context, customerID uuid.UUID, page, perPage int) ([]dto.OrderResponse, int64, error)
 	GetCustomerOrderDetail(ctx context.Context, orderNumber string, customerID uuid.UUID) (*dto.OrderDetailResponse, error)
+	CancelOrder(ctx context.Context, orderNumber string, customerID uuid.UUID) error
 
 	ListAllOrders(ctx context.Context, status string, paymentStatus string, search string, page, perPage int) ([]dto.AdminOrderResponse, int64, error)
 	GetOrderDetail(ctx context.Context, id uuid.UUID) (*dto.OrderDetailResponse, error)
@@ -88,6 +89,13 @@ type ReviewService interface {
 	ListAllReviews(ctx context.Context, productID *uuid.UUID, published *bool, page, perPage int) ([]dto.AdminReviewResponse, int64, error)
 	UpdateReviewPublishStatus(ctx context.Context, id uuid.UUID, isPublished bool) error
 	DeleteReview(ctx context.Context, id uuid.UUID) error
+}
+
+type WishlistService interface {
+	GetWishlist(ctx context.Context, customerID uuid.UUID) ([]dto.WishlistItemResponse, error)
+	CheckWishlist(ctx context.Context, customerID uuid.UUID, variantID uuid.UUID) (bool, error)
+	AddToWishlist(ctx context.Context, customerID uuid.UUID, variantID uuid.UUID) error
+	RemoveFromWishlist(ctx context.Context, customerID uuid.UUID, variantID uuid.UUID) error
 }
 
 type AnalyticsService interface {

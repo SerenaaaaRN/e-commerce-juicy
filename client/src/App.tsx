@@ -12,6 +12,7 @@ import { CartPage } from "@/features/cart/CartPage"
 import { CheckoutPage } from "@/features/checkout/CheckoutPage"
 import { OrderTrackingPage } from "@/features/orders/OrderTrackingPage"
 import { OrderHistoryPage } from "@/features/orders/OrderHistoryPage"
+import { WishlistPage } from "@/features/wishlist/WishlistPage"
 import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
 
@@ -27,6 +28,7 @@ import { ReviewsPage } from "@/features/admin/ReviewsPage"
 
 import { useCustomerAuthStore } from "@/stores/customerAuthStore"
 import { useCartStore } from "@/stores/cartStore"
+import { useWishlistStore } from "@/stores/wishlistStore"
 import { customerApi } from "@/lib/api"
 
 // ScrollToTop component to reset viewport on route transition
@@ -45,8 +47,9 @@ const AppContent = () => {
   const isAdmin = location.pathname.startsWith("/admin")
   const { isAuthenticated, logout } = useCustomerAuthStore()
   const { fetchCart } = useCartStore()
+  const { fetchWishlist } = useWishlistStore()
 
-  // Auto-rehydrate profile and load cart from database
+  // Auto-rehydrate profile and load cart/wishlist from database
   useEffect(() => {
     const initializeAuthAndCart = async () => {
       if (isAuthenticated) {
@@ -54,6 +57,7 @@ const AppContent = () => {
           const profileRes = await customerApi.getProfile()
           if (profileRes.success) {
             fetchCart()
+            fetchWishlist()
           } else {
             logout()
           }
@@ -63,7 +67,7 @@ const AppContent = () => {
       }
     }
     initializeAuthAndCart()
-  }, [isAuthenticated, fetchCart, logout])
+  }, [isAuthenticated, fetchCart, fetchWishlist, logout])
 
   return (
     <div className="relative flex min-h-screen flex-col bg-background font-sans text-foreground antialiased selection:bg-primary/10 selection:text-primary">
@@ -82,6 +86,7 @@ const AppContent = () => {
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/orders" element={<OrderHistoryPage />} />
           <Route path="/orders/:orderNumber" element={<OrderTrackingPage />} />
+          <Route path="/wishlist" element={<WishlistPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/login" element={<LoginPageCust />} />
           <Route path="/register" element={<RegisterPage />} />

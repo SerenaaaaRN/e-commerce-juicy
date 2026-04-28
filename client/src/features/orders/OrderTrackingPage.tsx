@@ -13,6 +13,7 @@ import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyContent, EmptyMe
 import { HugeiconsIcon } from "@hugeicons/react"
 import { ShoppingBag01Icon } from "@hugeicons/core-free-icons"
 import { toast } from "sonner"
+import { useConfirm } from "@/hooks/useConfirm"
 import { cn, formatPrice, formatDate, getOrderStatusLabel, getOrderStatusColor, getPaymentStatusLabel } from "@/lib/utils"
 import type { OrderDetail } from "@/types"
 
@@ -23,6 +24,8 @@ export const OrderTrackingPage = () => {
   // State
   const [order, setOrder] = useState<OrderDetail | null>(null)
   const [loading, setLoading] = useState(true)
+  const [cancelling, setCancelling] = useState(false)
+  const { confirm: confirmCancel, dialog: confirmDialog } = useConfirm()
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -43,6 +46,28 @@ export const OrderTrackingPage = () => {
     }
     fetchOrder()
   }, [orderNumber])
+
+  const handleCancelOrder = async () => {
+    const confirmed = await confirmCancel(
+      "Are you sure you want to cancel this order? This action cannot be undone. Any paid amount will be refunded according to our policy."
+    )
+    if (!confirmed || !orderNumber) return
+
+    setCancelling(true)
+    try {
+      const res = await ordersApi.cancelOrder(orderNumber)
+      if (res.success) {
+        toast.success("Order cancelled successfully.")
+        setOrder((prev) => prev ? { ...prev, status: "cancelled" as any } : null)
+      } else {
+        toast.error(res.message || "Failed to cancel order.")
+      }
+    } catch {
+      toast.error("Failed to cancel order.")
+    } finally {
+      setCancelling(false)
+    }
+  }
 
   // Guest restriction redirect
   if (!isAuthenticated) {
@@ -232,12 +257,27 @@ export const OrderTrackingPage = () => {
               </CardContent>
             </Card>
 
+            {/* Cancel order action */}
+            {(order.status === "pending" || order.status === "confirmed") && (
+              <Button
+                variant="destructive"
+                className="w-full uppercase tracking-wider text-xs py-5 h-auto cursor-pointer"
+                onClick={handleCancelOrder}
+                disabled={cancelling}
+              >
+                {cancelling && <Spinner data-icon="inline-start" />}
+                {cancelling ? "Cancelling..." : "Cancel Order"}
+              </Button>
+            )}
+
             {/* Back action */}
             <div className="pt-2">
               <Button asChild variant="outline" className="w-full uppercase tracking-wider text-xs py-5 h-auto cursor-pointer">
                 <Link to="/shop">Return to Shop</Link>
               </Button>
             </div>
+
+            {confirmDialog}
 
           </div>
 

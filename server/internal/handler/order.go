@@ -176,6 +176,59 @@ func (h *OrderHandler) GetCustomerOrderDetail(c *gin.Context) {
 	})
 }
 
+func (h *OrderHandler) CancelOrder(c *gin.Context) {
+	customerIDVal, exists := c.Get("customer_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"error": gin.H{
+				"message": "Unauthorized context",
+				"code":    "UNAUTHORIZED",
+			},
+		})
+		return
+	}
+
+	customerID := customerIDVal.(uuid.UUID)
+	orderNumber := c.Param("orderNumber")
+
+	err := h.srv.CancelOrder(c.Request.Context(), orderNumber, customerID)
+	if err != nil {
+		if errors.Is(err, service.ErrOrderNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{
+				"success": false,
+				"error": gin.H{
+					"message": "Order not found",
+					"code":    "ORDER_NOT_FOUND",
+				},
+			})
+			return
+		}
+		if errors.Is(err, service.ErrCannotCancelOrder) {
+			c.JSON(http.StatusConflict, gin.H{
+				"success": false,
+				"error": gin.H{
+					"message": "Order cannot be cancelled in its current status",
+					"code":    "CANNOT_CANCEL_ORDER",
+				},
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"error": gin.H{
+				"message": err.Error(),
+			},
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "Order cancelled successfully",
+	})
+}
+
 func (h *OrderHandler) ListAllOrders(c *gin.Context) {
 	status := c.Query("status")
 	paymentStatus := c.Query("payment_status")

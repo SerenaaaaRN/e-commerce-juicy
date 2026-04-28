@@ -2,6 +2,8 @@ import { useState, useEffect } from "react"
 import { useParams, Link } from "react-router-dom"
 import { useProductStore } from "@/stores/productStore"
 import { useCartStore } from "@/stores/cartStore"
+import { useWishlistStore } from "@/stores/wishlistStore"
+import { useCustomerAuthStore } from "@/stores/customerAuthStore"
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed"
 import { ProductImageGallery } from "./components/ProductImageGallery"
 import { ProductInfo } from "./components/ProductInfo"
@@ -12,7 +14,7 @@ import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyContent, EmptyMedia } from "@/components/ui/empty"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { ShoppingBag01Icon } from "@hugeicons/core-free-icons"
+import { ShoppingBag01Icon, HeartAddIcon } from "@hugeicons/core-free-icons"
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -28,6 +30,12 @@ export const ProductPage = () => {
   const { currentProduct, isLoading, error, fetchProductBySlug, clearCurrentProduct } = useProductStore()
   const { addItem, isLoading: isAddingToCart } = useCartStore()
   const { addItem: addToRecentlyViewed } = useRecentlyViewed()
+  const { isAuthenticated } = useCustomerAuthStore()
+  const {
+    isInWishlist,
+    addItem: addToWishlist,
+    removeItem: removeFromWishlist,
+  } = useWishlistStore()
 
   // Selections state
   const [selectedSize, setSelectedSize] = useState("")
@@ -101,6 +109,8 @@ export const ProductPage = () => {
   const activeVariant = variants.find(
     (v) => v.size === selectedSize && v.color === selectedColor
   )
+  const wishlistVariantId = activeVariant?.id || variants[0]?.id || ""
+  const inWishlist = wishlistVariantId ? isInWishlist(wishlistVariantId) : false
 
   // Settle active unit price (base product price + variant specific surcharge if any)
   const unitPrice = activeVariant
@@ -129,6 +139,21 @@ export const ProductPage = () => {
       toast.success(`${currentProduct.name} has been added to your cart.`)
     } catch {
       toast.error("Failed to add silhouette to cart. Please try again.")
+    }
+  }
+
+  const handleToggleWishlist = async () => {
+    if (!wishlistVariantId) return
+    if (!isAuthenticated) {
+      toast.warning("Please log in to save items to your wishlist.")
+      return
+    }
+    if (inWishlist) {
+      await removeFromWishlist(wishlistVariantId)
+      toast.success("Removed from wishlist.")
+    } else {
+      await addToWishlist(wishlistVariantId)
+      toast.success("Added to wishlist.")
     }
   }
 
@@ -198,12 +223,27 @@ export const ProductPage = () => {
 
             {/* Cart trigger block */}
             <div className="pt-4 flex flex-col gap-3">
-              <AddToCartButton
-                onClick={handleAddToCart}
-                disabled={!isSelectionComplete}
-                isLoading={isAddingToCart}
-                stock={hasVariants ? availableStock : 99} // Default fallback stock for pure non-variant apparel
-              />
+              <div className="flex items-center gap-3">
+                <div className="flex-1">
+                  <AddToCartButton
+                    onClick={handleAddToCart}
+                    disabled={!isSelectionComplete}
+                    isLoading={isAddingToCart}
+                    stock={hasVariants ? availableStock : 99}
+                  />
+                </div>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handleToggleWishlist}
+                  className="size-12 shrink-0"
+                >
+                  <HugeiconsIcon
+                    icon={HeartAddIcon}
+                    data-icon="inline-start"
+                  />
+                </Button>
+              </div>
               {!isSelectionComplete && (
                 <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold text-left">
                   * Select size and color to activate cart action

@@ -16,7 +16,8 @@ import (
 )
 
 var (
-	ErrCartEmpty = errors.New("CART_EMPTY")
+	ErrCartEmpty          = errors.New("CART_EMPTY")
+	ErrCannotCancelOrder  = errors.New("CANNOT_CANCEL_ORDER")
 )
 
 type orderService struct {
@@ -229,6 +230,19 @@ func (s *orderService) GetCustomerOrderDetail(ctx context.Context, orderNumber s
 		Items:     itemsRes,
 		CreatedAt: order.CreatedAt,
 	}, nil
+}
+
+func (s *orderService) CancelOrder(ctx context.Context, orderNumber string, customerID uuid.UUID) error {
+	order, err := s.repo.FindByOrderNumberAndCustomerID(ctx, orderNumber, customerID)
+	if err != nil {
+		return ErrOrderNotFound
+	}
+
+	if order.Status != "pending" && order.Status != "confirmed" {
+		return ErrCannotCancelOrder
+	}
+
+	return s.repo.CancelOrder(ctx, order.ID)
 }
 
 func (s *orderService) ListAllOrders(

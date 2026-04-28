@@ -16,6 +16,7 @@ type Router struct {
 	cartHandler      *handler.CartHandler
 	orderHandler     *handler.OrderHandler
 	reviewHandler    *handler.ReviewHandler
+	wishlistHandler  *handler.WishlistHandler
 	analyticsHandler *handler.AnalyticsHandler
 	config           *config.Config
 }
@@ -29,6 +30,7 @@ func NewRouter(
 	cartHandler *handler.CartHandler,
 	orderHandler *handler.OrderHandler,
 	reviewHandler *handler.ReviewHandler,
+	wishlistHandler *handler.WishlistHandler,
 	analyticsHandler *handler.AnalyticsHandler,
 	cfg *config.Config,
 ) *Router {
@@ -41,6 +43,7 @@ func NewRouter(
 		cartHandler:      cartHandler,
 		orderHandler:     orderHandler,
 		reviewHandler:    reviewHandler,
+		wishlistHandler:  wishlistHandler,
 		analyticsHandler: analyticsHandler,
 		config:           cfg,
 	}
@@ -93,6 +96,12 @@ func (r *Router) Setup(engine *gin.Engine) {
 			customerAuth.POST("/orders/checkout", r.orderHandler.Checkout)
 			customerAuth.GET("/orders", r.orderHandler.GetCustomerOrders)
 			customerAuth.GET("/orders/:orderNumber", r.orderHandler.GetCustomerOrderDetail)
+			customerAuth.POST("/orders/:orderNumber/cancel", r.orderHandler.CancelOrder)
+
+			customerAuth.GET("/wishlist", r.wishlistHandler.GetWishlist)
+			customerAuth.GET("/wishlist/check/:variantId", r.wishlistHandler.CheckWishlist)
+			customerAuth.POST("/wishlist/items", r.wishlistHandler.AddToWishlist)
+			customerAuth.DELETE("/wishlist/items/:variantId", r.wishlistHandler.RemoveFromWishlist)
 
 			customerAuth.POST("/reviews", r.reviewHandler.SubmitReview)
 		}

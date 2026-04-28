@@ -159,6 +159,40 @@ func (r *orderRepo) FindByID(ctx context.Context, id uuid.UUID) (*model.Order, e
 	return &order, nil
 }
 
+func (r *orderRepo) CancelOrder(ctx context.Context, orderID uuid.UUID) error {
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var order model.Order
+		if err := tx.Where("id = ?", orderID).First(&order).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Model(&model.Order{}).Where("id = ?", orderID).Updates(map[string]interface{}{
+			"status":     "cancelled",
+			"updated_at": gorm.Expr("NOW()"),
+		}).Error; err != nil {
+			return err
+		}
+
+		var orderItems []model.OrderItem
+		if err := tx.Where("order_id = ?", orderID).Find(&orderItems).Error; err != nil {
+			return err
+		}
+
+		for _, item := range orderItems {
+			if item.VariantID == nil {
+				continue
+			}
+			if err := tx.Model(&model.ProductVariant{}).
+				Where("id = ?", *item.VariantID).
+				UpdateColumn("stock", gorm.Expr("stock + ?", item.Quantity)).Error; err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+}
+
 func (r *orderRepo) UpdateStatus(ctx context.Context, id uuid.UUID, status string) error {
 	updates := map[string]interface{}{
 		"status":     status,

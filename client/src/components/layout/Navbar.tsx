@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { ShoppingBag01Icon, UserIcon, Menu01Icon, Cancel01Icon, SearchIcon } from "@hugeicons/core-free-icons"
+import { ShoppingBag01Icon, UserIcon, Menu01Icon, Cancel01Icon, SearchIcon, HeartAddIcon } from "@hugeicons/core-free-icons"
 import { useDebounce } from "@/hooks/useDebounce"
 
 const navLinks = [
@@ -131,6 +131,11 @@ export const Navbar = () => {
                 {totalItems}
               </span>
             )}
+          </Link>
+
+          {/* Wishlist */}
+          <Link to="/wishlist" className="p-2 text-foreground hover:text-primary transition-colors duration-200">
+            <HugeiconsIcon icon={HeartAddIcon} strokeWidth={1.8} />
           </Link>
 
           {/* User Account Controls */}

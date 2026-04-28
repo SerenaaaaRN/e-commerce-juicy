@@ -77,8 +77,16 @@ type OrderRepository interface {
 	FindByID(ctx context.Context, id uuid.UUID) (*model.Order, error)
 	UpdateStatus(ctx context.Context, id uuid.UUID, status string) error
 	UpdatePaymentStatus(ctx context.Context, id uuid.UUID, paymentStatus string) error
+	CancelOrder(ctx context.Context, orderID uuid.UUID) error
 	HasCustomerPurchasedProduct(ctx context.Context, customerID uuid.UUID, productID uuid.UUID) (bool, error)
 	IsProductReviewable(ctx context.Context, customerID uuid.UUID, productID uuid.UUID, orderID uuid.UUID) (bool, error)
+}
+
+type WishlistRepository interface {
+	FindByCustomerID(ctx context.Context, customerID uuid.UUID) ([]model.WishlistItem, error)
+	Exists(ctx context.Context, customerID uuid.UUID, variantID uuid.UUID) (bool, error)
+	Add(ctx context.Context, item *model.WishlistItem) error
+	Remove(ctx context.Context, customerID uuid.UUID, variantID uuid.UUID) error
 }
 
 type ReviewRepository interface {

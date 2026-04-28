@@ -311,6 +311,66 @@ Clear entire cart.
 
 ---
 
+---
+
+### ❤️ Wishlist (Protected — Customer)
+
+#### `GET /customer/wishlist`
+Returns all wishlist items for the authenticated customer.
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "uuid",
+      "variant_id": "uuid",
+      "product_id": "uuid",
+      "product_name": "Linen Wrap Dress",
+      "product_slug": "linen-wrap-dress",
+      "variant_size": "S",
+      "variant_color": "Ivory",
+      "image_url": "https://res.cloudinary.com/...",
+      "price": 1250000,
+      "additional_price": 0,
+      "stock": 5,
+      "created_at": "..."
+    }
+  ]
+}
+```
+
+---
+
+#### `GET /customer/wishlist/check/:variantId`
+Check if a specific variant is in the customer's wishlist.
+```json
+{ "success": true, "data": { "in_wishlist": true } }
+```
+
+---
+
+#### `POST /customer/wishlist/items`
+Add a variant to wishlist.
+```json
+// Request
+{ "variant_id": "uuid" }
+
+// Response 201
+{ "success": true, "message": "Added to wishlist" }
+```
+**Errors:** `409 ALREADY_IN_WISHLIST`
+
+---
+
+#### `DELETE /customer/wishlist/items/:variantId`
+Remove a variant from wishlist.
+```json
+// Response 200
+{ "success": true, "message": "Removed from wishlist" }
+```
+
+---
+
 ### 📋 Orders — Customer (Protected)
 
 #### `POST /customer/orders`
@@ -332,6 +392,16 @@ Checkout — creates an order from current cart.
 }
 ```
 **Errors:** `409 OUT_OF_STOCK`, `404 CART_EMPTY`, `422 VALIDATION_ERROR`
+
+---
+
+#### `POST /customer/orders/:order_number/cancel`
+Cancel an order. Only allowed when status is `pending` or `confirmed`. Restores stock automatically.
+```json
+// Response 200
+{ "success": true, "message": "Order cancelled successfully" }
+```
+**Errors:** `404 ORDER_NOT_FOUND`, `409 CANNOT_CANCEL_ORDER`
 
 ---
 
@@ -608,4 +678,6 @@ Order counts + revenue grouped by month (last 6 months).
 | `ORDER_NOT_DELIVERED` | 403 | Order not yet delivered — review not allowed |
 | `WRONG_PASSWORD` | 401 | Current password incorrect during password change |
 | `CONFLICT` | 409 | Generic unique constraint violation |
+| `ALREADY_IN_WISHLIST` | 409 | Variant already in customer's wishlist |
+| `CANNOT_CANCEL_ORDER` | 409 | Order status does not allow cancellation |
 | `INTERNAL_ERROR` | 500 | Unexpected server error |
