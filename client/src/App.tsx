@@ -13,6 +13,7 @@ import { CheckoutPage } from "@/features/checkout/CheckoutPage"
 import { OrderTrackingPage } from "@/features/orders/OrderTrackingPage"
 import { OrderHistoryPage } from "@/features/orders/OrderHistoryPage"
 import { WishlistPage } from "@/features/wishlist/WishlistPage"
+import { CategoryLandingPage } from "@/features/category/CategoryLandingPage"
 import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
 
@@ -82,6 +83,7 @@ const AppContent = () => {
           <Route path="/" element={<HomePage />} />
           <Route path="/shop" element={<CollectionPage />} />
           <Route path="/shop/:slug" element={<ProductPage />} />
+          <Route path="/category/:slug" element={<CategoryLandingPage />} />
           <Route path="/cart" element={<CartPage />} />
           <Route path="/checkout" element={<CheckoutPage />} />
           <Route path="/orders" element={<OrderHistoryPage />} />

@@ -31,6 +31,7 @@ export type ProductQueryParams = {
   per_page?: number
   category?: string
   available?: boolean
+  admin?: boolean
 }
 
 export type OrderQueryParams = {

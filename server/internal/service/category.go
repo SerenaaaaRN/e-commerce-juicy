@@ -13,7 +13,8 @@ import (
 )
 
 var (
-	ErrCategoryNotFound = errors.New("CATEGORY_NOT_FOUND")
+	ErrCategoryNotFound    = errors.New("CATEGORY_NOT_FOUND")
+	ErrCategoryHasProducts = errors.New("CATEGORY_HAS_PRODUCTS")
 )
 
 type categoryService struct {
@@ -156,5 +157,14 @@ func (s *categoryService) DeleteCategory(ctx context.Context, id uuid.UUID) erro
 	if err != nil {
 		return ErrCategoryNotFound
 	}
+
+	var count int64
+	if err := s.db.WithContext(ctx).Model(&model.Product{}).Where("category_id = ?", id).Count(&count).Error; err != nil {
+		return err
+	}
+	if count > 0 {
+		return ErrCategoryHasProducts
+	}
+
 	return s.repo.Delete(ctx, id)
 }

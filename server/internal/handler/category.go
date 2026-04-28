@@ -206,6 +206,16 @@ func (h *CategoryHandler) DeleteCategory(c *gin.Context) {
 			})
 			return
 		}
+		if errors.Is(err, service.ErrCategoryHasProducts) {
+			c.JSON(http.StatusConflict, gin.H{
+				"success": false,
+				"error": gin.H{
+					"message": "Cannot delete category: products are still assigned to it",
+					"code":    "CATEGORY_HAS_PRODUCTS",
+				},
+			})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,
 			"error": gin.H{

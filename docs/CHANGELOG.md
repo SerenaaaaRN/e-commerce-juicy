@@ -5,7 +5,7 @@
 
 ## Session Summary
 
-**Focus:** Priority 3 bug fixes & feature completion — Edit Address, Edit Category, Edit Variant, Cancel Order, Recently Viewed, Wishlist.
+**Focus:** Priority 3 bug fixes & feature completion — Edit Address, Edit Category, Edit Variant, Cancel Order, Recently Viewed, Wishlist, Delete Category fix, Admin product listing pagination/admin flag fix.
 
 ---
 
@@ -16,6 +16,10 @@
 - **`client/src/stores/orderStore.ts`** — `placeOrder()` now sends `payment_method` to `ordersApi.checkout()`, fixing 422 Unprocessable Entity.
 - **`client/src/components/layout/AdminLayout.tsx`** — Admin logout now calls `adminApi.logout()` before clearing store.
 - **`client/src/features/shop/ProductPage.tsx`** — Fixed duplicate `try` block in `handleAddToCart` that caused Vite 500 parse error.
+- **`server/internal/service/category.go`** — `DeleteCategory` now checks for referencing products before deleting (returns `ErrCategoryHasProducts`).
+- **`client/src/features/admin/hooks/useProducts.ts`** — Removed `startTransition` from async API calls; fixed catch blocks to extract actual error messages from axios error responses.
+- **`client/src/features/admin/hooks/useProducts.ts`** — `loadData` now passes `admin=true&per_page=9999` so admin dashboard shows all products (unavailable + beyond page 1).
+- **`client/src/lib/api/admin.ts`** — Added `admin?: boolean` to `ProductQueryParams`.
 
 ### Backend
 
@@ -30,6 +34,10 @@
 - `server/internal/service/order.go` — `CancelOrder` validates ownership & cancellable status.
 - `server/internal/handler/order.go` — `CancelOrder` handler.
 - `server/internal/router/router.go` — `POST /orders/:orderNumber/cancel` (customer auth).
+
+#### Delete Category
+- `server/internal/service/category.go` — Added `ErrCategoryHasProducts` error; `DeleteCategory` now counts products referencing the category before allowing deletion.
+- `server/internal/handler/category.go` — Added handler for `ErrCategoryHasProducts` → HTTP 409 Conflict with clear message.
 
 #### Wishlist
 - `server/migrations/000014_create_wishlist_items.up.sql` — New table.
@@ -49,6 +57,13 @@
 - `client/src/features/profile/components/AddressCard.tsx` — Added edit button.
 - `client/src/features/profile/components/AddressList.tsx` — Integrated edit flow + delete confirmation dialog.
 - `client/src/features/profile/components/AddressFormModal.tsx` — Modal wrapping AddressForm.
+
+#### Delete Category & Error Handling
+- `client/src/features/admin/hooks/useProducts.ts` — Removed `startTransition` from async delete API calls; fixed catch blocks to extract actual error messages from axios error responses (shows backend error message instead of generic fallback).
+
+#### Admin Product Listing
+- `client/src/features/admin/hooks/useProducts.ts` — `loadData` now calls `adminApi.getProducts({ admin: true, per_page: 9999 })` so backend doesn't filter by `is_available` and pagination doesn't hide products.
+- `client/src/lib/api/admin.ts` — Added `admin?: boolean` to `ProductQueryParams`.
 
 #### Category & Variant Edit
 - `client/src/features/admin/hooks/useProducts.ts` — Added `editingCategory` state + handlers.
@@ -100,6 +115,8 @@
 | `server/internal/handler/order.go` | CancelOrder handler |
 | `server/internal/handler/address.go` | UpdateAddress handler |
 | `server/internal/router/router.go` | Wishlist + cancel order routes |
+| `server/internal/service/category.go` | DeleteCategory: check for referencing products |
+| `server/internal/handler/category.go` | DeleteCategory: handle ErrCategoryHasProducts |
 
 ### Frontend (React/TS)
 | File | Change |
@@ -119,7 +136,8 @@
 | `client/src/features/profile/components/AddressList.tsx` | Edit + delete confirm |
 | `client/src/features/admin/ProductsPage.tsx` | Category edit + icon cleanup |
 | `client/src/features/admin/components/VariantManagerDialog.tsx` | Variant edit + icon cleanup |
-| `client/src/features/admin/hooks/useProducts.ts` | editingCategory state |
+| `client/src/features/admin/hooks/useProducts.ts` | editingCategory state + fix delete handlers & error catching + admin=true per_page=9999 |
+| `client/src/lib/api/admin.ts` | Added admin to ProductQueryParams |
 | `client/src/features/admin/hooks/useVariants.ts` | editingVariant state |
 | `client/src/components/layout/Navbar.tsx` | Wishlist link |
 | `client/src/components/layout/AdminLayout.tsx` | Admin logout call |

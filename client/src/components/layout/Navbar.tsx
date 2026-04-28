@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom"
 import { useCartStore } from "@/stores/cartStore"
 import { useCustomerAuthStore } from "@/stores/customerAuthStore"
+import { useProductStore } from "@/stores/productStore"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -10,11 +11,6 @@ import { Input } from "@/components/ui/input"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { ShoppingBag01Icon, UserIcon, Menu01Icon, Cancel01Icon, SearchIcon, HeartAddIcon } from "@hugeicons/core-free-icons"
 import { useDebounce } from "@/hooks/useDebounce"
-
-const navLinks = [
-  { name: "Atelier", path: "/" },
-  { name: "Shop", path: "/shop" },
-]
 
 const activeLinkClass = "text-primary font-medium"
 const inactiveLinkClass = "text-muted-foreground hover:text-foreground transition-colors duration-200"
@@ -25,6 +21,15 @@ export const Navbar = () => {
 
   const totalItems = useCartStore((state) => state.totalItems)()
   const { isAuthenticated, customer, logout } = useCustomerAuthStore()
+  const { categories, fetchCategories } = useProductStore()
+
+  useEffect(() => {
+    if (categories.length === 0) {
+      fetchCategories()
+    }
+  }, [fetchCategories, categories.length])
+
+  const rootCategories = categories.filter((c) => !c.parent_id)
 
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -89,21 +94,30 @@ export const Navbar = () => {
 
         {/* Desktop Navigation Links */}
         <nav className="hidden md:flex items-center gap-8 text-sm uppercase tracking-widest">
-          {navLinks.map((link) => (
-            <Link
-              key={link.path}
-              to={link.path}
-              className={cn(
-                "relative py-2 text-xs transition-colors duration-200",
-                location.pathname === link.path ? activeLinkClass : inactiveLinkClass
-              )}
-            >
-              {link.name}
-              {location.pathname === link.path && (
-                <span className="absolute bottom-0 left-0 h-[2px] w-full bg-primary" />
-              )}
-            </Link>
-          ))}
+          <Link
+            to="/"
+            className={cn(
+              "relative py-2 text-xs transition-colors duration-200",
+              location.pathname === "/" ? activeLinkClass : inactiveLinkClass
+            )}
+          >
+            Atelier
+            {location.pathname === "/" && (
+              <span className="absolute bottom-0 left-0 h-[2px] w-full bg-primary" />
+            )}
+          </Link>
+          <Link
+            to="/shop"
+            className={cn(
+              "relative py-2 text-xs transition-colors duration-200",
+              location.pathname === "/shop" ? activeLinkClass : inactiveLinkClass
+            )}
+          >
+            Shop
+            {location.pathname === "/shop" && (
+              <span className="absolute bottom-0 left-0 h-[2px] w-full bg-primary" />
+            )}
+          </Link>
         </nav>
 
         {/* Action Controls */}
@@ -185,6 +199,33 @@ export const Navbar = () => {
         </div>
       </div>
 
+      {/* Category Ribbon */}
+      {rootCategories.length > 0 && (
+        <div className="hidden md:block border-t border-border/40 bg-muted/30">
+          <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 overflow-x-auto">
+            <div className="flex items-center gap-1 py-2 min-w-max">
+              {rootCategories.map((cat) => {
+                const isActive = location.pathname === `/category/${cat.slug}`
+                return (
+                  <Link
+                    key={cat.id}
+                    to={`/category/${cat.slug}`}
+                    className={cn(
+                      "px-3 py-1.5 text-[11px] uppercase tracking-wider whitespace-nowrap rounded-sm transition-colors duration-200",
+                      isActive
+                        ? "bg-primary/10 text-primary font-semibold"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    )}
+                  >
+                    {cat.name}
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Mobile Drawer menu */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-background px-4 py-4 animate-in fade-in slide-in-from-top-4 duration-300 flex flex-col gap-4">
@@ -205,19 +246,47 @@ export const Navbar = () => {
 
           <Separator />
           <nav className="flex flex-col gap-4 uppercase tracking-widest text-sm">
-            {navLinks.map((link) => (
+            <Link
+              to="/"
+              onClick={toggleMobileMenu}
+              className={cn(
+                "py-2 px-1 text-xs rounded-md block transition-colors",
+                location.pathname === "/"
+                  ? "text-primary font-semibold bg-accent/20"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Atelier
+            </Link>
+            <Link
+              to="/shop"
+              onClick={toggleMobileMenu}
+              className={cn(
+                "py-2 px-1 text-xs rounded-md block transition-colors",
+                location.pathname === "/shop"
+                  ? "text-primary font-semibold bg-accent/20"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Shop
+            </Link>
+            <Separator className="my-1" />
+            <span className="text-[10px] text-muted-foreground tracking-widest px-1">
+              Kategori
+            </span>
+            {rootCategories.map((cat) => (
               <Link
-                key={link.path}
-                to={link.path}
+                key={cat.id}
+                to={`/category/${cat.slug}`}
                 onClick={toggleMobileMenu}
                 className={cn(
                   "py-2 px-1 text-xs rounded-md block transition-colors",
-                  location.pathname === link.path
+                  location.pathname === `/category/${cat.slug}`
                     ? "text-primary font-semibold bg-accent/20"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                {link.name}
+                {cat.name}
               </Link>
             ))}
           </nav>

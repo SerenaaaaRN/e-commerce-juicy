@@ -1,6 +1,7 @@
 import { useEffect, useState, useTransition, useCallback } from "react"
 import { useForm, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import axios from "axios"
 import { adminApi } from "@/lib/api/admin"
 import { toast } from "sonner"
 import { productSchema, categorySchema } from "@/features/admin/validations"
@@ -49,7 +50,7 @@ export const useProducts = () => {
     if (shouldTriggerLoader) setLoading(true)
     try {
       const [prodRes, catRes] = await Promise.all([
-        adminApi.getProducts(),
+        adminApi.getProducts({ admin: true, per_page: 9999 }),
         adminApi.getCategories(),
       ])
 
@@ -162,19 +163,18 @@ export const useProducts = () => {
       )
         return
 
-      startTransition(async () => {
-        try {
-          const res = await adminApi.deleteProduct(id)
-          if (res.success) {
-            toast.success("Product catalogue removed successfully!")
-            loadData()
-          } else {
-            toast.error(res.message || "Failed to delete product catalog.")
-          }
-        } catch {
-          toast.error("Failed to delete catalog product.")
+      try {
+        const res = await adminApi.deleteProduct(id)
+        if (res.success) {
+          toast.success("Product catalogue removed successfully!")
+          startTransition(() => loadData())
+        } else {
+          toast.error(res.message || "Failed to delete product catalog.")
         }
-      })
+      } catch (err) {
+        const msg = axios.isAxiosError(err) ? err.response?.data?.error?.message || err.message : "Failed to delete catalog product."
+        toast.error(msg)
+      }
     },
     [loadData]
   )
@@ -253,19 +253,18 @@ export const useProducts = () => {
       )
         return
 
-      startTransition(async () => {
-        try {
-          const res = await adminApi.deleteCategory(id)
-          if (res.success) {
-            toast.success("Category removed successfully!")
-            loadData()
-          } else {
-            toast.error(res.message || "Failed to remove category.")
-          }
-        } catch {
-          toast.error("Failed to delete category.")
+      try {
+        const res = await adminApi.deleteCategory(id)
+        if (res.success) {
+          toast.success("Category removed successfully!")
+          startTransition(() => loadData())
+        } else {
+          toast.error(res.message || "Failed to remove category.")
         }
-      })
+      } catch (err) {
+        const msg = axios.isAxiosError(err) ? err.response?.data?.error?.message || err.message : "Failed to delete category."
+        toast.error(msg)
+      }
     },
     [loadData]
   )

@@ -378,6 +378,55 @@
 
 ---
 
+## Phase 10 — Zalora-Style Homepage & Category Landing Pages ✅
+
+> **Status:** Done — 2026-05-26
+> **Goal:** Transform homepage jadi rich editorial experience ala Zalora + tambah dedicated landing page per kategori dengan banners dan multiple sections.
+
+### 10.1 Navbar — Category Ribbon
+- [x] Add secondary nav bar di bawah navbar utama (scrollable horizontal)
+- [x] Fetch categories dari API `/shop/categories` — tampilkan semua top-level categories
+- [x] Setiap tab → link ke `/category/:slug`
+- [x] Active tab highlight sesuai halaman yg dibuka
+- [x] Mobile: horizontal scroll tanpa overflow wrap
+
+### 10.2 Homepage — New Sections
+- [x] **PromoStrip.tsx** — Full-width banner untuk flash sale / promo musiman
+- [x] **StyleDirectory.tsx** — Grid kategori besar (gambar + overlay text) ala Zalora
+- [x] **NewArrivals.tsx** — Produk terbaru dalam card grid
+- [x] **BrandSpotlight.tsx** — Editorial lookbook section dengan brand story
+- [x] **WhyJuicy.tsx** — Value propositions (Free Shipping, Easy Return, Authentic, dll)
+- [x] **NewsletterSection.tsx** — CTA signup email
+- [x] **InstagramFeed.tsx** — Social media feed grid (static placeholder)
+- [x] **TrendingNow.tsx** — Section produk trending/populer
+
+### 10.3 Category Landing Pages
+- [x] Create `src/features/category/CategoryLandingPage.tsx`
+- [x] Route: `<Route path="/category/:slug" element={<CategoryLandingPage />} />`
+- [x] **CategoryHero.tsx** — Full-width hero banner + judul + deskripsi kategori (data dari API)
+- [x] **SubcategoryGrid.tsx** — Grid subkategori (jika punya `parent_id`)
+- [x] **CategoryProducts.tsx** — Featured/populer products dari kategori ini (fetch dari `/shop/products?category=:slug`)
+- [x] **CategoryPromoBanner.tsx** — Promo banner spesifik kategori
+- [x] **CategoryInfo.tsx** — SEO-friendly deskripsi panjang kategori
+
+### 10.4 Routing & Navigation
+- [x] Add route `/category/:slug` di `App.tsx`
+- [x] Update Navbar: category ribbon + active state detection
+- [x] Update HomePage: compose 14 sections
+
+### 10.5 Zustand / Data
+- [x] Reuse existing `useProductStore` — `fetchCategories`, `fetchProducts` dengan filter category
+- [x] Category API sudah return nested `children` via `CategoryTreeResponse`
+
+### 10.6 QA
+- [x] Verify all sections render correctly on desktop + mobile (static fallbacks ensure content always visible)
+- [x] Category landing page fetches products per category via `fetchProducts({ category: slug })`
+- [x] Navbar category ribbon highlights active category from URL path
+- [x] Run `npx tsc --noEmit` — zero errors
+- [x] Run `go build ./...` — zero errors
+
+---
+
 ## Notes for AI Agents
 
 1. Baca `CONTEXT.md` dan `ARCHITECTURE.md` sebelum mulai phase apapun.

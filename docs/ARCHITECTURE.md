@@ -43,14 +43,32 @@ client/
 │   │
 │   ├── features/                         # Domain-based feature folders
 │   │   │
-│   │   ├── home/                         # Landing page
+│   │   ├── home/                         # Landing page (Zalora-style multi-section)
 │   │   │   ├── components/
-│   │   │   │   ├── HeroSection.tsx       # Hero banner utama dengan CTA
-│   │   │   │   ├── FeaturedSection.tsx   # Grid produk featured/bestseller
-│   │   │   │   ├── CollectionPreview.tsx # Preview koleksi dengan link ke /shop
-│   │   │   │   ├── EditorialSection.tsx  # Editorial/lookbook imagery section
-│   │   │   │   └── CtaSection.tsx        # Call-to-action banner bawah halaman
+│   │   │   │   ├── HeroSection.tsx           # Hero banner utama dengan CTA
+│   │   │   │   ├── FeaturedSection.tsx       # Grid produk featured/bestseller
+│   │   │   │   ├── CollectionPreview.tsx     # Preview koleksi dengan link ke /shop
+│   │   │   │   ├── RecentlyViewedSection.tsx # Produk yg pernah dilihat (localStorage)
+│   │   │   │   ├── EditorialSection.tsx      # Editorial/lookbook imagery section
+│   │   │   │   ├── CtaSection.tsx            # Call-to-action banner bawah halaman
+│   │   │   │   ├── PromoStrip.tsx            # [10.2] Full-width promo/flash sale banner
+│   │   │   │   ├── StyleDirectory.tsx        # [10.2] Grid kategori besar ala Zalora
+│   │   │   │   ├── NewArrivals.tsx           # [10.2] Produk terbaru grid
+│   │   │   │   ├── BrandSpotlight.tsx        # [10.2] Editorial brand story
+│   │   │   │   ├── WhyJuicy.tsx              # [10.2] Value propositions
+│   │   │   │   ├── NewsletterSection.tsx     # [10.2] Email signup CTA
+│   │   │   │   ├── InstagramFeed.tsx         # [10.2] Social media grid
+│   │   │   │   └── TrendingNow.tsx           # [10.2] Trending/populer products
 │   │   │   └── HomePage.tsx              # Page component — compose semua sections
+│   │   │
+│   │   ├── category/                     # [10.3] Category landing pages
+│   │   │   ├── components/
+│   │   │   │   ├── CategoryHero.tsx          # Hero banner + judul + deskripsi
+│   │   │   │   ├── SubcategoryGrid.tsx       # Grid subkategori (jika ada)
+│   │   │   │   ├── CategoryProducts.tsx      # Featured products dari kategori ini
+│   │   │   │   ├── CategoryPromoBanner.tsx   # Promo banner spesifik kategori
+│   │   │   │   └── CategoryInfo.tsx          # SEO-friendly deskripsi / size guide
+│   │   │   └── CategoryLandingPage.tsx       # /category/:slug — full landing page
 │   │   │
 │   │   ├── shop/                         # Catalog + Product Detail
 │   │   │   ├── components/
@@ -153,7 +171,7 @@ client/
 │   │   │   ├── separator.tsx
 │   │   │   └── ...other
 │   │   ├── layout/
-│   │   │   ├── Navbar.tsx                # Public nav: logo + links + cart icon + auth [PLANNED: search bar]
+│   │   │   ├── Navbar.tsx                # Public nav: logo + search + category ribbon [10.1] + cart + wishlist + auth dropdown
 │   │   │   ├── Footer.tsx
 │   │   │   └── AdminLayout.tsx           # Sidebar + Header wrapper untuk admin
 │   │   └── common/
@@ -231,6 +249,7 @@ server/
 │   │   ├── cart.go
 │   │   ├── order.go
 │   │   ├── review.go
+│   │   ├── wishlist.go
 │   │   └── analytics.go
 │   ├── service/
 │   │   ├── interfaces.go
@@ -244,6 +263,7 @@ server/
 │   │   ├── review.go
 │   │   ├── email.go
 │   │   ├── cloudinary.go
+│   │   ├── wishlist.go
 │   │   └── analytics.go
 │   ├── repository/
 │   │   ├── admin.go
@@ -252,7 +272,8 @@ server/
 │   │   ├── category.go
 │   │   ├── cart.go
 │   │   ├── order.go
-│   │   └── review.go
+│   │   ├── review.go
+│   │   └── wishlist.go
 │   ├── model/
 │   │   ├── admin.go
 │   │   ├── customer.go
@@ -261,14 +282,16 @@ server/
 │   │   ├── category.go
 │   │   ├── cart.go
 │   │   ├── order.go              # Order + OrderItem
-│   │   └── review.go
+│   │   ├── review.go
+│   │   └── wishlist.go
 │   ├── dto/
 │   │   ├── admin.go
 │   │   ├── customer.go
 │   │   ├── product.go
 │   │   ├── cart.go
 │   │   ├── order.go
-│   │   └── review.go
+│   │   ├── review.go
+│   │   └── wishlist.go
 │   ├── middleware/
 │   │   ├── admin_auth.go
 │   │   ├── customer_auth.go
@@ -287,7 +310,9 @@ server/
 │   ├── 000009_create_cart_items.up.sql / .down.sql
 │   ├── 000010_create_orders.up.sql / .down.sql
 │   ├── 000011_create_order_items.up.sql / .down.sql
-│   └── 000012_create_reviews.up.sql / .down.sql
+│   ├── 000012_create_reviews.up.sql / .down.sql
+│   ├── 000013_add_parent_id_to_categories.up.sql / .down.sql
+│   └── 000014_create_wishlist_items.up.sql / .down.sql
 ├── .env
 ├── .env.example
 ├── go.mod
@@ -302,10 +327,12 @@ server/
 /                           → HomePage
 /shop                       → CollectionPage
 /shop/:slug                 → ProductPage
+/category/:slug             → [10.3] CategoryLandingPage
 /cart                       → CartPage (protected)
 /checkout                   → CheckoutPage (protected)
 /orders                     → OrderHistoryPage (protected)
 /orders/:orderNumber        → OrderTrackingPage (protected)
+/wishlist                   → WishlistPage (protected)
 /login                      → LoginPage (redirect ke / jika sudah login)
 /register                   → RegisterPage (redirect ke / jika sudah login)
 /profile                    → ProfilePage (protected)
@@ -531,3 +558,6 @@ Dua jenis route guard yang terpisah:
 | JWT in memory | Memory (bukan localStorage) | Proteksi XSS |
 | Payment sebagai stub | Service layer stub | Slot untuk Midtrans/Xendit/Stripe post-MVP |
 | Dual Axios instances | client.ts + customerClient.ts | Token source terpisah; 401 handling terpisah |
+| Category Landing Pages | `features/category/` dengan multiple sections | Dedicated landing page per kategori seperti Zalora — setiap kategori punya hero, subcategory grid, product grid, dan promo banner sendiri |
+
+(End of file - total 562 lines)
