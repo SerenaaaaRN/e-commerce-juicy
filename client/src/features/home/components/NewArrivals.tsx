@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+import { useState } from "react"
 import { Link } from "react-router-dom"
 import { useProductStore } from "@/stores/productStore"
 
@@ -9,17 +9,6 @@ export const NewArrivals = () => {
   const { products } = useProductStore()
   const displayProducts = products.filter((p) => p.tags?.includes("new-arrival")).slice(0, 4)
   const [activeIdx, setActiveIdx] = useState(0)
-  const sectionRef = useRef<HTMLDivElement>(null)
-  const [visible, setVisible] = useState(false)
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setVisible(true) },
-      { threshold: 0.15 }
-    )
-    if (sectionRef.current) observer.observe(sectionRef.current)
-    return () => observer.disconnect()
-  }, [])
 
   if (displayProducts.length === 0) return null
 
@@ -27,14 +16,15 @@ export const NewArrivals = () => {
 
   return (
     <section
-      ref={sectionRef}
-      className="relative min-h-[600px] md:min-h-[700px] overflow-hidden bg-black"
+      data-section="new-arrivals"
+      className="relative min-h-[650px] md:min-h-[750px] overflow-hidden bg-black"
     >
+      {/* Full-bleed product images */}
       <div className="absolute inset-0">
         {displayProducts.map((p, i) => (
           <div
             key={p.id}
-            className={`absolute inset-0 transition-opacity duration-700 ${i === activeIdx ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+            className={`absolute inset-0 transition-opacity duration-1000 ease-out ${i === activeIdx ? "opacity-100" : "opacity-0 pointer-events-none"}`}
           >
             <img
               src={p.primary_image || "/placeholder.webp"}
@@ -43,62 +33,86 @@ export const NewArrivals = () => {
             />
           </div>
         ))}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-black/60" />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/50 to-black/40" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/10" />
       </div>
 
-      <div className="relative z-10 container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-full flex flex-col justify-center min-h-[600px] md:min-h-[700px]">
-        <div className="flex flex-col md:flex-row md:items-center justify-between w-full gap-10">
-          <div className={`max-w-lg transition-all duration-700 delay-100 ${visible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"}`}>
-            <div className="flex items-center gap-3 mb-4">
-              <span className="h-px w-8 bg-primary" />
-              <span className="text-[9px] font-bold tracking-[0.35em] text-primary uppercase">
-                New Arrivals · {activeIdx + 1}/{displayProducts.length}
+      {/* Split-screen content */}
+      <div className="relative z-10 container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-full flex items-center min-h-[650px] md:min-h-[750px]">
+        <div className="flex flex-col md:flex-row w-full gap-12 md:gap-20">
+
+          {/* Left — Product detail */}
+          <div className="flex-1 flex flex-col justify-center gsap-reveal">
+            <div className="flex items-center gap-4 mb-8">
+              <span className="size-1.5 rotate-45 bg-[var(--color-gold)]" />
+              <span className="text-[9px] font-bold tracking-[0.4em] text-[var(--color-gold)] uppercase font-mono">
+                New Arrivals
+              </span>
+              <span className="h-px flex-1 bg-white/[0.06]" />
+              <span className="text-[9px] font-mono text-white/20">
+                {String(activeIdx + 1).padStart(2, "0")} / {String(displayProducts.length).padStart(2, "0")}
               </span>
             </div>
-            <h2 className="text-4xl sm:text-5xl font-bold text-white leading-[0.95] tracking-tight">
+
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white leading-[0.92] tracking-tight font-heading gsap-slide-up">
               {active.name}
             </h2>
-            <p className="text-white/50 text-sm mt-4 max-w-sm leading-relaxed">
-              New Season — {active.category_name}
-            </p>
-            <div className="flex items-center gap-4 mt-6">
-              <span className="text-2xl font-bold text-white">{formatPrice(active.price)}</span>
+
+            <div className="flex items-center gap-3 mt-5">
+              <span className="h-px w-6 bg-[var(--color-gold-muted)]" />
+              <span className="text-[9px] tracking-[0.3em] text-white/30 uppercase font-medium">
+                {active.category_name}
+              </span>
+            </div>
+
+            <div className="flex items-baseline gap-4 mt-8">
+              <span className="text-2xl md:text-3xl font-heading font-bold text-white">
+                {formatPrice(active.price)}
+              </span>
               {active.compare_at_price && (
-                <span className="text-sm text-white/40 line-through">{formatPrice(active.compare_at_price)}</span>
+                <span className="text-sm font-mono text-white/30 line-through">
+                  {formatPrice(active.compare_at_price)}
+                </span>
               )}
             </div>
+
             <Link
               to={`/shop/${active.slug}`}
-              className="inline-flex items-center gap-2 mt-6 text-[10px] font-bold tracking-widest text-primary uppercase border-b border-primary/30 pb-1 hover:border-primary transition-colors"
+              className="inline-flex items-center gap-3 mt-10 group"
             >
-              Shop Now →
+              <span className="text-[10px] font-bold tracking-[0.3em] text-[var(--color-gold)] uppercase">
+                Discover
+              </span>
+              <span className="h-px w-8 bg-[var(--color-gold)] group-hover:w-14 transition-all duration-500" />
+              <span className="text-[10px] text-[var(--color-gold)]">→</span>
             </Link>
           </div>
 
-          <div className={`flex flex-row md:flex-col gap-2 transition-all duration-700 delay-200 ${visible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"}`}>
+          {/* Right — Vertical product selector */}
+          <div className="flex flex-row md:flex-col gap-1 md:w-56 shrink-0 md:justify-center gsap-stagger-item">
             {displayProducts.map((p, i) => (
               <button
                 key={p.id}
                 onClick={() => setActiveIdx(i)}
-                className={`group text-left flex items-center gap-3 p-3 border transition-all duration-300 cursor-pointer ${
+                className={`group text-left flex items-center gap-4 p-3.5 transition-all duration-500 cursor-pointer border-l-2 ${
                   i === activeIdx
-                    ? "border-white/40 bg-white/10"
-                    : "border-transparent hover:border-white/10"
+                    ? "border-l-[var(--color-gold)] bg-white/[0.06]"
+                    : "border-l-transparent hover:border-l-white/10 hover:bg-white/[0.02]"
                 }`}
               >
-                <span className={`text-xs font-mono transition-colors ${
-                  i === activeIdx ? "text-primary" : "text-white/30"
+                <span className={`text-[10px] font-mono transition-colors duration-300 ${
+                  i === activeIdx ? "text-[var(--color-gold)]" : "text-white/20"
                 }`}>
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <div className="hidden md:block">
-                  <p className={`text-xs font-semibold transition-colors ${
-                    i === activeIdx ? "text-white" : "text-white/50 group-hover:text-white/80"
+                <div className="hidden md:block min-w-0">
+                  <p className={`text-xs font-semibold tracking-wide transition-colors duration-300 truncate ${
+                    i === activeIdx ? "text-white" : "text-white/40 group-hover:text-white/70"
                   }`}>
                     {p.name}
                   </p>
-                  <p className={`text-[10px] transition-colors ${
-                    i === activeIdx ? "text-white/40" : "text-white/20"
+                  <p className={`text-[10px] font-mono transition-colors duration-300 mt-0.5 ${
+                    i === activeIdx ? "text-white/40" : "text-white/15"
                   }`}>
                     {formatPrice(p.price)}
                   </p>
@@ -109,13 +123,16 @@ export const NewArrivals = () => {
         </div>
       </div>
 
-      <div className="absolute bottom-6 left-0 right-0 z-10 flex justify-center gap-2">
+      {/* Bottom progress indicator */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1.5">
         {displayProducts.map((_, i) => (
           <button
             key={i}
             onClick={() => setActiveIdx(i)}
-            className={`h-0.5 transition-all duration-500 cursor-pointer ${
-              i === activeIdx ? "w-8 bg-primary" : "w-4 bg-white/20 hover:bg-white/40"
+            className={`h-[2px] transition-all duration-700 cursor-pointer ${
+              i === activeIdx
+                ? "w-10 bg-[var(--color-gold)]"
+                : "w-5 bg-white/15 hover:bg-white/30"
             }`}
             aria-label={`Go to product ${i + 1}`}
           />

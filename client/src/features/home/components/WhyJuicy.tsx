@@ -15,22 +15,54 @@ const VALUES = [
 
 export const WhyJuicy = () => {
   return (
-    <section className="border-y border-border/10 bg-background">
-      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-border/10 border-border/10">
-          {VALUES.map((v) => (
-            <div key={v.title} className="flex items-center gap-3 py-6 px-4 md:px-6">
-              <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                <HugeiconsIcon icon={v.icon} className="size-4 text-primary" />
+    <section
+      data-section="why-juicy"
+      className="relative bg-foreground overflow-hidden"
+    >
+      {/* Subtle grain overlay */}
+      <div className="absolute inset-0 bg-grain" />
+
+      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="grid grid-cols-2 md:grid-cols-4">
+          {VALUES.map((v, i) => (
+            <div
+              key={v.title}
+              className="gsap-stagger-item group relative flex flex-col items-center text-center gap-4 py-10 md:py-14 px-4 md:px-6"
+            >
+              {/* Vertical separator (not on first item) */}
+              {i > 0 && (
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 h-10 w-px bg-background/[0.06] hidden md:block" />
+              )}
+
+              {/* Icon container with gold ring */}
+              <div className="flex size-12 shrink-0 items-center justify-center rounded-full border border-[var(--color-gold-muted)] bg-[var(--color-gold-subtle)] transition-colors duration-500 group-hover:border-[var(--color-gold)] group-hover:bg-[var(--color-gold)]/10">
+                <HugeiconsIcon icon={v.icon} className="size-4.5 text-[var(--color-gold)]" />
               </div>
+
+              {/* Text */}
               <div>
-                <p className="text-xs font-semibold text-foreground">{v.title}</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5">{v.desc}</p>
+                <p className="text-xs font-heading font-semibold tracking-wide text-background uppercase">
+                  {v.title}
+                </p>
+                <p className="text-[10px] text-background/40 mt-1.5 leading-relaxed max-w-[180px] mx-auto">
+                  {v.desc}
+                </p>
               </div>
+
+              {/* Diamond separator on mobile between rows */}
+              {i === 1 && (
+                <div className="absolute -bottom-px left-1/2 -translate-x-1/2 md:hidden">
+                  <span className="size-1 rotate-45 bg-[var(--color-gold-muted)] block" />
+                </div>
+              )}
             </div>
           ))}
         </div>
       </div>
+
+      {/* Top & bottom gold accent lines */}
+      <div className="absolute top-0 left-0 right-0 accent-line-gold" />
+      <div className="absolute bottom-0 left-0 right-0 accent-line-gold" />
     </section>
   )
 }

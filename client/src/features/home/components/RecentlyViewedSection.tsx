@@ -1,8 +1,5 @@
 import { Link } from "react-router-dom"
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed"
-import { Card, CardContent } from "@/components/ui/card"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { Clock01Icon } from "@hugeicons/core-free-icons"
 import { formatPrice } from "@/lib/utils/format"
 
 export const RecentlyViewedSection = () => {
@@ -11,53 +8,81 @@ export const RecentlyViewedSection = () => {
   if (items.length === 0) return null
 
   return (
-    <section className="w-full bg-muted/5 py-20 overflow-hidden">
-      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mb-8">
-        <div className="flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-full bg-primary/10">
-            <HugeiconsIcon icon={Clock01Icon} className="size-4 text-primary" />
+    <section
+      data-section="recently-viewed"
+      className="w-full bg-background py-20 md:py-24 overflow-hidden"
+    >
+      {/* Top accent */}
+      <div className="accent-line-gold" />
+
+      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-16 md:mt-20 mb-10 md:mb-14">
+        <div className="flex items-end justify-between gsap-reveal">
+          <div className="flex items-start gap-5">
+            <span className="text-6xl md:text-7xl font-heading font-extralight text-foreground/[0.04] leading-none select-none hidden md:block">
+              ◆
+            </span>
+            <div className="flex flex-col gap-1.5">
+              <span className="text-[9px] font-bold tracking-[0.4em] text-[var(--color-gold)] uppercase font-mono flex items-center gap-2.5">
+                <span className="size-1 rotate-45 bg-[var(--color-gold)]" />
+                Recently Viewed
+              </span>
+              <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground font-heading leading-none">
+                Lanjutkan Jelajahi
+              </h2>
+            </div>
           </div>
-          <div>
-            <h2 className="text-lg font-bold tracking-tight text-foreground">
-              Recently Viewed
-            </h2>
-            <p className="text-xs text-muted-foreground">
-              Lanjutkan jelajahi silhouette favoritmu
-            </p>
-          </div>
+          <span className="text-[10px] font-mono text-muted-foreground/50 hidden sm:block">
+            {items.length} item{items.length > 1 ? "s" : ""}
+          </span>
         </div>
       </div>
 
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div
-          className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-none"
+          className="flex gap-5 overflow-x-auto snap-x snap-mandatory scrollbar-none -mx-4 px-4"
           style={{ scrollbarWidth: "none" }}
         >
-          {items.map((item) => (
-            <Link key={item.slug} to={`/shop/${item.slug}`} className="snap-start shrink-0 w-[200px] group">
-              <Card className="overflow-hidden hover:shadow-md border-border/10">
-                <div className="aspect-[4/5] bg-muted overflow-hidden">
-                  <img
-                    src={item.image_url || "/placeholder-product.svg"}
-                    alt={item.name}
-                    className="size-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder-product.svg" }}
-                  />
-                </div>
-                <CardContent className="p-3 text-left">
-                  <span className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">
-                    {item.category_name}
-                  </span>
-                  <p className="text-xs font-semibold text-foreground truncate mt-0.5">{item.name}</p>
-                  <span className="text-xs font-bold text-primary mt-1 block">
-                    {formatPrice(item.price)}
-                  </span>
-                </CardContent>
-              </Card>
+          {items.map((item, i) => (
+            <Link
+              key={item.slug}
+              to={`/shop/${item.slug}`}
+              className="snap-start shrink-0 w-[200px] md:w-[220px] group gsap-stagger-item will-change-transform"
+            >
+              {/* Image with index overlay */}
+              <div className="relative aspect-[3/4] bg-muted overflow-hidden">
+                <img
+                  src={item.image_url || "/placeholder-product.svg"}
+                  alt={item.name}
+                  className="size-full object-cover group-hover:scale-[1.03] transition-transform duration-700 ease-out"
+                  onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder-product.svg" }}
+                />
+                {/* Hover lift overlay */}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500" />
+                {/* Index number */}
+                <span className="absolute bottom-3 right-3 text-[9px] font-mono text-white/40 mix-blend-difference">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+              </div>
+
+              {/* Info */}
+              <div className="pt-3.5 flex flex-col gap-0.5">
+                <span className="text-[8px] font-bold tracking-[0.3em] text-muted-foreground/60 uppercase">
+                  {item.category_name}
+                </span>
+                <p className="text-xs font-semibold text-foreground truncate group-hover:text-[var(--color-gold)] transition-colors duration-300 tracking-wide">
+                  {item.name}
+                </p>
+                <span className="text-[11px] font-mono font-semibold text-foreground/70 mt-0.5">
+                  {formatPrice(item.price)}
+                </span>
+              </div>
             </Link>
           ))}
         </div>
       </div>
+
+      {/* Bottom accent */}
+      <div className="mt-16 md:mt-20 accent-line-gold" />
     </section>
   )
 }
