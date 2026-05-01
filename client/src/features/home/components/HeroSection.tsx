@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
+import { Separator } from "@/components/ui/separator"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { ArrowUpRight01Icon } from "@hugeicons/core-free-icons"
 
@@ -46,78 +47,79 @@ export const HeroSection = () => {
   }, [])
 
   return (
-    <section className="relative w-full h-[75vh] min-h-[550px] lg:h-[82vh] overflow-hidden flex items-center border-b border-foreground/5 bg-zinc-50">
-      {/* Background Slideshow - Unfiltered, organic and bright from multiple CDNs */}
+    <section
+      data-section="hero"
+      className="relative w-full h-[75vh] min-h-[550px] lg:h-[85vh] overflow-hidden flex items-center bg-black"
+    >
+      {/* Background slideshow */}
       <div className="absolute inset-0 z-0">
         {CAMPAIGN_SLIDES.map((slide, index) => (
           <div
             key={index}
-            className={`absolute inset-0 transition-all duration-[1200ms] ease-in-out transform ${
-              index === currentSlide 
-                ? "opacity-100 scale-100" 
-                : "opacity-0 scale-105 pointer-events-none"
-            }`}
+            className={`absolute inset-0 transition-all duration-[1400ms] ease-out ${index === currentSlide
+                ? "opacity-100 scale-100"
+                : "opacity-0 scale-[1.03] pointer-events-none"
+              }`}
           >
             <img
               src={slide.image}
               alt={slide.title}
-              className="w-full h-full object-cover object-center filter brightness-[0.98]"
+              className="size-full object-cover object-center"
             />
           </div>
         ))}
       </div>
 
-      {/* Subtle, soft light gradient mask on the left for maximum text contrast without blocking the image */}
-      <div className="absolute inset-0 bg-gradient-to-r from-white/45 via-white/10 to-transparent z-10 pointer-events-none" />
+      {/* Cinematic gradient overlays */}
+      <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent z-10 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/10 z-10 pointer-events-none" />
 
-      {/* Clean, Minimalist Typography overlay */}
+      {/* Main content */}
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-20 text-left">
-        <div className="max-w-xl flex flex-col gap-6 text-foreground">
-          
-          {/* Campaign Tag */}
-          <div className="flex items-center gap-3 select-none">
-            <span className="h-px w-6 bg-foreground/60" />
-            <span className="text-[9px] font-bold tracking-[0.4em] text-foreground/80 uppercase animate-pulse">
+        <div className="max-w-xl flex flex-col gap-7 gsap-reveal">
+
+          {/* Campaign tag */}
+          <div className="flex items-center gap-4 select-none">
+            <span className="size-1 rotate-45 bg-[var(--color-gold)]" />
+            <span className="text-[9px] font-bold tracking-[0.4em] text-[var(--color-gold)] uppercase font-mono">
               Campaign Vol. I
             </span>
+            <Separator className="w-8 bg-white/[0.08] h-px" />
           </div>
 
-          {/* Clean, Large Editorial Title */}
-          <div className="flex flex-col gap-2">
-            <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold tracking-wide uppercase leading-[1.08] text-foreground transition-all duration-700">
-              {CAMPAIGN_SLIDES[currentSlide].title}
-            </h1>
-          </div>
+          {/* Editorial title */}
+          <h1 className="font-heading text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight uppercase leading-[0.95] text-white gsap-slide-up">
+            {CAMPAIGN_SLIDES[currentSlide].title}
+          </h1>
 
           {/* Narrative */}
-          <p className="text-[11px] sm:text-xs text-muted-foreground uppercase tracking-widest leading-relaxed max-w-xs">
+          <p className="text-[11px] sm:text-xs text-white/40 uppercase tracking-[0.2em] leading-relaxed max-w-xs">
             Unstructured luxury garments tailored from premium flax fibers for effortless elegance.
           </p>
 
-          {/* Premium Sharp-Edge Action Suite */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-4">
-            <Button asChild className="font-bold uppercase tracking-widest text-[9px] px-8 py-4.5 h-auto rounded-none border border-foreground bg-foreground text-background hover:bg-transparent hover:text-foreground transition-all duration-300 cursor-pointer">
-              <Link to="/shop" className="flex items-center gap-1.5">
+          {/* CTA suite */}
+          <div className="flex flex-col sm:flex-row gap-3 pt-2">
+            <Button asChild variant="luxury" className="px-8 py-4.5 h-auto bg-[var(--color-gold)] text-foreground hover:bg-transparent hover:text-[var(--color-gold)]">
+              <Link to="/shop">
                 Explore Shop
-                <HugeiconsIcon icon={ArrowUpRight01Icon} strokeWidth={2.2} className="size-3" />
+
               </Link>
             </Button>
-            <Button asChild variant="outline" className="font-bold uppercase tracking-widest text-[9px] px-8 py-4.5 h-auto rounded-none border border-foreground/20 text-foreground hover:bg-foreground hover:text-background transition-all duration-300 cursor-pointer bg-transparent">
+            <Button asChild variant="luxury" className="px-8 py-4.5 h-auto">
               <a href="#featured">View Collection</a>
             </Button>
           </div>
-
         </div>
       </div>
 
-      {/* Minimalist Bottom Right Pagination */}
-      <div className="absolute bottom-8 right-8 z-20 flex items-center gap-6 select-none text-foreground hidden md:flex font-mono">
+      {/* Bottom pagination */}
+      <div className="absolute bottom-8 right-8 z-20 hidden md:flex items-center gap-6 select-none font-mono">
         <div className="flex items-baseline gap-1">
-          <span className="text-xs font-bold text-foreground">
+          <span className="text-xs font-bold text-white">
             {(currentSlide + 1).toString().padStart(2, "0")}
           </span>
-          <span className="text-[9px] text-muted-foreground">/</span>
-          <span className="text-[9px] text-muted-foreground">
+          <span className="text-[9px] text-white/30">/</span>
+          <span className="text-[9px] text-white/30">
             {CAMPAIGN_SLIDES.length.toString().padStart(2, "0")}
           </span>
         </div>
@@ -127,14 +129,18 @@ export const HeroSection = () => {
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
-              className={`h-0.5 cursor-pointer transition-all duration-500 rounded-none ${
-                index === currentSlide ? "w-6 bg-foreground" : "w-2 bg-foreground/20 hover:bg-foreground/40"
-              }`}
+              className={`h-[2px] cursor-pointer transition-all duration-700 ${index === currentSlide
+                  ? "w-8 bg-[var(--color-gold)]"
+                  : "w-3 bg-white/15 hover:bg-white/30"
+                }`}
               aria-label={`Go to slide ${index + 1}`}
             />
           ))}
         </div>
       </div>
+
+      {/* Bottom gold accent line */}
+      <Separator className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-r from-transparent via-[var(--color-gold)] to-transparent h-px" />
     </section>
   )
 }

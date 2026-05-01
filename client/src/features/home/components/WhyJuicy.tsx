@@ -1,4 +1,5 @@
 import { HugeiconsIcon } from "@hugeicons/react"
+import { Separator } from "@/components/ui/separator"
 import {
   ShippingTruck01Icon,
   Recycle01Icon,
@@ -31,12 +32,12 @@ export const WhyJuicy = () => {
             >
               {/* Vertical separator (not on first item) */}
               {i > 0 && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 h-10 w-px bg-background/[0.06] hidden md:block" />
+                <Separator orientation="vertical" className="absolute left-0 top-1/2 -translate-y-1/2 bg-background/[0.06] h-10 hidden md:block" />
               )}
 
               {/* Icon container with gold ring */}
               <div className="flex size-12 shrink-0 items-center justify-center rounded-full border border-[var(--color-gold-muted)] bg-[var(--color-gold-subtle)] transition-colors duration-500 group-hover:border-[var(--color-gold)] group-hover:bg-[var(--color-gold)]/10">
-                <HugeiconsIcon icon={v.icon} className="size-4.5 text-[var(--color-gold)]" />
+                <HugeiconsIcon icon={v.icon} className="size-4.5 text-(--color-gold)" />
               </div>
 
               {/* Text */}
@@ -44,7 +45,7 @@ export const WhyJuicy = () => {
                 <p className="text-xs font-heading font-semibold tracking-wide text-background uppercase">
                   {v.title}
                 </p>
-                <p className="text-[10px] text-background/40 mt-1.5 leading-relaxed max-w-[180px] mx-auto">
+                <p className="text-[10px] text-background/40 mt-1.5 leading-relaxed max-w-45 mx-auto">
                   {v.desc}
                 </p>
               </div>
@@ -61,8 +62,8 @@ export const WhyJuicy = () => {
       </div>
 
       {/* Top & bottom gold accent lines */}
-      <div className="absolute top-0 left-0 right-0 accent-line-gold" />
-      <div className="absolute bottom-0 left-0 right-0 accent-line-gold" />
+      <Separator className="absolute top-0 left-0 right-0 bg-gradient-to-r from-transparent via-[var(--color-gold)] to-transparent h-px" />
+      <Separator className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-transparent via-[var(--color-gold)] to-transparent h-px" />
     </section>
   )
 }

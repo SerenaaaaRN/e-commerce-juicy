@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react"
 import { Link } from "react-router-dom"
 import { useProductStore } from "@/stores/productStore"
+import { Separator } from "@/components/ui/separator"
 
 const formatPrice = (p: number) =>
   new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(p)
@@ -68,7 +69,7 @@ export const FeaturedSection = () => {
       <div className="relative z-10 container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-full flex flex-col justify-center min-h-[700px] md:min-h-[850px]">
         <div className="max-w-2xl gsap-reveal">
           <div className="flex items-center gap-4 mb-8">
-            <span className="h-px w-10 bg-[var(--color-gold)]" />
+            <Separator className="w-10 bg-[var(--color-gold)] h-px" />
             <span className="text-[9px] font-bold tracking-[0.4em] text-[var(--color-gold)] uppercase font-mono">
               {hero.category_name}
             </span>
@@ -85,7 +86,7 @@ export const FeaturedSection = () => {
 
       {/* Frosted bottom bar */}
       <div className="absolute bottom-0 left-0 right-0 z-10">
-        <div className="accent-line-gold" />
+        <Separator className="bg-gradient-to-r from-transparent via-[var(--color-gold)] to-transparent h-px" />
         <div className="backdrop-blur-md bg-white/[0.04]">
           <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between py-5 gsap-fade">

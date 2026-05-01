@@ -58,8 +58,8 @@ export const NewsletterSection = () => {
             </div>
             <Button
               type="submit"
-              variant="outline"
-              className="shrink-0 rounded-none border-[var(--color-gold-muted)] text-[var(--color-gold)] hover:bg-[var(--color-gold)] hover:text-black text-[10px] tracking-[0.2em] uppercase font-bold px-6 transition-all duration-500"
+              variant="luxury"
+              className="shrink-0 px-6"
             >
               Subscribe
             </Button>

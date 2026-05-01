@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
 import { useProductStore } from "@/stores/productStore"
+import { Separator } from "@/components/ui/separator"
 
 const formatPrice = (p: number) =>
   new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(p)
@@ -48,7 +49,7 @@ export const NewArrivals = () => {
               <span className="text-[9px] font-bold tracking-[0.4em] text-[var(--color-gold)] uppercase font-mono">
                 New Arrivals
               </span>
-              <span className="h-px flex-1 bg-white/[0.06]" />
+              <Separator className="flex-1 bg-white/[0.06] h-px" />
               <span className="text-[9px] font-mono text-white/20">
                 {String(activeIdx + 1).padStart(2, "0")} / {String(displayProducts.length).padStart(2, "0")}
               </span>
@@ -59,7 +60,7 @@ export const NewArrivals = () => {
             </h2>
 
             <div className="flex items-center gap-3 mt-5">
-              <span className="h-px w-6 bg-[var(--color-gold-muted)]" />
+              <Separator className="w-6 bg-[var(--color-gold-muted)] h-px" />
               <span className="text-[9px] tracking-[0.3em] text-white/30 uppercase font-medium">
                 {active.category_name}
               </span>
@@ -83,7 +84,7 @@ export const NewArrivals = () => {
               <span className="text-[10px] font-bold tracking-[0.3em] text-[var(--color-gold)] uppercase">
                 Discover
               </span>
-              <span className="h-px w-8 bg-[var(--color-gold)] group-hover:w-14 transition-all duration-500" />
+              <Separator className="w-8 bg-[var(--color-gold)] h-px group-hover:w-14 transition-all duration-500" />
               <span className="text-[10px] text-[var(--color-gold)]">→</span>
             </Link>
           </div>

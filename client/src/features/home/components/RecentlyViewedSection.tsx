@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom"
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed"
+import { Separator } from "@/components/ui/separator"
 import { formatPrice } from "@/lib/utils/format"
 
 export const RecentlyViewedSection = () => {
@@ -13,7 +14,7 @@ export const RecentlyViewedSection = () => {
       className="w-full bg-background py-20 md:py-24 overflow-hidden"
     >
       {/* Top accent */}
-      <div className="accent-line-gold" />
+      <Separator className="bg-gradient-to-r from-transparent via-[var(--color-gold)] to-transparent h-px" />
 
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-16 md:mt-20 mb-10 md:mb-14">
         <div className="flex items-end justify-between gsap-reveal">
@@ -82,7 +83,7 @@ export const RecentlyViewedSection = () => {
       </div>
 
       {/* Bottom accent */}
-      <div className="mt-16 md:mt-20 accent-line-gold" />
+      <Separator className="mt-16 md:mt-20 bg-gradient-to-r from-transparent via-[var(--color-gold)] to-transparent h-px" />
     </section>
   )
 }

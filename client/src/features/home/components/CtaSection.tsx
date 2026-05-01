@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
+import { Separator } from "@/components/ui/separator"
 
 export const CtaSection = () => {
   return (
@@ -11,7 +12,7 @@ export const CtaSection = () => {
       <div className="absolute inset-0 bg-grain" />
 
       {/* Top gold accent */}
-      <div className="absolute top-0 left-0 right-0 accent-line-gold" />
+      <Separator className="absolute top-0 left-0 right-0 bg-gradient-to-r from-transparent via-[var(--color-gold)] to-transparent h-px" />
 
       <div className="container mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center relative z-10 gsap-reveal">
         {/* Decorative diamond */}
@@ -35,9 +36,9 @@ export const CtaSection = () => {
         <div className="mt-12">
           <Button
             asChild
-            variant="outline"
+            variant="luxury"
             size="lg"
-            className="rounded-none border-[var(--color-gold-muted)] text-[var(--color-gold)] hover:bg-[var(--color-gold)] hover:text-foreground text-[10px] tracking-[0.3em] uppercase font-bold px-10 py-6 transition-all duration-500"
+            className="px-10 py-6"
           >
             <Link to="/shop">Shop the Launch</Link>
           </Button>
@@ -50,7 +51,7 @@ export const CtaSection = () => {
       </div>
 
       {/* Bottom gold accent */}
-      <div className="absolute bottom-0 left-0 right-0 accent-line-gold" />
+      <Separator className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-transparent via-[var(--color-gold)] to-transparent h-px" />
     </section>
   )
 }
