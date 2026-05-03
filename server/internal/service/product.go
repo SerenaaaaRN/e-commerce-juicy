@@ -96,6 +96,7 @@ func (s *productService) ListProducts(
 
 		res[i] = dto.ProductResponse{
 			ID:             p.ID,
+			CategoryID:     p.CategoryID,
 			Name:           p.Name,
 			Slug:           p.Slug,
 			Price:          p.Price,
@@ -144,6 +145,7 @@ func (s *productService) UpdateProduct(ctx context.Context, id uuid.UUID, produc
 	existing.Name = product.Name
 	existing.Slug = product.Slug
 	existing.CategoryID = product.CategoryID
+	existing.Category = model.Category{}
 	existing.Description = product.Description
 	existing.Price = product.Price
 	existing.CompareAtPrice = product.CompareAtPrice
@@ -220,6 +222,40 @@ func (s *productService) AddProductImages(ctx context.Context, id uuid.UUID, fil
 	}
 
 	return nil
+}
+
+func (s *productService) AddProductImageUrl(ctx context.Context, id uuid.UUID, imageUrl string) error {
+	product, err := s.repo.FindByID(ctx, id)
+	if err != nil {
+		return ErrProductNotFound
+	}
+
+	maxOrder := -1
+	hasPrimary := false
+	for _, img := range product.Images {
+		if img.DisplayOrder > maxOrder {
+			maxOrder = img.DisplayOrder
+		}
+		if img.IsPrimary {
+			hasPrimary = true
+		}
+	}
+
+	maxOrder++
+	isPrimary := false
+	if !hasPrimary {
+		isPrimary = true
+	}
+
+	newImage := &model.ProductImage{
+		ProductID:          product.ID,
+		ImageURL:           imageUrl,
+		CloudinaryPublicID: "external_url",
+		DisplayOrder:       maxOrder,
+		IsPrimary:          isPrimary,
+	}
+
+	return s.repo.CreateImage(ctx, newImage)
 }
 
 func (s *productService) DeleteProductImage(ctx context.Context, id uuid.UUID, imageID uuid.UUID) error {

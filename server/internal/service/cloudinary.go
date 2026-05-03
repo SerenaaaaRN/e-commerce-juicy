@@ -18,13 +18,13 @@ type CloudinaryService struct {
 
 func NewCloudinaryService(cfg *config.Config) *CloudinaryService {
 	if cfg.CloudinaryCloudName == "" || cfg.CloudinaryAPIKey == "" || cfg.CloudinaryAPISecret == "" {
-		log.Println("⚠️ Cloudinary credentials are not set. Product image uploads will fallback to mock placeholder mode.")
+		log.Println("Cloudinary credentials are not set. Product image uploads will fallback to mock placeholder mode.")
 		return &CloudinaryService{mock: true}
 	}
 
 	cld, err := cloudinary.NewFromParams(cfg.CloudinaryCloudName, cfg.CloudinaryAPIKey, cfg.CloudinaryAPISecret)
 	if err != nil {
-		log.Printf("⚠️ Failed to initialize Cloudinary client: %v. Falling back to mock mode.", err)
+		log.Printf("Failed to initialize Cloudinary client: %v. Falling back to mock mode.", err)
 		return &CloudinaryService{mock: true}
 	}
 

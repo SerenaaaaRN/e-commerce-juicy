@@ -29,7 +29,7 @@ type CategoryTreeResponse struct {
 
 type ProductVariantRequest struct {
 	Size            string  `json:"size" binding:"required"`
-	Color           string  `json:"color" binding:"required"`
+	Color           string  `json:"color" binding:"omitempty"`
 	ColorHex        *string `json:"color_hex" binding:"omitempty"`
 	SKU             string  `json:"sku" binding:"required"`
 	Stock           int     `json:"stock"`
@@ -39,6 +39,7 @@ type ProductVariantRequest struct {
 
 type ProductResponse struct {
 	ID             uuid.UUID `json:"id"`
+	CategoryID     uuid.UUID `json:"category_id"`
 	Name           string    `json:"name"`
 	Slug           string    `json:"slug"`
 	Price          float64   `json:"price"`
@@ -97,4 +98,8 @@ type ProductReviewResponse struct {
 	Body         *string   `json:"body"`
 	CustomerName string    `json:"customer_name"`
 	CreatedAt    time.Time `json:"created_at"`
+}
+
+type AddProductImageUrlRequest struct {
+	ImageURL string `json:"image_url" binding:"required,url"`
 }

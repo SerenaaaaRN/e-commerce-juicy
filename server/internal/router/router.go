@@ -131,6 +131,7 @@ func (r *Router) Setup(engine *gin.Engine) {
 			adminAuth.DELETE("/products/:id", r.productHandler.DeleteProduct)
 
 			adminAuth.POST("/products/:id/images", r.productHandler.AddProductImages)
+			adminAuth.POST("/products/:id/images/url", r.productHandler.AddProductImageUrl)
 			adminAuth.DELETE("/products/:id/images/:imageId", r.productHandler.DeleteProductImage)
 			adminAuth.PUT("/products/:id/images/:imageId/primary", r.productHandler.SetPrimaryProductImage)
 

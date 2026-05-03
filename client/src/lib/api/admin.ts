@@ -125,11 +125,21 @@ export const adminApi = {
     return response.data
   },
 
+  getProductByID: async (id: string): Promise<ApiResponse<ProductDetail>> => {
+    const response = await client.get<ApiResponse<ProductDetail>>(`/admin/products/${id}`)
+    return response.data
+  },
+
   // --- PRODUCT IMAGES ---
   uploadProductImages: async (id: string, formData: FormData): Promise<ApiResponse<ProductDetail>> => {
     const response = await client.post<ApiResponse<ProductDetail>>(`/admin/products/${id}/images`, formData, {
       headers: { "Content-Type": "multipart/form-data" },
     })
+    return response.data
+  },
+
+  addProductImageUrl: async (id: string, imageUrl: string): Promise<ApiResponse<ProductDetail>> => {
+    const response = await client.post<ApiResponse<ProductDetail>>(`/admin/products/${id}/images/url`, { image_url: imageUrl })
     return response.data
   },
 

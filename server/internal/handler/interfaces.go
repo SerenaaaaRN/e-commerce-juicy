@@ -53,6 +53,7 @@ type ProductService interface {
 	DeleteProduct(ctx context.Context, id uuid.UUID) error
 
 	AddProductImages(ctx context.Context, id uuid.UUID, filePaths []string) error
+	AddProductImageUrl(ctx context.Context, id uuid.UUID, imageUrl string) error
 	DeleteProductImage(ctx context.Context, id uuid.UUID, imageID uuid.UUID) error
 	SetPrimaryProductImage(ctx context.Context, id uuid.UUID, imageID uuid.UUID) error
 

@@ -420,9 +420,86 @@ func (h *ProductHandler) AddProductImages(c *gin.Context) {
 		return
 	}
 
+	updatedProduct, err := h.srv.GetProductByID(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"error": gin.H{
+				"message": "Images uploaded but failed to load updated product details",
+			},
+		})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "Product images uploaded successfully",
+		"success":  true,
+		"message":  "Product images uploaded successfully",
+		"data":     updatedProduct,
+	})
+}
+
+func (h *ProductHandler) AddProductImageUrl(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"error": gin.H{
+				"message": "Invalid product ID format",
+				"code":    "BAD_REQUEST",
+			},
+		})
+		return
+	}
+
+	var req dto.AddProductImageUrlRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"error": gin.H{
+				"message": "Invalid request payload. Image URL must be a valid absolute HTTP/HTTPS URL.",
+				"code":    "BAD_REQUEST",
+			},
+		})
+		return
+	}
+
+	err = h.srv.AddProductImageUrl(c.Request.Context(), id, req.ImageURL)
+	if err != nil {
+		if errors.Is(err, service.ErrProductNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{
+				"success": false,
+				"error": gin.H{
+					"message": "Product not found",
+					"code":    "PRODUCT_NOT_FOUND",
+				},
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"error": gin.H{
+				"message": err.Error(),
+			},
+		})
+		return
+	}
+
+	updatedProduct, err := h.srv.GetProductByID(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"error": gin.H{
+				"message": "Image URL added but failed to load updated product details",
+			},
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success":  true,
+		"message":  "Product image URL added successfully",
+		"data":     updatedProduct,
 	})
 }
 

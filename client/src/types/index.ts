@@ -81,6 +81,8 @@ export type ProductDetail = {
   created_at: string
   updated_at: string
   category?: Category
+  category_name?: string
+  primary_image?: string
   images?: ProductImage[]
   variants?: ProductVariant[]
   avg_rating: number

@@ -508,6 +508,22 @@ Upload additional images to an existing product. `multipart/form-data`.
 images[]        files (multiple)
 ```
 
+#### `POST /admin/products/:id/images/url`
+Add an image to an existing product via a direct web/internet URL. `application/json`.
+```json
+// Request
+{
+  "image_url": "https://images.unsplash.com/photo-1546173152-318e7b25572c"
+}
+
+// Response 200
+{
+  "success": true,
+  "message": "Product image URL added successfully",
+  "data": { ...refreshed_product_details }
+}
+```
+
 #### `DELETE /admin/products/:id/images/:image_id`
 Delete a single product image + Cloudinary cleanup.
 
