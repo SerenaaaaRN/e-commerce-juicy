@@ -31,11 +31,7 @@ export const ProductPage = () => {
   const { addItem, isLoading: isAddingToCart } = useCartStore()
   const { addItem: addToRecentlyViewed } = useRecentlyViewed()
   const { isAuthenticated } = useCustomerAuthStore()
-  const {
-    isInWishlist,
-    addItem: addToWishlist,
-    removeItem: removeFromWishlist,
-  } = useWishlistStore()
+  const { isInWishlist, addItem: addToWishlist, removeItem: removeFromWishlist } = useWishlistStore()
 
   // Selections state
   const [selectedSize, setSelectedSize] = useState("")
@@ -68,10 +64,10 @@ export const ProductPage = () => {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto flex min-h-[60vh] max-w-7xl items-center justify-center py-20 px-4">
+      <div className="container mx-auto flex min-h-[60vh] max-w-7xl items-center justify-center px-4 py-20">
         <div className="flex flex-col items-center gap-4">
           <Spinner size={32} className="text-primary" />
-          <span className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">
+          <span className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
             Fetching Atelier Silhouette...
           </span>
         </div>
@@ -81,16 +77,17 @@ export const ProductPage = () => {
 
   if (error || !currentProduct) {
     return (
-      <div className="container mx-auto flex min-h-[60vh] max-w-7xl items-center justify-center py-20 px-4">
-        <Empty className="border-none max-w-md bg-transparent">
+      <div className="container mx-auto flex min-h-[60vh] max-w-7xl items-center justify-center px-4 py-20">
+        <Empty className="max-w-md border-none bg-transparent">
           <EmptyHeader>
-            <EmptyMedia variant="icon" className="bg-primary/5 text-primary size-12 rounded-full mb-3 flex items-center justify-center">
+            <EmptyMedia
+              variant="icon"
+              className="mb-3 flex size-12 items-center justify-center rounded-full bg-primary/5 text-primary"
+            >
               <HugeiconsIcon icon={ShoppingBag01Icon} strokeWidth={1.8} className="size-6 text-primary" />
             </EmptyMedia>
-            <EmptyTitle className="text-2xl font-bold tracking-tight">
-              Silhouette Not Found
-            </EmptyTitle>
-            <EmptyDescription className="text-sm text-muted-foreground mt-2">
+            <EmptyTitle className="text-2xl font-bold tracking-tight">Silhouette Not Found</EmptyTitle>
+            <EmptyDescription className="mt-2 text-sm text-muted-foreground">
               We couldn't retrieve the design details you requested. It may have been retired or sold out.
             </EmptyDescription>
           </EmptyHeader>
@@ -106,16 +103,12 @@ export const ProductPage = () => {
 
   // Find currently active variant based on size & color choices
   const variants = currentProduct.variants || []
-  const activeVariant = variants.find(
-    (v) => v.size === selectedSize && v.color === selectedColor
-  )
+  const activeVariant = variants.find((v) => v.size === selectedSize && v.color === selectedColor)
   const wishlistVariantId = activeVariant?.id || variants[0]?.id || ""
   const inWishlist = wishlistVariantId ? isInWishlist(wishlistVariantId) : false
 
   // Settle active unit price (base product price + variant specific surcharge if any)
-  const unitPrice = activeVariant
-    ? currentProduct.price + activeVariant.additional_price
-    : currentProduct.price
+  const unitPrice = activeVariant ? currentProduct.price + activeVariant.additional_price : currentProduct.price
 
   // Stock tracking details
   const availableStock = activeVariant ? activeVariant.stock : 0
@@ -160,9 +153,8 @@ export const ProductPage = () => {
   return (
     <div className="bg-background py-12">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-
         {/* Navigation Breadcrumb trail */}
-        <Breadcrumb className="mb-8 text-left uppercase tracking-widest font-semibold">
+        <Breadcrumb className="mb-8 text-left font-semibold tracking-widest uppercase">
           <BreadcrumbList className="text-xs">
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
@@ -177,7 +169,7 @@ export const ProductPage = () => {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage className="truncate max-w-[200px] sm:max-w-none uppercase">
+              <BreadcrumbPage className="max-w-50 truncate uppercase sm:max-w-none">
                 {currentProduct.name}
               </BreadcrumbPage>
             </BreadcrumbItem>
@@ -185,19 +177,14 @@ export const ProductPage = () => {
         </Breadcrumb>
 
         {/* PDP Two-Column Split Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
-
+        <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-16">
           {/* Visual Column */}
-          <div className="lg:col-span-6 w-full">
-            <ProductImageGallery
-              images={currentProduct.images || []}
-              fallbackImage="/placeholder.webp"
-            />
+          <div className="w-full lg:col-span-6">
+            <ProductImageGallery images={currentProduct.images || []} fallbackImage="/placeholder.webp" />
           </div>
 
           {/* Details & Selection Column */}
-          <div className="lg:col-span-6 flex flex-col gap-6 w-full">
-
+          <div className="flex w-full flex-col gap-6 lg:col-span-6">
             {/* Base Product Info Details */}
             <ProductInfo
               name={currentProduct.name}
@@ -222,7 +209,7 @@ export const ProductPage = () => {
             ) : null}
 
             {/* Cart trigger block */}
-            <div className="pt-4 flex flex-col gap-3">
+            <div className="flex flex-col gap-3 pt-4">
               <div className="flex items-center gap-3">
                 <div className="flex-1">
                   <AddToCartButton
@@ -232,27 +219,17 @@ export const ProductPage = () => {
                     stock={hasVariants ? availableStock : 99}
                   />
                 </div>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={handleToggleWishlist}
-                  className="size-12 shrink-0"
-                >
-                  <HugeiconsIcon
-                    icon={HeartAddIcon}
-                    data-icon="inline-start"
-                  />
+                <Button variant="outline" size="icon" onClick={handleToggleWishlist} className="size-12 shrink-0">
+                  <HugeiconsIcon icon={HeartAddIcon} data-icon="inline-start" />
                 </Button>
               </div>
               {!isSelectionComplete && (
-                <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold text-left">
+                <span className="text-left text-[10px] font-semibold tracking-widest text-muted-foreground uppercase">
                   * Select size and color to activate cart action
                 </span>
               )}
             </div>
-
           </div>
-
         </div>
 
         {/* Dynamic Reviews and Feedback list */}
@@ -261,7 +238,6 @@ export const ProductPage = () => {
           avgRating={currentProduct.avg_rating}
           reviewCount={currentProduct.review_count}
         />
-
       </div>
     </div>
   )

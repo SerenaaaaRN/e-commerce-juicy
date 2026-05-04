@@ -68,6 +68,7 @@ export const useProducts = () => {
   }, [])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadData(true)
   }, [loadData])
 
@@ -112,7 +113,10 @@ export const useProducts = () => {
     startTransition(async () => {
       try {
         const parsedTags = values.tags
-          ? values.tags.split(",").map((t: string) => t.trim()).filter(Boolean)
+          ? values.tags
+              .split(",")
+              .map((t: string) => t.trim())
+              .filter(Boolean)
           : []
         const payload: Record<string, unknown> = {
           name: values.name.trim(),
@@ -172,7 +176,9 @@ export const useProducts = () => {
           toast.error(res.message || "Failed to delete product catalog.")
         }
       } catch (err) {
-        const msg = axios.isAxiosError(err) ? err.response?.data?.error?.message || err.message : "Failed to delete catalog product."
+        const msg = axios.isAxiosError(err)
+          ? err.response?.data?.error?.message || err.message
+          : "Failed to delete catalog product."
         toast.error(msg)
       }
     },
@@ -262,7 +268,9 @@ export const useProducts = () => {
           toast.error(res.message || "Failed to remove category.")
         }
       } catch (err) {
-        const msg = axios.isAxiosError(err) ? err.response?.data?.error?.message || err.message : "Failed to delete category."
+        const msg = axios.isAxiosError(err)
+          ? err.response?.data?.error?.message || err.message
+          : "Failed to delete category."
         toast.error(msg)
       }
     },

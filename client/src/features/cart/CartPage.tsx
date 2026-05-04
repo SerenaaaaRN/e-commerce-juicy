@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Navigate, useNavigate } from "react-router-dom"
 import { useCartStore } from "@/stores/cartStore"
 import { useCustomerAuthStore } from "@/stores/customerAuthStore"
@@ -48,16 +49,11 @@ export const CartPage = () => {
   return (
     <div className="bg-background py-12">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        
         {/* Page Title */}
-        <div className="text-left flex flex-col gap-2">
-          <span className="text-xs font-semibold tracking-wider text-primary uppercase">
-            Atelier Customer Cart
-          </span>
-          <h1 className="text-4xl font-bold tracking-tight text-foreground font-heading">
-            Shopping Cart
-          </h1>
-          <p className="text-sm text-muted-foreground max-w-md leading-relaxed">
+        <div className="flex flex-col gap-2 text-left">
+          <span className="text-xs font-semibold tracking-wider text-primary uppercase">Atelier Customer Cart</span>
+          <h1 className="font-heading text-4xl font-bold tracking-tight text-foreground">Shopping Cart</h1>
+          <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
             Review your selected designs and silhouettes before proceeding to checkout.
           </p>
         </div>
@@ -65,10 +61,9 @@ export const CartPage = () => {
         <Separator className="my-8" />
 
         {/* Dynamic Cart Layout split grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
+        <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
           {/* Items List Column */}
-          <div className="lg:col-span-8 flex flex-col">
+          <div className="flex flex-col lg:col-span-8">
             {items.map((item, index) => (
               <div key={item.id}>
                 {index > 0 && <Separator />}
@@ -82,15 +77,10 @@ export const CartPage = () => {
           </div>
 
           {/* Checkout Summary Column */}
-          <div className="lg:col-span-4 w-full">
-            <CartSummary
-              subtotal={subtotal}
-              onCheckout={handleCheckout}
-            />
+          <div className="w-full lg:col-span-4">
+            <CartSummary subtotal={subtotal} onCheckout={handleCheckout} />
           </div>
-
         </div>
-
       </div>
     </div>
   )

@@ -1,20 +1,14 @@
 import { useState } from "react"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import {
-  Card, CardContent, CardHeader, CardTitle, CardDescription,
-} from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Field, FieldLabel, FieldError } from "@/components/ui/field"
 import { Badge } from "@/components/ui/badge"
 import { Spinner } from "@/components/ui/spinner"
-import {
-  Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
-} from "@/components/ui/table"
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select"
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { formatPrice } from "@/lib/utils/format"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Edit01Icon, Delete02Icon } from "@hugeicons/core-free-icons"
@@ -32,15 +26,12 @@ import { ProductFormDialog } from "@/features/admin/components/ProductFormDialog
 import { VariantManagerDialog } from "@/features/admin/components/VariantManagerDialog"
 import { ImageManagerDialog } from "@/features/admin/components/ImageManagerDialog"
 import type { ProductDetail } from "@/types"
+import { adminApi } from "@/lib/api"
 
 export const ProductsPage = () => {
   const ctx = useProducts()
   const { confirm: confirmDelete, dialog: confirmDialog } = useConfirm()
-  const {
-    editingCategory,
-    handleOpenEditCategory,
-    handleCancelEditCategory,
-  } = ctx
+  const { editingCategory, handleOpenEditCategory, handleCancelEditCategory } = ctx
 
   const [variantsModalOpen, setVariantsModalOpen] = useState(false)
   const [imagesModalOpen, setImagesModalOpen] = useState(false)
@@ -48,26 +39,44 @@ export const ProductsPage = () => {
   const variantCtx = useVariants(ctx.activeProduct, ctx.setActiveProduct, ctx.loadData)
   const imageCtx = useProductImages(ctx.activeProduct, ctx.setActiveProduct, ctx.loadData)
 
-  const { search, setSearch, filteredData: searchFiltered, isStale } =
-    useDataTableFilter(ctx.products, (p, s) =>
-      p.name.toLowerCase().includes(s) || p.slug.toLowerCase().includes(s)
-    )
+  const {
+    search,
+    setSearch,
+    filteredData: searchFiltered,
+    isStale,
+  } = useDataTableFilter(ctx.products, (p, s) => p.name.toLowerCase().includes(s) || p.slug.toLowerCase().includes(s))
 
-  const openVariants = (prod: ProductDetail) => {
-    ctx.setActiveProduct(prod)
+  const openVariants = async (prod: ProductDetail) => {
+    try {
+      const res = await adminApi.getProductByID(prod.id)
+      if (res.success && res.data) {
+        ctx.setActiveProduct(res.data)
+      } else {
+        ctx.setActiveProduct(prod)
+      }
+    } catch {
+      ctx.setActiveProduct(prod)
+    }
     variantCtx.resetVariantForm()
     setVariantsModalOpen(true)
   }
 
-  const openImages = (prod: ProductDetail) => {
-    ctx.setActiveProduct(prod)
+  const openImages = async (prod: ProductDetail) => {
+    try {
+      const res = await adminApi.getProductByID(prod.id)
+      if (res.success && res.data) {
+        ctx.setActiveProduct(res.data)
+      } else {
+        ctx.setActiveProduct(prod)
+      }
+    } catch {
+      ctx.setActiveProduct(prod)
+    }
     imageCtx.setSelectedFiles(null)
     setImagesModalOpen(true)
   }
 
-  const filtered = searchFiltered.filter(
-    (p) => ctx.categoryFilter === "all" || p.category_id === ctx.categoryFilter
-  )
+  const filtered = searchFiltered.filter((p) => ctx.categoryFilter === "all" || p.category_id === ctx.categoryFilter)
 
   if (ctx.loading) return <FullPageSpinner label="Loading Catalog inventory..." />
 
@@ -81,8 +90,12 @@ export const ProductsPage = () => {
 
       <Tabs defaultValue="products" className="w-full">
         <TabsList className="mb-6 bg-muted/60 p-1">
-          <TabsTrigger value="products" className="cursor-pointer">Products Inventory</TabsTrigger>
-          <TabsTrigger value="categories" className="cursor-pointer">Categories &amp; Slugs</TabsTrigger>
+          <TabsTrigger value="products" className="cursor-pointer">
+            Products Inventory
+          </TabsTrigger>
+          <TabsTrigger value="categories" className="cursor-pointer">
+            Categories &amp; Slugs
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="products">
@@ -90,10 +103,16 @@ export const ProductsPage = () => {
             <SearchInput placeholder="Search products..." value={search} onChange={(e) => setSearch(e.target.value)} />
             <div className="w-full sm:max-w-xs">
               <Select value={ctx.categoryFilter} onValueChange={ctx.setCategoryFilter}>
-                <SelectTrigger className="w-full"><SelectValue placeholder="All Categories" /></SelectTrigger>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="All Categories" />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Categories</SelectItem>
-                  {ctx.categories.map((cat) => <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>)}
+                  {ctx.categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -115,48 +134,90 @@ export const ProductsPage = () => {
               <TableBody>
                 {filtered.length === 0 ? (
                   <EmptyState message="No catalog products matched your query." />
-                ) : filtered.map((prod) => {
-                  const img = prod.images?.find((i) => i.is_primary)?.image_url || "/placeholder-product.svg"
-                  const stock = prod.variants?.reduce((s, v) => s + v.stock, 0) ?? 0
-                  return (
-                    <TableRow key={prod.id}>
-                      <TableCell className="px-6 py-4">
-                        <img src={img} alt={prod.name} className="size-12 rounded border bg-muted object-cover" onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder-product.svg" }} />
-                      </TableCell>
-                      <TableCell className="px-6 py-4">
-                        <div className="font-semibold text-foreground">{prod.name}</div>
-                        <div className="max-w-xs truncate font-mono text-[11px] text-muted-foreground">{prod.slug}</div>
-                      </TableCell>
-                      <TableCell className="px-6 py-4"><Badge variant="outline">{prod.category?.name || "Unassigned"}</Badge></TableCell>
-                      <TableCell className="px-6 py-4 font-semibold text-foreground">
-                        {formatPrice(prod.price)}
-                        {prod.compare_at_price && <div className="text-[11px] font-normal text-muted-foreground line-through">{formatPrice(prod.compare_at_price)}</div>}
-                      </TableCell>
-                      <TableCell className="px-6 py-4">
-                        <div className="flex flex-col items-start gap-1.5">
-                          <Badge variant={prod.is_available ? "default" : "destructive"}>{prod.is_available ? "Active" : "Archived"}</Badge>
-                          {prod.is_featured && <Badge variant="default">Featured</Badge>}
-                        </div>
-                      </TableCell>
-                      <TableCell className="px-6 py-4">
-                        <Badge variant={stock === 0 ? "destructive" : stock <= 15 ? "secondary" : "default"}>{stock} in stock</Badge>
-                        <div className="mt-0.5 text-[10px] font-medium text-muted-foreground">{prod.variants?.length || 0} active option(s)</div>
-                      </TableCell>
-                      <TableCell className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button variant="ghost" size="xs" onClick={() => openVariants(prod)} className="border px-2.5 text-xs font-medium hover:bg-muted">Variants</Button>
-                          <Button variant="ghost" size="xs" onClick={() => openImages(prod)} className="border px-2.5 text-xs font-medium hover:bg-muted">Media</Button>
-                          <Button variant="ghost" size="icon" onClick={() => ctx.handleOpenEditProduct(prod)}>
-                            <HugeiconsIcon icon={Edit01Icon} />
-                          </Button>
-                          <Button variant="ghost" size="icon" disabled={ctx.isPending} onClick={() => ctx.handleDeleteProduct(prod.id, confirmDelete)}>
-                            <HugeiconsIcon icon={Delete02Icon} />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
+                ) : (
+                  filtered.map((prod) => {
+                    const img = prod.images?.find((i) => i.is_primary)?.image_url || prod.primary_image || "/placeholder-product.svg"
+                    const stock = prod.variants?.reduce((s, v) => s + v.stock, 0) ?? 0
+                    return (
+                      <TableRow key={prod.id}>
+                        <TableCell className="px-6 py-4">
+                          <img
+                            src={img}
+                            alt={prod.name}
+                            className="size-12 rounded border bg-muted object-cover"
+                            onError={(e) => {
+                              ;(e.target as HTMLImageElement).src = "/placeholder-product.svg"
+                            }}
+                          />
+                        </TableCell>
+                        <TableCell className="px-6 py-4">
+                          <div className="font-semibold text-foreground">{prod.name}</div>
+                          <div className="max-w-xs truncate font-mono text-[11px] text-muted-foreground">
+                            {prod.slug}
+                          </div>
+                        </TableCell>
+                        <TableCell className="px-6 py-4">
+                          <Badge variant="outline">{prod.category?.name || prod.category_name || "Unassigned"}</Badge>
+                        </TableCell>
+                        <TableCell className="px-6 py-4 font-semibold text-foreground">
+                          {formatPrice(prod.price)}
+                          {prod.compare_at_price && (
+                            <div className="text-[11px] font-normal text-muted-foreground line-through">
+                              {formatPrice(prod.compare_at_price)}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell className="px-6 py-4">
+                          <div className="flex flex-col items-start gap-1.5">
+                            <Badge variant={prod.is_available ? "default" : "destructive"}>
+                              {prod.is_available ? "Active" : "Archived"}
+                            </Badge>
+                            {prod.is_featured && <Badge variant="default">Featured</Badge>}
+                          </div>
+                        </TableCell>
+                        <TableCell className="px-6 py-4">
+                          <Badge variant={stock === 0 ? "destructive" : stock <= 15 ? "secondary" : "default"}>
+                            {stock} in stock
+                          </Badge>
+                          <div className="mt-0.5 text-[10px] font-medium text-muted-foreground">
+                            {prod.variants?.length || 0} active option(s)
+                          </div>
+                        </TableCell>
+                        <TableCell className="px-6 py-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <Button
+                              variant="ghost"
+                              size="xs"
+                              onClick={() => openVariants(prod)}
+                              className="border px-2.5 text-xs font-medium hover:bg-muted"
+                            >
+                              Variants
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="xs"
+                              onClick={() => openImages(prod)}
+                              className="border px-2.5 text-xs font-medium hover:bg-muted"
+                            >
+                              Media
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => ctx.handleOpenEditProduct(prod)}>
+                              <HugeiconsIcon icon={Edit01Icon} />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              disabled={ctx.isPending}
+                              onClick={() => ctx.handleDeleteProduct(prod.id, confirmDelete)}
+                            >
+                              <HugeiconsIcon icon={Delete02Icon} />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })
+                )}
               </TableBody>
             </Table>
           </DefferedContainer>
@@ -164,42 +225,94 @@ export const ProductsPage = () => {
 
         <TabsContent value="categories">
           <div className="grid gap-8 lg:grid-cols-3">
-              <Card className="h-fit border border-border/60 bg-card shadow-sm">
-                <CardHeader>
-                  <CardTitle className="text-sm font-bold tracking-wider text-foreground uppercase">
-                    {editingCategory ? "Edit Category" : "Add New Category"}
-                  </CardTitle>
-                  <CardDescription className="text-xs">
-                    {editingCategory ? `Modifying: ${editingCategory.name}` : "Create classifications to group organic juices & wellness products."}
-                  </CardDescription>
-                </CardHeader>
+            <Card className="h-fit border border-border/60 bg-card shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-sm font-bold tracking-wider text-foreground uppercase">
+                  {editingCategory ? "Edit Category" : "Add New Category"}
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  {editingCategory
+                    ? `Modifying: ${editingCategory.name}`
+                    : "Create classifications to group organic juices & wellness products."}
+                </CardDescription>
+              </CardHeader>
               <CardContent>
                 <form onSubmit={ctx.handleCategorySubmit} className="flex flex-col gap-5 text-left">
                   <Field data-invalid={!!ctx.categoryForm.formState.errors.name}>
                     <FieldLabel htmlFor="catName">Category Name</FieldLabel>
-                    <Input id="catName" {...ctx.categoryForm.register("name", { onChange: (e) => ctx.categoryForm.setValue("slug", e.target.value.toLowerCase().replace(/ /g, "-").replace(/[^a-z0-9-]/g, "")) })} placeholder="e.g. Cleansing Tonics" />
-                    {ctx.categoryForm.formState.errors.name && <FieldError>{ctx.categoryForm.formState.errors.name.message}</FieldError>}
+                    <Input
+                      id="catName"
+                      {...ctx.categoryForm.register("name", {
+                        onChange: (e) =>
+                          ctx.categoryForm.setValue(
+                            "slug",
+                            e.target.value
+                              .toLowerCase()
+                              .replace(/ /g, "-")
+                              .replace(/[^a-z0-9-]/g, "")
+                          ),
+                      })}
+                      placeholder="e.g. Cleansing Tonics"
+                    />
+                    {ctx.categoryForm.formState.errors.name && (
+                      <FieldError>{ctx.categoryForm.formState.errors.name.message}</FieldError>
+                    )}
                   </Field>
                   <Field data-invalid={!!ctx.categoryForm.formState.errors.slug}>
                     <FieldLabel htmlFor="catSlug">URL Slug</FieldLabel>
-                    <Input id="catSlug" {...ctx.categoryForm.register("slug", { onChange: (e) => ctx.categoryForm.setValue("slug", e.target.value.toLowerCase().replace(/ /g, "-").replace(/[^a-z0-9-]/g, "")) })} placeholder="cleansing-tonics" />
-                    {ctx.categoryForm.formState.errors.slug && <FieldError>{ctx.categoryForm.formState.errors.slug.message}</FieldError>}
+                    <Input
+                      id="catSlug"
+                      {...ctx.categoryForm.register("slug", {
+                        onChange: (e) =>
+                          ctx.categoryForm.setValue(
+                            "slug",
+                            e.target.value
+                              .toLowerCase()
+                              .replace(/ /g, "-")
+                              .replace(/[^a-z0-9-]/g, "")
+                          ),
+                      })}
+                      placeholder="cleansing-tonics"
+                    />
+                    {ctx.categoryForm.formState.errors.slug && (
+                      <FieldError>{ctx.categoryForm.formState.errors.slug.message}</FieldError>
+                    )}
                   </Field>
                   <Field>
                     <FieldLabel htmlFor="catDesc">Description</FieldLabel>
-                    <Textarea id="catDesc" {...ctx.categoryForm.register("description")} placeholder="Brief details about the products in this category..." rows={3} />
+                    <Textarea
+                      id="catDesc"
+                      {...ctx.categoryForm.register("description")}
+                      placeholder="Brief details about the products in this category..."
+                      rows={3}
+                    />
                   </Field>
                   <Field>
                     <FieldLabel htmlFor="catOrder">Display Order</FieldLabel>
-                    <Input id="catOrder" type="number" {...ctx.categoryForm.register("display_order")} placeholder="1" />
+                    <Input
+                      id="catOrder"
+                      type="number"
+                      {...ctx.categoryForm.register("display_order")}
+                      placeholder="1"
+                    />
                   </Field>
-                  <div className="flex gap-2 mt-2">
+                  <div className="mt-2 flex gap-2">
                     {editingCategory && (
-                      <Button type="button" variant="outline" onClick={handleCancelEditCategory} disabled={ctx.isPending} className="flex-1 font-medium">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={handleCancelEditCategory}
+                        disabled={ctx.isPending}
+                        className="flex-1 font-medium"
+                      >
                         Cancel
                       </Button>
                     )}
-                    <Button type="submit" disabled={ctx.isPending} className={editingCategory ? "flex-1 font-medium" : "w-full font-medium"}>
+                    <Button
+                      type="submit"
+                      disabled={ctx.isPending}
+                      className={editingCategory ? "flex-1 font-medium" : "w-full font-medium"}
+                    >
                       {ctx.isPending && <Spinner data-icon="inline-start" />}
                       {ctx.isPending ? "Saving..." : editingCategory ? "Update Category" : "Save Classification"}
                     </Button>
@@ -222,24 +335,33 @@ export const ProductsPage = () => {
                 <TableBody>
                   {ctx.categories.length === 0 ? (
                     <EmptyState message="No categories currently defined." colSpan={5} />
-                  ) : ctx.categories.map((cat) => (
-                    <TableRow key={cat.id}>
-                      <TableCell className="px-6 py-4 font-semibold text-foreground">{cat.name}</TableCell>
-                      <TableCell className="px-6 py-4 font-mono text-xs text-muted-foreground">{cat.slug}</TableCell>
-                      <TableCell className="max-w-xs truncate px-6 py-4 text-muted-foreground">{cat.description || "-"}</TableCell>
-                      <TableCell className="px-6 py-4 font-medium text-foreground">{cat.display_order}</TableCell>
-                      <TableCell className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button variant="ghost" size="icon" onClick={() => handleOpenEditCategory(cat)}>
-                            <HugeiconsIcon icon={Edit01Icon} />
-                          </Button>
-                          <Button variant="ghost" size="icon" disabled={ctx.isPending} onClick={() => ctx.handleDeleteCategory(cat.id, confirmDelete)}>
-                            <HugeiconsIcon icon={Delete02Icon} />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  ) : (
+                    ctx.categories.map((cat) => (
+                      <TableRow key={cat.id}>
+                        <TableCell className="px-6 py-4 font-semibold text-foreground">{cat.name}</TableCell>
+                        <TableCell className="px-6 py-4 font-mono text-xs text-muted-foreground">{cat.slug}</TableCell>
+                        <TableCell className="max-w-xs truncate px-6 py-4 text-muted-foreground">
+                          {cat.description || "-"}
+                        </TableCell>
+                        <TableCell className="px-6 py-4 font-medium text-foreground">{cat.display_order}</TableCell>
+                        <TableCell className="px-6 py-4 text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <Button variant="ghost" size="icon" onClick={() => handleOpenEditCategory(cat)}>
+                              <HugeiconsIcon icon={Edit01Icon} />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              disabled={ctx.isPending}
+                              onClick={() => ctx.handleDeleteCategory(cat.id, confirmDelete)}
+                            >
+                              <HugeiconsIcon icon={Delete02Icon} />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </div>
@@ -247,9 +369,42 @@ export const ProductsPage = () => {
         </TabsContent>
       </Tabs>
 
-      <ProductFormDialog open={ctx.productModalOpen} onOpenChange={ctx.setProductModalOpen} activeProduct={ctx.activeProduct} categories={ctx.categories} form={ctx.productForm} onSubmit={ctx.handleProductSubmit} isPending={ctx.isPending} />
-      <VariantManagerDialog open={variantsModalOpen} onOpenChange={setVariantsModalOpen} activeProduct={ctx.activeProduct} form={variantCtx.variantForm} onSubmit={variantCtx.handleAddVariant} onDeleteVariant={(vId) => variantCtx.handleDeleteVariant(vId, confirmDelete)} onEditVariant={variantCtx.handleOpenEditVariant} onCancelEdit={variantCtx.handleCancelEditVariant} editingVariant={variantCtx.editingVariant} isPending={variantCtx.isPending} />
-      <ImageManagerDialog open={imagesModalOpen} onOpenChange={setImagesModalOpen} activeProduct={ctx.activeProduct} selectedFiles={imageCtx.selectedFiles} onFileChange={imageCtx.setSelectedFiles} onUploadSubmit={imageCtx.handleImageUploadSubmit} onSetPrimary={imageCtx.handleSetPrimaryImage} onDeleteImage={(imgId) => imageCtx.handleDeleteImage(imgId, confirmDelete)} isPending={imageCtx.isPending} />
+      <ProductFormDialog
+        open={ctx.productModalOpen}
+        onOpenChange={ctx.setProductModalOpen}
+        activeProduct={ctx.activeProduct}
+        categories={ctx.categories}
+        form={ctx.productForm}
+        onSubmit={ctx.handleProductSubmit}
+        isPending={ctx.isPending}
+      />
+      <VariantManagerDialog
+        open={variantsModalOpen}
+        onOpenChange={setVariantsModalOpen}
+        activeProduct={ctx.activeProduct}
+        form={variantCtx.variantForm}
+        onSubmit={variantCtx.handleAddVariant}
+        onDeleteVariant={(vId) => variantCtx.handleDeleteVariant(vId, confirmDelete)}
+        onEditVariant={variantCtx.handleOpenEditVariant}
+        onCancelEdit={variantCtx.handleCancelEditVariant}
+        editingVariant={variantCtx.editingVariant}
+        isPending={variantCtx.isPending}
+        loading={variantCtx.isLoadingVariants}
+      />
+      <ImageManagerDialog
+        open={imagesModalOpen}
+        onOpenChange={setImagesModalOpen}
+        activeProduct={ctx.activeProduct}
+        selectedFiles={imageCtx.selectedFiles}
+        onFileChange={imageCtx.setSelectedFiles}
+        onUploadSubmit={imageCtx.handleImageUploadSubmit}
+        imageUrlInput={imageCtx.imageUrlInput}
+        onImageUrlChange={imageCtx.setImageUrlInput}
+        onImageUrlSubmit={imageCtx.handleImageUrlSubmit}
+        onSetPrimary={imageCtx.handleSetPrimaryImage}
+        onDeleteImage={(imgId) => imageCtx.handleDeleteImage(imgId, confirmDelete)}
+        isPending={imageCtx.isPending}
+      />
       {confirmDialog}
     </div>
   )

@@ -34,10 +34,15 @@ export const ReviewsPage = () => {
   const { reviews, isPending, handleTogglePublish, handleDeleteReview } = useReviews()
   const { confirm: confirmDelete, dialog: confirmDialog } = useConfirm()
 
-  const { search, setSearch, filteredData: searchFiltered, isStale } =
-    useDataTableFilter(reviews, (r, s) =>
-      r.customer_name.toLowerCase().includes(s) || (r.body?.toLowerCase().includes(s) ?? false)
-    )
+  const {
+    search,
+    setSearch,
+    filteredData: searchFiltered,
+    isStale,
+  } = useDataTableFilter(
+    reviews,
+    (r, s) => r.customer_name.toLowerCase().includes(s) || (r.body?.toLowerCase().includes(s) ?? false)
+  )
 
   const [ratingFilter, setRatingFilter] = useState("all")
   const [publishFilter, setPublishFilter] = useState("all")
@@ -57,13 +62,22 @@ export const ReviewsPage = () => {
 
   return (
     <div className="flex flex-col gap-8 text-left">
-      <PageHeader title="Review Moderation" description="Monitor customer experience reviews, publish positive feedback stars, and censor advertising spam." />
+      <PageHeader
+        title="Review Moderation"
+        description="Monitor customer experience reviews, publish positive feedback stars, and censor advertising spam."
+      />
 
       <div className="flex flex-col items-center gap-4 rounded-lg border border-border/60 bg-card p-4 shadow-sm sm:flex-row">
-        <SearchInput placeholder="Search reviewer or comment..." value={search} onChange={(e) => setSearch(e.target.value)} />
+        <SearchInput
+          placeholder="Search reviewer or comment..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
         <div className="w-full sm:max-w-xs">
           <Select value={ratingFilter} onValueChange={setRatingFilter}>
-            <SelectTrigger className="w-full"><SelectValue placeholder="All Ratings" /></SelectTrigger>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="All Ratings" />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Ratings</SelectItem>
               <SelectItem value="5">5 Stars</SelectItem>
@@ -76,7 +90,9 @@ export const ReviewsPage = () => {
         </div>
         <div className="w-full sm:max-w-xs">
           <Select value={publishFilter} onValueChange={setPublishFilter}>
-            <SelectTrigger className="w-full"><SelectValue placeholder="All Statuses" /></SelectTrigger>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="All Statuses" />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Statuses</SelectItem>
               <SelectItem value="published">Published</SelectItem>
@@ -89,27 +105,45 @@ export const ReviewsPage = () => {
       <DefferedContainer isStale={isStale} className="flex flex-col gap-4">
         {filtered.length === 0 ? (
           <EmptyState message="No customer ratings found matching your filter selections." variant="card" />
-        ) : filtered.map((rev) => (
-          <Card key={rev.id} className={cn("border text-xs shadow-sm transition-shadow hover:shadow-md", rev.is_published ? "border-border/60 bg-card" : "border-destructive/20 bg-destructive/5")}>
-            <CardContent className="flex flex-col justify-between gap-4 p-5 text-left sm:flex-row">
-              <div className="flex flex-1 flex-col gap-2">
-                <div className="flex items-center gap-3">
-                  <span className="font-bold text-foreground">{rev.customer_name}</span>
-                  <span className="text-[10px] text-muted-foreground">{formatDate(rev.created_at)}</span>
+        ) : (
+          filtered.map((rev) => (
+            <Card
+              key={rev.id}
+              className={cn(
+                "border text-xs shadow-sm transition-shadow hover:shadow-md",
+                rev.is_published ? "border-border/60 bg-card" : "border-destructive/20 bg-destructive/5"
+              )}
+            >
+              <CardContent className="flex flex-col justify-between gap-4 p-5 text-left sm:flex-row">
+                <div className="flex flex-1 flex-col gap-2">
+                  <div className="flex items-center gap-3">
+                    <span className="font-bold text-foreground">{rev.customer_name}</span>
+                    <span className="text-[10px] text-muted-foreground">{formatDate(rev.created_at)}</span>
+                  </div>
+                  {renderStars(rev.rating)}
+                  <p className="mt-1 font-sans leading-relaxed font-medium text-foreground">"{rev.body}"</p>
                 </div>
-                {renderStars(rev.rating)}
-                <p className="mt-1 font-sans leading-relaxed font-medium text-foreground">"{rev.body}"</p>
-              </div>
-              <div className="flex items-center gap-3 sm:self-center">
-                <Badge variant={rev.is_published ? "default" : "destructive"}>{rev.is_published ? "Published" : "Hidden"}</Badge>
-                <Button variant="outline" size="sm" disabled={isPending} onClick={() => handleTogglePublish(rev)}>{rev.is_published ? "Censor Hide" : "Publish Star"}</Button>
-                <Button variant="ghost" size="icon" disabled={isPending} onClick={() => handleDeleteReview(rev.id, confirmDelete)} className="hover:bg-destructive/10 hover:text-destructive">
-                  <HugeiconsIcon icon={Delete02Icon} className="size-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                <div className="flex items-center gap-3 sm:self-center">
+                  <Badge variant={rev.is_published ? "default" : "destructive"}>
+                    {rev.is_published ? "Published" : "Hidden"}
+                  </Badge>
+                  <Button variant="outline" size="sm" disabled={isPending} onClick={() => handleTogglePublish(rev)}>
+                    {rev.is_published ? "Censor Hide" : "Publish Star"}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    disabled={isPending}
+                    onClick={() => handleDeleteReview(rev.id, confirmDelete)}
+                    className="hover:bg-destructive/10 hover:text-destructive"
+                  >
+                    <HugeiconsIcon icon={Delete02Icon} className="size-4" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
       </DefferedContainer>
 
       {confirmDialog}

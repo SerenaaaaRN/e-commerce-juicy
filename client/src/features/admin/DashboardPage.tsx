@@ -1,37 +1,12 @@
 import { useEffect, useState, useTransition } from "react"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import {
-  adminApi,
-  type AnalyticsOverview,
-  type AnalyticsChartItem,
-} from "@/lib/api/admin"
+import { adminApi, type AnalyticsOverview, type AnalyticsChartItem } from "@/lib/api/admin"
 import { formatPrice } from "@/lib/utils/format"
 import { Spinner } from "@/components/ui/spinner"
 import { HugeiconsIcon } from "@hugeicons/react"
-import {
-  ShoppingBag01Icon,
-  UserIcon,
-  DeliveryTruck02Icon,
-  Dollar01Icon,
-} from "@hugeicons/core-free-icons"
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  AreaChart,
-  Area,
-} from "recharts"
+import { ShoppingBag01Icon, UserIcon, DeliveryTruck02Icon, Dollar01Icon } from "@hugeicons/core-free-icons"
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, AreaChart, Area } from "recharts"
 import { PageHeader } from "@/features/admin/components/PageHeader"
 
 const TOOLTIP_CONTENT_STYLE = {
@@ -83,9 +58,7 @@ export const DashboardPage = () => {
 
     return (
       <div className="flex h-[70vh] w-full items-center justify-center">
-        <p className="text-xs text-muted-foreground">
-          Failed to load dashboard data.
-        </p>
+        <p className="text-xs text-muted-foreground">Failed to load dashboard data.</p>
       </div>
     )
   }
@@ -114,10 +87,7 @@ export const DashboardPage = () => {
               {formatPrice(overview.revenue.total)}
             </div>
             <p className="mt-1 text-[10px] text-muted-foreground">
-              <span className="font-bold text-primary">
-                {formatPrice(overview.revenue.this_month)}
-              </span>{" "}
-              this month
+              <span className="font-bold text-primary">{formatPrice(overview.revenue.this_month)}</span> this month
             </p>
           </CardContent>
         </Card>
@@ -133,14 +103,10 @@ export const DashboardPage = () => {
             </div>
           </CardHeader>
           <CardContent className="pt-2">
-            <div className="text-2xl font-extrabold tracking-tight text-foreground">
-              {overview.orders.total}
-            </div>
+            <div className="text-2xl font-extrabold tracking-tight text-foreground">{overview.orders.total}</div>
             <p className="mt-1 text-[10px] text-muted-foreground">
-              <span className="font-semibold text-foreground">
-                {overview.orders.pending} pending
-              </span>{" "}
-              • {overview.orders.processing} processing
+              <span className="font-semibold text-foreground">{overview.orders.pending} pending</span> •{" "}
+              {overview.orders.processing} processing
             </p>
           </CardContent>
         </Card>
@@ -156,14 +122,9 @@ export const DashboardPage = () => {
             </div>
           </CardHeader>
           <CardContent className="pt-2">
-            <div className="text-2xl font-extrabold tracking-tight text-foreground">
-              {overview.customers.total}
-            </div>
+            <div className="text-2xl font-extrabold tracking-tight text-foreground">{overview.customers.total}</div>
             <p className="mt-1 text-[10px] text-muted-foreground">
-              <span className="font-bold text-primary">
-                +{overview.customers.new_this_month}
-              </span>{" "}
-              brand new signups
+              <span className="font-bold text-primary">+{overview.customers.new_this_month}</span> brand new signups
             </p>
           </CardContent>
         </Card>
@@ -179,16 +140,14 @@ export const DashboardPage = () => {
             </div>
           </CardHeader>
           <CardContent className="pt-2">
-            <div className="text-2xl font-extrabold tracking-tight text-foreground">
-              {overview.products.total}
-            </div>
+            <div className="text-2xl font-extrabold tracking-tight text-foreground">{overview.products.total}</div>
             <div className="mt-1 text-[10px] text-muted-foreground">
               {overview.products.out_of_stock > 0 ? (
                 <span className="font-bold text-destructive">
                   {overview.products.out_of_stock} variant(s) out-of-stock
                 </span>
               ) : (
-                <Badge variant="default" className="py-0 h-4 text-[9px]">
+                <Badge variant="default" className="h-4 py-0 text-[9px]">
                   All products in-stock
                 </Badge>
               )}
@@ -205,18 +164,12 @@ export const DashboardPage = () => {
             <CardTitle className="text-sm font-bold tracking-wider text-foreground uppercase">
               Monthly Revenue Performance
             </CardTitle>
-            <CardDescription className="text-xs">
-              Revenue figures in IDR grouped per calendar month.
-            </CardDescription>
+            <CardDescription className="text-xs">Revenue figures in IDR grouped per calendar month.</CardDescription>
           </CardHeader>
           <CardContent className="h-80 min-h-80 pl-2">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData}>
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  vertical={false}
-                  stroke="hsl(var(--border))"
-                />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                 <XAxis
                   dataKey="month"
                   stroke="hsl(var(--muted-foreground))"
@@ -232,19 +185,11 @@ export const DashboardPage = () => {
                   tickFormatter={(v) => `${(v / 1000000).toFixed(0)}M`}
                 />
                 <Tooltip
-                  formatter={(value: unknown) => [
-                    formatPrice(Number(value)),
-                    "Revenue",
-                  ]}
+                  formatter={(value: unknown) => [formatPrice(Number(value)), "Revenue"]}
                   contentStyle={TOOLTIP_CONTENT_STYLE}
                   labelStyle={TOOLTIP_LABEL_STYLE}
                 />
-                <Bar
-                  dataKey="revenue"
-                  fill="hsl(var(--primary))"
-                  radius={[4, 4, 0, 0]}
-                  maxBarSize={45}
-                />
+                <Bar dataKey="revenue" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} maxBarSize={45} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -256,32 +201,18 @@ export const DashboardPage = () => {
             <CardTitle className="text-sm font-bold tracking-wider text-foreground uppercase">
               Fulfillment Orders Volume
             </CardTitle>
-            <CardDescription className="text-xs">
-              Timeline displaying count of orders placed per month.
-            </CardDescription>
+            <CardDescription className="text-xs">Timeline displaying count of orders placed per month.</CardDescription>
           </CardHeader>
           <CardContent className="h-80 min-h-80 pl-2">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData}>
                 <defs>
                   <linearGradient id="orderGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop
-                      offset="5%"
-                      stopColor="hsl(var(--primary))"
-                      stopOpacity={0.2}
-                    />
-                    <stop
-                      offset="95%"
-                      stopColor="hsl(var(--primary))"
-                      stopOpacity={0.0}
-                    />
+                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  vertical={false}
-                  stroke="hsl(var(--border))"
-                />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
                 <XAxis
                   dataKey="month"
                   stroke="hsl(var(--muted-foreground))"
@@ -289,12 +220,7 @@ export const DashboardPage = () => {
                   tickLine={false}
                   axisLine={false}
                 />
-                <YAxis
-                  stroke="hsl(var(--muted-foreground))"
-                  fontSize={10}
-                  tickLine={false}
-                  axisLine={false}
-                />
+                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} tickLine={false} axisLine={false} />
                 <Tooltip
                   formatter={(value) => [value, "Orders Count"]}
                   contentStyle={TOOLTIP_CONTENT_STYLE}

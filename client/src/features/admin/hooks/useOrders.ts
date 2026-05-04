@@ -26,27 +26,25 @@ export const useOrders = () => {
   }, [])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadOrdersData(true)
   }, [loadOrdersData])
 
-  const handleViewDetails = useCallback(
-    (orderId: string) => {
-      setActiveOrder(null)
-      setDetailsOpen(true)
+  const handleViewDetails = useCallback((orderId: string) => {
+    setActiveOrder(null)
+    setDetailsOpen(true)
 
-      startTransition(async () => {
-        try {
-          const res = await adminApi.getOrderDetail(orderId)
-          if (res.success && res.data) {
-            setActiveOrder(res.data)
-          }
-        } catch {
-          // silent fail
+    startTransition(async () => {
+      try {
+        const res = await adminApi.getOrderDetail(orderId)
+        if (res.success && res.data) {
+          setActiveOrder(res.data)
         }
-      })
-    },
-    []
-  )
+      } catch {
+        // silent fail
+      }
+    })
+  }, [])
 
   const handleUpdateStatus = useCallback(
     (status: OrderStatus) => {
@@ -57,11 +55,7 @@ export const useOrders = () => {
           if (res.success) {
             toast.success(`Fulfillment status updated to: ${status}`)
             setActiveOrder((prev) => (prev ? { ...prev, status } : null))
-            setOrders((curr) =>
-              curr.map((o) =>
-                o.id === activeOrder.id ? { ...o, status } : o
-              )
-            )
+            setOrders((curr) => curr.map((o) => (o.id === activeOrder.id ? { ...o, status } : o)))
           } else {
             toast.error(res.message || "Failed to update order status.")
           }
@@ -81,15 +75,9 @@ export const useOrders = () => {
           const res = await adminApi.updateOrderPaymentStatus(activeOrder.id, paymentStatus)
           if (res.success) {
             toast.success(`Payment status marked as: ${paymentStatus}`)
-            setActiveOrder((prev) =>
-              prev ? { ...prev, payment_status: paymentStatus } : null
-            )
+            setActiveOrder((prev) => (prev ? { ...prev, payment_status: paymentStatus } : null))
             setOrders((curr) =>
-              curr.map((o) =>
-                o.id === activeOrder.id
-                  ? { ...o, payment_status: paymentStatus }
-                  : o
-              )
+              curr.map((o) => (o.id === activeOrder.id ? { ...o, payment_status: paymentStatus } : o))
             )
           } else {
             toast.error(res.message || "Failed to update payment status.")

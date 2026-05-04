@@ -4,12 +4,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Spinner } from "@/components/ui/spinner"
 import { Field, FieldLabel, FieldError } from "@/components/ui/field"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Dialog,
   DialogContent,
@@ -36,6 +31,7 @@ type VariantManagerDialogProps = {
   onCancelEdit: () => void
   editingVariant: ProductVariant | null
   isPending: boolean
+  loading?: boolean
 }
 
 export const VariantManagerDialog = ({
@@ -49,16 +45,15 @@ export const VariantManagerDialog = ({
   onCancelEdit,
   editingVariant,
   isPending,
+  loading,
 }: VariantManagerDialogProps) => (
   <Dialog open={open} onOpenChange={onOpenChange}>
-    <DialogContent className="max-h-[90vh] max-w-3xl sm:max-w-3xl overflow-y-auto border bg-card">
+    <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto border bg-card sm:max-w-3xl">
       <DialogHeader>
-        <DialogTitle className="font-heading text-lg font-bold">
-          Manage Variants: {activeProduct?.name}
-        </DialogTitle>
+        <DialogTitle className="font-heading text-lg font-bold">Manage Variants: {activeProduct?.name}</DialogTitle>
         <DialogDescription className="text-xs">
-          Configure variant options (Volume size, customized colors,
-          localized SKU strings, stock values, and pricing offsets).
+          Configure variant options (Volume size, customized colors, localized SKU strings, stock values, and pricing
+          offsets).
         </DialogDescription>
       </DialogHeader>
 
@@ -70,87 +65,44 @@ export const VariantManagerDialog = ({
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0">
-            <form
-              onSubmit={onSubmit}
-              className="flex flex-col gap-4"
-            >
+            <form onSubmit={onSubmit} className="flex flex-col gap-4">
               <Field data-invalid={!!form.formState.errors.size}>
-                <FieldLabel htmlFor="varSize">
-                  Size (Volume/Dimension)
-                </FieldLabel>
-                <Input
-                  id="varSize"
-                  {...form.register("size")}
-                  placeholder="e.g. 250ml or 500ml"
-                />
-                {form.formState.errors.size && (
-                  <FieldError>{form.formState.errors.size.message}</FieldError>
-                )}
+                <FieldLabel htmlFor="varSize">Size (Volume/Dimension)</FieldLabel>
+                <Input id="varSize" {...form.register("size")} placeholder="e.g. 250ml or 500ml" />
+                {form.formState.errors.size && <FieldError>{form.formState.errors.size.message}</FieldError>}
               </Field>
 
               <div className="grid grid-cols-2 gap-3">
                 <Field>
                   <FieldLabel htmlFor="varColor">Color Name</FieldLabel>
-                  <Input
-                    id="varColor"
-                    {...form.register("color")}
-                    placeholder="Beet Red"
-                  />
+                  <Input id="varColor" {...form.register("color")} placeholder="Beet Red" />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="varColorHex">
-                    Color Hex Code
-                  </FieldLabel>
-                  <Input
-                    id="varColorHex"
-                    {...form.register("color_hex")}
-                    placeholder="#8b0000"
-                  />
+                  <FieldLabel htmlFor="varColorHex">Color Hex Code</FieldLabel>
+                  <Input id="varColorHex" {...form.register("color_hex")} placeholder="#8b0000" />
                 </Field>
               </div>
 
               <Field data-invalid={!!form.formState.errors.sku}>
                 <FieldLabel htmlFor="varSku">SKU Code</FieldLabel>
-                <Input
-                  id="varSku"
-                  {...form.register("sku")}
-                  placeholder="JUICE-BEET-250"
-                />
-                {form.formState.errors.sku && (
-                  <FieldError>{form.formState.errors.sku.message}</FieldError>
-                )}
+                <Input id="varSku" {...form.register("sku")} placeholder="JUICE-BEET-250" />
+                {form.formState.errors.sku && <FieldError>{form.formState.errors.sku.message}</FieldError>}
               </Field>
 
               <div className="grid grid-cols-2 gap-3">
                 <Field data-invalid={!!form.formState.errors.stock}>
-                  <FieldLabel htmlFor="varStock">
-                    Fulfillment Stock
-                  </FieldLabel>
-                  <Input
-                    id="varStock"
-                    type="number"
-                    {...form.register("stock")}
-                    placeholder="100"
-                  />
-                  {form.formState.errors.stock && (
-                    <FieldError>{form.formState.errors.stock.message}</FieldError>
-                  )}
+                  <FieldLabel htmlFor="varStock">Fulfillment Stock</FieldLabel>
+                  <Input id="varStock" type="number" {...form.register("stock")} placeholder="100" />
+                  {form.formState.errors.stock && <FieldError>{form.formState.errors.stock.message}</FieldError>}
                 </Field>
 
                 <Field>
-                  <FieldLabel htmlFor="varAddPrice">
-                    Add. Price Offset (IDR)
-                  </FieldLabel>
-                  <Input
-                    id="varAddPrice"
-                    type="number"
-                    {...form.register("additional_price")}
-                    placeholder="+15000"
-                  />
+                  <FieldLabel htmlFor="varAddPrice">Add. Price Offset (IDR)</FieldLabel>
+                  <Input id="varAddPrice" type="number" {...form.register("additional_price")} placeholder="+15000" />
                 </Field>
               </div>
 
-              <div className="flex gap-2 mt-2">
+              <div className="mt-2 flex gap-2">
                 {editingVariant && (
                   <Button
                     type="button"
@@ -168,11 +120,7 @@ export const VariantManagerDialog = ({
                   className={editingVariant ? "flex-1 font-medium" : "w-full font-medium"}
                 >
                   {isPending && <Spinner data-icon="inline-start" />}
-                  {isPending
-                    ? "Saving..."
-                    : editingVariant
-                    ? "Update Variant"
-                    : "Append Variant Option"}
+                  {isPending ? "Saving..." : editingVariant ? "Update Variant" : "Append Variant Option"}
                 </Button>
               </div>
             </form>
@@ -184,8 +132,12 @@ export const VariantManagerDialog = ({
             Active Variant Combinations
           </h3>
           <div className="flex max-h-87.5 flex-col gap-3 overflow-y-auto pr-1">
-            {!activeProduct?.variants ||
-            activeProduct.variants.length === 0 ? (
+            {loading ? (
+              <div className="flex flex-col items-center justify-center gap-2 py-12 text-xs text-muted-foreground">
+                <Spinner className="size-6 animate-spin text-primary" />
+                <span>Loading product options...</span>
+              </div>
+            ) : !activeProduct?.variants || activeProduct.variants.length === 0 ? (
               <div className="rounded-lg border border-dashed bg-muted/20 py-12 text-center text-xs text-muted-foreground">
                 No variant combinations constructed yet.
               </div>
@@ -210,30 +162,17 @@ export const VariantManagerDialog = ({
                         </span>
                       )}
                     </div>
-                    <div className="font-mono text-[10px] text-muted-foreground">
-                      {v.sku}
-                    </div>
+                    <div className="font-mono text-[10px] text-muted-foreground">{v.sku}</div>
                     <div className="mt-1 flex items-center gap-3 text-[10px] font-semibold">
                       <Badge variant="default">{v.stock} in stock</Badge>
-                      <span className="text-primary">
-                        +{formatPrice(v.additional_price)} offset
-                      </span>
+                      <span className="text-primary">+{formatPrice(v.additional_price)} offset</span>
                     </div>
                   </div>
                   <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => onEditVariant(v)}
-                    >
+                    <Button variant="ghost" size="icon" onClick={() => onEditVariant(v)}>
                       <HugeiconsIcon icon={Edit01Icon} />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      disabled={isPending}
-                      onClick={() => onDeleteVariant(v.id)}
-                    >
+                    <Button variant="ghost" size="icon" disabled={isPending} onClick={() => onDeleteVariant(v.id)}>
                       <HugeiconsIcon icon={Delete02Icon} />
                     </Button>
                   </div>

@@ -5,7 +5,15 @@
 
 ## Session Summary
 
-**Focus:** Priority 3 bug fixes & feature completion — Edit Address, Edit Category, Edit Variant, Cancel Order, Recently Viewed, Wishlist, Delete Category fix, Admin product listing pagination/admin flag fix.
+**Latest Updates (Product Categories & Image Gallery Fixes):**
+- **GORM Association Gotcha Fix**: Fixed a bug where editing product details successfully saved but silently cleared/wiped out the product's category in the database. Solved by clearing preloaded GORM `Category` struct in `UpdateProduct` before calling GORM Save.
+- **`category_id` Mapping Fix**: Added `category_id` (`CategoryID`) to the backend `dto.ProductResponse` and `ListProducts` service mapper, enabling the edit modal to correctly pre-select the current category instead of showing empty.
+- **Empty Image Assets Gallery Fix**: Fixed the image modal showing "No photographic graphics uploaded yet" by changing `openImages` and `openVariants` in `ProductsPage.tsx` to fetch full product details (including images and variants) by ID via `getProductByID`, rather than relying on the incomplete list representation.
+- **Product Thumbnail Display Fix**: Updated the main product inventory table in `ProductsPage.tsx` to read the flat `primary_image` field returned by the list API, so product cover images render beautifully on the grid.
+- **Instant Media Upload Sync**: Updated backend `AddProductImages` handler to fetch and return the fully updated product model under the `data` JSON response field, matching frontend expectations for instant UI updates.
+- **Paste Image URL Option**: Implemented a new feature allowing users to register catalog image assets via direct internet URLs (e.g. from Unsplash) instead of files upload. Added a backend endpoint `POST /api/v1/admin/products/:id/images/url`, updated frontend hooks and API definitions, and redesigned `ImageManagerDialog` to offer side-by-side local upload and URL input options.
+
+**Previous Session Focus:** Priority 3 bug fixes & feature completion — Edit Address, Edit Category, Edit Variant, Cancel Order, Recently Viewed, Wishlist, Delete Category fix, Admin product listing pagination/admin flag fix.
 
 ---
 
@@ -117,6 +125,9 @@
 | `server/internal/router/router.go` | Wishlist + cancel order routes |
 | `server/internal/service/category.go` | DeleteCategory: check for referencing products |
 | `server/internal/handler/category.go` | DeleteCategory: handle ErrCategoryHasProducts |
+| `server/internal/dto/product.go` | Added CategoryID to ProductResponse DTO |
+| `server/internal/service/product.go` | ListProducts: Map CategoryID; UpdateProduct: Clear preloaded Category struct |
+| `server/internal/handler/product.go` | AddProductImages: return updated product details in data field |
 
 ### Frontend (React/TS)
 | File | Change |
@@ -134,10 +145,10 @@
 | `client/src/features/profile/components/AddressForm.tsx` | Edit mode |
 | `client/src/features/profile/components/AddressCard.tsx` | Edit button |
 | `client/src/features/profile/components/AddressList.tsx` | Edit + delete confirm |
-| `client/src/features/admin/ProductsPage.tsx` | Category edit + icon cleanup |
+| `client/src/features/admin/ProductsPage.tsx` | Category edit + icon cleanup; fetch full product details in openImages and openVariants |
 | `client/src/features/admin/components/VariantManagerDialog.tsx` | Variant edit + icon cleanup |
 | `client/src/features/admin/hooks/useProducts.ts` | editingCategory state + fix delete handlers & error catching + admin=true per_page=9999 |
-| `client/src/lib/api/admin.ts` | Added admin to ProductQueryParams |
+| `client/src/lib/api/admin.ts` | Added admin to ProductQueryParams, added getProductByID |
 | `client/src/features/admin/hooks/useVariants.ts` | editingVariant state |
 | `client/src/components/layout/Navbar.tsx` | Wishlist link |
 | `client/src/components/layout/AdminLayout.tsx` | Admin logout call |

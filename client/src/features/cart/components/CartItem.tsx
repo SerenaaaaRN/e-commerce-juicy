@@ -13,7 +13,6 @@ type CartItemProps = {
 }
 
 export const CartItem = ({ item, onUpdateQty, onRemove }: CartItemProps) => {
-
   const handleQtyChange = (val: string) => {
     const parsed = parseInt(val, 10)
     if (!isNaN(parsed) && parsed > 0) {
@@ -22,12 +21,11 @@ export const CartItem = ({ item, onUpdateQty, onRemove }: CartItemProps) => {
   }
 
   return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 py-6 text-left">
-      
+    <div className="flex flex-col items-start justify-between gap-4 py-6 text-left sm:flex-row sm:items-center">
       {/* Product Image & Info Details */}
-      <div className="flex items-center gap-4 flex-1">
+      <div className="flex flex-1 items-center gap-4">
         <div className="w-20">
-          <AspectRatio ratio={3 / 4} className="overflow-hidden bg-muted rounded-md border border-border/60">
+          <AspectRatio ratio={3 / 4} className="overflow-hidden rounded-md border border-border/60 bg-muted">
             <img
               src={item.image_url || "/placeholder.webp"}
               alt={item.product_name}
@@ -37,29 +35,22 @@ export const CartItem = ({ item, onUpdateQty, onRemove }: CartItemProps) => {
         </div>
 
         <div className="flex flex-col gap-1">
-          <h3 className="text-sm font-semibold tracking-tight text-foreground truncate max-w-[200px]">
+          <h3 className="max-w-50 truncate text-sm font-semibold tracking-tight text-foreground">
             {item.product_name}
           </h3>
-          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground uppercase font-medium">
-            {item.variant_size && (
-              <span>Size: {item.variant_size}</span>
-            )}
-            {item.variant_size && item.variant_color && (
-              <span>•</span>
-            )}
-            {item.variant_color && (
-              <span>Color: {item.variant_color}</span>
-            )}
+          <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground uppercase">
+            {item.variant_size && <span>Size: {item.variant_size}</span>}
+            {item.variant_size && item.variant_color && <span>•</span>}
+            {item.variant_color && <span>Color: {item.variant_color}</span>}
           </div>
-          <span className="text-xs font-mono font-semibold text-foreground pt-1 sm:hidden">
+          <span className="pt-1 font-mono text-xs font-semibold text-foreground sm:hidden">
             {formatPrice(item.unit_price)}
           </span>
         </div>
       </div>
 
       {/* Stepper, Subtotal, and Actions column */}
-      <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto">
-        
+      <div className="flex w-full items-center justify-between gap-6 sm:w-auto sm:justify-end">
         {/* Stepper selection layout */}
         <div className="flex items-center gap-1">
           <Button
@@ -75,7 +66,7 @@ export const CartItem = ({ item, onUpdateQty, onRemove }: CartItemProps) => {
             type="number"
             value={item.quantity}
             onChange={(e) => handleQtyChange(e.target.value)}
-            className="w-12 h-8 text-center p-0 font-semibold text-xs rounded-md font-mono"
+            className="h-8 w-12 rounded-md p-0 text-center font-mono text-xs font-semibold"
             min={1}
           />
           <Button
@@ -89,15 +80,13 @@ export const CartItem = ({ item, onUpdateQty, onRemove }: CartItemProps) => {
         </div>
 
         {/* Item Total (Price * Qty) */}
-        <div className="hidden sm:flex flex-col items-end min-w-[100px] gap-0.5 text-right">
-          <span className="font-mono text-sm font-semibold text-foreground">
-            {formatPrice(item.subtotal)}
-          </span>
-          {item.quantity > 1 && (
-            <span className="text-[10px] text-muted-foreground font-mono font-medium">
+        <div className="hidden min-w-25 flex-col items-end gap-0.5 text-right sm:flex">
+          <span className="font-mono text-sm font-semibold text-foreground">{formatPrice(item.subtotal)}</span>
+          {item.quantity > 1 ? (
+            <span className="font-mono text-[10px] font-medium text-muted-foreground">
               {formatPrice(item.unit_price)} each
             </span>
-          )}
+          ) : null}
         </div>
 
         {/* Delete Trigger */}
@@ -105,13 +94,11 @@ export const CartItem = ({ item, onUpdateQty, onRemove }: CartItemProps) => {
           variant="ghost"
           size="icon"
           onClick={() => onRemove(item.id)}
-          className="text-muted-foreground hover:text-destructive cursor-pointer size-8 rounded-full"
+          className="size-8 cursor-pointer rounded-full text-muted-foreground hover:text-destructive"
         >
           <HugeiconsIcon icon={Cancel01Icon} strokeWidth={1.8} data-icon />
         </Button>
-
       </div>
-
     </div>
   )
 }

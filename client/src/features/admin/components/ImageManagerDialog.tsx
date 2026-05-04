@@ -21,6 +21,9 @@ type ImageManagerDialogProps = {
   selectedFiles: FileList | null
   onFileChange: (files: FileList | null) => void
   onUploadSubmit: (e: React.FormEvent) => void
+  imageUrlInput: string
+  onImageUrlChange: (value: string) => void
+  onImageUrlSubmit: (e: React.FormEvent) => void
   onSetPrimary: (imageId: string) => void
   onDeleteImage: (imageId: string) => void
   isPending: boolean
@@ -33,52 +36,66 @@ export const ImageManagerDialog = ({
   selectedFiles,
   onFileChange,
   onUploadSubmit,
+  imageUrlInput,
+  onImageUrlChange,
+  onImageUrlSubmit,
   onSetPrimary,
   onDeleteImage,
   isPending,
 }: ImageManagerDialogProps) => (
   <Dialog open={open} onOpenChange={onOpenChange}>
-    <DialogContent className="max-h-[90vh] max-w-2xl sm:max-w-2.5xl overflow-y-auto border bg-card">
+    <DialogContent className="sm:max-w-2.5xl max-h-[90vh] max-w-2xl overflow-y-auto border bg-card">
       <DialogHeader>
         <DialogTitle className="font-heading text-lg font-bold">
           Boutique Image Assets: {activeProduct?.name}
         </DialogTitle>
         <DialogDescription className="text-xs">
-          Upload multiple raw images directly to Cloudinary CDN, set primary
-          listing catalog covers, or remove expired graphics assets.
+          Upload multiple raw images directly to Cloudinary CDN, set primary listing catalog covers, or remove expired
+          graphics assets.
         </DialogDescription>
       </DialogHeader>
 
       <div className="flex flex-col gap-6 py-4 text-left">
-        <form
-          onSubmit={onUploadSubmit}
-          className="flex items-end gap-4 rounded-lg border bg-muted/10 p-4"
-        >
-          <div className="flex-1 text-xs">
-            <label className="mb-2 block font-semibold text-foreground">
-              Select Multi-Images files to upload
-            </label>
-            <input
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={(e) => onFileChange(e.target.files)}
-              className="w-full cursor-pointer text-xs text-muted-foreground file:mr-4 file:rounded-md file:border file:bg-card file:px-4 file:py-2 file:text-xs file:font-semibold file:text-foreground hover:file:bg-muted"
-            />
-          </div>
-          <Button
-            type="submit"
-            disabled={isPending || !selectedFiles}
-          >
-            {isPending && <Spinner data-icon="inline-start" />}
-            {isPending ? "Uploading..." : "Upload Assets"}
-          </Button>
-        </form>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {/* Upload Form */}
+          <form onSubmit={onUploadSubmit} className="flex flex-col justify-between gap-3 rounded-lg border bg-muted/10 p-4">
+            <div className="text-xs">
+              <label className="mb-2 block font-semibold text-foreground">Option 1: Upload from Computer</label>
+              <input
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={(e) => onFileChange(e.target.files)}
+                className="w-full cursor-pointer text-xs text-muted-foreground file:mr-4 file:rounded-md file:border file:bg-card file:px-4 file:py-2 file:text-xs file:font-semibold file:text-foreground hover:file:bg-muted"
+              />
+            </div>
+            <Button type="submit" disabled={isPending || !selectedFiles} className="mt-2 w-full">
+              {isPending && <Spinner data-icon="inline-start" />}
+              {isPending ? "Uploading..." : "Upload Assets"}
+            </Button>
+          </form>
+
+          {/* Paste URL Form */}
+          <form onSubmit={onImageUrlSubmit} className="flex flex-col justify-between gap-3 rounded-lg border bg-muted/10 p-4">
+            <div className="text-xs">
+              <label className="mb-2 block font-semibold text-foreground">Option 2: Add Image via Internet URL</label>
+              <input
+                type="url"
+                placeholder="https://images.unsplash.com/photo-..."
+                value={imageUrlInput}
+                onChange={(e) => onImageUrlChange(e.target.value)}
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-xs ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              />
+            </div>
+            <Button type="submit" disabled={isPending || !imageUrlInput.trim()} className="mt-2 w-full">
+              {isPending && <Spinner data-icon="inline-start" />}
+              {isPending ? "Adding..." : "Add Image URL"}
+            </Button>
+          </form>
+        </div>
 
         <div className="flex flex-col gap-3">
-          <h3 className="text-xs font-bold tracking-wider text-muted-foreground uppercase">
-            Catalog Image Assets
-          </h3>
+          <h3 className="text-xs font-bold tracking-wider text-muted-foreground uppercase">Catalog Image Assets</h3>
           {!activeProduct?.images || activeProduct.images.length === 0 ? (
             <div className="rounded-lg border border-dashed bg-muted/20 py-16 text-center text-xs text-muted-foreground">
               No photographic graphics uploaded for this product yet.
@@ -90,9 +107,7 @@ export const ImageManagerDialog = ({
                   key={img.id}
                   className={cn(
                     "group relative flex flex-col items-center gap-2 overflow-hidden rounded-lg border bg-card p-2 transition-colors hover:border-primary",
-                    img.is_primary
-                      ? "border-2 border-primary"
-                      : "border-border"
+                    img.is_primary ? "border-2 border-primary" : "border-border"
                   )}
                 >
                   <img
@@ -100,8 +115,7 @@ export const ImageManagerDialog = ({
                     alt="Product option thumbnail"
                     className="h-28 w-full rounded bg-muted object-cover"
                     onError={(e) => {
-                      ;(e.target as HTMLImageElement).src =
-                        "/placeholder-product.svg"
+                      ;(e.target as HTMLImageElement).src = "/placeholder-product.svg"
                     }}
                   />
                   {img.is_primary && (
@@ -128,10 +142,7 @@ export const ImageManagerDialog = ({
                       onClick={() => onDeleteImage(img.id)}
                       className="size-7 hover:bg-destructive/10 hover:text-destructive"
                     >
-                      <HugeiconsIcon
-                        icon={Delete02Icon}
-                        className="size-3.5"
-                      />
+                      <HugeiconsIcon icon={Delete02Icon} className="size-3.5" />
                     </Button>
                   </div>
                 </div>

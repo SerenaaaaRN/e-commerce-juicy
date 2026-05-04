@@ -43,19 +43,15 @@ export const RegisterPage = () => {
     <div className="flex min-h-svh flex-col items-center justify-center bg-muted p-6 md:p-10">
       <div className="w-full max-w-sm md:max-w-4xl">
         <div className="flex flex-col gap-6">
-          <Card className="overflow-hidden p-0 border border-border/80 shadow-md">
+          <Card className="overflow-hidden border border-border/80 p-0 shadow-md">
             <CardContent className="grid p-0 md:grid-cols-2">
               {/* Form Side */}
-              <div className="p-6 md:p-8 text-left flex flex-col justify-center">
+              <div className="flex flex-col justify-center p-6 text-left md:p-8">
                 {/* Header block */}
-                <div className="flex flex-col items-center gap-2 text-center mb-4">
-                  <span className="text-xs font-semibold tracking-wider text-primary uppercase">
-                    Join the Atelier
-                  </span>
-                  <h1 className="text-2xl font-bold tracking-tight text-foreground">
-                    Create your account
-                  </h1>
-                  <p className="text-xs text-muted-foreground font-sans text-balance text-center">
+                <div className="mb-4 flex flex-col items-center gap-2 text-center">
+                  <span className="text-xs font-semibold tracking-wider text-primary uppercase">Join the Atelier</span>
+                  <h1 className="text-2xl font-bold tracking-tight text-foreground">Create your account</h1>
+                  <p className="text-center font-sans text-xs text-balance text-muted-foreground">
                     Enter your email and credentials below to create your account
                   </p>
                 </div>
@@ -64,10 +60,10 @@ export const RegisterPage = () => {
                 <RegisterForm onSubmit={handleSubmit} isPending={isPending} />
 
                 {/* Redirect Link */}
-                <div className="text-center mt-4">
+                <div className="mt-4 text-center">
                   <span className="text-xs text-muted-foreground">
                     Already have an account?{" "}
-                    <Link to="/login" className="text-primary font-bold hover:underline">
+                    <Link to="/login" className="font-bold text-primary hover:underline">
                       Sign In
                     </Link>
                   </span>

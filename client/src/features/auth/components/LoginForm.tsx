@@ -5,14 +5,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-  FieldSeparator,
-  FieldError,
-} from "@/components/ui/field"
+import { Field, FieldDescription, FieldGroup, FieldLabel, FieldSeparator, FieldError } from "@/components/ui/field"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { AppleIcon, GoogleIcon } from "@hugeicons/core-free-icons"
 import { loginSchema } from "@/features/auth/validations"
@@ -47,7 +40,6 @@ export const LoginForm = ({
   forgotPasswordUrl = "/forgot-password",
   showSocialLogins = false,
   registerUrl,
-  registerText = "Don't have an account? Create Account",
   className,
   ...props
 }: LoginFormProps) => {
@@ -64,11 +56,7 @@ export const LoginForm = ({
   })
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className={cn("w-full text-left", className)}
-      {...props}
-    >
+    <form onSubmit={handleSubmit(onSubmit)} className={cn("w-full text-left", className)} {...props}>
       <FieldGroup className="gap-4">
         {/* Email Field */}
         <Field data-invalid={!!errors.email}>
@@ -119,7 +107,7 @@ export const LoginForm = ({
         {/* OAuth Separator */}
         {showSocialLogins ? (
           <>
-            <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card text-xs text-muted-foreground">
+            <FieldSeparator className="text-xs text-muted-foreground *:data-[slot=field-separator-content]:bg-card">
               Or continue with
             </FieldSeparator>
 
@@ -135,17 +123,17 @@ export const LoginForm = ({
               </Button>
             </Field>
           </>
-        ): null}
+        ) : null}
 
         {/* Link to Register */}
         {registerUrl ? (
-          <FieldDescription className="text-center text-xs mt-2">
+          <FieldDescription className="mt-2 text-center text-xs">
             Don&apos;t have an account?{" "}
-            <Link to={registerUrl} className="text-primary font-bold hover:underline">
+            <Link to={registerUrl} className="font-bold text-primary hover:underline">
               Create Account
             </Link>
           </FieldDescription>
-        ):null}
+        ) : null}
       </FieldGroup>
     </form>
   )

@@ -1,4 +1,4 @@
-import { useState, useTransition, useCallback } from "react"
+import { useState, useTransition, useCallback, useEffect } from "react"
 import { useForm, type Resolver } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { adminApi } from "@/lib/api/admin"
@@ -14,6 +14,29 @@ export const useVariants = (
 ) => {
   const [isPending, startTransition] = useTransition()
   const [editingVariant, setEditingVariant] = useState<ProductVariant | null>(null)
+  const [isLoadingVariants, setIsLoadingVariants] = useState(false)
+
+  const loadVariants = useCallback(async () => {
+    if (!activeProduct) return
+    setIsLoadingVariants(true)
+    try {
+      const res = await adminApi.getVariants(activeProduct.id)
+      if (res.success && res.data) {
+        setActiveProduct((prev) => (prev && prev.id === activeProduct.id ? { ...prev, variants: res.data } : prev))
+      }
+    } catch {
+      // silent catch
+    } finally {
+      setIsLoadingVariants(false)
+    }
+  }, [activeProduct, setActiveProduct])
+
+  useEffect(() => {
+    if (activeProduct && !activeProduct.variants) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      loadVariants()
+    }
+  }, [activeProduct, loadVariants])
 
   const variantForm = useForm<VariantFormValues>({
     resolver: zodResolver(variantSchema) as unknown as Resolver<VariantFormValues>,
@@ -75,8 +98,12 @@ export const useVariants = (
       try {
         if (editingVariant) {
           const res = await adminApi.updateVariant(activeProduct.id, editingVariant.id, payload)
-          if (res.success) {
+          if (res.success && res.data) {
             toast.success("Variant updated successfully!")
+            const updatedV = (activeProduct.variants || []).map((v) =>
+              v.id === editingVariant.id ? res.data : v
+            ) as ProductVariant[]
+            setActiveProduct((prev) => (prev ? { ...prev, variants: updatedV } : null))
             resetVariantForm()
             loadData()
           } else {
@@ -87,9 +114,7 @@ export const useVariants = (
           if (res.success && res.data) {
             toast.success("Variant appended successfully!")
             const updatedV = [...(activeProduct.variants || []), res.data]
-            setActiveProduct((prev) =>
-              prev ? { ...prev, variants: updatedV } : null
-            )
+            setActiveProduct((prev) => (prev ? { ...prev, variants: updatedV } : null))
             loadData()
             resetVariantForm()
           } else {
@@ -104,23 +129,15 @@ export const useVariants = (
 
   const handleDeleteVariant = useCallback(
     async (variantId: string, confirmFn: (msg: string) => Promise<boolean>) => {
-      if (
-        !(await confirmFn("Are you sure you want to delete this variant?")) ||
-        !activeProduct
-      )
-        return
+      if (!(await confirmFn("Are you sure you want to delete this variant?")) || !activeProduct) return
 
       startTransition(async () => {
         try {
           const res = await adminApi.deleteVariant(activeProduct.id, variantId)
           if (res.success) {
             toast.success("Variant removed successfully!")
-            const updatedV = (activeProduct.variants || []).filter(
-              (v) => v.id !== variantId
-            )
-            setActiveProduct((prev) =>
-              prev ? { ...prev, variants: updatedV } : null
-            )
+            const updatedV = (activeProduct.variants || []).filter((v) => v.id !== variantId)
+            setActiveProduct((prev) => (prev ? { ...prev, variants: updatedV } : null))
             loadData()
           } else {
             toast.error(res.message || "Failed to delete variant.")
@@ -135,6 +152,7 @@ export const useVariants = (
 
   return {
     isPending,
+    isLoadingVariants,
     variantForm,
     editingVariant,
     resetVariantForm,

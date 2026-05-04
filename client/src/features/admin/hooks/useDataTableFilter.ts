@@ -7,15 +7,10 @@ export const useDataTableFilter = <T>(
   const [search, setSearch] = useState("")
   const deferredSearch = useDeferredValue(search)
 
-  const searchLower = useMemo(
-    () => deferredSearch.toLowerCase(),
-    [deferredSearch]
-  )
+  const searchLower = useMemo(() => deferredSearch.toLowerCase(), [deferredSearch])
 
   const filteredData = useMemo(() => {
-    return initialData.filter((item) =>
-      filterFn(item, searchLower, deferredSearch)
-    )
+    return initialData.filter((item) => filterFn(item, searchLower, deferredSearch))
   }, [initialData, filterFn, searchLower, deferredSearch])
 
   return {

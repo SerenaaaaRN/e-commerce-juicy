@@ -23,10 +23,7 @@ export const useProductImages = (
         }
 
         try {
-          const res = await adminApi.uploadProductImages(
-            activeProduct.id,
-            formData
-          )
+          const res = await adminApi.uploadProductImages(activeProduct.id, formData)
           if (res.success && res.data) {
             toast.success("Images uploaded successfully!")
             setActiveProduct(res.data)
@@ -55,9 +52,7 @@ export const useProductImages = (
               ...img,
               is_primary: img.id === imageId,
             }))
-            setActiveProduct((prev) =>
-              prev ? { ...prev, images: updatedI } : null
-            )
+            setActiveProduct((prev) => (prev ? { ...prev, images: updatedI } : null))
             loadData()
           } else {
             toast.error(res.message || "Failed to set primary image.")
@@ -72,24 +67,14 @@ export const useProductImages = (
 
   const handleDeleteImage = useCallback(
     async (imageId: string, confirmFn: (msg: string) => Promise<boolean>) => {
-      if (
-        !(await confirmFn(
-          "Are you sure you want to delete this image asset?"
-        )) ||
-        !activeProduct
-      )
-        return
+      if (!(await confirmFn("Are you sure you want to delete this image asset?")) || !activeProduct) return
       startTransition(async () => {
         try {
           const res = await adminApi.deleteProductImage(activeProduct.id, imageId)
           if (res.success) {
             toast.success("Image asset deleted successfully!")
-            const updatedI = (activeProduct.images || []).filter(
-              (img) => img.id !== imageId
-            )
-            setActiveProduct((prev) =>
-              prev ? { ...prev, images: updatedI } : null
-            )
+            const updatedI = (activeProduct.images || []).filter((img) => img.id !== imageId)
+            setActiveProduct((prev) => (prev ? { ...prev, images: updatedI } : null))
             loadData()
           } else {
             toast.error(res.message || "Failed to delete image asset.")
@@ -102,11 +87,40 @@ export const useProductImages = (
     [activeProduct, setActiveProduct, loadData]
   )
 
+  const [imageUrlInput, setImageUrlInput] = useState("")
+
+  const handleImageUrlSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault()
+      if (!imageUrlInput.trim() || !activeProduct) return
+
+      startTransition(async () => {
+        try {
+          const res = await adminApi.addProductImageUrl(activeProduct.id, imageUrlInput.trim())
+          if (res.success && res.data) {
+            toast.success("Image URL added successfully!")
+            setActiveProduct(res.data)
+            loadData()
+            setImageUrlInput("")
+          } else {
+            toast.error(res.message || "Failed to add image URL.")
+          }
+        } catch {
+          toast.error("Failed to add product image URL. Ensure it is a valid absolute HTTP/HTTPS URL.")
+        }
+      })
+    },
+    [imageUrlInput, activeProduct, setActiveProduct, loadData]
+  )
+
   return {
     isPending,
     selectedFiles,
     setSelectedFiles,
+    imageUrlInput,
+    setImageUrlInput,
     handleImageUploadSubmit,
+    handleImageUrlSubmit,
     handleSetPrimaryImage,
     handleDeleteImage,
   }

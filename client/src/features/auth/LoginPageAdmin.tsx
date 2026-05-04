@@ -43,17 +43,16 @@ export const LoginPageAdmin = () => {
     <div className="flex min-h-svh flex-col items-center justify-center bg-muted p-6 md:p-10">
       <div className="w-full max-w-sm md:max-w-4xl">
         <div className="flex flex-col gap-6">
-          <Card className="overflow-hidden p-0 border border-border/80 shadow-md">
+          <Card className="overflow-hidden border border-border/80 p-0 shadow-md">
             <CardContent className="grid p-0 md:grid-cols-2">
               {/* Form Side */}
-              <aside className="p-6 md:p-8 text-left flex flex-col justify-center">
+              <aside className="flex flex-col justify-center p-6 text-left md:p-8">
                 {/* Header Info */}
-                <header className="flex flex-col items-center gap-2 text-center mb-4">
-                  <h1 className="text-2xl font-bold tracking-tight text-foreground">
-                    Welcome Back
-                  </h1>
-                  <p className="text-xs text-muted-foreground font-sans text-balance text-center">
-                    Provide your authorized manager credentials to unlock the inventory, review, and fulfillment systems.
+                <header className="mb-4 flex flex-col items-center gap-2 text-center">
+                  <h1 className="text-2xl font-bold tracking-tight text-foreground">Welcome Back</h1>
+                  <p className="text-center font-sans text-xs text-balance text-muted-foreground">
+                    Provide your authorized manager credentials to unlock the inventory, review, and fulfillment
+                    systems.
                   </p>
                 </header>
 

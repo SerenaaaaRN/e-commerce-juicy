@@ -4,14 +4,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-  FieldSeparator,
-  FieldError,
-} from "@/components/ui/field"
+import { Field, FieldDescription, FieldGroup, FieldLabel, FieldSeparator, FieldError } from "@/components/ui/field"
 import { registerSchema } from "@/features/auth/validations"
 import type { RegisterFormValues } from "@/features/auth/types"
 import { HugeiconsIcon } from "@hugeicons/react"
@@ -22,12 +15,7 @@ type RegisterFormProps = {
   isPending?: boolean
 } & Omit<React.ComponentPropsWithoutRef<"form">, "onSubmit">
 
-export const RegisterForm = ({
-  onSubmit,
-  isPending = false,
-  className,
-  ...props
-}: RegisterFormProps) => {
+export const RegisterForm = ({ onSubmit, isPending = false, className, ...props }: RegisterFormProps) => {
   const {
     register,
     handleSubmit,
@@ -44,11 +32,7 @@ export const RegisterForm = ({
   })
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className={cn("w-full text-left", className)}
-      {...props}
-    >
+    <form onSubmit={handleSubmit(onSubmit)} className={cn("w-full text-left", className)} {...props}>
       <FieldGroup className="gap-4">
         {/* Name Field */}
         <Field data-invalid={!!errors.full_name}>
@@ -78,8 +62,7 @@ export const RegisterForm = ({
             <FieldError>{errors.email.message}</FieldError>
           ) : (
             <FieldDescription>
-              We&apos;ll use this to contact you. We will not share your email
-              with anyone else.
+              We&apos;ll use this to contact you. We will not share your email with anyone else.
             </FieldDescription>
           )}
         </Field>
@@ -123,15 +106,11 @@ export const RegisterForm = ({
                 aria-invalid={!!errors.confirmPassword}
                 {...register("confirmPassword")}
               />
-              {errors.confirmPassword && (
-                <FieldError>{errors.confirmPassword.message}</FieldError>
-              )}
+              {errors.confirmPassword && <FieldError>{errors.confirmPassword.message}</FieldError>}
             </Field>
           </div>
           {!errors.password && !errors.confirmPassword && (
-            <FieldDescription className="mt-2">
-              Must be at least 8 characters long.
-            </FieldDescription>
+            <FieldDescription className="mt-2">Must be at least 8 characters long.</FieldDescription>
           )}
         </Field>
 
@@ -144,21 +123,20 @@ export const RegisterForm = ({
         </Field>
 
         {/* OAuth Separator */}
-        <FieldSeparator className="*:data-[slot=field-separator-content]:bg-card text-xs text-muted-foreground">
+        <FieldSeparator className="text-xs text-muted-foreground *:data-[slot=field-separator-content]:bg-card">
           Or continue with
         </FieldSeparator>
 
         {/* Apple, Google,2-column OAuth Buttons exactly matching reference */}
         <Field className="grid grid-cols-2 gap-4">
-          <Button variant="outline" type="button" >
+          <Button variant="outline" type="button">
             <HugeiconsIcon icon={Apple} />
             <span className="sr-only">Sign up with Apple</span>
           </Button>
-          <Button variant="outline" type="button" >
+          <Button variant="outline" type="button">
             <HugeiconsIcon icon={GoogleIcon} />
             <span className="sr-only">Sign up with Google</span>
           </Button>
-         
         </Field>
       </FieldGroup>
     </form>

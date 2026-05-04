@@ -29,31 +29,25 @@ export const useCustomers = () => {
     fetchData()
   }, [])
 
-  const handleViewClientDetails = useCallback(
-    (client: ClientStatistics) => {
-      setActiveClient(client)
-      setClientHistory([])
-      setDetailsOpen(true)
+  const handleViewClientDetails = useCallback((client: ClientStatistics) => {
+    setActiveClient(client)
+    setClientHistory([])
+    setDetailsOpen(true)
 
-      startTransition(async () => {
-        try {
-          const res = await adminApi.getCustomerDetail(client.id)
-          if (res.success && res.data) {
-            setClientHistory(res.data.order_history || [])
-          }
-        } catch {
-          // silent fail
+    startTransition(async () => {
+      try {
+        const res = await adminApi.getCustomerDetail(client.id)
+        if (res.success && res.data) {
+          setClientHistory(res.data.order_history || [])
         }
-      })
-    },
-    []
-  )
+      } catch {
+        // silent fail
+      }
+    })
+  }, [])
 
   const handleToggleClientStatus = useCallback(
-    async (
-      client: ClientStatistics,
-      confirmFn: (msg: string) => Promise<boolean>
-    ) => {
+    async (client: ClientStatistics, confirmFn: (msg: string) => Promise<boolean>) => {
       const nextStatus = !(client.is_active ?? true)
       const promptMsg = nextStatus
         ? `Reactivate account credentials for ${client.full_name}?`
@@ -66,14 +60,8 @@ export const useCustomers = () => {
           const res = await adminApi.toggleCustomerStatus(client.id, nextStatus)
           if (res.success) {
             toast.success("Account credentials modified successfully!")
-            setClients((prev) =>
-              prev.map((c) =>
-                c.id === client.id ? { ...c, is_active: nextStatus } : c
-              )
-            )
-            setActiveClient((prev) =>
-              prev?.id === client.id ? { ...prev, is_active: nextStatus } : prev
-            )
+            setClients((prev) => prev.map((c) => (c.id === client.id ? { ...c, is_active: nextStatus } : c)))
+            setActiveClient((prev) => (prev?.id === client.id ? { ...prev, is_active: nextStatus } : prev))
           } else {
             toast.error(res.message || "Failed to update account status.")
           }
