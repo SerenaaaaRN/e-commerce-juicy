@@ -94,6 +94,20 @@ func (s *productService) ListProducts(
 
 		pStats := statsMap[p.ID]
 
+		variantsRes := make([]dto.ProductVariantRes, len(p.Variants))
+		for j, v := range p.Variants {
+			variantsRes[j] = dto.ProductVariantRes{
+				ID:              v.ID,
+				Size:            v.Size,
+				Color:           v.Color,
+				ColorHex:        v.ColorHex,
+				SKU:             v.SKU,
+				Stock:           v.Stock,
+				AdditionalPrice: v.AdditionalPrice,
+				IsActive:        v.IsActive,
+			}
+		}
+
 		res[i] = dto.ProductResponse{
 			ID:             p.ID,
 			CategoryID:     p.CategoryID,
@@ -107,6 +121,7 @@ func (s *productService) ListProducts(
 			CategoryName:   p.Category.Name,
 			AvgRating:      pStats.AvgRating,
 			ReviewCount:    pStats.ReviewCount,
+			Variants:       variantsRes,
 		}
 	}
 

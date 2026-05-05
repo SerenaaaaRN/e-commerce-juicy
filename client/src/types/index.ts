@@ -63,6 +63,7 @@ export type CatalogProduct = {
   category_name: string
   avg_rating: number
   review_count: number
+  variants?: ProductVariant[]
 }
 
 // Product representation used in detail response (PDP + Admin)

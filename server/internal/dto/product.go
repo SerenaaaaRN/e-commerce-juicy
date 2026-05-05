@@ -47,9 +47,10 @@ type ProductResponse struct {
 	IsFeatured     bool      `json:"is_featured"`
 	Tags           []string  `json:"tags"`
 	PrimaryImage   string    `json:"primary_image"`
-	CategoryName   string    `json:"category_name"`
-	AvgRating      float64   `json:"avg_rating"`
-	ReviewCount    int       `json:"review_count"`
+	CategoryName   string              `json:"category_name"`
+	AvgRating      float64             `json:"avg_rating"`
+	ReviewCount    int                 `json:"review_count"`
+	Variants       []ProductVariantRes `json:"variants,omitempty"`
 }
 
 type ProductDetailResponse struct {
