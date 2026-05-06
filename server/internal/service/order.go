@@ -207,6 +207,7 @@ func (s *orderService) GetCustomerOrderDetail(ctx context.Context, orderNumber s
 			ImageURL:     item.ImageURL,
 			Quantity:     item.Quantity,
 			UnitPrice:    item.UnitPrice,
+			Subtotal:     item.UnitPrice * float64(item.Quantity),
 		}
 	}
 
@@ -302,6 +303,7 @@ func (s *orderService) GetOrderDetail(ctx context.Context, id uuid.UUID) (*dto.O
 			ImageURL:     item.ImageURL,
 			Quantity:     item.Quantity,
 			UnitPrice:    item.UnitPrice,
+			Subtotal:     item.UnitPrice * float64(item.Quantity),
 		}
 	}
 
