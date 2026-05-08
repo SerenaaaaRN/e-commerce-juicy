@@ -19,7 +19,6 @@ import {
 } from "@/components/ui/pagination"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { FilterIcon } from "@hugeicons/core-free-icons"
-import { cn } from "@/lib/utils"
 
 export const CollectionPage = () => {
   const [searchParams, setSearchParams] = useSearchParams()

@@ -130,7 +130,7 @@ export type Cart = {
   total: number
 }
 
-export type OrderStatus = 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered'
+export type OrderStatus = 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
 export type PaymentStatus = 'unpaid' | 'paid' | 'refunded'
 
 export type Order = {

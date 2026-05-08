@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useTransition } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { FieldGroup, Field, FieldLabel, FieldError } from "@/components/ui/field"
@@ -13,7 +13,7 @@ type AddressFormProps = {
 }
 
 export const AddressForm = ({ onSubmitSuccess, onCancel, initialData }: AddressFormProps) => {
-  const [loading, setLoading] = useState(false)
+  const [isPending, startTransition] = useTransition()
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const isEditing = !!initialData
@@ -54,26 +54,25 @@ export const AddressForm = ({ onSubmitSuccess, onCancel, initialData }: AddressF
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!validate()) return
 
-    setLoading(true)
-    try {
-      const res = isEditing
-        ? await ordersApi.updateAddress(initialData.id, formData)
-        : await ordersApi.createAddress(formData)
-      if (res.success) {
-        toast.success(isEditing ? "Shipping address updated." : "Shipping address saved.")
-        onSubmitSuccess()
-      } else {
-        toast.error(res.message || "Failed to save shipping address.")
+    startTransition(async () => {
+      try {
+        const res = isEditing
+          ? await ordersApi.updateAddress(initialData.id, formData)
+          : await ordersApi.createAddress(formData)
+        if (res.success) {
+          toast.success(isEditing ? "Shipping address updated." : "Shipping address saved.")
+          onSubmitSuccess()
+        } else {
+          toast.error(res.message || "Failed to save shipping address.")
+        }
+      } catch {
+        toast.error("Failed to save shipping address. Please check your inputs.")
       }
-    } catch {
-      toast.error("Failed to save shipping address. Please check your inputs.")
-    } finally {
-      setLoading(false)
-    }
+    })
   }
 
   return (
@@ -181,14 +180,14 @@ export const AddressForm = ({ onSubmitSuccess, onCancel, initialData }: AddressF
               type="button"
               variant="outline"
               onClick={onCancel}
-              disabled={loading}
+              disabled={isPending}
               className="cursor-pointer"
             >
               Cancel
             </Button>
           )}
-          <Button type="submit" disabled={loading} className="cursor-pointer">
-            {loading ? "Saving..." : isEditing ? "Update Address" : "Save Address"}
+          <Button type="submit" disabled={isPending} className="cursor-pointer">
+            {isPending ? "Saving..." : isEditing ? "Update Address" : "Save Address"}
           </Button>
         </div>
 

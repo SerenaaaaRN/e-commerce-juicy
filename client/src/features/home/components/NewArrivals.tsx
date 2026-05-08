@@ -2,9 +2,7 @@ import { useState } from "react"
 import { Link } from "react-router-dom"
 import { useProductStore } from "@/stores/productStore"
 import { Separator } from "@/components/ui/separator"
-
-const formatPrice = (p: number) =>
-  new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(p)
+import { formatPrice } from "@/lib/utils"
 
 export const NewArrivals = () => {
   const { products } = useProductStore()

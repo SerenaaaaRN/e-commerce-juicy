@@ -1,5 +1,3 @@
-import { Link } from "react-router-dom"
-
 const PROMOS = [
   "Free Shipping on orders over Rp 500.000",
   "Up to 50% Off — Summer Collection",

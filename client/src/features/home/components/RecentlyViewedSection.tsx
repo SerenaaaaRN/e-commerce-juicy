@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom"
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed"
 import { Separator } from "@/components/ui/separator"
-import { formatPrice } from "@/lib/utils/format"
+import { formatPrice } from "@/lib/utils"
 
 export const RecentlyViewedSection = () => {
   const { items } = useRecentlyViewed()

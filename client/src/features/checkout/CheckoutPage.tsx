@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useTransition } from "react"
 import { Navigate, useNavigate } from "react-router-dom"
 import { useCartStore } from "@/stores/cartStore"
 import { useCustomerAuthStore } from "@/stores/customerAuthStore"
@@ -22,10 +22,10 @@ export const CheckoutPage = () => {
   const { items, totalPrice, clearCart } = useCartStore()
 
   // Local state
+  const [isPending, startTransition] = useTransition()
   const [addresses, setAddresses] = useState<Address[]>([])
   const [selectedAddressId, setSelectedAddressId] = useState("")
   const [paymentMethod, setPaymentMethod] = useState("cod")
-  const [loading, setLoading] = useState(false)
   const [fetchingAddresses, setFetchingAddresses] = useState(false)
   const [showAddressForm, setShowAddressForm] = useState(false)
 
@@ -66,33 +66,32 @@ export const CheckoutPage = () => {
     return <Navigate to="/shop" replace />
   }
 
-  const handlePlaceOrder = async () => {
+  const handlePlaceOrder = () => {
     if (!selectedAddressId) {
       toast.warning("Please choose a shipping address to complete your order.")
       return
     }
 
-    setLoading(true)
-    try {
-      const res = await ordersApi.checkout({
-        address_id: selectedAddressId,
-        notes: "Checkout from storefront customer app",
-        payment_method: paymentMethod,
-      })
+    startTransition(async () => {
+      try {
+        const res = await ordersApi.checkout({
+          address_id: selectedAddressId,
+          notes: "Checkout from storefront customer app",
+          payment_method: paymentMethod,
+        })
 
-      if (res.success && res.data) {
-        toast.success("Your artisanal silhouette order has been placed successfully!")
-        const orderNum = res.data.order_number
-        clearCart()
-        navigate(`/orders/${orderNum}`)
-      } else {
-        toast.error(res.message || "Failed to submit checkout order.")
+        if (res.success && res.data) {
+          toast.success("Your artisanal silhouette order has been placed successfully!")
+          const orderNum = res.data.order_number
+          clearCart()
+          navigate(`/orders/${orderNum}`)
+        } else {
+          toast.error(res.message || "Failed to submit checkout order.")
+        }
+      } catch {
+        toast.error("Failed to place order. Please review your checkout information.")
       }
-    } catch {
-      toast.error("Failed to place order. Please review your checkout information.")
-    } finally {
-      setLoading(false)
-    }
+    })
   }
 
   return (
@@ -171,16 +170,16 @@ export const CheckoutPage = () => {
             <div className="pt-2">
               <Button
                 onClick={handlePlaceOrder}
-                disabled={loading || !selectedAddressId || showAddressForm}
+                disabled={isPending || !selectedAddressId || showAddressForm}
                 size="lg"
                 className="w-full"
               >
-                {loading ? (
+                {isPending ? (
                   <Spinner data-icon="inline-start" />
                 ) : (
                   <HugeiconsIcon icon={ShoppingBag01Icon} strokeWidth={1.8} data-icon="inline-start" />
                 )}
-                {loading ? "Placing Order..." : "Confirm & Place Order"}
+                {isPending ? "Placing Order..." : "Confirm & Place Order"}
               </Button>
               {(!selectedAddressId && !showAddressForm) && (
                 <span className="text-[10px] uppercase tracking-widest text-destructive font-semibold mt-2 block text-left">

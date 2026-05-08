@@ -1,6 +1,6 @@
 import { create } from "zustand"
 import type { CartItem } from "@/types"
-import { cartApi } from "@/lib/api"
+import { cartApi } from "@/lib/api/cart"
 
 type CartState = {
   items: CartItem[]
@@ -43,7 +43,8 @@ export const useCartStore = create<CartState>((set, get) => ({
         set({ error: errMsg, isLoading: false })
       }
     } catch (err) {
-      set({ error: "Failed to load cart", isLoading: false })
+      const error = err instanceof Error ? err : new Error(String(err))
+      set({ error: error.message || "Failed to load cart", isLoading: false })
     }
   },
 
@@ -64,10 +65,11 @@ export const useCartStore = create<CartState>((set, get) => ({
         console.error("addItem failed:", errMsg)
         throw new Error(errMsg)
       }
-    } catch (err: any) {
-      console.error("addItem error:", err)
-      set({ error: err.message || "Failed to add item", isLoading: false })
-      throw err
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err))
+      console.error("addItem error:", error)
+      set({ error: error.message || "Failed to add item", isLoading: false })
+      throw error
     }
   },
 
@@ -88,10 +90,11 @@ export const useCartStore = create<CartState>((set, get) => ({
         console.error("updateQty failed:", errMsg)
         throw new Error(errMsg)
       }
-    } catch (err: any) {
-      console.error("updateQty error:", err)
-      set({ error: err.message || "Failed to update quantity", isLoading: false })
-      throw err
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err))
+      console.error("updateQty error:", error)
+      set({ error: error.message || "Failed to update quantity", isLoading: false })
+      throw error
     }
   },
 
@@ -112,10 +115,11 @@ export const useCartStore = create<CartState>((set, get) => ({
         console.error("removeItem failed:", errMsg)
         throw new Error(errMsg)
       }
-    } catch (err: any) {
-      console.error("removeItem error:", err)
-      set({ error: err.message || "Failed to remove item", isLoading: false })
-      throw err
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err))
+      console.error("removeItem error:", error)
+      set({ error: error.message || "Failed to remove item", isLoading: false })
+      throw error
     }
   },
 
@@ -131,12 +135,14 @@ export const useCartStore = create<CartState>((set, get) => ({
         console.error("clearCart failed:", errMsg)
         throw new Error(errMsg)
       }
-    } catch (err: any) {
-      console.error("clearCart error:", err)
-      set({ error: err.message || "Failed to clear cart", isLoading: false })
-      throw err
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err))
+      console.error("clearCart error:", error)
+      set({ error: error.message || "Failed to clear cart", isLoading: false })
+      throw error
     }
   },
 }))
 
 export default useCartStore
+

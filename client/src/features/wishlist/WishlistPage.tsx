@@ -6,8 +6,9 @@ import { Spinner } from "@/components/ui/spinner"
 import { Card, CardContent } from "@/components/ui/card"
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyContent, EmptyMedia } from "@/components/ui/empty"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { HeartAddIcon, ShoppingBag01Icon } from "@hugeicons/core-free-icons"
+import { HeartAddIcon } from "@hugeicons/core-free-icons"
 import { toast } from "sonner"
+import { formatPrice } from "@/lib/utils"
 
 export const WishlistPage = () => {
   const { items, loading, fetchWishlist, removeItem } = useWishlistStore()
@@ -84,7 +85,7 @@ export const WishlistPage = () => {
               </p>
               <div className="flex items-center justify-between mt-3">
                 <span className="font-bold text-sm">
-                  ${(item.price + item.additional_price).toFixed(2)}
+                  {formatPrice(item.price + item.additional_price)}
                 </span>
                 <Button
                   variant="ghost"

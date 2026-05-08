@@ -28,8 +28,9 @@ export const CartPage = () => {
     try {
       await updateQty(itemId, qty)
       toast.success(`Updated ${name} quantity to ${qty}`)
-    } catch (err: any) {
-      toast.error(err.message || "Failed to update quantity")
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to update quantity"
+      toast.error(msg)
     }
   }
 
@@ -37,8 +38,9 @@ export const CartPage = () => {
     try {
       await removeItem(itemId)
       toast.success(`${name} removed from cart`)
-    } catch (err: any) {
-      toast.error(err.message || "Failed to remove item")
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to remove item"
+      toast.error(msg)
     }
   }
 

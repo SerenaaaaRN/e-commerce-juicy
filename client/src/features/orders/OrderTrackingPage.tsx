@@ -58,7 +58,7 @@ export const OrderTrackingPage = () => {
       const res = await ordersApi.cancelOrder(orderNumber)
       if (res.success) {
         toast.success("Order cancelled successfully.")
-        setOrder((prev) => prev ? { ...prev, status: "cancelled" as any } : null)
+        setOrder((prev) => prev ? { ...prev, status: "cancelled" } : null)
       } else {
         toast.error(res.message || "Failed to cancel order.")
       }

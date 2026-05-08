@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react"
 
-const STORAGE_KEY = "juicy_recently_viewed"
+const STORAGE_VERSION = "v1"
+const STORAGE_KEY = `juicy_recently_viewed:${STORAGE_VERSION}`
 const MAX_ITEMS = 4
 
 export type RecentlyViewedItem = {

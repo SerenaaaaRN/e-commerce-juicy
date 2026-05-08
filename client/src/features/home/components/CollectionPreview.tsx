@@ -2,10 +2,8 @@ import { useEffect, useRef, useState } from "react"
 import { Link } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { productApi } from "@/lib/api/products"
+import { formatPrice } from "@/lib/utils"
 import type { CatalogProduct } from "@/types"
-
-const formatPrice = (p: number) =>
-  new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(p)
 
 export const CollectionPreview = () => {
   const [products, setProducts] = useState<CatalogProduct[]>([])

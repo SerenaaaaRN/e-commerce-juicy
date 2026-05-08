@@ -5,9 +5,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { FieldGroup, Field, FieldLabel } from "@/components/ui/field"
 import { ordersApi } from "@/lib/api/orders"
 import { Spinner } from "@/components/ui/spinner"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { StarIcon } from "@hugeicons/core-free-icons"
 import { toast } from "sonner"
+import { StarRating } from "@/features/shop/components/StarRating"
 
 type WriteReviewCtaProps = {
   productId: string
@@ -75,24 +74,12 @@ export const WriteReviewCta = ({ productId, orderId, productName }: WriteReviewC
               {/* Star Rating Choices selector */}
               <Field>
                 <FieldLabel>Atelier Rating</FieldLabel>
-                <div className="flex items-center gap-1.5 pt-1.5">
-                  {[1, 2, 3, 4, 5].map((star) => {
-                    const active = star <= rating
-                    return (
-                      <button
-                        type="button"
-                        key={star}
-                        onClick={() => setRating(star)}
-                        className="p-1 cursor-pointer transition-transform hover:scale-110 active:scale-90"
-                      >
-                        <HugeiconsIcon
-                          icon={StarIcon}
-                          className={active ? "text-amber-500 fill-amber-500" : "text-border"}
-                          strokeWidth={1.8}
-                        />
-                      </button>
-                    )
-                  })}
+                <div className="pt-1.5">
+                  <StarRating
+                    rating={rating}
+                    interactive
+                    onChange={setRating}
+                  />
                 </div>
               </Field>
 

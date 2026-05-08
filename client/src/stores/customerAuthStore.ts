@@ -46,6 +46,12 @@ export const useCustomerAuthStore = create<CustomerAuthState>()(
     }),
     {
       name: "juicy-customer-auth",
+      version: 1,
+      partialize: (state) => ({
+        token: state.token,
+        customer: state.customer,
+        isAuthenticated: state.isAuthenticated,
+      }),
     }
   )
 )
