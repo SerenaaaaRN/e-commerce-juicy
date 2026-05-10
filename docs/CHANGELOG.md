@@ -5,7 +5,13 @@
 
 ## Session Summary
 
-**Latest Updates (Product Categories & Image Gallery Fixes):**
+**Latest Updates (Security Hardening & Token Differentiation):**
+- **CORS Allowed Origins Lockdown**: Hardened CORS middleware (`cors.go`) to strictly validate incoming request `Origin` headers against a comma-separated list of allowed origins from `config.AllowedOrigins` (configured via `.env`). This remediates a critical Reflected CORS vulnerability.
+- **JWT Token Type Differentiation**: Added `token_type` claim to `AdminClaims` in `server/internal/service/admin.go`. Defined `access` and `refresh` constants to strictly separate token roles.
+- **Refresh Token Abuse Remediation**: Updated `/admin/refresh` service method to strictly require `token_type = "refresh"`, rejecting access token reuse.
+- **AdminAuth Middleware Hardening**: Updated `AdminAuth` middleware in `server/internal/middleware/admin_auth.go` to strictly check for `token_type = "access"`, preventing direct usage of refresh tokens to execute administrative API endpoints.
+
+**Previous Updates (Product Categories & Image Gallery Fixes):**
 - **GORM Association Gotcha Fix**: Fixed a bug where editing product details successfully saved but silently cleared/wiped out the product's category in the database. Solved by clearing preloaded GORM `Category` struct in `UpdateProduct` before calling GORM Save.
 - **`category_id` Mapping Fix**: Added `category_id` (`CategoryID`) to the backend `dto.ProductResponse` and `ListProducts` service mapper, enabling the edit modal to correctly pre-select the current category instead of showing empty.
 - **Empty Image Assets Gallery Fix**: Fixed the image modal showing "No photographic graphics uploaded yet" by changing `openImages` and `openVariants` in `ProductsPage.tsx` to fetch full product details (including images and variants) by ID via `getProductByID`, rather than relying on the incomplete list representation.
@@ -19,6 +25,13 @@
 ---
 
 ## Changes
+
+### Security Hardening
+
+- **`server/internal/middleware/cors.go`** — Accepts global configuration and dynamically validates request `Origin` headers against `ALLOWED_ORIGINS` config before setting CORS approval headers.
+- **`server/internal/router/router.go`** — Passed global config into `middleware.CORS()` at middleware registration.
+- **`server/internal/service/admin.go`** — Differentiated administrative claims with `token_type` and strictly enforced it in `/admin/refresh`.
+- **`server/internal/middleware/admin_auth.go`** — Strictly enforces `token_type = "access"` for all incoming administrator authorization headers.
 
 ### Bug Fixes
 

@@ -58,6 +58,18 @@ func AdminAuth(cfg *config.Config) gin.HandlerFunc {
 			return
 		}
 
+		if claims.TokenType != service.AdminAccessTokenType {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"success": false,
+				"error": gin.H{
+					"message": "Invalid or expired token",
+					"code":    "UNAUTHORIZED",
+				},
+			})
+			c.Abort()
+			return
+		}
+
 		adminID, err := uuid.Parse(claims.AdminID)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{

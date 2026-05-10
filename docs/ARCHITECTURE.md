@@ -426,6 +426,11 @@ Admin dan customer JWT menggunakan separate secrets (`JWT_ADMIN_SECRET`, `JWT_CU
 | Zustand store | `adminAuthStore` | `customerAuthStore` |
 | 401 behavior | Attempt refresh → auto-logout | Auto-logout |
 
+#### Proteksi Token Substitution (Token Type Check)
+Untuk mencegah serangan penukaran token (Token Substitution Attack), klaim JWT Admin (`AdminClaims`) menyertakan parameter `token_type` (`access` atau `refresh`):
+- **Access Verification**: Middleware `AdminAuth` memvalidasi tanda tangan token dan memastikan secara ketat bahwa `token_type == "access"`. Refresh Token tidak dapat digunakan untuk otentikasi endpoint administratif biasa.
+- **Refresh Verification**: Endpoint `/admin/refresh` memvalidasi secara ketat bahwa `token_type == "refresh"`. Access Token yang aktif tidak dapat disalahgunakan sebagai Refresh Token.
+
 ### 5. Atomic Stock Decrement (Backend)
 Order creation berjalan dalam PostgreSQL transaction:
 1. Lock semua `product_variants` rows yang relevan dengan `SELECT FOR UPDATE`.
@@ -556,6 +561,8 @@ Dua jenis route guard yang terpisah:
 | GORM + raw migrations | GORM untuk queries, golang-migrate untuk schema | Speed development + explicit reversible migrations |
 | Zustand (no TanStack Query) | Zustand async actions | Mental model lebih simpel; tidak ada cache layer tambahan |
 | JWT in memory | Memory (bukan localStorage) | Proteksi XSS |
+| CORS Allowed Origins Lockdown | Strict dynamic lookup against `.env` whitelist | Mencegah serangan CSRF / Reflected CORS credential hijacking oleh situs pihak ketiga |
+| JWT Token Type Differentiation | `token_type` claim validation in middleware & service | Mencegah Token Substitution Attack (menyalahgunakan access token sebagai refresh token atau sebaliknya) |
 | Payment sebagai stub | Service layer stub | Slot untuk Midtrans/Xendit/Stripe post-MVP |
 | Dual Axios instances | client.ts + customerClient.ts | Token source terpisah; 401 handling terpisah |
 | Category Landing Pages | `features/category/` dengan multiple sections | Dedicated landing page per kategori seperti Zalora — setiap kategori punya hero, subcategory grid, product grid, dan promo banner sendiri |

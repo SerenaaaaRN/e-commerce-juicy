@@ -22,8 +22,14 @@ type adminService struct {
 	config *config.Config
 }
 
+const (
+	AdminAccessTokenType  = "access"
+	AdminRefreshTokenType = "refresh"
+)
+
 type AdminClaims struct {
-	AdminID string `json:"admin_id"`
+	AdminID   string `json:"admin_id"`
+	TokenType string `json:"token_type"`
 	jwt.RegisteredClaims
 }
 
@@ -45,12 +51,12 @@ func (s *adminService) Login(ctx context.Context, req dto.AdminLoginRequest) (*d
 		return nil, "", ErrInvalidCredentials
 	}
 
-	accessToken, err := s.generateToken(admin.ID.String(), time.Duration(s.config.JWTAdminAccessExpiryMinutes)*time.Minute)
+	accessToken, err := s.generateToken(admin.ID.String(), AdminAccessTokenType, time.Duration(s.config.JWTAdminAccessExpiryMinutes)*time.Minute)
 	if err != nil {
 		return nil, "", err
 	}
 
-	refreshToken, err := s.generateToken(admin.ID.String(), time.Duration(s.config.JWTAdminRefreshExpiryDays)*24*time.Hour)
+	refreshToken, err := s.generateToken(admin.ID.String(), AdminRefreshTokenType, time.Duration(s.config.JWTAdminRefreshExpiryDays)*24*time.Hour)
 	if err != nil {
 		return nil, "", err
 	}
@@ -79,6 +85,10 @@ func (s *adminService) Refresh(ctx context.Context, refreshToken string) (*dto.A
 		return nil, "", ErrUnauthorized
 	}
 
+	if claims.TokenType != AdminRefreshTokenType {
+		return nil, "", ErrUnauthorized
+	}
+
 	adminUUID, err := uuid.Parse(claims.AdminID)
 	if err != nil {
 		return nil, "", ErrUnauthorized
@@ -89,12 +99,12 @@ func (s *adminService) Refresh(ctx context.Context, refreshToken string) (*dto.A
 		return nil, "", ErrUnauthorized
 	}
 
-	newAccessToken, err := s.generateToken(admin.ID.String(), time.Duration(s.config.JWTAdminAccessExpiryMinutes)*time.Minute)
+	newAccessToken, err := s.generateToken(admin.ID.String(), AdminAccessTokenType, time.Duration(s.config.JWTAdminAccessExpiryMinutes)*time.Minute)
 	if err != nil {
 		return nil, "", err
 	}
 
-	newRefreshToken, err := s.generateToken(admin.ID.String(), time.Duration(s.config.JWTAdminRefreshExpiryDays)*24*time.Hour)
+	newRefreshToken, err := s.generateToken(admin.ID.String(), AdminRefreshTokenType, time.Duration(s.config.JWTAdminRefreshExpiryDays)*24*time.Hour)
 	if err != nil {
 		return nil, "", err
 	}
@@ -122,9 +132,10 @@ func (s *adminService) GetAdminByID(ctx context.Context, id uuid.UUID) (*dto.Adm
 	}, nil
 }
 
-func (s *adminService) generateToken(adminID string, expiry time.Duration) (string, error) {
+func (s *adminService) generateToken(adminID string, tokenType string, expiry time.Duration) (string, error) {
 	claims := &AdminClaims{
-		AdminID: adminID,
+		AdminID:   adminID,
+		TokenType: tokenType,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expiry)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

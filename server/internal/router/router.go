@@ -50,7 +50,7 @@ func NewRouter(
 }
 
 func (r *Router) Setup(engine *gin.Engine) {
-	engine.Use(middleware.CORS())
+	engine.Use(middleware.CORS(r.config))
 
 	engine.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{
