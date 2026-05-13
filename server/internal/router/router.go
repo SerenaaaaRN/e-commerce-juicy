@@ -97,6 +97,7 @@ func (r *Router) Setup(engine *gin.Engine) {
 			customerAuth.GET("/orders", r.orderHandler.GetCustomerOrders)
 			customerAuth.GET("/orders/:orderNumber", r.orderHandler.GetCustomerOrderDetail)
 			customerAuth.POST("/orders/:orderNumber/cancel", r.orderHandler.CancelOrder)
+			customerAuth.POST("/orders/:orderNumber/complete", r.orderHandler.CompleteOrder)
 
 			customerAuth.GET("/wishlist", r.wishlistHandler.GetWishlist)
 			customerAuth.GET("/wishlist/check/:variantId", r.wishlistHandler.CheckWishlist)

@@ -25,7 +25,8 @@ export const OrderTrackingPage = () => {
   const [order, setOrder] = useState<OrderDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [cancelling, setCancelling] = useState(false)
-  const { confirm: confirmCancel, dialog: confirmDialog } = useConfirm()
+  const [completing, setCompleting] = useState(false)
+  const { confirm: confirmAction, dialog: confirmDialog } = useConfirm()
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -47,8 +48,30 @@ export const OrderTrackingPage = () => {
     fetchOrder()
   }, [orderNumber])
 
+  const handleCompleteOrder = async () => {
+    const confirmed = await confirmAction(
+      "Are you sure you want to confirm receipt of this order? This action cannot be undone."
+    )
+    if (!confirmed || !orderNumber) return
+
+    setCompleting(true)
+    try {
+      const res = await ordersApi.completeOrder(orderNumber)
+      if (res.success) {
+        toast.success("Order marked as received. Thank you!")
+        setOrder((prev) => prev ? { ...prev, status: "delivered", payment_status: "paid" } : null)
+      } else {
+        toast.error(res.message || "Failed to complete order.")
+      }
+    } catch {
+      toast.error("Failed to complete order.")
+    } finally {
+      setCompleting(false)
+    }
+  }
+
   const handleCancelOrder = async () => {
-    const confirmed = await confirmCancel(
+    const confirmed = await confirmAction(
       "Are you sure you want to cancel this order? This action cannot be undone. Any paid amount will be refunded according to our policy."
     )
     if (!confirmed || !orderNumber) return
@@ -120,7 +143,7 @@ export const OrderTrackingPage = () => {
   return (
     <div className="bg-background py-12">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        
+
         {/* Navigation Breadcrumb trail */}
         <div className="flex items-center gap-2 text-xs text-muted-foreground mb-8 text-left uppercase tracking-widest font-semibold">
           <Link to="/" className="hover:text-foreground">Home</Link>
@@ -128,10 +151,12 @@ export const OrderTrackingPage = () => {
           <span className="text-foreground truncate">Order #{orderNumber}</span>
         </div>
 
+
+
         {/* Order Header Card */}
         <Card className="border border-border/80 shadow-md mb-8">
           <CardContent className="p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 text-left">
-            
+
             <div className="flex flex-col gap-1">
               <span className="text-xs font-semibold tracking-wider text-primary uppercase">
                 Order Tracking
@@ -158,10 +183,10 @@ export const OrderTrackingPage = () => {
 
         {/* Details Layout split grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
+
           {/* Main Info Tracking Column */}
           <div className="lg:col-span-8 flex flex-col gap-8 w-full">
-            
+
             {/* Visual Milestones timeline */}
             <Card className="border border-border/80 shadow-md">
               <CardContent className="p-6">
@@ -194,7 +219,7 @@ export const OrderTrackingPage = () => {
 
           {/* Delivery & Shipping Info Sidebar Column */}
           <div className="lg:col-span-4 flex flex-col gap-6 w-full text-left">
-            
+
             {/* Delivery address card */}
             <Card className="border border-border/80 shadow-md">
               <CardHeader className="pb-0">
@@ -257,22 +282,36 @@ export const OrderTrackingPage = () => {
               </CardContent>
             </Card>
 
-            {/* Cancel order action */}
-            {(order.status === "pending" || order.status === "confirmed") && (
+            <div className=" flex flex-col gap-2">
+              {/* Confirm received action */}
               <Button
-                variant="destructive"
-                className="w-full uppercase tracking-wider text-xs py-5 h-auto cursor-pointer"
-                onClick={handleCancelOrder}
-                disabled={cancelling}
+                size="lg"
+                onClick={handleCompleteOrder}
+                disabled={completing}
               >
-                {cancelling && <Spinner data-icon="inline-start" />}
-                {cancelling ? "Cancelling..." : "Cancel Order"}
+                {completing ? (
+                  <>
+                    <Spinner data-icon="inline-start" />
+                    "Confirming..."
+                  </>
+                ) : (
+                  "Confirm Received"
+                )}
               </Button>
-            )}
 
-            {/* Back action */}
-            <div className="pt-2">
-              <Button asChild variant="outline" className="w-full uppercase tracking-wider text-xs py-5 h-auto cursor-pointer">
+              {/* Cancel order action */}
+              {(order.status === "pending" || order.status === "confirmed") && (
+                <Button
+                  variant="destructive"
+                  size="lg"
+                  onClick={handleCancelOrder}
+                  disabled={cancelling}
+                >
+                  {cancelling && <Spinner data-icon="inline-start" />}
+                  {cancelling ? "Cancelling..." : "Cancel Order"}
+                </Button>
+              )}
+              <Button asChild variant="outline" size="lg">
                 <Link to="/shop">Return to Shop</Link>
               </Button>
             </div>

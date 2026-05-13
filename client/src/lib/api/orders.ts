@@ -64,6 +64,12 @@ export const ordersApi = {
     return response.data
   },
 
+  // Mark an order as received/completed by the customer
+  completeOrder: async (orderNumber: string): Promise<ApiResponse<null>> => {
+    const response = await customerClient.post<ApiResponse<null>>(`/orders/${orderNumber}/complete`)
+    return response.data
+  },
+
   // Submit a product review
   submitReview: async (payload: {
     product_id: string

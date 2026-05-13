@@ -229,6 +229,49 @@ func (h *OrderHandler) CancelOrder(c *gin.Context) {
 	})
 }
 
+func (h *OrderHandler) CompleteOrder(c *gin.Context) {
+	customerIDVal, exists := c.Get("customer_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"success": false,
+			"error": gin.H{
+				"message": "Unauthorized context",
+				"code":    "UNAUTHORIZED",
+			},
+		})
+		return
+	}
+
+	customerID := customerIDVal.(uuid.UUID)
+	orderNumber := c.Param("orderNumber")
+
+	err := h.srv.CompleteOrder(c.Request.Context(), orderNumber, customerID)
+	if err != nil {
+		if errors.Is(err, service.ErrOrderNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{
+				"success": false,
+				"error": gin.H{
+					"message": "Order not found",
+					"code":    "ORDER_NOT_FOUND",
+				},
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"success": false,
+			"error": gin.H{
+				"message": err.Error(),
+			},
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"message": "Order completed successfully",
+	})
+}
+
 func (h *OrderHandler) ListAllOrders(c *gin.Context) {
 	status := c.Query("status")
 	paymentStatus := c.Query("payment_status")

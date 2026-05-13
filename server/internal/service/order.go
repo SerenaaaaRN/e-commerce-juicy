@@ -246,6 +246,20 @@ func (s *orderService) CancelOrder(ctx context.Context, orderNumber string, cust
 	return s.repo.CancelOrder(ctx, order.ID)
 }
 
+func (s *orderService) CompleteOrder(ctx context.Context, orderNumber string, customerID uuid.UUID) error {
+	order, err := s.repo.FindByOrderNumberAndCustomerID(ctx, orderNumber, customerID)
+	if err != nil {
+		return ErrOrderNotFound
+	}
+
+	err = s.repo.UpdateStatus(ctx, order.ID, "delivered")
+	if err != nil {
+		return err
+	}
+
+	return s.repo.UpdatePaymentStatus(ctx, order.ID, "paid")
+}
+
 func (s *orderService) ListAllOrders(
 	ctx context.Context,
 	status string,

@@ -76,6 +76,7 @@ type OrderService interface {
 	GetCustomerOrders(ctx context.Context, customerID uuid.UUID, page, perPage int) ([]dto.OrderResponse, int64, error)
 	GetCustomerOrderDetail(ctx context.Context, orderNumber string, customerID uuid.UUID) (*dto.OrderDetailResponse, error)
 	CancelOrder(ctx context.Context, orderNumber string, customerID uuid.UUID) error
+	CompleteOrder(ctx context.Context, orderNumber string, customerID uuid.UUID) error
 
 	ListAllOrders(ctx context.Context, status string, paymentStatus string, search string, page, perPage int) ([]dto.AdminOrderResponse, int64, error)
 	GetOrderDetail(ctx context.Context, id uuid.UUID) (*dto.OrderDetailResponse, error)
