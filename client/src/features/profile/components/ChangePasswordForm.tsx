@@ -15,9 +15,9 @@ export const ChangePasswordForm = () => {
 
   const validate = () => {
     const newErrors: Record<string, string> = {}
-    
+
     if (!currentPassword) newErrors.currentPassword = "Current password is required"
-    
+
     if (!newPassword) {
       newErrors.newPassword = "New password is required"
     } else if (newPassword.length < 8) {
@@ -59,9 +59,8 @@ export const ChangePasswordForm = () => {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="text-left w-full max-w-lg">
+    <form onSubmit={handleSubmit} className="w-full max-w-lg text-left">
       <FieldGroup className="gap-5">
-        
         {/* Current Password Field */}
         <Field data-invalid={!!errors.currentPassword}>
           <FieldLabel htmlFor="current-password">Current Password</FieldLabel>
@@ -120,7 +119,6 @@ export const ChangePasswordForm = () => {
             {loading ? "Securing account..." : "Update Password"}
           </Button>
         </div>
-
       </FieldGroup>
     </form>
   )

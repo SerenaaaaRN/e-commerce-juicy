@@ -13,13 +13,14 @@ export const AddressFormModal = ({ isOpen, onClose, onSuccess, initialData }: Ad
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-xl">
-        
-        <DialogHeader className="text-left flex flex-col gap-1">
+        <DialogHeader className="flex flex-col gap-1 text-left">
           <DialogTitle className="text-lg font-bold tracking-tight text-foreground">
             {initialData ? "Edit Shipping Address" : "Create Shipping Address"}
           </DialogTitle>
-          <DialogDescription className="text-xs text-muted-foreground font-sans">
-            {initialData ? "Update your delivery destination details." : "Add a new delivery destination for checkout order placement."}
+          <DialogDescription className="font-sans text-xs text-muted-foreground">
+            {initialData
+              ? "Update your delivery destination details."
+              : "Add a new delivery destination for checkout order placement."}
           </DialogDescription>
         </DialogHeader>
 
@@ -33,7 +34,6 @@ export const AddressFormModal = ({ isOpen, onClose, onSuccess, initialData }: Ad
             onCancel={onClose}
           />
         </div>
-
       </DialogContent>
     </Dialog>
   )

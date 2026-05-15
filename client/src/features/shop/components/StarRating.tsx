@@ -10,13 +10,7 @@ type StarRatingProps = {
   className?: string
 }
 
-export const StarRating = ({
-  rating,
-  maxStars = 5,
-  interactive = false,
-  onChange,
-  className,
-}: StarRatingProps) => {
+export const StarRating = ({ rating, maxStars = 5, interactive = false, onChange, className }: StarRatingProps) => {
   const stars = Array.from({ length: maxStars })
 
   return (
@@ -33,7 +27,7 @@ export const StarRating = ({
             onClick={() => interactive && onChange && onChange(starValue)}
             className={cn(
               "p-0.5 transition-colors focus:outline-none",
-              interactive ? "cursor-pointer hover:scale-110 duration-200" : "cursor-default"
+              interactive ? "cursor-pointer duration-200 hover:scale-110" : "cursor-default"
             )}
           >
             <HugeiconsIcon
@@ -41,9 +35,7 @@ export const StarRating = ({
               strokeWidth={2}
               className={cn(
                 "transition-all duration-300",
-                isFilled
-                  ? "fill-primary text-primary"
-                  : "text-muted-foreground/35 fill-none"
+                isFilled ? "fill-primary text-primary" : "fill-none text-muted-foreground/35"
               )}
             />
           </button>

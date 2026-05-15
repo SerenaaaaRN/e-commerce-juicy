@@ -24,12 +24,10 @@ export const CollectionPage = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const { products, categories, meta, isLoading, fetchCategories, fetchProducts } = useProductStore()
 
-  // Local toolbar preferences
   const [cols, setCols] = useState<2 | 4>(4)
   const [isInfiniteScroll, setIsInfiniteScroll] = useState(false)
   const sentinelRef = useRef<HTMLDivElement | null>(null)
 
-  // Parse parameters from search params
   const currentCategory = searchParams.get("category") || ""
   const currentSort = (searchParams.get("sort") as any) || ""
   const currentPage = Number(searchParams.get("page")) || 1
@@ -43,10 +41,7 @@ export const CollectionPage = () => {
     fetchCategories()
   }, [fetchCategories])
 
-  // Sync main product fetching
   useEffect(() => {
-    // If infinite scroll is on and page > 1, the IntersectionObserver sentinel handles fetching the next page,
-    // so we skip this flat fetch to avoid replacing our accumulated list.
     if (isInfiniteScroll && currentPage > 1) {
       return
     }
@@ -64,7 +59,6 @@ export const CollectionPage = () => {
     )
   }, [fetchProducts, currentCategory, currentSort, currentSizesStr, currentSearch, currentPage, isInfiniteScroll])
 
-  // Infinite Scroll sentinel observer
   useEffect(() => {
     if (!isInfiniteScroll || !meta || meta.page >= meta.total_pages) return
 
@@ -82,10 +76,9 @@ export const CollectionPage = () => {
               page: nextPage,
               per_page: perPage,
             },
-            true // append products
+            true
           )
 
-          // Keep URL parameter in sync
           const updated = new URLSearchParams(searchParams)
           updated.set("page", String(nextPage))
           setSearchParams(updated, { replace: true })
@@ -99,9 +92,19 @@ export const CollectionPage = () => {
     }
 
     return () => observer.disconnect()
-  }, [isInfiniteScroll, meta, isLoading, searchParams, setSearchParams, fetchProducts, currentCategory, currentSort, currentSizesStr, currentSearch])
+  }, [
+    isInfiniteScroll,
+    meta,
+    isLoading,
+    searchParams,
+    setSearchParams,
+    fetchProducts,
+    currentCategory,
+    currentSort,
+    currentSizesStr,
+    currentSearch,
+  ])
 
-  // Helper to update query params
   const updateParams = (newParams: Record<string, string | number | null>) => {
     const updated = new URLSearchParams(searchParams)
     Object.entries(newParams).forEach(([key, val]) => {
@@ -111,8 +114,13 @@ export const CollectionPage = () => {
         updated.set(key, String(val))
       }
     })
-    // Reset page to 1 on category/sort/sizes change
-    if (newParams.category !== undefined || newParams.sort !== undefined || newParams.sizes !== undefined || newParams.search !== undefined) {
+
+    if (
+      newParams.category !== undefined ||
+      newParams.sort !== undefined ||
+      newParams.sizes !== undefined ||
+      newParams.search !== undefined
+    ) {
       updated.set("page", "1")
     }
     setSearchParams(updated)
@@ -141,27 +149,21 @@ export const CollectionPage = () => {
   return (
     <div className="bg-background py-12">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-
         {/* Typographic Header */}
-        <div className="text-left flex flex-col gap-2">
-          <span className="text-xs font-semibold tracking-wider text-primary uppercase">
-            Atelier Curated Catalog
-          </span>
-          <h1 className="text-4xl font-bold tracking-tight text-foreground uppercase font-heading">
-            The Shop
-          </h1>
-          <p className="text-sm text-muted-foreground max-w-md leading-relaxed">
+        <header className="flex flex-col gap-2 text-left">
+          <span className="text-xs font-semibold tracking-wider text-primary uppercase">Atelier Curated Catalog</span>
+          <h1 className="font-heading text-4xl font-bold tracking-tight text-foreground uppercase">The Shop</h1>
+          <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
             Browse our complete collection of pure raw textures and high-fashion silhouettes.
           </p>
-        </div>
+        </header>
 
         <Separator className="my-8" />
 
         {/* Content Layout Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
           {/* Desktop Filter Sidebar */}
-          <aside className="hidden lg:block lg:col-span-3">
+          <aside className="hidden lg:col-span-3 lg:block">
             <ProductFilters
               categories={categories}
               selectedCategory={currentCategory}
@@ -175,34 +177,35 @@ export const CollectionPage = () => {
           </aside>
 
           {/* Main Grid Area */}
-          <main className="col-span-12 lg:col-span-9 flex flex-col gap-6">
-
+          <main className="col-span-12 flex flex-col gap-6 lg:col-span-9">
             {/* Search results banner if active */}
-            {currentSearch && (
-              <Alert className="flex items-center justify-between bg-primary/5 px-4 py-3 border border-primary/20 rounded-none text-left mb-2 animate-in fade-in slide-in-from-top-1 duration-300">
-                <AlertDescription className="text-xs text-foreground font-semibold">
+            {currentSearch ? (
+              <Alert className="mb-2 flex animate-in items-center justify-between rounded-none border border-primary/20 bg-primary/5 px-4 py-3 text-left duration-300 fade-in slide-in-from-top-1">
+                <AlertDescription className="text-xs font-semibold text-foreground">
                   Search Results for: <span className="text-primary italic">"{currentSearch}"</span>
                 </AlertDescription>
                 <button
                   onClick={() => updateParams({ search: null, page: 1 })}
-                  className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground hover:text-foreground cursor-pointer"
+                  className="cursor-pointer text-[10px] font-bold tracking-wider text-muted-foreground uppercase hover:text-foreground"
                 >
                   Clear Search
                 </button>
               </Alert>
-            )}
+            ) : null}
 
             {/* Toolbar row */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-muted/40 px-4 py-3 border border-border rounded-none">
-              <span className="text-xs text-muted-foreground font-medium text-left">
+            <div className="flex flex-col justify-between gap-4 rounded-none border border-border bg-muted/40 px-4 py-3 sm:flex-row sm:items-center">
+              <span className="text-left text-xs font-medium text-muted-foreground">
                 Showing {products.length} of {meta?.total || products.length} Silhouettes
               </span>
 
               {/* Toolbar Controls */}
-              <div className="flex items-center justify-end flex-wrap gap-4">
+              <div className="flex flex-wrap items-center justify-end gap-4">
                 {/* Grid columns toggle */}
-                <div className="hidden sm:flex items-center gap-1.5 border-r border-border pr-4">
-                  <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground mr-1">Grid:</span>
+                <div className="hidden items-center gap-1.5 border-r border-border pr-4 sm:flex">
+                  <span className="mr-1 text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
+                    Grid:
+                  </span>
                   <ToggleGroup
                     type="single"
                     variant="outline"
@@ -214,13 +217,13 @@ export const CollectionPage = () => {
                   >
                     <ToggleGroupItem
                       value="2"
-                      className="px-2.5 h-7 text-[10px] uppercase font-bold tracking-wider rounded-none cursor-pointer"
+                      className="h-7 cursor-pointer rounded-none px-2.5 text-[10px] font-bold tracking-wider uppercase"
                     >
                       2 Cols
                     </ToggleGroupItem>
                     <ToggleGroupItem
                       value="4"
-                      className="px-2.5 h-7 text-[10px] uppercase font-bold tracking-wider rounded-none cursor-pointer"
+                      className="h-7 cursor-pointer rounded-none px-2.5 text-[10px] font-bold tracking-wider uppercase"
                     >
                       4 Cols
                     </ToggleGroupItem>
@@ -229,7 +232,9 @@ export const CollectionPage = () => {
 
                 {/* Scroll Mode Toggle */}
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground mr-1">Mode:</span>
+                  <span className="mr-1 text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
+                    Mode:
+                  </span>
                   <ToggleGroup
                     type="single"
                     variant="outline"
@@ -244,13 +249,13 @@ export const CollectionPage = () => {
                   >
                     <ToggleGroupItem
                       value="pages"
-                      className="px-2.5 h-7 text-[10px] uppercase font-bold tracking-wider rounded-none cursor-pointer"
+                      className="h-7 cursor-pointer rounded-none px-2.5 text-[10px] font-bold tracking-wider uppercase"
                     >
                       Pages
                     </ToggleGroupItem>
                     <ToggleGroupItem
                       value="scroll"
-                      className="px-2.5 h-7 text-[10px] uppercase font-bold tracking-wider rounded-none cursor-pointer"
+                      className="h-7 cursor-pointer rounded-none px-2.5 text-[10px] font-bold tracking-wider uppercase"
                     >
                       Scroll
                     </ToggleGroupItem>
@@ -261,7 +266,11 @@ export const CollectionPage = () => {
                 <div className="lg:hidden">
                   <Sheet>
                     <SheetTrigger asChild>
-                      <Button variant="outline" size="sm" className="gap-2 cursor-pointer h-7 text-[10px] uppercase tracking-wider rounded-none">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 cursor-pointer gap-2 rounded-none text-[10px] tracking-wider uppercase"
+                      >
                         <HugeiconsIcon icon={FilterIcon} strokeWidth={1.8} data-icon="inline-start" />
                         Filters
                       </Button>
@@ -270,7 +279,7 @@ export const CollectionPage = () => {
                       <SheetHeader>
                         <SheetTitle className="sr-only">Catalog Filters</SheetTitle>
                       </SheetHeader>
-                      <div className="pt-6 overflow-y-auto h-full pb-10">
+                      <div className="h-full overflow-y-auto pt-6 pb-10">
                         <ProductFilters
                           categories={categories}
                           selectedCategory={currentCategory}
@@ -293,10 +302,8 @@ export const CollectionPage = () => {
 
             {/* Infinite Scroll Sentinel indicator */}
             {isInfiniteScroll && (
-              <div ref={sentinelRef} className="h-10 w-full flex items-center justify-center">
-                {isLoading && (
-                  <Spinner size={20} className="text-primary" />
-                )}
+              <div ref={sentinelRef} className="flex h-10 w-full items-center justify-center">
+                {isLoading && <Spinner size={20} className="text-primary" />}
               </div>
             )}
 
@@ -304,13 +311,10 @@ export const CollectionPage = () => {
             {!isInfiniteScroll && meta && meta.total_pages > 1 && (
               <Pagination className="mt-8">
                 <PaginationContent>
-
                   {/* Previous button */}
                   {meta.page > 1 && (
                     <PaginationItem className="cursor-pointer">
-                      <PaginationPrevious
-                        onClick={() => handlePageChange(meta.page - 1)}
-                      />
+                      <PaginationPrevious onClick={() => handlePageChange(meta.page - 1)} />
                     </PaginationItem>
                   )}
 
@@ -319,10 +323,7 @@ export const CollectionPage = () => {
                     const pageNum = i + 1
                     return (
                       <PaginationItem key={pageNum} className="cursor-pointer">
-                        <PaginationLink
-                          isActive={meta.page === pageNum}
-                          onClick={() => handlePageChange(pageNum)}
-                        >
+                        <PaginationLink isActive={meta.page === pageNum} onClick={() => handlePageChange(pageNum)}>
                           {pageNum}
                         </PaginationLink>
                       </PaginationItem>
@@ -332,20 +333,14 @@ export const CollectionPage = () => {
                   {/* Next button */}
                   {meta.page < meta.total_pages && (
                     <PaginationItem className="cursor-pointer">
-                      <PaginationNext
-                        onClick={() => handlePageChange(meta.page + 1)}
-                      />
+                      <PaginationNext onClick={() => handlePageChange(meta.page + 1)} />
                     </PaginationItem>
                   )}
-
                 </PaginationContent>
               </Pagination>
             )}
-
           </main>
-
         </div>
-
       </div>
     </div>
   )

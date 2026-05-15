@@ -12,8 +12,8 @@ type ReviewCardProps = {
 export const ReviewCard = ({ customerName, rating, comment, createdAt }: ReviewCardProps) => {
   return (
     <Card className="border border-border/60 shadow-sm">
-      <CardContent className="p-5 flex flex-col gap-3 text-left">
-        
+      <CardContent className="px-4">
+
         {/* Customer meta details row */}
         <div className="flex items-center justify-between text-xs">
           <span className="font-semibold text-foreground truncate">
@@ -24,10 +24,7 @@ export const ReviewCard = ({ customerName, rating, comment, createdAt }: ReviewC
           </span>
         </div>
 
-        {/* Review rating details */}
-        <div>
-          <StarRating rating={rating} />
-        </div>
+        <StarRating rating={rating} />
 
         {/* Customer review comment */}
         <p className="text-sm text-muted-foreground leading-relaxed leading-relaxed font-sans mt-1">

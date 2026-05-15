@@ -43,17 +43,14 @@ export const ReviewsSection = ({ slug, avgRating, reviewCount }: ReviewsSectionP
   }, [slug, page])
 
   return (
-    <div className="flex flex-col gap-6 text-left mt-10">
+    <div className="mt-10 flex flex-col gap-6 text-left">
       <Separator />
-      
+
       {/* Reviews Summary Header Block */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-        
+      <div className="grid grid-cols-1 items-center gap-6 md:grid-cols-12">
         {/* Aggregated Score Column */}
-        <div className="md:col-span-4 flex flex-col gap-2">
-          <h3 className="text-sm font-semibold tracking-tight text-foreground uppercase">
-            Customer Reviews
-          </h3>
+        <div className="flex flex-col gap-2 md:col-span-4">
+          <h3 className="text-sm font-semibold tracking-tight text-foreground uppercase">Customer Reviews</h3>
           <div className="flex items-baseline gap-2 pt-2">
             <span className="text-4xl font-extrabold text-foreground">
               {avgRating > 0 ? avgRating.toFixed(1) : "0.0"}
@@ -62,35 +59,36 @@ export const ReviewsSection = ({ slug, avgRating, reviewCount }: ReviewsSectionP
           </div>
           <div className="flex items-center gap-2">
             <StarRating rating={avgRating} />
-            <span className="text-xs text-muted-foreground font-medium">
-              ({reviewCount} reviews)
-            </span>
+            <span className="text-xs font-medium text-muted-foreground">({reviewCount} reviews)</span>
           </div>
         </div>
 
         {/* Informative metadata row */}
-        <div className="md:col-span-8 text-xs text-muted-foreground leading-relaxed font-sans max-w-md">
+        <div className="max-w-md font-sans text-xs leading-relaxed text-muted-foreground md:col-span-8">
           <p>
-            All verified customer ratings represent authentic order experiences. We encourage honest atelier assessments of our raw linen textures and garment construction details.
+            All verified customer ratings represent authentic order experiences. We encourage honest atelier assessments
+            of our raw linen textures and garment construction details.
           </p>
         </div>
-
       </div>
 
       <Separator className="my-2" />
 
       {/* Reviews list render */}
       {loading ? (
-        <div className="flex justify-center items-center py-10">
+        <div className="flex items-center justify-center py-10">
           <Spinner />
         </div>
       ) : reviews.length === 0 ? (
-        <Empty className="border-none max-w-md bg-transparent mx-auto py-10">
+        <Empty className="mx-auto max-w-md border-none bg-transparent py-10">
           <EmptyHeader>
-            <EmptyMedia variant="icon" className="bg-primary/5 text-primary size-12 rounded-full mb-3 flex items-center justify-center">
+            <EmptyMedia
+              variant="icon"
+              className="mb-3 flex size-12 items-center justify-center rounded-full bg-primary/5 text-primary"
+            >
               <HugeiconsIcon icon={ShoppingBag01Icon} strokeWidth={1.8} className="size-6 text-primary" />
             </EmptyMedia>
-            <EmptyDescription className="text-sm text-muted-foreground mt-2">
+            <EmptyDescription className="mt-2 text-sm text-muted-foreground">
               No reviews available for this silhouette yet. Be the first to share your experience after purchasing!
             </EmptyDescription>
           </EmptyHeader>
@@ -108,8 +106,8 @@ export const ReviewsSection = ({ slug, avgRating, reviewCount }: ReviewsSectionP
           ))}
 
           {/* Simple Pagination triggers */}
-          {totalPages > 1 && (
-            <div className="flex justify-between items-center mt-4">
+          {totalPages > 1 ? (
+            <div className="mt-4 flex items-center justify-between">
               <Button
                 variant="outline"
                 size="sm"
@@ -132,10 +130,9 @@ export const ReviewsSection = ({ slug, avgRating, reviewCount }: ReviewsSectionP
                 Next
               </Button>
             </div>
-          )}
+          ) : null}
         </div>
       )}
-
     </div>
   )
 }

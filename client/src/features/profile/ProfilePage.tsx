@@ -1,4 +1,4 @@
-import { Navigate, Link } from "react-router-dom"
+import { Navigate } from "react-router-dom"
 import { useCustomerAuthStore } from "@/stores/customerAuthStore"
 import { EditProfileForm } from "./components/EditProfileForm"
 import { ChangePasswordForm } from "./components/ChangePasswordForm"
@@ -6,6 +6,14 @@ import { AddressList } from "./components/AddressList"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { Card, CardContent } from "@/components/ui/card"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
 
 export const ProfilePage = () => {
   const { isAuthenticated, customer } = useCustomerAuthStore()
@@ -18,37 +26,33 @@ export const ProfilePage = () => {
   return (
     <div className="bg-background py-12">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        
-        {/* Breadcrumbs */}
-        <div className="flex items-center gap-2 text-xs text-muted-foreground mb-8 text-left uppercase tracking-widest font-semibold">
-          <Link to="/" className="hover:text-foreground">Home</Link>
-          <span>/</span>
-          <span className="text-foreground">Profile Account</span>
-        </div>
+        <Breadcrumb className="mb-8 text-left text-xs font-bold uppercase">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/">Home</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator>/</BreadcrumbSeparator>
+            <BreadcrumbPage className="font-bold text-primary">Profile Account</BreadcrumbPage>
+          </BreadcrumbList>
+        </Breadcrumb>
 
         {/* Page Title Header */}
-        <div className="text-left flex flex-col gap-2">
-          <span className="text-xs font-semibold tracking-wider text-primary uppercase">
-            Atelier Customer Center
-          </span>
-          <h1 className="text-4xl font-bold tracking-tight text-foreground font-heading">
-            My Account
-          </h1>
-          <p className="text-sm text-muted-foreground max-w-md leading-relaxed font-sans">
+        <header className="flex flex-col gap-2 text-left">
+          <span className="text-xs font-semibold tracking-wider text-primary uppercase">Atelier Customer Center</span>
+          <h1 className="font-heading text-4xl font-bold tracking-tight text-foreground">My Account</h1>
+          <p className="max-w-md font-sans text-sm leading-relaxed text-muted-foreground">
             Manage your personal contact card, secure account credentials, and shipping addresses.
           </p>
-        </div>
+        </header>
 
         <Separator className="my-8" />
 
         {/* Tabbed Layout split grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
+        <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
           {/* Main account tabs */}
-          <div className="lg:col-span-8 w-full">
+          <div className="w-full lg:col-span-8">
             <Tabs defaultValue="info" className="w-full">
-              
-              <TabsList className="grid w-full grid-cols-3 mb-8">
+              <TabsList className="mb-8 grid w-full grid-cols-3">
                 <TabsTrigger value="info" className="cursor-pointer">
                   Personal Details
                 </TabsTrigger>
@@ -86,44 +90,35 @@ export const ProfilePage = () => {
                   </CardContent>
                 </Card>
               </TabsContent>
-
             </Tabs>
           </div>
 
           {/* Quick welcome stats card sidebar */}
-          <div className="lg:col-span-4 w-full text-left">
-            <Card className="border border-border/80 shadow-md bg-muted/10">
-              <CardContent className="p-6 flex flex-col gap-4">
-                
+          <div className="w-full text-left lg:col-span-4">
+            <Card className="border border-border/80 bg-muted/10 shadow-md">
+              <CardContent className="flex flex-col gap-4 p-6">
                 <div className="flex flex-col gap-0.5">
-                  <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">
+                  <span className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
                     Welcome back
                   </span>
-                  <h3 className="text-lg font-bold text-foreground truncate max-w-[200px]">
-                    {customer?.full_name}
-                  </h3>
-                  <span className="text-xs text-muted-foreground font-mono truncate">
-                    {customer?.email}
-                  </span>
+                  <h3 className="max-w-50 truncate text-lg font-bold text-foreground">{customer?.full_name}</h3>
+                  <span className="truncate font-mono text-xs text-muted-foreground">{customer?.email}</span>
                 </div>
 
                 <Separator />
 
                 <div className="flex flex-col gap-2 text-xs">
                   <div className="flex justify-between font-sans">
-                    <span className="text-muted-foreground font-medium">Joined Juicy:</span>
+                    <span className="font-medium text-muted-foreground">Joined Juicy:</span>
                     <span className="font-semibold text-foreground">
                       {customer?.created_at ? new Date(customer.created_at).toLocaleDateString() : "Recently"}
                     </span>
                   </div>
                 </div>
-
               </CardContent>
             </Card>
           </div>
-
         </div>
-
       </div>
     </div>
   )

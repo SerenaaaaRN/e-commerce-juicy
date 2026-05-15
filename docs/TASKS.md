@@ -376,6 +376,19 @@
 - [x] Fix duplicate `try` block in `ProductPage.tsx` (Vite 500 fix)
 - [x] Fix `Heart02Icon` → `HeartAddIcon` (wrong icon name)
 
+### 9.6 Critical Bug Fixes — Orders
+- [x] Fix "Complete Received" button not showing for delivered orders
+- [x] Fix "Cancel Order" button not showing for pending/confirmed orders
+- [x] Add proper error states for order actions
+- [x] Implement cancel/complete confirmation dialogs
+
+### 9.7 Dialog in CustomerPage.tsx 
+- [ ] Fix "Total spent Rp.null" display in Customer Dialog
+- [ ] Fix total spent for customer that has no order yet history
+- [ ] Empty order history message
+- [ ] Lifecyle order and Lifecyle spent table not display
+- [ ] Can't suspand customer (Toggle Button) failed, 
+
 ---
 
 ## Phase 10 — Zalora-Style Homepage & Category Landing Pages ✅

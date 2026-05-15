@@ -11,11 +11,18 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import { ShoppingBag01Icon } from "@hugeicons/core-free-icons"
 import { toast } from "sonner"
 import type { Order } from "@/types"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
 
 export const OrderHistoryPage = () => {
   const { isAuthenticated } = useCustomerAuthStore()
 
-  // State
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -43,10 +50,10 @@ export const OrderHistoryPage = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto flex min-h-[60vh] max-w-7xl items-center justify-center py-20 px-4">
+      <div className="container mx-auto flex min-h-[60vh] max-w-7xl items-center justify-center px-4 py-20">
         <div className="flex flex-col items-center gap-4">
           <Spinner size={32} className="text-primary" />
-          <span className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">
+          <span className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
             Retrieving Purchase Files...
           </span>
         </div>
@@ -57,41 +64,41 @@ export const OrderHistoryPage = () => {
   return (
     <div className="bg-background py-12">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        
-        {/* Navigation Breadcrumb trail */}
-        <div className="flex items-center gap-2 text-xs text-muted-foreground mb-8 text-left uppercase tracking-widest font-semibold">
-          <Link to="/" className="hover:text-foreground">Home</Link>
-          <span>/</span>
-          <span className="text-foreground">Purchase History</span>
-        </div>
+        <Breadcrumb className="mb-8 text-left text-xs font-bold uppercase">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/">Home</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator>/</BreadcrumbSeparator>
+            <BreadcrumbPage className="font-bold text-primary">Purchase History</BreadcrumbPage>
+          </BreadcrumbList>
+        </Breadcrumb>
 
         {/* Page Title Header */}
-        <div className="text-left flex flex-col gap-2">
-          <span className="text-xs font-semibold tracking-wider text-primary uppercase">
-            Atelier Account Details
-          </span>
-          <h1 className="text-4xl font-bold tracking-tight text-foreground font-heading">
-            My Orders
-          </h1>
-          <p className="text-sm text-muted-foreground max-w-md leading-relaxed font-sans">
+        <header className="flex flex-col gap-2 text-left">
+          <span className="text-xs font-semibold tracking-wider text-primary uppercase">Atelier Account Details</span>
+          <h1 className="font-heading text-4xl font-bold tracking-tight text-foreground">My Orders</h1>
+          <p className="max-w-md font-sans text-sm leading-relaxed text-muted-foreground">
             Review your historical checkout logs, custom silhouette invoices, and delivery milestones.
           </p>
-        </div>
+        </header>
 
         <Separator className="my-8" />
 
         {/* Main Orders List Stack */}
         {orders.length === 0 ? (
-          <Empty className="border-none max-w-md mx-auto bg-transparent">
+          <Empty className="mx-auto max-w-md border-none bg-transparent">
             <EmptyHeader>
-              <EmptyMedia variant="icon" className="bg-primary/5 text-primary size-12 rounded-full mb-3 flex items-center justify-center">
+              <EmptyMedia
+                variant="icon"
+                className="mb-3 flex size-12 items-center justify-center rounded-full bg-primary/5 text-primary"
+              >
                 <HugeiconsIcon icon={ShoppingBag01Icon} strokeWidth={1.8} className="size-6 text-primary" />
               </EmptyMedia>
-              <EmptyTitle className="text-2xl font-bold tracking-tight">
-                No Orders Placed
-              </EmptyTitle>
-              <EmptyDescription className="text-sm text-muted-foreground mt-2">
-                You haven't placed any custom silhouette orders yet. Explore our latest designs to build your style foundation.
+              <EmptyTitle className="text-2xl font-bold tracking-tight">No Orders Placed</EmptyTitle>
+              <EmptyDescription className="mt-2 text-sm text-muted-foreground">
+                You haven't placed any custom silhouette orders yet. Explore our latest designs to build your style
+                foundation.
               </EmptyDescription>
             </EmptyHeader>
             <EmptyContent className="mt-6">
@@ -101,13 +108,12 @@ export const OrderHistoryPage = () => {
             </EmptyContent>
           </Empty>
         ) : (
-          <div className="flex flex-col gap-4 max-w-3xl">
+          <div className="flex max-w-3xl flex-col gap-4">
             {orders.map((ord) => (
               <OrderCard key={ord.id} order={ord} />
             ))}
           </div>
         )}
-
       </div>
     </div>
   )

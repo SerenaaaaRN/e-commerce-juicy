@@ -10,7 +10,6 @@ import { toast } from "sonner"
 export const EditProfileForm = () => {
   const { customer, login, token } = useCustomerAuthStore()
 
-  // State
   const [fullName, setFullName] = useState(customer?.full_name || "")
   const [phone, setPhone] = useState(customer?.phone || "")
   const [loading, setLoading] = useState(false)
@@ -35,7 +34,7 @@ export const EditProfileForm = () => {
         phone: phone.trim() || undefined,
       })
       if (res.success && res.data && token) {
-        login(token, res.data) // Update global state
+        login(token, res.data) // update global state zustand
         toast.success("Profile details updated successfully.")
       } else {
         toast.error(res.message || "Failed to update profile details.")
@@ -48,9 +47,8 @@ export const EditProfileForm = () => {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="text-left w-full max-w-lg">
+    <form onSubmit={handleSubmit} className="w-full max-w-lg text-left">
       <FieldGroup className="gap-5">
-        
         {/* Email Field - Read Only */}
         <Field>
           <FieldLabel htmlFor="profile-email">Email Address (Cannot change)</FieldLabel>
@@ -59,7 +57,7 @@ export const EditProfileForm = () => {
             type="email"
             value={customer?.email || ""}
             disabled
-            className="bg-muted text-muted-foreground cursor-not-allowed"
+            className="cursor-not-allowed bg-muted text-muted-foreground"
           />
         </Field>
 
@@ -98,7 +96,6 @@ export const EditProfileForm = () => {
             {loading ? "Saving changes..." : "Save Profile Details"}
           </Button>
         </div>
-
       </FieldGroup>
     </form>
   )

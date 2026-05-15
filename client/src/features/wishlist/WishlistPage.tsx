@@ -24,7 +24,7 @@ export const WishlistPage = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto flex min-h-[60vh] max-w-7xl items-center justify-center py-20 px-4">
+      <div className="container mx-auto flex min-h-[60vh] max-w-7xl items-center justify-center px-4 py-20">
         <Spinner size={32} className="text-primary" />
       </div>
     )
@@ -32,16 +32,17 @@ export const WishlistPage = () => {
 
   if (items.length === 0) {
     return (
-      <div className="container mx-auto flex min-h-[60vh] max-w-7xl items-center justify-center py-20 px-4">
-        <Empty className="border-none max-w-md bg-transparent">
+      <div className="container mx-auto flex min-h-[60vh] max-w-7xl items-center justify-center px-4 py-20">
+        <Empty className="max-w-md border-none bg-transparent">
           <EmptyHeader>
-            <EmptyMedia variant="icon" className="bg-primary/5 text-primary size-12 rounded-full mb-3 flex items-center justify-center">
+            <EmptyMedia
+              variant="icon"
+              className="mb-3 flex size-12 items-center justify-center rounded-full bg-primary/5 text-primary"
+            >
               <HugeiconsIcon icon={HeartAddIcon} strokeWidth={1.8} className="size-6 text-primary" />
             </EmptyMedia>
-            <EmptyTitle className="text-2xl font-bold tracking-tight">
-              Your Wishlist is Empty
-            </EmptyTitle>
-            <EmptyDescription className="text-sm text-muted-foreground mt-2">
+            <EmptyTitle className="text-2xl font-bold tracking-tight">Your Wishlist is Empty</EmptyTitle>
+            <EmptyDescription className="mt-2 text-sm text-muted-foreground">
               Save your favorite silhouettes and they will appear here.
             </EmptyDescription>
           </EmptyHeader>
@@ -56,19 +57,19 @@ export const WishlistPage = () => {
   }
 
   return (
-    <div className="container mx-auto max-w-7xl py-12 px-4">
+    <div className="container mx-auto max-w-7xl px-4 py-12">
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">My Wishlist</h1>
-        <p className="text-sm text-muted-foreground mt-2">
+        <p className="mt-2 text-sm text-muted-foreground">
           {items.length} {items.length === 1 ? "item" : "items"} saved
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {items.map((item) => (
-          <Card key={item.id} className="overflow-hidden border-border/50 group">
+          <Card key={item.id} className="group overflow-hidden border-border/50">
             <Link to={`/product/${item.product_slug}`}>
-              <div className="aspect-[4/5] overflow-hidden bg-muted">
+              <div className="aspect-4/5 overflow-hidden bg-muted">
                 <img
                   src={item.image_url || "/placeholder.svg"}
                   alt={item.product_name}
@@ -78,15 +79,13 @@ export const WishlistPage = () => {
             </Link>
             <CardContent className="p-4">
               <Link to={`/product/${item.product_slug}`}>
-                <h3 className="font-semibold text-sm truncate">{item.product_name}</h3>
+                <h3 className="truncate text-sm font-semibold">{item.product_name}</h3>
               </Link>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="mt-1 text-xs text-muted-foreground">
                 {item.variant_size} / {item.variant_color}
               </p>
-              <div className="flex items-center justify-between mt-3">
-                <span className="font-bold text-sm">
-                  {formatPrice(item.price + item.additional_price)}
-                </span>
+              <div className="mt-3 flex items-center justify-between">
+                <span className="text-sm font-bold">{formatPrice(item.price + item.additional_price)}</span>
                 <Button
                   variant="ghost"
                   size="icon"

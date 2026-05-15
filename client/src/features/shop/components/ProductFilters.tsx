@@ -4,6 +4,8 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion"
 import { cn } from "@/lib/utils"
 import type { Category } from "@/types"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { ArrowDownIcon } from "@hugeicons/core-free-icons"
 
 type ProductFiltersProps = {
   categories: Category[]
@@ -18,20 +20,12 @@ type ProductFiltersProps = {
 
 const AVAILABLE_SIZES = ["XS", "S", "M", "L", "XL", "XXL"]
 
-const ChevronDown = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="size-3"
-  >
-    <polyline points="6 9 12 15 18 9" />
-  </svg>
-)
+const sortOptions = [
+  { label: "New Arrivals", value: "newest" },
+  { label: "Price: Low to High", value: "price_asc" },
+  { label: "Price: High to Low", value: "price_desc" },
+  { label: "Popularity", value: "popular" },
+]
 
 export const ProductFilters = ({
   categories,
@@ -61,61 +55,54 @@ export const ProductFilters = ({
       <div key={cat.id} className="flex flex-col gap-1">
         <div
           className={cn(
-            "flex items-center justify-between py-1.5 px-2 text-xs uppercase tracking-wider transition-colors duration-200 rounded-none",
+            "flex items-center justify-between rounded-none px-2 py-1.5 text-xs tracking-wider uppercase transition-colors duration-200",
             isSelected
-              ? "bg-primary/10 text-primary font-semibold border-l-2 border-primary"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
+              ? "border-l-2 border-primary bg-primary/10 font-semibold text-primary"
+              : "text-muted-foreground hover:bg-muted/30 hover:text-foreground"
           )}
           style={{ paddingLeft: `${level * 12 + 8}px` }}
         >
           <button
             onClick={() => onCategoryChange(cat.slug)}
-            className="flex-1 text-left cursor-pointer font-medium uppercase truncate"
+            className="flex-1 cursor-pointer truncate text-left font-medium uppercase"
           >
             {cat.name}
-            {cat.product_count !== undefined && (
-              <span className="text-[10px] text-muted-foreground ml-1.5 font-normal lowercase">
+            {cat.product_count !== undefined ? (
+              <span className="ml-1.5 text-[10px] font-normal text-muted-foreground lowercase">
                 ({cat.product_count})
               </span>
-            )}
+            ) : null}
           </button>
 
-          {hasChildren && (
+          {hasChildren ? (
             <button
               onClick={(e) => {
                 e.stopPropagation()
                 toggleExpand(cat.id)
               }}
-              className="p-1 hover:text-foreground cursor-pointer transition-transform duration-200"
+              className="cursor-pointer p-1 transition-transform duration-200 hover:text-foreground"
               style={{ transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)" }}
             >
-              <ChevronDown />
+              <HugeiconsIcon icon={ArrowDownIcon} />
             </button>
-          )}
+          ) : null}
         </div>
 
-        {hasChildren && isExpanded && (
-          <div className="flex flex-col gap-1 animate-in fade-in slide-in-from-top-1 duration-200">
+        {hasChildren && isExpanded ? (
+          <div className="flex animate-in flex-col gap-1 duration-200 fade-in slide-in-from-top-1">
             {cat.children?.map((child) => renderCategoryNode(child, level + 1))}
           </div>
-        )}
+        ) : null}
       </div>
     )
   }
-
-  const sortOptions = [
-    { label: "New Arrivals", value: "newest" },
-    { label: "Price: Low to High", value: "price_asc" },
-    { label: "Price: High to Low", value: "price_desc" },
-    { label: "Popularity", value: "popular" },
-  ]
 
   return (
     <div className="flex flex-col gap-6 text-left">
       <Accordion type="multiple" defaultValue={["categories", "sizes", "sort"]} className="w-full">
         {/* Categories Section */}
-        <AccordionItem value="categories" className="border-b border-border/80 pb-3 mb-3">
-          <AccordionTrigger className="text-xs uppercase tracking-widest font-bold text-foreground py-2 hover:no-underline hover:text-primary">
+        <AccordionItem value="categories" className="mb-3 border-b border-border/80 pb-3">
+          <AccordionTrigger className="py-2 text-xs font-bold tracking-widest text-foreground uppercase hover:text-primary hover:no-underline">
             Categories
           </AccordionTrigger>
           <AccordionContent className="pt-2 pb-1">
@@ -123,10 +110,10 @@ export const ProductFilters = ({
               <button
                 onClick={() => onCategoryChange("")}
                 className={cn(
-                  "text-left py-1.5 px-2 text-xs uppercase tracking-wider font-semibold rounded-none cursor-pointer border-l-2",
+                  "cursor-pointer rounded-none border-l-2 px-2 py-1.5 text-left text-xs font-semibold tracking-wider uppercase",
                   selectedCategory === ""
-                    ? "bg-primary/10 text-primary border-primary"
-                    : "text-muted-foreground hover:text-foreground border-transparent hover:bg-muted/30"
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-transparent text-muted-foreground hover:bg-muted/30 hover:text-foreground"
                 )}
               >
                 All Apparel
@@ -137,8 +124,8 @@ export const ProductFilters = ({
         </AccordionItem>
 
         {/* Size Pills Section */}
-        <AccordionItem value="sizes" className="border-b border-border/80 pb-3 mb-3">
-          <AccordionTrigger className="text-xs uppercase tracking-widest font-bold text-foreground py-2 hover:no-underline hover:text-primary">
+        <AccordionItem value="sizes" className="mb-3 border-b border-border/80 pb-3">
+          <AccordionTrigger className="py-2 text-xs font-bold tracking-widest text-foreground uppercase hover:text-primary hover:no-underline">
             Filter by Size
           </AccordionTrigger>
           <AccordionContent className="pt-2 pb-1">
@@ -147,13 +134,13 @@ export const ProductFilters = ({
               variant="outline"
               value={selectedSizes}
               onValueChange={onSizesChange}
-              className="flex flex-wrap gap-2 justify-start"
+              className="flex flex-wrap justify-start gap-2"
             >
               {AVAILABLE_SIZES.map((size) => (
                 <ToggleGroupItem
                   key={size}
                   value={size}
-                  className="min-w-[42px] h-9 text-xs font-semibold uppercase tracking-wider rounded-none cursor-pointer data-[state=on]:bg-zinc-900 data-[state=on]:text-zinc-50 dark:data-[state=on]:bg-zinc-50 dark:data-[state=on]:text-zinc-900 data-[state=on]:border-zinc-900 data-[state=on]:border-zinc-50"
+                  className="h-9 min-w-10.5 cursor-pointer rounded-none text-xs font-semibold tracking-wider uppercase data-[state=on]:border-zinc-50 data-[state=on]:bg-zinc-900 data-[state=on]:text-zinc-50 dark:data-[state=on]:bg-zinc-50 dark:data-[state=on]:text-zinc-900"
                 >
                   {size}
                 </ToggleGroupItem>
@@ -164,13 +151,14 @@ export const ProductFilters = ({
 
         {/* Sorting Section */}
         <AccordionItem value="sort" className="pb-3">
-          <AccordionTrigger className="text-xs uppercase tracking-widest font-bold text-foreground py-2 hover:no-underline hover:text-primary">
+          <AccordionTrigger className="py-2 text-xs font-bold tracking-widest text-foreground uppercase hover:text-primary hover:no-underline">
             Sort By
           </AccordionTrigger>
           <AccordionContent className="pt-2 pb-1">
             <ToggleGroup
               type="single"
               value={selectedSort}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onValueChange={(val) => onSortChange((val || "") as any)}
               className="flex flex-col items-stretch gap-1"
             >
@@ -178,7 +166,7 @@ export const ProductFilters = ({
                 <ToggleGroupItem
                   key={opt.value}
                   value={opt.value}
-                  className="justify-start py-1.5 px-2 h-auto text-xs uppercase tracking-wider font-medium rounded-none cursor-pointer border-l-2 text-muted-foreground hover:text-foreground border-transparent hover:bg-muted/30 data-[state=on]:bg-zinc-100 data-[state=on]:text-zinc-900 data-[state=on]:border-zinc-900 dark:data-[state=on]:bg-zinc-800 dark:data-[state=on]:text-zinc-50 dark:data-[state=on]:border-zinc-50"
+                  className="h-auto cursor-pointer justify-start rounded-none border-l-2 border-transparent px-2 py-1.5 text-xs font-medium tracking-wider text-muted-foreground uppercase hover:bg-muted/30 hover:text-foreground data-[state=on]:border-zinc-900 data-[state=on]:bg-zinc-100 data-[state=on]:text-zinc-900 dark:data-[state=on]:border-zinc-50 dark:data-[state=on]:bg-zinc-800 dark:data-[state=on]:text-zinc-50"
                 >
                   {opt.label}
                 </ToggleGroupItem>
@@ -192,7 +180,7 @@ export const ProductFilters = ({
       <Button
         variant="outline"
         onClick={onReset}
-        className="cursor-pointer w-full rounded-none font-semibold text-xs uppercase tracking-wider py-5"
+        className="w-full cursor-pointer rounded-none py-5 text-xs font-semibold tracking-wider uppercase"
       >
         Clear Filters
       </Button>

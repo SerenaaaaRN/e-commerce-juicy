@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect } from "react"
 import { AddressCard } from "./AddressCard"
 import { AddressFormModal } from "./AddressFormModal"
@@ -71,7 +72,7 @@ export const AddressList = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center py-12">
+      <div className="flex items-center justify-center py-12">
         <Spinner className="text-primary" />
       </div>
     )
@@ -79,18 +80,15 @@ export const AddressList = () => {
 
   return (
     <div className="flex flex-col gap-6 text-left">
-      
       {/* List Header */}
-      <div className="flex justify-between items-center w-full">
+      <div className="flex w-full items-center justify-between">
         <div className="flex flex-col gap-0.5">
-          <h3 className="text-sm font-semibold tracking-tight text-foreground uppercase">
-            Shipping Destinations
-          </h3>
-          <span className="text-[11px] text-muted-foreground uppercase tracking-widest font-semibold">
+          <h3 className="text-sm font-semibold tracking-tight text-foreground uppercase">Shipping Destinations</h3>
+          <span className="text-[11px] font-semibold tracking-widest text-muted-foreground uppercase">
             Manage your delivery profile addresses ({addresses.length} saved)
           </span>
         </div>
-        
+
         {addresses.length > 0 && (
           <Button onClick={() => setIsModalOpen(true)} size="sm" className="cursor-pointer">
             + New Address
@@ -100,15 +98,16 @@ export const AddressList = () => {
 
       {/* Main Address Cards Grid */}
       {addresses.length === 0 ? (
-        <Empty className="border-none max-w-md mx-auto bg-transparent">
+        <Empty className="mx-auto max-w-md border-none bg-transparent">
           <EmptyHeader>
-            <EmptyMedia variant="icon" className="bg-primary/5 text-primary size-12 rounded-full mb-3 flex items-center justify-center">
+            <EmptyMedia
+              variant="icon"
+              className="mb-3 flex size-12 items-center justify-center rounded-full bg-primary/5 text-primary"
+            >
               <HugeiconsIcon icon={ShoppingBag01Icon} strokeWidth={1.8} className="size-6 text-primary" />
             </EmptyMedia>
-            <EmptyTitle className="text-xl font-bold tracking-tight">
-              No Addresses Saved
-            </EmptyTitle>
-            <EmptyDescription className="text-sm text-muted-foreground mt-2">
+            <EmptyTitle className="text-xl font-bold tracking-tight">No Addresses Saved</EmptyTitle>
+            <EmptyDescription className="mt-2 text-sm text-muted-foreground">
               You haven't saved any delivery destinations yet. Add a new address to speed up your checkout flow.
             </EmptyDescription>
           </EmptyHeader>
@@ -119,7 +118,7 @@ export const AddressList = () => {
           </EmptyContent>
         </Empty>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {addresses.map((addr) => (
             <AddressCard
               key={addr.id}
@@ -147,7 +146,6 @@ export const AddressList = () => {
       />
 
       {confirmDialog}
-
     </div>
   )
 }

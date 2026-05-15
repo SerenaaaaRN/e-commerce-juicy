@@ -73,7 +73,7 @@ export const RegisterPage = () => {
               {/* Image Side */}
               <div className="relative hidden bg-muted md:block">
                 <img
-                  src="/placeholder.svg"
+                  src="/jiso.jpg"
                   alt="Register Atelier Cover"
                   className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
                 />

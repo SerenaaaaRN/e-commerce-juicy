@@ -17,22 +17,17 @@ export const VariantSelector = ({
   selectedColor,
   onColorChange,
 }: VariantSelectorProps) => {
-  // Extract unique sizes and colors
   const uniqueSizes = Array.from(new Set(variants.map((v) => v.size)))
   const uniqueColors = Array.from(new Set(variants.map((v) => v.color)))
 
-  // Helper to check if a size option has stock given current color selection
   const isSizeOutOfStock = (size: string) => {
     if (!selectedColor) {
-      // If no color selected yet, check if there is any variant in this size with stock > 0
       return !variants.some((v) => v.size === size && v.stock > 0)
     }
-    // Find variant for this size + current color
     const matched = variants.find((v) => v.size === size && v.color === selectedColor)
     return !matched || matched.stock <= 0
   }
 
-  // Helper to check if a color option has stock given current size selection
   const isColorOutOfStock = (color: string) => {
     if (!selectedSize) {
       return !variants.some((v) => v.color === color && v.stock > 0)
@@ -41,34 +36,25 @@ export const VariantSelector = ({
     return !matched || matched.stock <= 0
   }
 
-  // Get active combination details if size and color are fully selected
-  const activeVariant = variants.find(
-    (v) => v.size === selectedSize && v.color === selectedColor
-  )
+  const activeVariant = variants.find((v) => v.size === selectedSize && v.color === selectedColor)
 
   return (
     <div className="flex flex-col gap-5 text-left">
       <Separator />
-      
+
       {/* Sizes Section */}
-      {uniqueSizes.length > 0 && (
+      {uniqueSizes.length > 0 ? (
         <div className="flex flex-col gap-2">
-          <div className="flex justify-between items-center text-xs">
-            <span className="font-semibold text-foreground">
-              Select Size
-            </span>
-            {selectedSize && (
-              <span className="text-muted-foreground font-medium">
-                Active: {selectedSize}
-              </span>
-            )}
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-semibold text-foreground">Select Size</span>
+            {selectedSize ? <span className="font-medium text-muted-foreground">Active: {selectedSize}</span> : null}
           </div>
           <ToggleGroup
             type="single"
             variant="outline"
             value={selectedSize}
             onValueChange={(val) => onSizeChange(val || "")}
-            className="flex flex-wrap gap-2 justify-start"
+            className="flex flex-wrap justify-start gap-2"
           >
             {uniqueSizes.map((size) => {
               const oos = isSizeOutOfStock(size)
@@ -77,7 +63,7 @@ export const VariantSelector = ({
                   key={size}
                   value={size}
                   disabled={oos}
-                  className="cursor-pointer font-semibold min-w-10 h-10 px-3 disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="h-10 min-w-10 cursor-pointer px-3 font-semibold disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {size}
                 </ToggleGroupItem>
@@ -85,27 +71,21 @@ export const VariantSelector = ({
             })}
           </ToggleGroup>
         </div>
-      )}
+      ) : null}
 
       {/* Colors Section */}
-      {uniqueColors.length > 0 && (
+      {uniqueColors.length > 0 ? (
         <div className="flex flex-col gap-2">
-          <div className="flex justify-between items-center text-xs">
-            <span className="font-semibold text-foreground">
-              Select Color
-            </span>
-            {selectedColor && (
-              <span className="text-muted-foreground font-medium">
-                Active: {selectedColor}
-              </span>
-            )}
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-semibold text-foreground">Select Color</span>
+            {selectedColor ? <span className="font-medium text-muted-foreground">Active: {selectedColor}</span> : null}
           </div>
           <ToggleGroup
             type="single"
             variant="outline"
             value={selectedColor}
             onValueChange={(val) => onColorChange(val || "")}
-            className="flex flex-wrap gap-2 justify-start"
+            className="flex flex-wrap justify-start gap-2"
           >
             {uniqueColors.map((color) => {
               const oos = isColorOutOfStock(color)
@@ -117,10 +97,10 @@ export const VariantSelector = ({
                   key={color}
                   value={color}
                   disabled={oos}
-                  className="cursor-pointer px-3 h-10 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="flex h-10 cursor-pointer items-center gap-2 px-3 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   <span
-                    className="size-3.5 inline-block rounded-full border border-white/20"
+                    className="inline-block size-3.5 rounded-full border border-white/20"
                     style={{ backgroundColor: hex }}
                   />
                   {color}
@@ -129,10 +109,10 @@ export const VariantSelector = ({
             })}
           </ToggleGroup>
         </div>
-      )}
+      ) : null}
 
       {/* Stock Availability indicator */}
-      {activeVariant && (
+      {activeVariant ? (
         <div className="pt-1 text-xs font-semibold">
           {activeVariant.stock > 0 ? (
             <span className="text-emerald-700">In Stock: {activeVariant.stock} available</span>
@@ -140,8 +120,7 @@ export const VariantSelector = ({
             <span className="text-destructive">Sold Out</span>
           )}
         </div>
-      )}
-
+      ) : null}
     </div>
   )
 }

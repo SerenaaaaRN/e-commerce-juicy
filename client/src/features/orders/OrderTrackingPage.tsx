@@ -14,8 +14,23 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import { ShoppingBag01Icon } from "@hugeicons/core-free-icons"
 import { toast } from "sonner"
 import { useConfirm } from "@/hooks/useConfirm"
-import { cn, formatPrice, formatDate, getOrderStatusLabel, getOrderStatusColor, getPaymentStatusLabel } from "@/lib/utils"
+import {
+  cn,
+  formatPrice,
+  formatDate,
+  getOrderStatusLabel,
+  getOrderStatusColor,
+  getPaymentStatusLabel,
+} from "@/lib/utils"
 import type { OrderDetail } from "@/types"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
 
 export const OrderTrackingPage = () => {
   const { orderNumber } = useParams<{ orderNumber: string }>()
@@ -59,7 +74,7 @@ export const OrderTrackingPage = () => {
       const res = await ordersApi.completeOrder(orderNumber)
       if (res.success) {
         toast.success("Order marked as received. Thank you!")
-        setOrder((prev) => prev ? { ...prev, status: "delivered", payment_status: "paid" } : null)
+        setOrder((prev) => (prev ? { ...prev, status: "delivered", payment_status: "paid" } : null))
       } else {
         toast.error(res.message || "Failed to complete order.")
       }
@@ -81,7 +96,7 @@ export const OrderTrackingPage = () => {
       const res = await ordersApi.cancelOrder(orderNumber)
       if (res.success) {
         toast.success("Order cancelled successfully.")
-        setOrder((prev) => prev ? { ...prev, status: "cancelled" } : null)
+        setOrder((prev) => (prev ? { ...prev, status: "cancelled" } : null))
       } else {
         toast.error(res.message || "Failed to cancel order.")
       }
@@ -99,10 +114,10 @@ export const OrderTrackingPage = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto flex min-h-[60vh] max-w-7xl items-center justify-center py-20 px-4">
+      <div className="container mx-auto flex min-h-[60vh] max-w-7xl items-center justify-center px-4 py-20">
         <div className="flex flex-col items-center gap-4">
           <Spinner size={32} className="text-primary" />
-          <span className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">
+          <span className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
             Locating Order Records...
           </span>
         </div>
@@ -112,16 +127,17 @@ export const OrderTrackingPage = () => {
 
   if (!order) {
     return (
-      <div className="container mx-auto flex min-h-[60vh] max-w-7xl items-center justify-center py-20 px-4">
-        <Empty className="border-none max-w-md bg-transparent">
+      <div className="container mx-auto flex min-h-[60vh] max-w-7xl items-center justify-center px-4 py-20">
+        <Empty className="max-w-md border-none bg-transparent">
           <EmptyHeader>
-            <EmptyMedia variant="icon" className="bg-primary/5 text-primary size-12 rounded-full mb-3 flex items-center justify-center">
+            <EmptyMedia
+              variant="icon"
+              className="mb-3 flex size-12 items-center justify-center rounded-full bg-primary/5 text-primary"
+            >
               <HugeiconsIcon icon={ShoppingBag01Icon} strokeWidth={1.8} className="size-6 text-primary" />
             </EmptyMedia>
-            <EmptyTitle className="text-2xl font-bold tracking-tight">
-              Order File Not Found
-            </EmptyTitle>
-            <EmptyDescription className="text-sm text-muted-foreground mt-2">
+            <EmptyTitle className="text-2xl font-bold tracking-tight">Order File Not Found</EmptyTitle>
+            <EmptyDescription className="mt-2 text-sm text-muted-foreground">
               We couldn't retrieve the specific checkout details for order reference: {orderNumber}.
             </EmptyDescription>
           </EmptyHeader>
@@ -143,50 +159,52 @@ export const OrderTrackingPage = () => {
   return (
     <div className="bg-background py-12">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-
-        {/* Navigation Breadcrumb trail */}
-        <div className="flex items-center gap-2 text-xs text-muted-foreground mb-8 text-left uppercase tracking-widest font-semibold">
-          <Link to="/" className="hover:text-foreground">Home</Link>
-          <span>/</span>
-          <span className="text-foreground truncate">Order #{orderNumber}</span>
-        </div>
-
-
+        <Breadcrumb className="mb-8 text-left text-xs font-bold uppercase">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/">Home</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator>/</BreadcrumbSeparator>
+            <BreadcrumbPage className="font-bold text-primary">Order #{orderNumber}</BreadcrumbPage>
+          </BreadcrumbList>
+        </Breadcrumb>
 
         {/* Order Header Card */}
-        <Card className="border border-border/80 shadow-md mb-8">
-          <CardContent className="p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 text-left">
-
+        <Card className="mb-8 border border-border/80 shadow-md">
+          <CardContent className="flex flex-col justify-between gap-6 p-6 text-left md:flex-row md:items-center md:p-8">
             <div className="flex flex-col gap-1">
-              <span className="text-xs font-semibold tracking-wider text-primary uppercase">
-                Order Tracking
-              </span>
-              <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground font-heading">
+              <span className="text-xs font-semibold tracking-wider text-primary uppercase">Order Tracking</span>
+              <h1 className="font-heading text-2xl font-extrabold tracking-tight text-foreground md:text-3xl">
                 Order Reference: #{order.order_number}
               </h1>
-              <span className="text-xs text-muted-foreground uppercase font-medium mt-1">
+              <span className="mt-1 text-xs font-medium text-muted-foreground uppercase">
                 Placed on {formatDate(order.created_at)}
               </span>
             </div>
 
-            <div className="flex flex-col md:items-end gap-2">
-              <Badge className={cn("font-semibold text-xs uppercase px-3 py-1 text-center w-fit border", getOrderStatusColor(order.status))}>
+            <div className="flex flex-col gap-2 md:items-end">
+              <Badge
+                className={cn(
+                  "w-fit border px-3 py-1 text-center text-xs font-semibold uppercase",
+                  getOrderStatusColor(order.status)
+                )}
+              >
                 Status: {getOrderStatusLabel(order.status)}
               </Badge>
-              <Badge variant="outline" className="font-semibold text-[10px] uppercase px-3 py-1 text-center w-fit border-border">
+              <Badge
+                variant="outline"
+                className="w-fit border-border px-3 py-1 text-center text-[10px] font-semibold uppercase"
+              >
                 Payment: {getPaymentStatusLabel(order.payment_status)}
               </Badge>
             </div>
-
           </CardContent>
         </Card>
 
         {/* Details Layout split grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-
+        <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
           {/* Main Info Tracking Column */}
-          <div className="lg:col-span-8 flex flex-col gap-8 w-full">
-
+          <div className="flex w-full flex-col gap-8 lg:col-span-8">
             {/* Visual Milestones timeline */}
             <Card className="border border-border/80 shadow-md">
               <CardContent className="p-6">
@@ -197,7 +215,7 @@ export const OrderTrackingPage = () => {
             {/* List of Purchased Items */}
             <Card className="border border-border/80 shadow-md">
               <CardHeader className="pb-0">
-                <CardTitle className="text-sm font-semibold tracking-tight text-foreground uppercase text-left">
+                <CardTitle className="text-left text-sm font-semibold tracking-tight text-foreground uppercase">
                   Itemized Silhouette Summary
                 </CardTitle>
               </CardHeader>
@@ -214,12 +232,10 @@ export const OrderTrackingPage = () => {
                 </div>
               </CardContent>
             </Card>
-
           </div>
 
           {/* Delivery & Shipping Info Sidebar Column */}
-          <div className="lg:col-span-4 flex flex-col gap-6 w-full text-left">
-
+          <div className="flex w-full flex-col gap-6 text-left lg:col-span-4">
             {/* Delivery address card */}
             <Card className="border border-border/80 shadow-md">
               <CardHeader className="pb-0">
@@ -230,18 +246,17 @@ export const OrderTrackingPage = () => {
               <CardContent className="flex flex-col gap-4 pt-4">
                 {shippingAddress ? (
                   <div className="flex flex-col gap-1 text-xs">
-                    <span className="font-bold text-sm text-foreground">
-                      {shippingAddress.recipient_name}
+                    <span className="text-sm font-bold text-foreground">{shippingAddress.recipient_name}</span>
+                    <span className="pt-1 font-sans leading-relaxed text-muted-foreground">
+                      {shippingAddress.address_line}, {shippingAddress.city}, {shippingAddress.province},{" "}
+                      {shippingAddress.postal_code}
                     </span>
-                    <span className="text-muted-foreground leading-relaxed pt-1 font-sans">
-                      {shippingAddress.address_line}, {shippingAddress.city}, {shippingAddress.province}, {shippingAddress.postal_code}
-                    </span>
-                    <span className="font-mono font-medium text-foreground pt-1.5">
+                    <span className="pt-1.5 font-mono font-medium text-foreground">
                       Contact: {shippingAddress.phone}
                     </span>
                   </div>
                 ) : (
-                  <span className="text-xs text-muted-foreground uppercase tracking-wider">
+                  <span className="text-xs tracking-wider text-muted-foreground uppercase">
                     No destination address specified.
                   </span>
                 )}
@@ -256,39 +271,29 @@ export const OrderTrackingPage = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-4 pt-4">
-                <div className="flex flex-col gap-2.5 text-xs text-muted-foreground uppercase tracking-wider font-medium">
+                <div className="flex flex-col gap-2.5 text-xs font-medium tracking-wider text-muted-foreground uppercase">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span className="font-mono text-foreground font-semibold">
-                      {formatPrice(subtotal)}
-                    </span>
+                    <span className="font-mono font-semibold text-foreground">{formatPrice(subtotal)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Shipping Fee</span>
-                    <span className="font-mono text-foreground font-semibold">
-                      {formatPrice(shippingFee)}
-                    </span>
+                    <span className="font-mono font-semibold text-foreground">{formatPrice(shippingFee)}</span>
                   </div>
                 </div>
 
                 <Separator />
 
-                <div className="flex justify-between items-baseline text-foreground pt-1">
-                  <span className="text-xs uppercase tracking-wider font-bold">Total Settled</span>
-                  <span className="text-xl font-bold font-mono">
-                    {formatPrice(grandTotal)}
-                  </span>
+                <div className="flex items-baseline justify-between pt-1 text-foreground">
+                  <span className="text-xs font-bold tracking-wider uppercase">Total Settled</span>
+                  <span className="font-mono text-xl font-bold">{formatPrice(grandTotal)}</span>
                 </div>
               </CardContent>
             </Card>
 
-            <div className=" flex flex-col gap-2">
+            <div className="flex flex-col gap-2">
               {/* Confirm received action */}
-              <Button
-                size="lg"
-                onClick={handleCompleteOrder}
-                disabled={completing}
-              >
+              <Button size="lg" onClick={handleCompleteOrder} disabled={completing}>
                 {completing ? (
                   <>
                     <Spinner data-icon="inline-start" />
@@ -301,12 +306,7 @@ export const OrderTrackingPage = () => {
 
               {/* Cancel order action */}
               {(order.status === "pending" || order.status === "confirmed") && (
-                <Button
-                  variant="destructive"
-                  size="lg"
-                  onClick={handleCancelOrder}
-                  disabled={cancelling}
-                >
+                <Button variant="destructive" size="lg" onClick={handleCancelOrder} disabled={cancelling}>
                   {cancelling && <Spinner data-icon="inline-start" />}
                   {cancelling ? "Cancelling..." : "Cancel Order"}
                 </Button>
@@ -317,11 +317,8 @@ export const OrderTrackingPage = () => {
             </div>
 
             {confirmDialog}
-
           </div>
-
         </div>
-
       </div>
     </div>
   )
