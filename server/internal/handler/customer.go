@@ -315,7 +315,7 @@ func (h *CustomerHandler) UpdateCustomerStatus(c *gin.Context) {
 	}
 
 	var req struct {
-		IsActive bool `json:"is_active"`
+		IsActive *bool `json:"is_active" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusUnprocessableEntity, gin.H{
@@ -328,7 +328,7 @@ func (h *CustomerHandler) UpdateCustomerStatus(c *gin.Context) {
 		return
 	}
 
-	err = h.srv.UpdateCustomerStatus(c.Request.Context(), id, req.IsActive)
+	err = h.srv.UpdateCustomerStatus(c.Request.Context(), id, *req.IsActive)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success": false,

@@ -117,7 +117,7 @@ func (r *Router) Setup(engine *gin.Engine) {
 			adminAuth.GET("/profile", r.adminHandler.GetProfile)
 			adminAuth.GET("/customers", r.customerHandler.ListCustomers)
 			adminAuth.GET("/customers/:id", r.customerHandler.GetCustomerDetail)
-			adminAuth.PUT("/customers/:id/status", r.customerHandler.UpdateCustomerStatus)
+			adminAuth.PATCH("/customers/:id/status", r.customerHandler.UpdateCustomerStatus)
 
 			adminAuth.GET("/categories", r.categoryHandler.ListAllCategories)
 			adminAuth.GET("/categories/:id", r.categoryHandler.GetCategoryByID)

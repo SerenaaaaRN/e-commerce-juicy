@@ -53,3 +53,7 @@ type AddressRequest struct {
 	PostalCode    string  `json:"postal_code" binding:"required"`
 	IsDefault     bool    `json:"is_default"`
 }
+
+type UpdateCustomerStatusRequest struct {
+	IsActive bool `json:"is_active" binding:"required"`
+}

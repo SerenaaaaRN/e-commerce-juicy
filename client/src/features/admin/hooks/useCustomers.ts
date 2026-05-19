@@ -14,19 +14,25 @@ export const useCustomers = () => {
   const [clientHistory, setClientHistory] = useState<AdminOrder[]>([])
 
   useEffect(() => {
+    let isMounted = true
+
     const fetchData = async () => {
       try {
         const res = await adminApi.getCustomers()
-        if (res.success && res.data) {
+        if (isMounted && res.success && res.data) {
           setClients(res.data)
         }
       } catch {
-        // silent fail
+        toast.error("Failed to load customer statistics.")
       } finally {
         setLoading(false)
       }
     }
     fetchData()
+
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   const handleViewClientDetails = useCallback((client: ClientStatistics) => {
@@ -39,9 +45,11 @@ export const useCustomers = () => {
         const res = await adminApi.getCustomerDetail(client.id)
         if (res.success && res.data) {
           setClientHistory(res.data.order_history || [])
+        } else {
+          toast.error(res.message || "Failed to load customer details.")
         }
       } catch {
-        // silent fail
+        toast.error("Failed to load customer details.")
       }
     })
   }, [])
