@@ -26,11 +26,15 @@ type CustomerLoginResponse struct {
 }
 
 type CustomerProfileResponse struct {
-	ID        string    `json:"id"`
-	FullName  string    `json:"full_name"`
-	Email     string    `json:"email"`
-	Phone     *string   `json:"phone"`
-	CreatedAt time.Time `json:"created_at"`
+	ID           string               `json:"id"`
+	FullName     string               `json:"full_name"`
+	Email        string               `json:"email"`
+	Phone        *string              `json:"phone"`
+	IsActive     bool                 `json:"is_active"`
+	OrderCount   int                  `json:"order_count"`
+	TotalSpent   float64              `json:"total_spent"`
+	CreatedAt    time.Time            `json:"created_at"`
+	OrderHistory []AdminOrderResponse `json:"order_history,omitempty"`
 }
 
 type UpdateProfileRequest struct {

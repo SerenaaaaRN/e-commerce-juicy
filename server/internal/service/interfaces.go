@@ -19,6 +19,8 @@ type CustomerRepository interface {
 	Update(ctx context.Context, customer *model.Customer) error
 	FindAll(ctx context.Context, page, perPage int, search string) ([]model.Customer, int64, error)
 	UpdateStatus(ctx context.Context, id uuid.UUID, isActive bool) error
+	GetStats(ctx context.Context, customerIDs []uuid.UUID) (map[uuid.UUID]model.CustomerStats, error)
+	GetOrderHistory(ctx context.Context, customerID uuid.UUID) ([]model.Order, error)
 }
 
 type AddressRepository interface {

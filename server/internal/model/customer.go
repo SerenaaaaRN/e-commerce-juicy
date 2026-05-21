@@ -22,3 +22,10 @@ type Customer struct {
 func (Customer) TableName() string {
 	return "customers"
 }
+
+type CustomerStats struct {
+	CustomerID uuid.UUID
+	OrderCount int
+	TotalSpent float64
+}
+

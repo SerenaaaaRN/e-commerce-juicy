@@ -120,6 +120,7 @@ func (s *customerService) GetProfile(ctx context.Context, id uuid.UUID) (*dto.Cu
 		FullName:  customer.FullName,
 		Email:     customer.Email,
 		Phone:     customer.Phone,
+		IsActive:  customer.IsActive,
 		CreatedAt: customer.CreatedAt,
 	}, nil
 }
@@ -144,6 +145,7 @@ func (s *customerService) UpdateProfile(ctx context.Context, id uuid.UUID, req d
 		FullName:  customer.FullName,
 		Email:     customer.Email,
 		Phone:     customer.Phone,
+		IsActive:  customer.IsActive,
 		CreatedAt: customer.CreatedAt,
 	}, nil
 }
@@ -176,14 +178,32 @@ func (s *customerService) ListCustomers(ctx context.Context, page, perPage int, 
 		return nil, 0, err
 	}
 
+	if len(customers) == 0 {
+		return []dto.CustomerProfileResponse{}, total, nil
+	}
+
+	customerIDs := make([]uuid.UUID, len(customers))
+	for i, c := range customers {
+		customerIDs[i] = c.ID
+	}
+
+	stats, err := s.repo.GetStats(ctx, customerIDs)
+	if err != nil {
+		return nil, 0, err
+	}
+
 	res := make([]dto.CustomerProfileResponse, len(customers))
 	for i, c := range customers {
+		cStats := stats[c.ID]
 		res[i] = dto.CustomerProfileResponse{
-			ID:        c.ID.String(),
-			FullName:  c.FullName,
-			Email:     c.Email,
-			Phone:     c.Phone,
-			CreatedAt: c.CreatedAt,
+			ID:         c.ID.String(),
+			FullName:   c.FullName,
+			Email:      c.Email,
+			Phone:      c.Phone,
+			IsActive:   c.IsActive,
+			OrderCount: cStats.OrderCount,
+			TotalSpent: cStats.TotalSpent,
+			CreatedAt:  c.CreatedAt,
 		}
 	}
 
@@ -195,7 +215,47 @@ func (s *customerService) UpdateCustomerStatus(ctx context.Context, id uuid.UUID
 }
 
 func (s *customerService) GetCustomerDetail(ctx context.Context, id uuid.UUID) (*dto.CustomerProfileResponse, error) {
-	return s.GetProfile(ctx, id)
+	customer, err := s.repo.FindByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	stats, err := s.repo.GetStats(ctx, []uuid.UUID{customer.ID})
+	if err != nil {
+		return nil, err
+	}
+	cStats := stats[customer.ID]
+
+	orders, err := s.repo.GetOrderHistory(ctx, customer.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	orderHistory := make([]dto.AdminOrderResponse, len(orders))
+	for i, o := range orders {
+		orderHistory[i] = dto.AdminOrderResponse{
+			ID:            o.ID,
+			OrderNumber:   o.OrderNumber,
+			CustomerName:  customer.FullName,
+			CustomerEmail: customer.Email,
+			Status:        o.Status,
+			PaymentStatus: o.PaymentStatus,
+			Total:         o.Total,
+			CreatedAt:     o.CreatedAt,
+		}
+	}
+
+	return &dto.CustomerProfileResponse{
+		ID:           customer.ID.String(),
+		FullName:     customer.FullName,
+		Email:        customer.Email,
+		Phone:        customer.Phone,
+		IsActive:     customer.IsActive,
+		OrderCount:   cStats.OrderCount,
+		TotalSpent:   cStats.TotalSpent,
+		CreatedAt:    customer.CreatedAt,
+		OrderHistory: orderHistory,
+	}, nil
 }
 
 func (s *customerService) generateToken(customerID string, expiry time.Duration) (string, error) {
