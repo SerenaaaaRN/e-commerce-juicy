@@ -30,7 +30,7 @@ export const LoginPageCust = () => {
           toast.error(res.message || "Invalid credentials. Please try again.")
         }
       } catch {
-        toast.error("Something went wrong. Please try again.")
+        toast.error("Server offline. Please try again later.")
       }
     })
   }

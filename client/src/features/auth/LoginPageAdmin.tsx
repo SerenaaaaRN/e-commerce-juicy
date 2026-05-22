@@ -34,7 +34,7 @@ export const LoginPageAdmin = () => {
           toast.error(res.message || "Invalid email or passcode. Access denied.")
         }
       } catch {
-        toast.error("Failed to authenticate. Access denied.")
+        toast.error("Server offline. Please try again later.")
       }
     })
   }
@@ -49,7 +49,7 @@ export const LoginPageAdmin = () => {
               <aside className="flex flex-col justify-center p-6 text-left md:p-8">
                 {/* Header Info */}
                 <header className="mb-4 flex flex-col items-center gap-2 text-center">
-                  <h1 className="text-2xl font-bold tracking-tight text-foreground">Welcome Back</h1>
+                  <h1 className="text-2xl font-bold tracking-tight text-foreground">Welcome Back Serena</h1>
                   <p className="text-center font-sans text-xs text-balance text-muted-foreground">
                     Provide your authorized manager credentials to unlock the inventory, review, and fulfillment
                     systems.

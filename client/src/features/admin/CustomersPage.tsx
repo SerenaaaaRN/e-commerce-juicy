@@ -92,8 +92,8 @@ export const CustomersPage = () => {
                         {client.full_name.substring(0, 2)}
                       </div>
                       <div>
-                        <div className="font-semibold text-foreground">{client.full_name}</div>
-                        <div className="text-[11px] text-muted-foreground">{client.email}</div>
+                        <p className="font-semibold text-foreground">{client.full_name}</p>
+                        <p className="text-[11px] text-muted-foreground">{client.email}</p>
                       </div>
                     </div>
                   </TableCell>
@@ -102,10 +102,10 @@ export const CustomersPage = () => {
                     {formatDate(client.created_at)}
                   </TableCell>
                   <TableCell className="px-6 py-4 font-semibold text-foreground">
-                    {client.order_count} unit(s)
+                    {client.order_count ?? 0} unit(s)
                   </TableCell>
                   <TableCell className="px-6 py-4 font-bold text-foreground">
-                    {formatPrice(client.total_spent)}
+                    {formatPrice(client.total_spent ?? 0)}
                   </TableCell>
                   <TableCell className="px-6 py-4">
                     <Badge variant={(client.is_active ?? true) ? "default" : "destructive"}>
@@ -196,7 +196,7 @@ export const CustomersPage = () => {
                     Placed Order History
                   </h3>
                   <div className="text-xs font-bold text-foreground">
-                    Total Spent: <span className="text-primary">{formatPrice(activeClient.total_spent)}</span>
+                    Total Spent: <span className="text-primary">{formatPrice(activeClient.total_spent ?? 0)}</span>
                   </div>
                 </div>
                 <div className="flex flex-col gap-3">

@@ -34,7 +34,7 @@ export const RegisterPage = () => {
           toast.error(res.message || "Failed to create account. Email may already be in use.")
         }
       } catch {
-        toast.error("Failed to register. Please review your details and try again.")
+        toast.error("Server offline. Please try again later.")
       }
     })
   }
@@ -48,13 +48,13 @@ export const RegisterPage = () => {
               {/* Form Side */}
               <div className="flex flex-col justify-center p-6 text-left md:p-8">
                 {/* Header block */}
-                <div className="mb-4 flex flex-col items-center gap-2 text-center">
+                <header className="mb-4 flex flex-col items-center gap-2 text-center">
                   <span className="text-xs font-semibold tracking-wider text-primary uppercase">Join the Atelier</span>
                   <h1 className="text-2xl font-bold tracking-tight text-foreground">Create your account</h1>
                   <p className="text-center font-sans text-xs text-balance text-muted-foreground">
                     Enter your email and credentials below to create your account
                   </p>
-                </div>
+                </header>
 
                 {/* Form */}
                 <RegisterForm onSubmit={handleSubmit} isPending={isPending} />
