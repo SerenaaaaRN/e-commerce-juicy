@@ -57,13 +57,15 @@
 - Mobile app.
 - Real-time inventory sync.
 
-### Planned (Phase 7 — Shop Experience Enhancement)
-- Subcategory hierarchy (`parent_id` on categories table).
-- Size filter (multi-select, join `product_variants`).
-- Text search bar di Navbar (ILIKE on `name` + `description`).
-- Product count per category di category listing.
-- Grid toggle (2-column / 4-column) di CollectionPage.
-- Infinite scroll sebagai alternatif pagination.
+### Phase 7 — Shop Experience Enhancement
+| Item | Status |
+|---|---|
+| Subcategory hierarchy (`parent_id` on categories table) | ✅ Done |
+| Size filter (multi-select, join `product_variants`) | ✅ Done |
+| Search bar di Navbar (ILIKE on `name` + `description`) | ✅ Done |
+| Product count per category di category listing | ✅ Done |
+| Grid toggle (2-column / 4-column) di CollectionPage | 📋 Planned |
+| Infinite scroll sebagai alternatif pagination | 📋 Planned |
 
 ---
 
@@ -92,7 +94,7 @@
 - **Base:** shadcn/ui (zinc) — all components are shadcn primitives, unstyled overrides are minimal
 - **Accent color:** Terracotta `#b5633a` — used for primary CTAs, active states, highlights
 - **Background:** Zinc scale (shadcn default light theme)
-- **No custom design system** — DESIGN.md is retired; do not reference it
+- **Design system** — DESIGN.md defines editorial luxury conventions (gold accent, typography, section patterns) used across the storefront
 
 ---
 
@@ -109,7 +111,7 @@
 | 7 | 📋 Planned | Shop Experience Enhancement — subcategories, size filter, search, grid toggle, infinite scroll |
 | 8 | ✅ Done | Storefront Core & Bug Fixes — checkout schema, GORM integrity, scroll layout |
 | 9 | ✅ Done | Shop Experience — Cancel Order, Wishlist, Recently Viewed, Edit Address/Variant/Category |
-| 10 | 📋 Planned | Priority 4 — Bulk actions, Export CSV, Coupons, Sales Report |
+| 10 | ✅ Done | Zalora-Style Homepage & Category Landing Pages — 14-section homepage, category landing pages |
 
 ---
 
@@ -126,11 +128,12 @@ juicy/
 │   ├── API.md
 │   ├── TASKS.md
 │   ├── CHANGELOG.md
-│   └── ENV.md
+│   ├── ENV.md
+│   └── DESIGN.md
 └── README.md
 ```
 
-> `DESIGN.md` has been retired — shadcn/ui handles all component styling.
+> DESIGN.md defines the editorial luxury design system (gold accents, typography, section patterns).
 
 ---
 

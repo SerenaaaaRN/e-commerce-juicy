@@ -46,19 +46,16 @@ client/
 │   │   ├── home/                         # Landing page (Zalora-style multi-section)
 │   │   │   ├── components/
 │   │   │   │   ├── HeroSection.tsx           # Hero banner utama dengan CTA
+│   │   │   │   ├── PromoStrip.tsx            # Full-width promo/flash sale banner
 │   │   │   │   ├── FeaturedSection.tsx       # Grid produk featured/bestseller
+│   │   │   │   ├── TrendingNow.tsx           # Trending/populer products
+│   │   │   │   ├── NewArrivals.tsx           # Produk terbaru grid
 │   │   │   │   ├── CollectionPreview.tsx     # Preview koleksi dengan link ke /shop
+│   │   │   │   ├── WhyJuicy.tsx              # Value propositions
 │   │   │   │   ├── RecentlyViewedSection.tsx # Produk yg pernah dilihat (localStorage)
 │   │   │   │   ├── EditorialSection.tsx      # Editorial/lookbook imagery section
-│   │   │   │   ├── CtaSection.tsx            # Call-to-action banner bawah halaman
-│   │   │   │   ├── PromoStrip.tsx            # [10.2] Full-width promo/flash sale banner
-│   │   │   │   ├── StyleDirectory.tsx        # [10.2] Grid kategori besar ala Zalora
-│   │   │   │   ├── NewArrivals.tsx           # [10.2] Produk terbaru grid
-│   │   │   │   ├── BrandSpotlight.tsx        # [10.2] Editorial brand story
-│   │   │   │   ├── WhyJuicy.tsx              # [10.2] Value propositions
-│   │   │   │   ├── NewsletterSection.tsx     # [10.2] Email signup CTA
-│   │   │   │   ├── InstagramFeed.tsx         # [10.2] Social media grid
-│   │   │   │   └── TrendingNow.tsx           # [10.2] Trending/populer products
+│   │   │   │   ├── NewsletterSection.tsx     # Email signup CTA
+│   │   │   │   └── CtaSection.tsx            # Call-to-action banner bawah halaman
 │   │   │   └── HomePage.tsx              # Page component — compose semua sections
 │   │   │
 │   │   ├── category/                     # [10.3] Category landing pages
@@ -74,7 +71,7 @@ client/
 │   │   │   ├── components/
 │   │   │   │   ├── ProductCard.tsx           # Card produk: gambar, nama, harga, badge
 │   │   │   │   ├── ProductGrid.tsx           # Grid layout untuk list produk
-│   │   │   │   ├── ProductFilters.tsx        # Filter sidebar: kategori, sort + [PLANNED: subcategory tree, size filter, product count]
+│   │   │   │   ├── ProductFilters.tsx        # Filter sidebar: kategori, sort, size filter, search
 │   │   │   │   ├── ProductImageGallery.tsx   # Main image + thumbnail strip
 │   │   │   │   ├── VariantSelector.tsx       # Size pills + color swatches; OOS state
 │   │   │   │   ├── AddToCartButton.tsx       # Button dengan stock check + loading state
@@ -82,10 +79,8 @@ client/
 │   │   │   │   ├── ReviewsSection.tsx        # Review list + pagination di PDP
 │   │   │   │   ├── ReviewCard.tsx            # Satu review: avatar, rating, body, date
 │   │   │   │   └── StarRating.tsx            # Reusable — display mode + interactive mode
-│   │   │   │   ├── SizeFilter.tsx            # [PLANNED] Multi-select size pills (XS–XXL)
-│   │   │   │   └── GridToggle.tsx            # [PLANNED] Toggle 2-column / 4-column grid view
 │   │   │   ├── types.ts                      # ProductFilters, SortOption, GalleryImage
-│   │   │   ├── CollectionPage.tsx            # /shop — grid + filter + sort + pagination [PLANNED: infinite scroll, grid toggle]
+│   │   │   ├── CollectionPage.tsx            # /shop — grid + filter + sort + pagination [PLANNED: grid toggle, infinite scroll]
 │   │   │   └── ProductPage.tsx               # /shop/:slug — PDP lengkap
 │   │   │
 │   │   ├── cart/                         # Cart
@@ -119,7 +114,9 @@ client/
 │   │   │   │   ├── LoginForm.tsx         # Email + password form dengan Zod validation
 │   │   │   │   └── RegisterForm.tsx      # Nama, email, password, konfirmasi password
 │   │   │   ├── types.ts                  # LoginFormValues, RegisterFormValues
-│   │   │   ├── LoginPage.tsx             # /login
+│   │   │   ├── validations.ts           # Zod schemas for login & registration
+│   │   │   ├── LoginPageAdmin.tsx        # /admin/login — admin login
+│   │   │   ├── LoginPageCust.tsx         # /login — customer login
 │   │   │   └── RegisterPage.tsx          # /register
 │   │   │
 │   │   ├── profile/                      # Customer profile management
@@ -153,7 +150,7 @@ client/
 │   │       │   ├── ProductFormDialog.tsx # Product create/edit dialog (presentational)
 │   │       │   ├── VariantManagerDialog.tsx # Variant management dialog (presentational)
 │   │       │   └── ImageManagerDialog.tsx  # Image upload/management dialog (presentational)
-│   │       ├── LoginPage.tsx             # /admin/login — imports schema from validations.ts
+│   │       ├── LoginPage.tsx             # /admin/login (re-exports LoginPageAdmin)
 │   │       ├── DashboardPage.tsx         # /admin/dashboard — Card + Recharts (CSS vars)
 │   │       ├── ProductsPage.tsx          # /admin/products — thin orchestrator using useProducts + useVariants + useProductImages hooks
 │   │       ├── OrdersPage.tsx            # /admin/orders — thin orchestrator using useOrders hook
@@ -184,9 +181,12 @@ client/
 │   │   ├── api/
 │   │   │   ├── client.ts                 # Admin Axios instance + JWT interceptor + refresh logic
 │   │   │   ├── customerClient.ts         # Customer Axios instance + JWT interceptor + auto-logout on 401
-│   │   │   ├── admin.ts                  # Semua admin API calls: auth, products, orders, customers, analytics
+│   │   │   ├── admin.ts                  # Semua admin API calls: auth, analytics, categories, products, images, variants, orders, customers, reviews
 │   │   │   ├── products.ts               # Public shop API: getProducts, getProductBySlug, getCategories
-│   │   │   ├── customer.ts               # Customer API: auth, profile, addresses, cart, orders, reviews
+│   │   │   ├── customer.ts               # Customer API: auth, profile
+│   │   │   ├── cart.ts                   # Cart API: getCart, addItem, updateQty, removeItem, clearCart
+│   │   │   ├── orders.ts                 # Customer orders + addresses + reviews API: checkout, orders, addresses, reviews
+│   │   │   ├── wishlist.ts               # Wishlist API: getWishlist, checkWishlist, addItem, removeItem
 │   │   │   └── index.ts                  # Re-exports semua API modules
 │   │   └── utils/
 │   │       ├── cn.ts                     # cn() helper — clsx + tailwind-merge
@@ -199,20 +199,25 @@ client/
 │   │   ├── cartStore.ts                  # Cart items, fetchCart, addItem, updateQty, removeItem, clearCart
 │   │   ├── orderStore.ts                 # Orders list, currentOrder, placeOrder, fetchOrders, fetchByOrderNumber
 │   │   ├── productStore.ts               # Products list, categories, filters, fetchProducts, fetchProductBySlug
-│   │   └── reviewStore.ts                # Reviews per product, submitReview, fetchReviews
+│   │   ├── reviewStore.ts                # Reviews per product, submitReview, fetchReviews
+│   │   └── wishlistStore.ts              # Wishlist items, wishlistIds Set, fetchWishlist, addItem, removeItem
 │   │
 │   ├── hooks/                            # Custom hooks — per concern
 │   │   ├── useAuth.ts                    # Shortcut ke customerAuthStore: isLoggedIn, customer, logout
 │   │   ├── useCart.ts                    # Shortcut ke cartStore + computed values: itemCount, totalPrice
+│   │   ├── useConfirm.tsx                # Promise-based confirmation dialog (AlertDialog)
+│   │   ├── useDebounce.ts                # Generic debounce hook (default 300ms)
 │   │   ├── useProduct.ts                 # Fetch + state management untuk single product / list
-│   │   └── useOrder.ts                   # Fetch order by orderNumber, status helpers
+│   │   ├── useOrder.ts                   # Fetch order by orderNumber, status helpers + getStatusColor
+│   │   ├── useRecentlyViewed.ts          # localStorage-based recently viewed (max 4, FIFO)
+│   │   └── useIsMobile.ts                # Boolean hook for max-width: 767px breakpoint
 │   │
 │   ├── types/
 │   │   └── index.ts                      # Shared global types: ApiResponse<T>, PaginatedResponse<T>, semua backend DTO interfaces (Product, Order, Customer, Review, CartItem, Address, dll)
 │   │
 │   ├── constants/
 │   │   ├── routes.ts                     # Typed route paths: ROUTES.shop, ROUTES.cart, ROUTES.orders, dll
-│   │   └── orderStatus.ts                # ORDER_STATUS enum values, label map, color map
+│   │   └── orderStatus.ts                # ORDER_STATUS enum values, label map
 │   │
 │   ├── provider/
 │   │   └── theme-provider.tsx            # shadcn theme provider (light/dark)
@@ -244,6 +249,7 @@ server/
 │   │   ├── interfaces.go
 │   │   ├── admin.go
 │   │   ├── customer.go
+│   │   ├── address.go
 │   │   ├── product.go
 │   │   ├── category.go
 │   │   ├── cart.go
@@ -268,6 +274,7 @@ server/
 │   ├── repository/
 │   │   ├── admin.go
 │   │   ├── customer.go
+│   │   ├── address.go
 │   │   ├── product.go
 │   │   ├── category.go
 │   │   ├── cart.go
@@ -312,7 +319,9 @@ server/
 │   ├── 000011_create_order_items.up.sql / .down.sql
 │   ├── 000012_create_reviews.up.sql / .down.sql
 │   ├── 000013_add_parent_id_to_categories.up.sql / .down.sql
-│   └── 000014_create_wishlist_items.up.sql / .down.sql
+│   ├── 000014_create_wishlist_items.up.sql / .down.sql
+│   ├── seed.sql
+│   └── seed_data.sql
 ├── .env
 ├── .env.example
 ├── go.mod
@@ -333,11 +342,12 @@ server/
 /orders                     → OrderHistoryPage (protected)
 /orders/:orderNumber        → OrderTrackingPage (protected)
 /wishlist                   → WishlistPage (protected)
-/login                      → LoginPage (redirect ke / jika sudah login)
+/login                      → LoginPageCust (redirect ke / jika sudah login)
 /register                   → RegisterPage (redirect ke / jika sudah login)
 /profile                    → ProfilePage (protected)
 
-/admin/login                → Admin LoginPage
+/admin/login                → LoginPageAdmin (unprotected)
+/admin                      → AdminRoute + AdminLayout (protected)
 /admin/dashboard            → DashboardPage (admin protected)
 /admin/products             → ProductsPage (admin protected)
 /admin/orders               → OrdersPage (admin protected)
@@ -381,23 +391,18 @@ type AdminReview = { ... }         // Matches Go AdminReviewResponse (has produc
 Berisi types yang hanya relevan untuk UI/form di feature tersebut — tidak perlu di-share:
 
 ```typescript
-// features/admin/types.ts
-type ProductFormValues = { name: string; slug: string; category_id: string; price: number; ... }
-type VariantFormValues = { size: string; color?: string; sku: string; stock: number; ... }
-type CategoryFormValues = { name: string; slug: string; description?: string; display_order: number }
-type LoginFormValues = { email: string; password: string }
-type ClientStatistics = Customer & { order_count: number; total_spent: number; is_active?: boolean }
-
 // features/shop/types.ts
 type ProductFilters = { categoryId?: string; sort?: SortOption; page?: number }
-type SortOption = 'newest' | 'price_asc' | 'price_desc'
+type SortOption = 'newest' | 'price_asc' | 'price_desc' | 'popular' | ''
+type GalleryImage = { id: string; image_url: string; alt_text?: string; is_primary: boolean; display_order: number }
 
 // features/checkout/types.ts
+type AddressFormValues = { label: string; recipient_name: string; phone: string; address_line: string; city: string; province: string; postal_code: string }
 type CheckoutFormValues = { addressId: string; paymentMethod: string; notes?: string }
 
 // features/auth/types.ts
 type LoginFormValues = { email: string; password: string }
-type RegisterFormValues = { name: string; email: string; password: string; confirmPassword: string }
+type RegisterFormValues = { full_name: string; email: string; password: string; phone?: string }
 ```
 
 ---
@@ -522,7 +527,7 @@ Dua jenis route guard yang terpisah:
 
 ### Customer Auth Flow
 ```
-1. POST /api/customer/register atau /login
+1. POST /api/customers/register atau /api/customers/login
 2. Return customer JWT (access: 7d)
 3. Frontend simpan di customerAuthStore (memory only — bukan localStorage)
 4. customerClient.ts interceptor attach Bearer ke /api/customer/* requests

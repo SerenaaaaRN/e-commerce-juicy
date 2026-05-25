@@ -32,7 +32,7 @@
 
 **Admin routes:** `Authorization: Bearer <admin_access_token>` — all `/api/admin/*` routes except login/refresh.
 
-**Customer routes:** `Authorization: Bearer <customer_token>` — all `/api/customer/*` routes.
+**Customer routes:** `Authorization: Bearer <customer_token>` — all `/api/customers/*`, `/api/cart`, `/api/orders`, `/api/addresses`, `/api/wishlist`, `/api/reviews` routes.
 
 ---
 
@@ -80,7 +80,7 @@
 
 ### 👤 Customer Auth
 
-#### `POST /customer/register`
+#### `POST /customers/register`
 ```json
 // Request
 { "full_name": "Jane Doe", "email": "jane@example.com", "password": "min8chars", "phone": "+62812345678" }
@@ -92,7 +92,7 @@
 
 ---
 
-#### `POST /customer/login`
+#### `POST /customers/login`
 ```json
 // Request
 { "email": "jane@example.com", "password": "min8chars" }
@@ -106,19 +106,19 @@
 
 ### 👤 Customer Profile (Protected — Customer)
 
-#### `GET /customer/profile`
+#### `GET /customers/profile`
 ```json
 // Response 200
 { "success": true, "data": { "id": "uuid", "full_name": "Jane Doe", "email": "...", "phone": "...", "created_at": "..." } }
 ```
 
-#### `PUT /customer/profile`
+#### `PUT /customers/profile`
 ```json
 // Request
 { "full_name": "Jane Smith", "phone": "+62812345679" }
 ```
 
-#### `PUT /customer/profile/password`
+#### `PUT /customers/profile/password`
 ```json
 // Request
 { "current_password": "oldpass", "new_password": "newpass" }
@@ -129,24 +129,27 @@
 
 ### 📦 Customer Addresses (Protected — Customer)
 
-#### `GET /customer/addresses`
+#### `GET /addresses`
 ```json
 // Response 200
 { "success": true, "data": [ { "id": "uuid", "label": "Home", "recipient_name": "...", "city": "...", "is_default": true, ... } ] }
 ```
 
-#### `POST /customer/addresses`
+#### `GET /addresses/:id`
+Single address detail.
+
+#### `POST /addresses`
 ```json
 // Request
 { "label": "Home", "recipient_name": "Jane Doe", "phone": "+62812345678", "address_line": "Jl. Sudirman No. 1", "city": "Jakarta", "province": "DKI Jakarta", "postal_code": "10110", "is_default": true }
 ```
 
-#### `PUT /customer/addresses/:id`
+#### `PUT /addresses/:id`
 Update address fields.
 
-#### `DELETE /customer/addresses/:id`
+#### `DELETE /addresses/:id`
 
-#### `PATCH /customer/addresses/:id/default`
+#### `PUT /addresses/:id/default`
 Sets this address as default; unsets all others.
 
 ---
@@ -159,17 +162,17 @@ All active categories.
 { "success": true, "data": [ { "id": "uuid", "name": "Dresses", "slug": "dresses", "display_order": 3 } ] }
 ```
 
-> **[PLANNED — Phase 7]** Response akan di-extend dengan nested subcategory dan product count:
-> ```json
-> {
->   "id": "uuid", "name": "Dresses", "slug": "dresses", "display_order": 3,
->   "parent_id": null,
->   "product_count": 24,
->   "children": [
->     { "id": "uuid", "name": "Maxi Dresses", "slug": "maxi-dresses", "parent_id": "...", "product_count": 8 }
->   ]
-> }
-> ```
+Response includes nested subcategories and product count:
+```json
+{
+  "id": "uuid", "name": "Dresses", "slug": "dresses", "display_order": 3,
+  "parent_id": null,
+  "product_count": 24,
+  "children": [
+    { "id": "uuid", "name": "Maxi Dresses", "slug": "maxi-dresses", "parent_id": "...", "product_count": 8 }
+  ]
+}
+```
 
 ---
 
@@ -182,8 +185,8 @@ All available products. Supports filtering, sorting, and pagination.
 - `tag` — single tag string (e.g. `new-arrival`)
 - `sort` — `price_asc | price_desc | newest | popular`
 - `page`, `per_page`
-- `sizes` — **[PLANNED — Phase 7]** comma-separated size filter (e.g. `sizes=S,M,L`). Filters products that have at least one active variant matching any of the specified sizes.
-- `search` — **[PLANNED — Phase 7]** keyword search across `name` and `description` fields (ILIKE).
+- `sizes` — comma-separated size filter (e.g. `sizes=S,M,L`). Filters products that have at least one active variant matching any of the specified sizes.
+- `search` — keyword search across `name` and `description` fields (case-insensitive LIKE).
 
 ```json
 // Response 200 (paginated)
@@ -257,7 +260,7 @@ Reviews for a product. Supports pagination.
 
 ### 🛒 Cart (Protected — Customer)
 
-#### `GET /customer/cart`
+#### `GET /cart`
 ```json
 {
   "success": true,
@@ -282,7 +285,7 @@ Reviews for a product. Supports pagination.
 
 ---
 
-#### `POST /customer/cart/items`
+#### `POST /cart/items`
 Add item to cart. Upserts on conflict (same customer + variant).
 ```json
 // Request
@@ -292,7 +295,7 @@ Add item to cart. Upserts on conflict (same customer + variant).
 
 ---
 
-#### `PATCH /customer/cart/items/:id`
+#### `PUT /cart/items/:id`
 Update quantity of a cart item.
 ```json
 // Request
@@ -301,12 +304,12 @@ Update quantity of a cart item.
 
 ---
 
-#### `DELETE /customer/cart/items/:id`
+#### `DELETE /cart/items/:id`
 Remove item from cart.
 
 ---
 
-#### `DELETE /customer/cart`
+#### `DELETE /cart`
 Clear entire cart.
 
 ---
@@ -315,7 +318,7 @@ Clear entire cart.
 
 ### ❤️ Wishlist (Protected — Customer)
 
-#### `GET /customer/wishlist`
+#### `GET /wishlist`
 Returns all wishlist items for the authenticated customer.
 ```json
 {
@@ -341,7 +344,7 @@ Returns all wishlist items for the authenticated customer.
 
 ---
 
-#### `GET /customer/wishlist/check/:variantId`
+#### `GET /wishlist/check/:variantId`
 Check if a specific variant is in the customer's wishlist.
 ```json
 { "success": true, "data": { "in_wishlist": true } }
@@ -349,7 +352,7 @@ Check if a specific variant is in the customer's wishlist.
 
 ---
 
-#### `POST /customer/wishlist/items`
+#### `POST /wishlist/items`
 Add a variant to wishlist.
 ```json
 // Request
@@ -362,7 +365,7 @@ Add a variant to wishlist.
 
 ---
 
-#### `DELETE /customer/wishlist/items/:variantId`
+#### `DELETE /wishlist/items/:variantId`
 Remove a variant from wishlist.
 ```json
 // Response 200
@@ -373,7 +376,7 @@ Remove a variant from wishlist.
 
 ### 📋 Orders — Customer (Protected)
 
-#### `POST /customer/orders`
+#### `POST /orders/checkout`
 Checkout — creates an order from current cart.
 ```json
 // Request
@@ -395,17 +398,7 @@ Checkout — creates an order from current cart.
 
 ---
 
-#### `POST /customer/orders/:order_number/cancel`
-Cancel an order. Only allowed when status is `pending` or `confirmed`. Restores stock automatically.
-```json
-// Response 200
-{ "success": true, "message": "Order cancelled successfully" }
-```
-**Errors:** `404 ORDER_NOT_FOUND`, `409 CANNOT_CANCEL_ORDER`
-
----
-
-#### `GET /customer/orders`
+#### `GET /orders`
 Customer's order history.
 ```json
 {
@@ -426,7 +419,7 @@ Customer's order history.
 
 ---
 
-#### `GET /customer/orders/:order_number`
+#### `GET /orders/:order_number`
 Order detail + tracking.
 ```json
 {
@@ -451,9 +444,30 @@ Order detail + tracking.
 
 ---
 
+#### `POST /orders/:order_number/cancel`
+Cancel an order. Only allowed when status is `pending` or `confirmed`. Restores stock automatically.
+```json
+// Response 200
+{ "success": true, "message": "Order cancelled successfully" }
+```
+**Errors:** `404 ORDER_NOT_FOUND`, `409 CANNOT_CANCEL_ORDER`
+
+---
+
+#### `POST /orders/:order_number/complete`
+Mark an order as completed/received by the customer. Only allowed when status is `delivered`.
+```json
+// Response 200
+{ "success": true, "message": "Order completed successfully" }
+```
+**Errors:** `404 ORDER_NOT_FOUND`, `409 CANNOT_COMPLETE_ORDER`
+```
+
+---
+
 ### ⭐ Reviews (Protected — Customer)
 
-#### `POST /customer/reviews`
+#### `POST /reviews`
 Submit a review. Customer must have a delivered order containing this product.
 ```json
 // Request
@@ -463,6 +477,18 @@ Submit a review. Customer must have a delivered order containing this product.
 { "success": true, "data": { "id": "uuid", "rating": 5, "body": "Amazing quality!", "created_at": "..." } }
 ```
 **Errors:** `403 NOT_PURCHASED`, `403 ORDER_NOT_DELIVERED`, `409 ALREADY_REVIEWED`
+
+---
+
+### 🗂️ Admin — Profile (Protected — Admin)
+
+#### `GET /admin/profile`
+```json
+{
+  "success": true,
+  "data": { "id": "uuid", "username": "admin", "email": "admin@juicy.com" }
+}
+```
 
 ---
 
@@ -527,7 +553,7 @@ Add an image to an existing product via a direct web/internet URL. `application/
 #### `DELETE /admin/products/:id/images/:image_id`
 Delete a single product image + Cloudinary cleanup.
 
-#### `PATCH /admin/products/:id/images/:image_id/primary`
+#### `PUT /admin/products/:id/images/:image_id/primary`
 Set an image as the primary image.
 
 ---
@@ -552,6 +578,7 @@ Deactivate variant (soft delete — set `is_active: false`).
 ### 🗂️ Admin — Categories (Protected — Admin)
 
 #### `GET /admin/categories`
+#### `GET /admin/categories/:id`
 #### `POST /admin/categories`
 ```json
 { "name": "Dresses", "slug": "dresses", "description": "...", "display_order": 3, "is_active": true }
@@ -591,13 +618,13 @@ All orders. Supports pagination + filtering.
 #### `GET /admin/orders/:id`
 Full order detail including items and address.
 
-#### `PATCH /admin/orders/:id/status`
+#### `PUT /admin/orders/:id/status`
 ```json
 { "status": "shipped" }
 ```
 **Note:** When status changes to `shipped`, `shipped_at` is set automatically. When `delivered`, `delivered_at` is set. Triggers email to customer on `shipped`.
 
-#### `PATCH /admin/orders/:id/payment`
+#### `PUT /admin/orders/:id/payment`
 ```json
 { "payment_status": "paid" }
 ```
@@ -638,7 +665,7 @@ All reviews. Supports pagination + filter.
 
 **Query params:** `page`, `per_page`, `product_id`, `published`
 
-#### `PATCH /admin/reviews/:id/publish`
+#### `PUT /admin/reviews/:id/publish`
 ```json
 { "is_published": false }
 ```

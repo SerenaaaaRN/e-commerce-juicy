@@ -1,145 +1,168 @@
-# Juicy 🍊 — Premium Storefront & Admin Portal
+# Juicy — Luxury Fashion E-Commerce Platform
 
-Juicy is a state-of-the-art, high-end e-commerce platform featuring a modern hybrid domain-based React 19 storefront and a high-performance Go administrative backend. Drawing heavy design and UX inspiration from top-tier fashion platforms like Zalora, Juicy blends rich aesthetics (terracotta accents, glassmorphic structures, and smooth micro-animations) with production-grade backend design patterns.
+**Juicy** adalah platform e-commerce fashion mewah full-stack yang menggabungkan storefront React 19 modern dengan backend administrasi Go berperforma tinggi. Terinspirasi dari brand fashion top-tier seperti Zalora, Net-a-Porter, dan SSENSE — menghadirkan pengalaman belanja editorial luxury dengan sistem manajemen operasional yang mumpuni.
 
 ---
 
 ## 🛠️ Technology Stack
 
-### Frontend (Client)
-* **Core:** React 19, Vite, TypeScript
-* **Styling & Design:** Tailwind CSS, Shadcn/UI, Lucide Icons, Outfit & Inter Google Fonts
-* **State Management:** Zustand (Memory-only JWT storage for robust XSS protection)
-* **Charts & Analytics:** Recharts (responsive, clean visualizations bound to CSS variables)
-* **Data Fetching:** Axios (with dual client instances & silent token refresh interceptors)
-
-### Backend (Server)
-* **Language:** Go (Golang) 1.20+
-* **HTTP Router:** Gin Gonic Web Framework
-* **Database & ORM:** PostgreSQL & GORM
-* **Migrations:** Raw SQL PostgreSQL schema management via `golang-migrate`
-* **Images & Media:** Cloudinary API integration (safe local staging with auto-cleanup)
-* **Transactional Emails:** Resend API (asynchronous background dispatch queues)
-
----
-
-## 🏗️ Core Architecture & Features
-
-### 🛍️ Storefront (Customer Experience)
-* **Dynamic Home Page:** Multi-section landing page with editorial lookbooks, newsletter signups, trending carousels, and recent views (local storage).
-* **Zalora-Style Catalog Filter:** Multi-category catalog filtering, nested subcategory recursive trees, size filtering, and sorting systems.
-* **Product Detail Page (PDP):** Size/color selectors with real-time stock feedback, multi-image interactive carousels, and verified-purchase review system.
-* **Shopping Cart & Wishlist:** Stateful Zustand stores with optimistic UI toggles and instant quantity sync.
-* **COD Checkout Flow:** Integrated address selector (supports primary labels and inline editing) and payment stub configurations.
-
-### 📊 Admin Dashboard (Operations Hub)
-* **Analytical Insights:** Real-time metrics overview, concurrent db pipelines via `errgroup`, and weekly revenue/orders charts.
-* **Inventory Management:** Product catalog manager, variant modifier dialogs, and instant multi-image galleries. Supports file uploads or direct paste image URL associations.
-* **Order Processing Workflow:** Detailed status history tracking (`Pending` → `Confirmed` → `Shipped` → `Delivered` → `Cancelled`) with automatic inventory adjustments.
-* **Customer CRM & Review Moderation:** CRM customer list actions (active/suspend status) and one-click review publishing controls.
+| Layer | Teknologi |
+|-------|-----------|
+| **Frontend** | React 19, TypeScript, Vite |
+| **Styling** | Tailwind CSS v4, shadcn/ui |
+| **Icons** | Hugeicons |
+| **State Management** | Zustand (JWT disimpan di memori — proteksi XSS) |
+| **Forms** | React Hook Form + Zod |
+| **Backend** | Golang 1.20+, Gin Web Framework |
+| **ORM** | GORM |
+| **Database** | PostgreSQL (via golang-migrate) |
+| **Auth** | JWT dual-flow (golang-jwt) — admin & customer terpisah |
+| **Image Storage** | Cloudinary (upload file + paste URL) |
+| **Email** | Resend (background queue) |
 
 ---
 
-## 🔒 Production-Grade Security Controls
+## 🏗️ Fitur Utama
 
-During our comprehensive security audit, the Juicy platform was hardened to strictly mitigate top OWASP vulnerabilities:
+### 🛍️ Storefront (Customer)
 
-1. **Hardened CORS Whitelist (Reflected CORS Shield):**
-   The backend CORS middleware dynamically matches incoming browser `Origin` headers strictly against a comma-separated whitelist configured in `.env` (`ALLOWED_ORIGINS`). Cross-Origin requests from unauthorized domains are blocked, securing administrative cookies.
-2. **JWT Token Type Protection (Substitution Shield):**
-   Customer and Admin authorization are strictly isolated. Administrative JWTs include an explicit `token_type` claim (`access` or `refresh`):
-   * **AdminAuth Middleware:** Rejects any authorization token not explicitly marked as `token_type == "access"`.
-   * **Silent Refresh Endpoint:** Accepts tokens strictly matching `token_type == "refresh"`.
-3. **Atomic Inventory Stock Protection:**
-   To prevent overselling during concurrent checkout spikes, stock decrementing runs in an isolated PostgreSQL transaction locking variant records (`SELECT FOR UPDATE`).
-4. **Verified-Purchase Reviews:**
-   Reviews strictly require a valid foreign key referencing an order owned by that customer with a `delivered` status, mitigating spam.
+- **Homepage Editorial** — 14 section layout: Hero, Featured, Trending, New Arrivals, Recently Viewed, Newsletter, CTA, dan lainnya
+- **Katalog Produk** — Filter multi-kategori, subcategory tree, filter ukuran, sorting, search (ILIKE), pagination
+- **Product Detail Page** — Galeri multi-image, size/color selector dengan real-time stock, review terverifikasi
+- **Keranjang & Wishlist** — Zustand store dengan optimistic UI, quantity sync instan
+- **Checkout COD** — Pilih alamat (default + inline edit), ringkasan order
+- **Order Tracking** — Timeline status: Pending → Confirmed → Processing → Shipped → Delivered
+- **Reviews** — Hanya untuk pembelian terverifikasi (rating + ulasan tertulis)
+- **Recently Viewed** — localStorage, maksimal 8 item, FIFO eviction
+
+### 📊 Admin Dashboard
+
+- **Analytics** — Metrik real-time: total order, revenue, customer, produk; chart mingguan (errgroup concurrent pipelines)
+- **Manajemen Produk** — CRUD produk, varian (size × color × stock), multi-image gallery, URL paste image
+- **Manajemen Kategori** — Nested category (parent_id), display order, soft delete dengan proteksi referensi
+- **Order Processing** — Lifecycle status + payment status, auto-inventory adjustment, trigger email
+- **Customer CRM** — List customer, detail + riwayat order, suspend/active toggle
+- **Review Moderation** — Publish/unpublish, hapus review
 
 ---
 
-## 📂 Project Structure
+## 🔒 Keamanan
+
+1. **Hardened CORS Whitelist** — Middleware CORS memvalidasi `Origin` header terhadap daftar `ALLOWED_ORIGINS` dari `.env`. Origin tidak dikenal langsung diblokir.
+2. **JWT Token Type Protection** — Admin & customer memiliki JWT flow terpisah. Token admin memiliki klaim `token_type` (`access` vs `refresh`):
+   - **AdminAuth Middleware:** Hanya menerima `token_type == "access"`
+   - **Refresh Endpoint:** Hanya menerima `token_type == "refresh"`
+3. **Atomic Inventory Stock** — Decrement stok berjalan dalam transaksi PostgreSQL `SELECT FOR UPDATE` — mencegah overselling saat checkout konkuren.
+4. **Verified-Purchase Reviews** — Review memerlukan foreign key ke order dengan status `delivered` milik customer tersebut — mencegah spam review.
+
+---
+
+## 📂 Struktur Proyek
 
 ```
 juicy/
 ├── client/                     # React 19 Frontend
 │   ├── src/
-│   │   ├── features/           # Domain-based components (home, shop, cart, checkout, admin...)
-│   │   ├── components/         # Shared UI (shadcn/ui primitives, layout, common)
-│   │   ├── lib/api/            # Axios client instances (client.ts & customerClient.ts)
-│   │   ├── stores/             # Zustand global state (adminAuthStore, customerAuthStore...)
-│   │   └── index.css           # Global Tailwind stylesheet with Terracotta themes
+│   │   ├── features/           # Domain-based (home, shop, cart, checkout, admin...)
+│   │   ├── components/         # Shared UI (shadcn/ui primitives, layout)
+│   │   ├── lib/api/            # Axios instances + interceptor refresh token
+│   │   ├── stores/             # Zustand global state
+│   │   └── index.css           # Global styles (terracotta theme, OKLCH tokens)
 │
-├── server/                     # Go Backend
-│   ├── cmd/main.go             # Application entrypoint (Dependency Injection & server boot)
+├── server/                     # Golang Backend
+│   ├── cmd/main.go             # Entrypoint (DI + server boot)
 │   ├── internal/
-│   │   ├── middleware/         # CORS protection, AdminAuth & CustomerAuth
-│   │   ├── model/              # Database entities (GORM bindings)
-│   │   ├── repository/         # Database persistence layers
-│   │   ├── service/            # Core business logic (analytics, order transaction, auth...)
-│   │   ├── handler/            # Gin handlers mapping JSON payloads to services
-│   │   └── router/             # REST route group declarations
-│   └── migrations/             # SQL schema migrations (000001 to 000014)
+│   │   ├── middleware/         # CORS, AdminAuth, CustomerAuth
+│   │   ├── model/              # GORM entities
+│   │   ├── repository/         # Database persistence
+│   │   ├── service/            # Business logic
+│   │   ├── handler/            # Gin HTTP handlers
+│   │   └── router/             # Route registrations
+│   └── migrations/             # SQL migrations (000001 — 000014)
 │
-└── docs/                       # Comprehensive System Documentation
+└── docs/                       # Dokumentasi sistem
+    ├── CONTEXT.md              # Konteks proyek, goals, scope
+    ├── ARCHITECTURE.md         # Arsitektur & data flow
+    ├── API.md                  # Seluruh REST API contract
+    ├── ERD.md                  # Entity relationship diagram
+    ├── ENV.md                  # Dokumentasi environment variables
+    ├── DESIGN.md               # Design system (luxury editorial)
+    ├── TASKS.md                # Implementation checklists
+    └── CHANGELOG.md            # Riwayat perubahan per sesi
 ```
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Panduan Setup
 
 ### Prerequisites
-* Go 1.20 or higher installed
-* Node.js v18 or higher installed
-* PostgreSQL database instance running locally or hosted
+- Go 1.20+
+- Node.js 18+
+- PostgreSQL
 
-### 1. Database Setup
-Create a PostgreSQL database named `juicy` and run migrations to create the schemas:
+### 1. Database
 ```bash
-# Using golang-migrate CLI
-migrate -path server/migrations -database "postgres://postgres:postgres@localhost:5432/juicy?sslmode=disable" up
+# Buat database
+createdb juicy
+
+# Jalankan migrations
+migrate -path server/migrations \
+  -database "postgres://postgres:postgres@localhost:5432/juicy?sslmode=disable" up
 ```
 
-### 2. Environment Variables Configuration
-Copy the `.env.example` in `/server` and configure your credentials:
+### 2. Environment Variables
 ```bash
 cp server/.env.example server/.env
-```
-Key configuration variables inside `server/.env`:
-* `JWT_ADMIN_SECRET` / `JWT_CUSTOMER_SECRET`: Random 32+ character secrets (Generate via `openssl rand -hex 32`).
-* `ALLOWED_ORIGINS`: `http://localhost:5173` (comma-separated for production domains).
-* `CLOUDINARY_*` & `RESEND_API_KEY`: External keys for image staging and transactional emails.
-
-Configure your frontend configuration:
-```bash
-# client/.env
-VITE_API_BASE_URL=http://localhost:8080/api
+# Isi semua konfigurasi (JWT secrets, Cloudinary, Resend, dll.)
 ```
 
-### 3. Launching the Backend
-Navigate to `/server` and run the development command:
+### 3. Jalankan Backend
 ```bash
 cd server
 go run cmd/main.go
+# Server berjalan di http://localhost:8080
 ```
-The server will boot on `http://localhost:8080` (or configured `APP_PORT`).
 
-### 4. Launching the Frontend
-Navigate to `/client`, install the dependencies, and start Vite:
+### 4. Jalankan Frontend
 ```bash
 cd client
 npm install
 npm run dev
+# Aplikasi di http://localhost:5173
 ```
-The web application will launch on `http://localhost:5173`.
 
 ---
 
-## 📖 System Documentation
+## 📖 Dokumentasi Lengkap
 
-Detailed technical design notes are maintained inside the **`docs/`** directory:
-* 📄 **[ARCHITECTURE.md](docs/ARCHITECTURE.md):** Deep-dive into folder structures, atomic stock decrement transactions, and token flows.
-* 📄 **[API.md](docs/API.md):** Complete REST API references (requests, response formats, and query parameters).
-* 📄 **[ENV.md](docs/ENV.md):** Detailed guide to all environment variables and secrets creation.
-* 📄 **[ERD.md](docs/ERD.md):** Database ERD mapping model relationships and constraints.
-* 📄 **[TASKS.md](docs/TASKS.md):** Implementation checklists.
-* 📄 **[CHANGELOG.md](docs/CHANGELOG.md):** Version-by-version audit trail of security updates and feature additions.
+Dokumentasi detail tersedia di folder [`docs/`](docs/):
+
+| Dokumen | Isi |
+|---------|-----|
+| [API.md](docs/API.md) | Seluruh endpoint REST — request, response, error codes |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | Arsitektur sistem, folder structure, data flow |
+| [ERD.md](docs/ERD.md) | Database schema, relationships, migration order |
+| [ENV.md](docs/ENV.md) | Semua environment variables + cara generate secrets |
+| [DESIGN.md](docs/DESIGN.md) | Design system editorial luxury (warna, tipografi, patterns) |
+| [CHANGELOG.md](docs/CHANGELOG.md) | Riwayat perubahan per sesi development |
+| [TASKS.md](docs/TASKS.md) | Implementation checklists |
+| [CONTEXT.md](docs/CONTEXT.md) | Konteks proyek, goals, target users |
+
+---
+
+## 📝 API Response Envelope
+
+Semua response API mengikuti format JSON yang konsisten:
+
+```json
+// Sukses
+{ "success": true, "data": { ... }, "message": "..." }
+
+// Paginated
+{ "success": true, "data": [ ... ], "meta": { "page": 1, "per_page": 20, "total": 100 } }
+
+// Error
+{ "success": false, "error": "Pesan", "code": "MACHINE_CODE" }
+```
+
+---

@@ -6,53 +6,6 @@
 ## Entity Relationship Diagram
 
 ```
-┌──────────────────┐
-│     admins       │
-├──────────────────┤
-│ id               │ PK, UUID
-│ username         │ VARCHAR(50), UNIQUE, NOT NULL
-│ email            │ VARCHAR(255), UNIQUE, NOT NULL
-│ password_hash    │ TEXT, NOT NULL
-│ created_at       │ TIMESTAMPTZ
-│ updated_at       │ TIMESTAMPTZ
-└──────────────────┘
-
-┌──────────────────────┐
-│      customers       │
-├──────────────────────┤
-│ id                   │ PK, UUID
-│ full_name            │ VARCHAR(255), NOT NULL
-│ email                │ VARCHAR(255), UNIQUE, NOT NULL
-│ password_hash        │ TEXT, NOT NULL
-│ phone                │ VARCHAR(30)
-│ is_active            │ BOOLEAN DEFAULT true
-│ created_at           │ TIMESTAMPTZ
-│ updated_at           │ TIMESTAMPTZ
-└──────────┬───────────┘
-           │ 1
-           │
-           ├──────────────────────────────► addresses (N)
-           ├──────────────────────────────► orders (N)
-           ├──────────────────────────────► cart_items (N)
-           └──────────────────────────────► reviews (N)
-
-┌──────────────────────┐
-│      addresses       │
-├──────────────────────┤
-│ id                   │ PK, UUID
-│ customer_id          │ FK → customers.id
-│ label                │ VARCHAR(100)  -- e.g. "Home", "Office"
-│ recipient_name       │ VARCHAR(255), NOT NULL
-│ phone                │ VARCHAR(30), NOT NULL
-│ address_line         │ TEXT, NOT NULL
-│ city                 │ VARCHAR(100), NOT NULL
-│ province             │ VARCHAR(100), NOT NULL
-│ postal_code          │ VARCHAR(20), NOT NULL
-│ is_default           │ BOOLEAN DEFAULT false
-│ created_at           │ TIMESTAMPTZ
-│ updated_at           │ TIMESTAMPTZ
-└──────────────────────┘
-
 ┌──────────────────────┐         ┌──────────────────────────────────┐
 │      categories      │         │            products              │
 ├──────────────────────┤         ├──────────────────────────────────┤
@@ -62,23 +15,20 @@
 │ description          │ TEXT    │ slug                             │ VARCHAR(255), UNIQUE, NOT NULL
 │ display_order        │ INT     │ description                      │ TEXT
 │ is_active            │ BOOLEAN │ price                            │ NUMERIC(12,2), NOT NULL
-│ created_at           │ TSTZ    │ compare_at_price                 │ NUMERIC(12,2) -- original/crossed-out price
-│ updated_at           │ TSTZ    │ is_available                     │ BOOLEAN DEFAULT true
-└──────────┬───────────┘         │ is_featured                      │ BOOLEAN DEFAULT false
-
-> **[PLANNED — Phase 7]** `categories` table akan ditambah:
-> - `parent_id UUID REFERENCES categories(id) ON DELETE SET NULL` — self-referencing FK untuk subcategory hierarchy.
-           │                     │ tags                             │ JSONB DEFAULT '[]'
-           │ 1                   │ display_order                    │ INT DEFAULT 0
-           └────────────────────►│ created_at                       │ TIMESTAMPTZ
-                              N  │ updated_at                       │ TIMESTAMPTZ
-                                 └──────────┬───────────────────────┘
+│ parent_id            │ FK → categories.id (self) │ compare_at_price                 │ NUMERIC(12,2) -- original/crossed-out price
+│ created_at           │ TSTZ    │ is_available                     │ BOOLEAN DEFAULT true
+│ updated_at           │ TSTZ    │ is_featured                      │ BOOLEAN DEFAULT false
+└──────────┬───────────┘         │ tags                             │ JSONB DEFAULT '[]'
+           │                     │ display_order                    │ INT DEFAULT 0
+           │ 1                   │ created_at                       │ TIMESTAMPTZ
+           └────────────────────►│ updated_at                       │ TIMESTAMPTZ
+                              N  └──────────┬───────────────────────┘
                                             │ 1
                                             │
-                            ┌───────────────┼───────────────────────┐
-                            ▼               ▼                       ▼
-                   product_images   product_variants            reviews
-                   (N)              (N)                         (N)
+                            ┌───────────────┼───────────────────────┬──────────────────────┐
+                            ▼               ▼                       ▼                      ▼
+                   product_images   product_variants            reviews           wishlist_items
+                   (N)              (N)                         (N)                 (N)
 
 ┌──────────────────────────────┐
 │       product_images         │
@@ -153,6 +103,16 @@
 │ created_at                   │ TIMESTAMPTZ
 │ updated_at                   │ TIMESTAMPTZ
 └──────────────────────────────┘
+
+┌──────────────────────────────┐
+│        wishlist_items        │
+├──────────────────────────────┤
+│ id                           │ PK, UUID
+│ customer_id                  │ FK → customers.id
+│ variant_id                   │ FK → product_variants.id
+│ created_at                   │ TIMESTAMPTZ
+└──────────────────────────────┘
+
 ```
 
 ---
@@ -197,7 +157,8 @@ CREATE TYPE payment_status AS ENUM (
 | 010 | `create_orders` | Orders table |
 | 011 | `create_order_items` | Order line items table |
 | 012 | `create_reviews` | Product reviews table |
-| 013 | `alter_categories_add_parent_id` | **[PLANNED]** Add `parent_id` for subcategory hierarchy |
+| 013 | `alter_categories_add_parent_id` | Add `parent_id` for subcategory hierarchy |
+| 014 | `create_wishlist_items` | Customer wishlist items table |
 
 ---
 
@@ -410,12 +371,26 @@ CREATE INDEX idx_reviews_product_id ON reviews(product_id);
 CREATE INDEX idx_reviews_customer_id ON reviews(customer_id);
 ```
 
-### 013 — Alter Categories Add Parent ID **[PLANNED]**
+### 013 — Alter Categories Add Parent ID
 ```sql
 ALTER TABLE categories
   ADD COLUMN parent_id UUID REFERENCES categories(id) ON DELETE SET NULL;
 
 CREATE INDEX idx_categories_parent_id ON categories(parent_id);
+```
+
+### 014 — Create Wishlist Items
+```sql
+CREATE TABLE wishlist_items (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  customer_id   UUID NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+  variant_id    UUID NOT NULL REFERENCES product_variants(id) ON DELETE CASCADE,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (customer_id, variant_id)
+);
+
+CREATE INDEX idx_wishlist_customer_id ON wishlist_items(customer_id);
+CREATE INDEX idx_wishlist_variant_id ON wishlist_items(variant_id);
 ```
 
 ---
@@ -446,13 +421,13 @@ VALUES (
 ## Seed Data — Categories
 
 ```sql
-INSERT INTO categories (name, slug, display_order) VALUES
-  ('Tops',        'tops',        1),
-  ('Bottoms',     'bottoms',     2),
-  ('Dresses',     'dresses',     3),
-  ('Outerwear',   'outerwear',   4),
-  ('Accessories', 'accessories', 5),
-  ('Sets',        'sets',        6);
+INSERT INTO categories (name, slug, display_order, parent_id) VALUES
+  ('Tops',        'tops',        1, null),
+  ('Bottoms',     'bottoms',     2, null),
+  ('Dresses',     'dresses',     3, null),
+  ('Outerwear',   'outerwear',   4, null),
+  ('Accessories', 'accessories', 5, null),
+  ('Sets',        'sets',        6, null);
 ```
 
 ---
@@ -463,4 +438,5 @@ INSERT INTO categories (name, slug, display_order) VALUES
 - `cart_items` has a `UNIQUE (customer_id, variant_id)` constraint — duplicate adds increment `quantity` via `ON CONFLICT DO UPDATE`.
 - `reviews.order_id` enforces purchase-verified reviews — a customer can only review a product they actually ordered.
 - `product_variants` has a composite unique index on `(product_id, size, color)` to prevent duplicate variant combinations.
+- `wishlist_items` has a `UNIQUE (customer_id, variant_id)` constraint to prevent duplicate wishlist entries.
 - Stock decrement happens atomically inside a transaction at order creation — roll back if any variant is out of stock.
