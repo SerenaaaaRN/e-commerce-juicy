@@ -184,7 +184,11 @@ func (s *productService) DeleteProduct(ctx context.Context, id uuid.UUID) error 
 	}
 
 	for _, img := range product.Images {
-		if err := s.cldService.DeleteImage(ctx, img.CloudinaryPublicID); err != nil {
+		cldID := ""
+		if img.CloudinaryPublicID != nil {
+			cldID = *img.CloudinaryPublicID
+		}
+		if err := s.cldService.DeleteImage(ctx, cldID); err != nil {
 			log.Printf("Warning: failed to delete cloudinary image: %v", err)
 		}
 	}
@@ -226,7 +230,7 @@ func (s *productService) AddProductImages(ctx context.Context, id uuid.UUID, fil
 		newImage := &model.ProductImage{
 			ProductID:          product.ID,
 			ImageURL:           secureURL,
-			CloudinaryPublicID: publicID,
+			CloudinaryPublicID: &publicID,
 			DisplayOrder:       maxOrder,
 			IsPrimary:          isPrimary,
 		}
@@ -265,7 +269,7 @@ func (s *productService) AddProductImageUrl(ctx context.Context, id uuid.UUID, i
 	newImage := &model.ProductImage{
 		ProductID:          product.ID,
 		ImageURL:           imageUrl,
-		CloudinaryPublicID: "external_url",
+		CloudinaryPublicID: nil,
 		DisplayOrder:       maxOrder,
 		IsPrimary:          isPrimary,
 	}
@@ -283,8 +287,12 @@ func (s *productService) DeleteProductImage(ctx context.Context, id uuid.UUID, i
 		return ErrImageNotFound
 	}
 
-	if err := s.cldService.DeleteImage(ctx, image.CloudinaryPublicID); err != nil {
-		log.Printf("Warning: failed to delete cloudinary image %s: %v", image.CloudinaryPublicID, err)
+	cldID := ""
+	if image.CloudinaryPublicID != nil {
+		cldID = *image.CloudinaryPublicID
+	}
+	if err := s.cldService.DeleteImage(ctx, cldID); err != nil {
+		log.Printf("Warning: failed to delete cloudinary image %s: %v", cldID, err)
 	}
 
 	err = s.repo.DeleteImage(ctx, imageID, id)

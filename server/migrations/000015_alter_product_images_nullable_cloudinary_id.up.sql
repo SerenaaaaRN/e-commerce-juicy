@@ -1,0 +1,2 @@
+ALTER TABLE product_images ALTER COLUMN cloudinary_public_id DROP NOT NULL;
+ALTER TABLE product_images ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();

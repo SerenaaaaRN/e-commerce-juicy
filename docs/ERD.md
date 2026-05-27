@@ -35,12 +35,13 @@
 ├──────────────────────────────┤
 │ id                           │ PK, UUID
 │ product_id                   │ FK → products.id
-│ image_url                    │ TEXT, NOT NULL (Cloudinary secure_url)
-│ cloudinary_public_id         │ TEXT, NOT NULL
+│ image_url                    │ TEXT, NOT NULL (Cloudinary secure_url or external URL)
+│ cloudinary_public_id         │ TEXT (nullable — NULL for external URL images)
 │ alt_text                     │ VARCHAR(255)
 │ display_order                │ INT DEFAULT 0
 │ is_primary                   │ BOOLEAN DEFAULT false
 │ created_at                   │ TIMESTAMPTZ
+│ updated_at                   │ TIMESTAMPTZ
 └──────────────────────────────┘
 
 ┌──────────────────────────────┐
@@ -159,6 +160,7 @@ CREATE TYPE payment_status AS ENUM (
 | 012 | `create_reviews` | Product reviews table |
 | 013 | `alter_categories_add_parent_id` | Add `parent_id` for subcategory hierarchy |
 | 014 | `create_wishlist_items` | Customer wishlist items table |
+| 015 | `alter_product_images_nullable_cloudinary_id` | Make `cloudinary_public_id` nullable + add `updated_at` |
 
 ---
 
@@ -395,6 +397,14 @@ CREATE INDEX idx_wishlist_variant_id ON wishlist_items(variant_id);
 
 ---
 
+### 015 — Alter Product Images Nullable Cloudinary ID
+```sql
+ALTER TABLE product_images ALTER COLUMN cloudinary_public_id DROP NOT NULL;
+ALTER TABLE product_images ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+```
+
+---
+
 ## Product Tags Reference (JSONB values)
 
 Stored as a JSON array of strings in `products.tags`.
@@ -439,4 +449,5 @@ INSERT INTO categories (name, slug, display_order, parent_id) VALUES
 - `reviews.order_id` enforces purchase-verified reviews — a customer can only review a product they actually ordered.
 - `product_variants` has a composite unique index on `(product_id, size, color)` to prevent duplicate variant combinations.
 - `wishlist_items` has a `UNIQUE (customer_id, variant_id)` constraint to prevent duplicate wishlist entries.
+- `product_images.cloudinary_public_id` is nullable — `NULL` for images added via external URL, real Cloudinary public ID for uploaded images.
 - Stock decrement happens atomically inside a transaction at order creation — roll back if any variant is out of stock.

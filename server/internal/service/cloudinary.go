@@ -57,7 +57,7 @@ func (s *CloudinaryService) DeleteImage(ctx context.Context, publicID string) er
 		return nil
 	}
 
-	if publicID == "" || publicID == "mock_cloudinary_public_id" {
+	if publicID == "" || publicID == "mock_cloudinary_public_id" || publicID == "external_url" {
 		return nil
 	}
 

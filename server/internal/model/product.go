@@ -62,7 +62,7 @@ type ProductImage struct {
 	ID                 uuid.UUID `gorm:"type:uuid;primaryKey;default:gen_random_uuid()" json:"id"`
 	ProductID          uuid.UUID `gorm:"type:uuid;not null;index" json:"product_id"`
 	ImageURL           string    `gorm:"type:text;not null" json:"image_url"`
-	CloudinaryPublicID string    `gorm:"type:text;not null" json:"cloudinary_public_id"`
+	CloudinaryPublicID *string   `gorm:"type:text" json:"cloudinary_public_id"`
 	AltText            *string   `gorm:"type:varchar(255)" json:"alt_text"`
 	DisplayOrder       int       `gorm:"not null;default:0" json:"display_order"`
 	IsPrimary          bool      `gorm:"not null;default:false" json:"is_primary"`
