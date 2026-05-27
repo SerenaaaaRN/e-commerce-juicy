@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect, useMemo, useCallback, memo } from "react"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -27,14 +27,57 @@ import { VariantManagerDialog } from "@/features/admin/components/VariantManager
 import { ImageManagerDialog } from "@/features/admin/components/ImageManagerDialog"
 import type { CatalogProduct, ProductDetail, Category } from "@/types"
 import { adminApi } from "@/lib/api"
-import { buildCategoryOptions } from "@/features/admin/utils"
+import { buildCategoryOptions, getCategoryDescendants } from "@/features/admin/utils"
 
 export const ProductsPage = () => {
   const ctx = useProducts()
   const { confirm: confirmDelete, dialog: confirmDialog } = useConfirm()
-  const { editingCategory, handleOpenEditCategory, handleCancelEditCategory } = ctx
-  const catOptions = buildCategoryOptions(ctx.categories).filter((o) => o.value !== editingCategory?.id)
-  const parentMap = new Map(ctx.categories.map((c) => [c.id, c.name]))
+  const { editingCategory, handleOpenEditCategory, handleCancelEditCategory, setActiveProduct } = ctx
+  const catOptions = useMemo(
+    () => buildCategoryOptions(ctx.categories).filter((o) => o.value !== editingCategory?.id),
+    [ctx.categories, editingCategory?.id]
+  )
+  const parentMap = useMemo(() => new Map(ctx.categories.map((c) => [c.id, c.name])), [ctx.categories])
+
+  const [selectedParent, setSelectedParent] = useState("all")
+  const [selectedSub, setSelectedSub] = useState("all")
+
+  useEffect(() => {
+    if (ctx.categoryFilter === "all") {
+      setSelectedParent("all")
+      setSelectedSub("all")
+      return
+    }
+
+    const currentCat = ctx.categories.find((c) => c.id === ctx.categoryFilter)
+    if (currentCat) {
+      if (currentCat.parent_id) {
+        setSelectedParent(currentCat.parent_id)
+        setSelectedSub(currentCat.id)
+      } else {
+        setSelectedParent(currentCat.id)
+        setSelectedSub("all")
+      }
+    }
+  }, [ctx.categoryFilter, ctx.categories])
+
+  const handleParentChange = (val: string) => {
+    setSelectedParent(val)
+    setSelectedSub("all")
+    ctx.setCategoryFilter(val)
+  }
+
+  const handleSubChange = (val: string) => {
+    setSelectedSub(val)
+    if (val === "all") {
+      ctx.setCategoryFilter(selectedParent)
+    } else {
+      ctx.setCategoryFilter(val)
+    }
+  }
+
+  const parentCategories = ctx.categories.filter((c) => !c.parent_id)
+  const subCategories = ctx.categories.filter((c) => c.parent_id === selectedParent)
 
   const [variantsModalOpen, setVariantsModalOpen] = useState(false)
   const [imagesModalOpen, setImagesModalOpen] = useState(false)
@@ -42,44 +85,67 @@ export const ProductsPage = () => {
   const variantCtx = useVariants(ctx.activeProduct, ctx.setActiveProduct, ctx.loadData)
   const imageCtx = useProductImages(ctx.activeProduct, ctx.setActiveProduct, ctx.loadData)
 
-  const {
-    search,
-    setSearch,
-    filteredData: searchFiltered,
-    isStale,
-  } = useDataTableFilter(ctx.products, (p, s) => p.name.toLowerCase().includes(s) || p.slug.toLowerCase().includes(s))
+  const productFilter = useCallback(
+    (p: CatalogProduct, s: string) => p.name.toLowerCase().includes(s) || p.slug.toLowerCase().includes(s),
+    []
+  )
 
-  const openVariants = async (prod: CatalogProduct) => {
-    try {
-      const res = await adminApi.getProductByID(prod.id)
-      if (res.success && res.data) {
-        ctx.setActiveProduct(res.data)
-      } else {
-        ctx.setActiveProduct(prod as unknown as ProductDetail)
+  const { search, setSearch, filteredData: searchFiltered, isStale } = useDataTableFilter(ctx.products, productFilter)
+
+  const { resetVariantForm } = variantCtx
+  const { setSelectedFiles } = imageCtx
+  const openVariants = useCallback(
+    async (prod: CatalogProduct) => {
+      try {
+        const res = await adminApi.getProductByID(prod.id)
+        if (res.success && res.data) {
+          setActiveProduct(res.data)
+        } else {
+          setActiveProduct(prod as unknown as ProductDetail)
+        }
+      } catch {
+        setActiveProduct(prod as unknown as ProductDetail)
       }
-    } catch {
-      ctx.setActiveProduct(prod as unknown as ProductDetail)
-    }
-    variantCtx.resetVariantForm()
-    setVariantsModalOpen(true)
-  }
+      resetVariantForm()
+      setVariantsModalOpen(true)
+    },
+    [setActiveProduct, resetVariantForm, setVariantsModalOpen]
+  )
 
-  const openImages = async (prod: CatalogProduct) => {
-    try {
-      const res = await adminApi.getProductByID(prod.id)
-      if (res.success && res.data) {
-        ctx.setActiveProduct(res.data)
-      } else {
-        ctx.setActiveProduct(prod as unknown as ProductDetail)
+  const openImages = useCallback(
+    async (prod: CatalogProduct) => {
+      try {
+        const res = await adminApi.getProductByID(prod.id)
+        if (res.success && res.data) {
+          setActiveProduct(res.data)
+        } else {
+          setActiveProduct(prod as unknown as ProductDetail)
+        }
+      } catch {
+        setActiveProduct(prod as unknown as ProductDetail)
       }
-    } catch {
-      ctx.setActiveProduct(prod as unknown as ProductDetail)
-    }
-    imageCtx.setSelectedFiles(null)
-    setImagesModalOpen(true)
-  }
+      setSelectedFiles(null)
+      setImagesModalOpen(true)
+    },
+    [setActiveProduct, setSelectedFiles, setImagesModalOpen]
+  )
 
-  const filtered = searchFiltered.filter((p) => ctx.categoryFilter === "all" || p.category_id === ctx.categoryFilter)
+  const { handleDeleteVariant: onVariantDelete } = variantCtx
+  const { handleDeleteImage: onImgDelete } = imageCtx
+  const handleDeleteVariant = useCallback(
+    (vId: string) => onVariantDelete(vId, confirmDelete),
+    [onVariantDelete, confirmDelete]
+  )
+  const handleDeleteImage = useCallback(
+    (imgId: string) => onImgDelete(imgId, confirmDelete),
+    [onImgDelete, confirmDelete]
+  )
+
+  const filtered = searchFiltered.filter((p) => {
+    if (ctx.categoryFilter === "all") return true
+    const allowedCategoryIds = getCategoryDescendants(ctx.categories, ctx.categoryFilter)
+    return allowedCategoryIds.includes(p.category_id)
+  })
 
   if (ctx.loading) return <FullPageSpinner label="Loading Catalog inventory..." />
 
@@ -104,20 +170,41 @@ export const ProductsPage = () => {
         <TabsContent value="products">
           <div className="mb-6 flex flex-col items-center gap-4 sm:flex-row">
             <SearchInput placeholder="Search products..." value={search} onChange={(e) => setSearch(e.target.value)} />
-            <div className="w-full sm:max-w-xs">
-              <Select value={ctx.categoryFilter} onValueChange={ctx.setCategoryFilter}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="All Categories" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {ctx.categories.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="flex w-full flex-col gap-3 sm:max-w-md sm:flex-row">
+              <div className="w-full">
+                <Select value={selectedParent} onValueChange={handleParentChange}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="All Categories" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {parentCategories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="w-full">
+                <Select
+                  value={selectedSub}
+                  onValueChange={handleSubChange}
+                  disabled={selectedParent === "all" || subCategories.length === 0}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder={selectedParent === "all" ? "No Subcategory" : "All Subcategories"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Subcategories</SelectItem>
+                    {subCategories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 
@@ -138,88 +225,18 @@ export const ProductsPage = () => {
                 {filtered.length === 0 ? (
                   <EmptyState message="No catalog products matched your query." />
                 ) : (
-                  filtered.map((prod) => {
-                    const img = prod.images?.find((i) => i.is_primary)?.image_url || prod.primary_image || "/placeholder-product.svg"
-                    const stock = prod.variants?.reduce((s, v) => s + v.stock, 0) ?? 0
-                    return (
-                      <TableRow key={prod.id}>
-                        <TableCell className="px-6 py-4">
-                          <img
-                            src={img}
-                            alt={prod.name}
-                            className="size-12 rounded border bg-muted object-cover"
-                            onError={(e) => {
-                              ;(e.target as HTMLImageElement).src = "/placeholder-product.svg"
-                            }}
-                          />
-                        </TableCell>
-                        <TableCell className="px-6 py-4">
-                          <div className="font-semibold text-foreground">{prod.name}</div>
-                          <div className="max-w-xs truncate font-mono text-[11px] text-muted-foreground">
-                            {prod.slug}
-                          </div>
-                        </TableCell>
-                        <TableCell className="px-6 py-4">
-                          <Badge variant="outline">{prod.category?.name || prod.category_name || "Unassigned"}</Badge>
-                        </TableCell>
-                        <TableCell className="px-6 py-4 font-semibold text-foreground">
-                          {formatPrice(prod.price)}
-                          {prod.compare_at_price && (
-                            <div className="text-[11px] font-normal text-muted-foreground line-through">
-                              {formatPrice(prod.compare_at_price)}
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell className="px-6 py-4">
-                          <div className="flex flex-col items-start gap-1.5">
-                            <Badge variant={prod.is_available ? "default" : "destructive"}>
-                              {prod.is_available ? "Active" : "Archived"}
-                            </Badge>
-                            {prod.is_featured && <Badge variant="default">Featured</Badge>}
-                          </div>
-                        </TableCell>
-                        <TableCell className="px-6 py-4">
-                          <Badge variant={stock === 0 ? "destructive" : stock <= 15 ? "secondary" : "default"}>
-                            {stock} in stock
-                          </Badge>
-                          <div className="mt-0.5 text-[10px] font-medium text-muted-foreground">
-                            {prod.variants?.length || 0} active option(s)
-                          </div>
-                        </TableCell>
-                        <TableCell className="px-6 py-4 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <Button
-                              variant="ghost"
-                              size="xs"
-                              onClick={() => openVariants(prod)}
-                              className="border px-2.5 text-xs font-medium hover:bg-muted"
-                            >
-                              Variants
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="xs"
-                              onClick={() => openImages(prod)}
-                              className="border px-2.5 text-xs font-medium hover:bg-muted"
-                            >
-                              Media
-                            </Button>
-                            <Button variant="ghost" size="icon" onClick={() => ctx.handleOpenEditProduct(prod)}>
-                              <HugeiconsIcon icon={Edit01Icon} />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              disabled={ctx.isPending}
-                              onClick={() => ctx.handleDeleteProduct(prod.id, confirmDelete)}
-                            >
-                              <HugeiconsIcon icon={Delete02Icon} />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })
+                  filtered.map((prod) => (
+                    <ProductRow
+                      key={prod.id}
+                      prod={prod}
+                      openVariants={openVariants}
+                      openImages={openImages}
+                      onEditProduct={ctx.handleOpenEditProduct}
+                      onDeleteProduct={ctx.handleDeleteProduct}
+                      isPending={ctx.isPending}
+                      confirmDelete={confirmDelete}
+                    />
+                  ))
                 )}
               </TableBody>
             </Table>
@@ -362,29 +379,15 @@ export const ProductsPage = () => {
                     <EmptyState message="No categories currently defined." colSpan={5} />
                   ) : (
                     ctx.categories.map((cat) => (
-                      <TableRow key={cat.id}>
-                        <TableCell className="px-6 py-4 font-semibold text-foreground">{cat.name}</TableCell>
-                        <TableCell className="px-6 py-4 font-mono text-xs text-muted-foreground">{cat.slug}</TableCell>
-                        <TableCell className="px-6 py-4 text-muted-foreground">
-                          {cat.parent_id ? (parentMap.get(cat.parent_id) || "-") : "-"}
-                        </TableCell>
-                        <TableCell className="px-6 py-4 font-medium text-foreground">{cat.display_order}</TableCell>
-                        <TableCell className="px-6 py-4 text-right">
-                          <div className="flex items-center justify-end gap-1">
-                            <Button variant="ghost" size="icon" onClick={() => handleOpenEditCategory(cat)}>
-                              <HugeiconsIcon icon={Edit01Icon} />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              disabled={ctx.isPending}
-                              onClick={() => ctx.handleDeleteCategory(cat.id, confirmDelete)}
-                            >
-                              <HugeiconsIcon icon={Delete02Icon} />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
+                      <CategoryRow
+                        key={cat.id}
+                        cat={cat}
+                        onEdit={handleOpenEditCategory}
+                        onDelete={ctx.handleDeleteCategory}
+                        isPending={ctx.isPending}
+                        parentMap={parentMap}
+                        confirmDelete={confirmDelete}
+                      />
                     ))
                   )}
                 </TableBody>
@@ -409,7 +412,7 @@ export const ProductsPage = () => {
         activeProduct={ctx.activeProduct}
         form={variantCtx.variantForm}
         onSubmit={variantCtx.handleAddVariant}
-        onDeleteVariant={(vId) => variantCtx.handleDeleteVariant(vId, confirmDelete)}
+        onDeleteVariant={handleDeleteVariant}
         onEditVariant={variantCtx.handleOpenEditVariant}
         onCancelEdit={variantCtx.handleCancelEditVariant}
         editingVariant={variantCtx.editingVariant}
@@ -427,12 +430,144 @@ export const ProductsPage = () => {
         onImageUrlChange={imageCtx.setImageUrlInput}
         onImageUrlSubmit={imageCtx.handleImageUrlSubmit}
         onSetPrimary={imageCtx.handleSetPrimaryImage}
-        onDeleteImage={(imgId) => imageCtx.handleDeleteImage(imgId, confirmDelete)}
+        onDeleteImage={handleDeleteImage}
         isPending={imageCtx.isPending}
       />
       {confirmDialog}
     </div>
   )
 }
+
+const ProductRow = memo(function ProductRow({
+  prod,
+  openVariants,
+  openImages,
+  onEditProduct,
+  onDeleteProduct,
+  isPending,
+  confirmDelete,
+}: {
+  prod: CatalogProduct
+  openVariants: (prod: CatalogProduct) => void
+  openImages: (prod: CatalogProduct) => void
+  onEditProduct: (prod: CatalogProduct) => void
+  onDeleteProduct: (id: string, confirmFn: (msg: string) => Promise<boolean>) => Promise<void>
+  isPending: boolean
+  confirmDelete: (msg: string) => Promise<boolean>
+}) {
+  const img = prod.images?.find((i) => i.is_primary)?.image_url || prod.primary_image || "/placeholder-product.svg"
+  const stock = prod.variants?.reduce((s, v) => s + v.stock, 0) ?? 0
+  return (
+    <TableRow>
+      <TableCell className="px-6 py-4">
+        <img
+          src={img}
+          alt={prod.name}
+          className="size-12 rounded border bg-muted object-cover"
+          onError={(e) => {
+            ;(e.target as HTMLImageElement).src = "/placeholder-product.svg"
+          }}
+        />
+      </TableCell>
+      <TableCell className="px-6 py-4">
+        <div className="font-semibold text-foreground">{prod.name}</div>
+        <div className="max-w-xs truncate font-mono text-[11px] text-muted-foreground">{prod.slug}</div>
+      </TableCell>
+      <TableCell className="px-6 py-4">
+        <Badge variant="outline">{prod.category?.name || prod.category_name || "Unassigned"}</Badge>
+      </TableCell>
+      <TableCell className="px-6 py-4 font-semibold text-foreground">
+        {formatPrice(prod.price)}
+        {prod.compare_at_price && (
+          <div className="text-[11px] font-normal text-muted-foreground line-through">
+            {formatPrice(prod.compare_at_price)}
+          </div>
+        )}
+      </TableCell>
+      <TableCell className="px-6 py-4">
+        <div className="flex flex-col items-start gap-1.5">
+          <Badge variant={prod.is_available ? "default" : "destructive"}>
+            {prod.is_available ? "Active" : "Archived"}
+          </Badge>
+          {prod.is_featured && <Badge variant="default">Featured</Badge>}
+        </div>
+      </TableCell>
+      <TableCell className="px-6 py-4">
+        <Badge variant={stock === 0 ? "destructive" : stock <= 15 ? "secondary" : "default"}>{stock} in stock</Badge>
+        <div className="mt-0.5 text-[10px] font-medium text-muted-foreground">
+          {prod.variants?.length || 0} active option(s)
+        </div>
+      </TableCell>
+      <TableCell className="px-6 py-4 text-right">
+        <div className="flex items-center justify-end gap-2">
+          <Button
+            variant="ghost"
+            size="xs"
+            onClick={() => openVariants(prod)}
+            className="border px-2.5 text-xs font-medium hover:bg-muted"
+          >
+            Variants
+          </Button>
+          <Button
+            variant="ghost"
+            size="xs"
+            onClick={() => openImages(prod)}
+            className="border px-2.5 text-xs font-medium hover:bg-muted"
+          >
+            Media
+          </Button>
+          <Button variant="ghost" size="icon" onClick={() => onEditProduct(prod)}>
+            <HugeiconsIcon icon={Edit01Icon} />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            disabled={isPending}
+            onClick={() => onDeleteProduct(prod.id, confirmDelete)}
+          >
+            <HugeiconsIcon icon={Delete02Icon} />
+          </Button>
+        </div>
+      </TableCell>
+    </TableRow>
+  )
+})
+
+const CategoryRow = memo(function CategoryRow({
+  cat,
+  onEdit,
+  onDelete,
+  isPending,
+  parentMap,
+  confirmDelete,
+}: {
+  cat: Category
+  onEdit: (cat: Category) => void
+  onDelete: (id: string, confirmFn: (msg: string) => Promise<boolean>) => Promise<void>
+  isPending: boolean
+  parentMap: Map<string, string>
+  confirmDelete: (msg: string) => Promise<boolean>
+}) {
+  return (
+    <TableRow>
+      <TableCell className="px-6 py-4 font-semibold text-foreground">{cat.name}</TableCell>
+      <TableCell className="px-6 py-4 font-mono text-xs text-muted-foreground">{cat.slug}</TableCell>
+      <TableCell className="px-6 py-4 text-muted-foreground">
+        {cat.parent_id ? parentMap.get(cat.parent_id) || "-" : "-"}
+      </TableCell>
+      <TableCell className="px-6 py-4 font-medium text-foreground">{cat.display_order}</TableCell>
+      <TableCell className="px-6 py-4 text-right">
+        <div className="flex items-center justify-end gap-1">
+          <Button variant="ghost" size="icon" onClick={() => onEdit(cat)}>
+            <HugeiconsIcon icon={Edit01Icon} />
+          </Button>
+          <Button variant="ghost" size="icon" disabled={isPending} onClick={() => onDelete(cat.id, confirmDelete)}>
+            <HugeiconsIcon icon={Delete02Icon} />
+          </Button>
+        </div>
+      </TableCell>
+    </TableRow>
+  )
+})
 
 export default ProductsPage

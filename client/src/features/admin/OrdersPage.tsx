@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useCallback, memo } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Spinner } from "@/components/ui/spinner"
@@ -23,7 +23,7 @@ import { DefferedContainer } from "@/features/admin/components/DefferedContainer
 import { FullPageSpinner } from "@/features/admin/components/FullPageSpinner"
 import { SearchInput } from "@/features/admin/components/SearchInput"
 import { ORDER_STATUS, PAYMENT_STATUS } from "@/constants/orderStatus"
-import type { OrderStatus, PaymentStatus } from "@/types"
+import type { AdminOrder, OrderStatus, PaymentStatus } from "@/types"
 
 const FULFILLMENT_STEPS: OrderStatus[] = [
   ORDER_STATUS.PENDING,
@@ -32,11 +32,7 @@ const FULFILLMENT_STEPS: OrderStatus[] = [
   ORDER_STATUS.SHIPPED,
   ORDER_STATUS.DELIVERED,
 ]
-const PAYMENT_STEPS: PaymentStatus[] = [
-  PAYMENT_STATUS.UNPAID,
-  PAYMENT_STATUS.PAID,
-  PAYMENT_STATUS.REFUNDED,
-]
+const PAYMENT_STEPS: PaymentStatus[] = [PAYMENT_STATUS.UNPAID, PAYMENT_STATUS.PAID, PAYMENT_STATUS.REFUNDED]
 
 const getStatusBadge = (status: OrderStatus) => {
   switch (status) {
@@ -82,12 +78,9 @@ export const OrdersPage = () => {
     handleUpdatePaymentStatus,
   } = useOrders()
 
-  const {
-    search,
-    setSearch,
-    filteredData: searchFiltered,
-    isStale,
-  } = useDataTableFilter(orders, (o, s) => o.order_number.toLowerCase().includes(s))
+  const orderFilter = useCallback((o: AdminOrder, s: string) => o.order_number.toLowerCase().includes(s), [])
+
+  const { search, setSearch, filteredData: searchFiltered, isStale } = useDataTableFilter(orders, orderFilter)
 
   const [statusFilter, setStatusFilter] = useState("all")
 
@@ -146,23 +139,7 @@ export const OrdersPage = () => {
                 </TableCell>
               </TableRow>
             ) : (
-              filtered.map((o) => (
-                <TableRow key={o.id}>
-                  <TableCell className="px-6 py-4 font-mono font-bold text-foreground">{o.order_number}</TableCell>
-                  <TableCell className="px-6 py-4">{getStatusBadge(o.status)}</TableCell>
-                  <TableCell className="px-6 py-4">{getPaymentBadge(o.payment_status)}</TableCell>
-                  <TableCell className="px-6 py-4 font-medium text-muted-foreground">
-                    {o.item_count || 0} unit(s)
-                  </TableCell>
-                  <TableCell className="px-6 py-4 font-bold text-foreground">{formatPrice(o.total)}</TableCell>
-                  <TableCell className="px-6 py-4 text-xs text-muted-foreground">{formatDate(o.created_at)}</TableCell>
-                  <TableCell className="px-6 py-4 text-right">
-                    <Button variant="outline" size="sm" onClick={() => handleViewDetails(o.id)}>
-                      Fulfill Order
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
+              filtered.map((o) => <OrderRow key={o.id} order={o} onViewDetails={handleViewDetails} />)
             )}
           </TableBody>
         </Table>
@@ -326,5 +303,29 @@ export const OrdersPage = () => {
     </div>
   )
 }
+
+const OrderRow = memo(function OrderRow({
+  order,
+  onViewDetails,
+}: {
+  order: AdminOrder
+  onViewDetails: (id: string) => void
+}) {
+  return (
+    <TableRow>
+      <TableCell className="px-6 py-4 font-mono font-bold text-foreground">{order.order_number}</TableCell>
+      <TableCell className="px-6 py-4">{getStatusBadge(order.status)}</TableCell>
+      <TableCell className="px-6 py-4">{getPaymentBadge(order.payment_status)}</TableCell>
+      <TableCell className="px-6 py-4 font-medium text-muted-foreground">{order.item_count || 0} unit(s)</TableCell>
+      <TableCell className="px-6 py-4 font-bold text-foreground">{formatPrice(order.total)}</TableCell>
+      <TableCell className="px-6 py-4 text-xs text-muted-foreground">{formatDate(order.created_at)}</TableCell>
+      <TableCell className="px-6 py-4 text-right">
+        <Button variant="outline" size="sm" onClick={() => onViewDetails(order.id)}>
+          Fulfill Order
+        </Button>
+      </TableCell>
+    </TableRow>
+  )
+})
 
 export default OrdersPage

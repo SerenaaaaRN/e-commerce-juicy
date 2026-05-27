@@ -17,6 +17,9 @@ const TOOLTIP_CONTENT_STYLE = {
 
 const TOOLTIP_LABEL_STYLE = { fontSize: "11px", fontWeight: "bold" }
 
+const REVENUE_FORMATTER = (value: unknown) => [formatPrice(Number(value)), "Revenue"] as const
+const ORDERS_FORMATTER = (value: unknown) => [value, "Orders Count"] as const
+
 export const DashboardPage = () => {
   const [overview, setOverview] = useState<AnalyticsOverview | null>(null)
   const [chartData, setChartData] = useState<AnalyticsChartItem[] | null>(null)
@@ -185,7 +188,7 @@ export const DashboardPage = () => {
                   tickFormatter={(v) => `${(v / 1000000).toFixed(0)}M`}
                 />
                 <Tooltip
-                  formatter={(value: unknown) => [formatPrice(Number(value)), "Revenue"]}
+                  formatter={REVENUE_FORMATTER}
                   contentStyle={TOOLTIP_CONTENT_STYLE}
                   labelStyle={TOOLTIP_LABEL_STYLE}
                 />
@@ -222,7 +225,7 @@ export const DashboardPage = () => {
                 />
                 <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} tickLine={false} axisLine={false} />
                 <Tooltip
-                  formatter={(value) => [value, "Orders Count"]}
+                  formatter={ORDERS_FORMATTER}
                   contentStyle={TOOLTIP_CONTENT_STYLE}
                   labelStyle={TOOLTIP_LABEL_STYLE}
                 />

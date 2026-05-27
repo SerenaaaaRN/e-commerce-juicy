@@ -1,3 +1,4 @@
+import { useMemo } from "react"
 import type { UseFormReturn } from "react-hook-form"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -38,7 +39,7 @@ export const ProductFormDialog = ({
   onSubmit,
   isPending,
 }: ProductFormDialogProps) => {
-  const catOptions = buildCategoryOptions(categories)
+  const catOptions = useMemo(() => buildCategoryOptions(categories), [categories])
   return (
   <Dialog open={open} onOpenChange={onOpenChange}>
     <DialogContent className="max-h-[90vh] max-w-xl overflow-y-auto border bg-card sm:max-w-3xl">

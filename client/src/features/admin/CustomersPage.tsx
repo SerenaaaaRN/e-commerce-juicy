@@ -1,3 +1,4 @@
+import { useCallback, memo } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Spinner } from "@/components/ui/spinner"
@@ -24,6 +25,7 @@ import { EmptyState } from "@/features/admin/components/DataEmpty"
 import { DefferedContainer } from "@/features/admin/components/DefferedContainer"
 import { FullPageSpinner } from "@/features/admin/components/FullPageSpinner"
 import { SearchInput } from "@/features/admin/components/SearchInput"
+import type { ClientStatistics } from "@/features/admin/types"
 
 export const CustomersPage = () => {
   const {
@@ -40,15 +42,13 @@ export const CustomersPage = () => {
 
   const { confirm: confirmAction, dialog: confirmDialog } = useConfirm()
 
-  const {
-    search,
-    setSearch,
-    filteredData: filtered,
-    isStale,
-  } = useDataTableFilter(
-    clients,
-    (c, s) => c.full_name.toLowerCase().includes(s) || c.email.toLowerCase().includes(s) || !!c.phone?.includes(s)
+  const clientFilter = useCallback(
+    (c: ClientStatistics, s: string) =>
+      c.full_name.toLowerCase().includes(s) || c.email.toLowerCase().includes(s) || !!c.phone?.includes(s),
+    []
   )
+
+  const { search, setSearch, filteredData: filtered, isStale } = useDataTableFilter(clients, clientFilter)
 
   if (loading) return <FullPageSpinner label="Loading Customer Directory..." />
 
@@ -86,59 +86,14 @@ export const CustomersPage = () => {
               <EmptyState message="No customers found matching your search term." />
             ) : (
               filtered.map((client) => (
-                <TableRow key={client.id}>
-                  <TableCell className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="flex size-9 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary uppercase">
-                        {client.full_name.substring(0, 2)}
-                      </div>
-                      <div>
-                        <p className="font-semibold text-foreground">{client.full_name}</p>
-                        <p className="text-[11px] text-muted-foreground">{client.email}</p>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="px-6 py-4 font-mono text-xs text-foreground">{client.phone || "-"}</TableCell>
-                  <TableCell className="px-6 py-4 text-xs text-muted-foreground">
-                    {formatDate(client.created_at)}
-                  </TableCell>
-                  <TableCell className="px-6 py-4 font-semibold text-foreground">
-                    {client.order_count ?? 0} unit(s)
-                  </TableCell>
-                  <TableCell className="px-6 py-4 font-bold text-foreground">
-                    {formatPrice(client.total_spent ?? 0)}
-                  </TableCell>
-                  <TableCell className="px-6 py-4">
-                    <Badge variant={(client.is_active ?? true) ? "default" : "destructive"}>
-                      {(client.is_active ?? true) ? "Active Health" : "Suspended"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Button variant="outline" size="sm" onClick={() => handleViewClientDetails(client)}>
-                        CRM Log
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        disabled={isPending}
-                        onClick={() => handleToggleClientStatus(client, confirmAction)}
-                        className={cn(
-                          "size-8 rounded-full border hover:bg-muted",
-                          (client.is_active ?? true)
-                            ? "text-destructive hover:bg-destructive/10"
-                            : "text-primary hover:bg-primary/10"
-                        )}
-                      >
-                        {(client.is_active ?? true) ? (
-                          <HugeiconsIcon icon={Cancel01Icon} className="size-4" />
-                        ) : (
-                          <HugeiconsIcon icon={CheckmarkCircle01Icon} className="size-4" />
-                        )}
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
+                <CustomerRow
+                  key={client.id}
+                  client={client}
+                  isPending={isPending}
+                  onViewDetails={handleViewClientDetails}
+                  onToggleStatus={handleToggleClientStatus}
+                  confirmAction={confirmAction}
+                />
               ))
             )}
           </TableBody>
@@ -217,7 +172,9 @@ export const CustomersPage = () => {
                         </div>
                         <div className="flex items-center gap-3">
                           <div className="text-right font-bold text-foreground">{formatPrice(ord.total)}</div>
-                          <Badge variant={ord.status === ORDER_STATUS.DELIVERED ? "default" : "secondary"}>{ORDER_STATUS_LABELS[ord.status] ?? ord.status}</Badge>
+                          <Badge variant={ord.status === ORDER_STATUS.DELIVERED ? "default" : "secondary"}>
+                            {ORDER_STATUS_LABELS[ord.status] ?? ord.status}
+                          </Badge>
                         </div>
                       </div>
                     ))
@@ -239,5 +196,69 @@ export const CustomersPage = () => {
     </div>
   )
 }
+
+const CustomerRow = memo(function CustomerRow({
+  client,
+  isPending,
+  onViewDetails,
+  onToggleStatus,
+  confirmAction,
+}: {
+  client: ClientStatistics
+  isPending: boolean
+  onViewDetails: (client: ClientStatistics) => void
+  onToggleStatus: (client: ClientStatistics, confirmFn: (msg: string) => Promise<boolean>) => Promise<void>
+  confirmAction: (msg: string) => Promise<boolean>
+}) {
+  return (
+    <TableRow>
+      <TableCell className="px-6 py-4">
+        <div className="flex items-center gap-3">
+          <div className="flex size-9 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary uppercase">
+            {client.full_name.substring(0, 2)}
+          </div>
+          <div>
+            <p className="font-semibold text-foreground">{client.full_name}</p>
+            <p className="text-[11px] text-muted-foreground">{client.email}</p>
+          </div>
+        </div>
+      </TableCell>
+      <TableCell className="px-6 py-4 font-mono text-xs text-foreground">{client.phone || "-"}</TableCell>
+      <TableCell className="px-6 py-4 text-xs text-muted-foreground">{formatDate(client.created_at)}</TableCell>
+      <TableCell className="px-6 py-4 font-semibold text-foreground">{client.order_count ?? 0} unit(s)</TableCell>
+      <TableCell className="px-6 py-4 font-bold text-foreground">{formatPrice(client.total_spent ?? 0)}</TableCell>
+      <TableCell className="px-6 py-4">
+        <Badge variant={(client.is_active ?? true) ? "default" : "destructive"}>
+          {(client.is_active ?? true) ? "Active Health" : "Suspended"}
+        </Badge>
+      </TableCell>
+      <TableCell className="px-6 py-4 text-right">
+        <div className="flex items-center justify-end gap-2">
+          <Button variant="outline" size="sm" onClick={() => onViewDetails(client)}>
+            CRM Log
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            disabled={isPending}
+            onClick={() => onToggleStatus(client, confirmAction)}
+            className={cn(
+              "size-8 rounded-full border hover:bg-muted",
+              (client.is_active ?? true)
+                ? "text-destructive hover:bg-destructive/10"
+                : "text-primary hover:bg-primary/10"
+            )}
+          >
+            {(client.is_active ?? true) ? (
+              <HugeiconsIcon icon={Cancel01Icon} className="size-4" />
+            ) : (
+              <HugeiconsIcon icon={CheckmarkCircle01Icon} className="size-4" />
+            )}
+          </Button>
+        </div>
+      </TableCell>
+    </TableRow>
+  )
+})
 
 export default CustomersPage

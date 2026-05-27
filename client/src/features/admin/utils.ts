@@ -21,3 +21,18 @@ export function buildCategoryOptions(categories: Category[]) {
   walk("", 0)
   return result
 }
+
+export const getCategoryDescendants = (categories: Category[], categoryId: string): string[] => {
+  const ids: string[] = [categoryId]
+
+  const walk = (id: string) => {
+    const children = categories.filter((c) => c.parent_id === id)
+    for (const child of children) {
+      ids.push(child.id)
+      walk(child.id)
+    }
+  }
+
+  walk(categoryId)
+  return ids
+}
