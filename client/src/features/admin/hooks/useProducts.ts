@@ -5,11 +5,11 @@ import axios from "axios"
 import { adminApi } from "@/lib/api/admin"
 import { toast } from "sonner"
 import { productSchema, categorySchema } from "@/features/admin/validations"
-import type { Category, ProductDetail } from "@/types"
+import type { Category, CatalogProduct, ProductDetail } from "@/types"
 import type { ProductFormValues, CategoryFormValues } from "@/features/admin/types"
 
 export const useProducts = () => {
-  const [products, setProducts] = useState<ProductDetail[]>([])
+  const [products, setProducts] = useState<CatalogProduct[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [isPending, startTransition] = useTransition()
@@ -90,8 +90,8 @@ export const useProducts = () => {
   }, [categories, productForm])
 
   const handleOpenEditProduct = useCallback(
-    (prod: ProductDetail) => {
-      setActiveProduct(prod)
+    (prod: CatalogProduct) => {
+      setActiveProduct(prod as unknown as ProductDetail)
       productForm.reset({
         name: prod.name,
         slug: prod.slug,

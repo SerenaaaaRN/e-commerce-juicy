@@ -25,7 +25,7 @@ import { SearchInput } from "@/features/admin/components/SearchInput"
 import { ProductFormDialog } from "@/features/admin/components/ProductFormDialog"
 import { VariantManagerDialog } from "@/features/admin/components/VariantManagerDialog"
 import { ImageManagerDialog } from "@/features/admin/components/ImageManagerDialog"
-import type { ProductDetail } from "@/types"
+import type { CatalogProduct, ProductDetail } from "@/types"
 import { adminApi } from "@/lib/api"
 
 export const ProductsPage = () => {
@@ -46,31 +46,31 @@ export const ProductsPage = () => {
     isStale,
   } = useDataTableFilter(ctx.products, (p, s) => p.name.toLowerCase().includes(s) || p.slug.toLowerCase().includes(s))
 
-  const openVariants = async (prod: ProductDetail) => {
+  const openVariants = async (prod: CatalogProduct) => {
     try {
       const res = await adminApi.getProductByID(prod.id)
       if (res.success && res.data) {
         ctx.setActiveProduct(res.data)
       } else {
-        ctx.setActiveProduct(prod)
+        ctx.setActiveProduct(prod as unknown as ProductDetail)
       }
     } catch {
-      ctx.setActiveProduct(prod)
+      ctx.setActiveProduct(prod as unknown as ProductDetail)
     }
     variantCtx.resetVariantForm()
     setVariantsModalOpen(true)
   }
 
-  const openImages = async (prod: ProductDetail) => {
+  const openImages = async (prod: CatalogProduct) => {
     try {
       const res = await adminApi.getProductByID(prod.id)
       if (res.success && res.data) {
         ctx.setActiveProduct(res.data)
       } else {
-        ctx.setActiveProduct(prod)
+        ctx.setActiveProduct(prod as unknown as ProductDetail)
       }
     } catch {
-      ctx.setActiveProduct(prod)
+      ctx.setActiveProduct(prod as unknown as ProductDetail)
     }
     imageCtx.setSelectedFiles(null)
     setImagesModalOpen(true)

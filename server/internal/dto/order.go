@@ -47,7 +47,9 @@ type OrderDetailResponse struct {
 	Subtotal      float64             `json:"subtotal"`
 	ShippingFee   float64             `json:"shipping_fee"`
 	Total         float64             `json:"total"`
+	Notes         *string             `json:"notes"`
 	ShippedAt     *time.Time          `json:"shipped_at"`
+	DeliveredAt   *time.Time          `json:"delivered_at"`
 	Address       OrderAddressInfo    `json:"address"`
 	Items         []OrderItemResponse `json:"items"`
 	CreatedAt     time.Time           `json:"created_at"`

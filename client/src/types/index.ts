@@ -53,14 +53,24 @@ export type ProductVariant = {
 // Product representation used in list responses
 export type CatalogProduct = {
   id: string
+  category_id: string
   name: string
   slug: string
+  description?: string | null
   price: number
   compare_at_price?: number
+  is_available: boolean
   is_featured: boolean
   tags: string[]
+  display_order: number
   primary_image: string
   category_name: string
+  images?: ProductImage[]
+  category?: {
+    id: string
+    name: string
+    slug: string
+  }
   avg_rating: number
   review_count: number
   variants?: ProductVariant[]
@@ -69,6 +79,7 @@ export type CatalogProduct = {
 // Product representation used in detail response (PDP + Admin)
 export type ProductDetail = {
   id: string
+  category_id: string
   name: string
   slug: string
   description?: string
@@ -78,14 +89,15 @@ export type ProductDetail = {
   is_featured: boolean
   tags: string[]
   display_order: number
-  category_id: string
-  created_at: string
-  updated_at: string
-  category?: Category
-  category_name?: string
-  primary_image?: string
-  images?: ProductImage[]
-  variants?: ProductVariant[]
+  primary_image: string
+  category: {
+    id: string
+    name: string
+    slug: string
+  }
+  category_name: string
+  images: ProductImage[]
+  variants: ProductVariant[]
   avg_rating: number
   review_count: number
 }
@@ -119,7 +131,7 @@ export type CartItem = {
   product_name: string
   variant_size: string
   variant_color: string
-  image_url: string
+  image_url: string | null
   unit_price: number
   quantity: number
   subtotal: number
@@ -140,6 +152,7 @@ export type Order = {
   payment_status: PaymentStatus
   total: number
   item_count?: number
+  notes?: string
   created_at: string
 }
 
@@ -172,10 +185,10 @@ export type OrderDetail = {
   subtotal: number
   shipping_fee: number
   total: number
-  notes?: string
-  shipped_at?: string
+  notes?: string | null
+  shipped_at?: string | null
+  delivered_at?: string | null
   created_at: string
-  updated_at?: string
   address: OrderAddressInfo
   items: OrderItem[]
 }
@@ -186,7 +199,7 @@ export type Review = {
   customer_id?: string
   order_id?: string
   rating: number
-  body: string
+  body: string | null
   customer_name: string
   is_published?: boolean
   created_at: string

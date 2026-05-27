@@ -3,6 +3,7 @@ import type {
   ApiResponse,
   PaginatedResponse,
   Category,
+  CatalogProduct,
   ProductDetail,
   ProductVariant,
   AdminOrder,
@@ -57,13 +58,22 @@ export type ReviewQueryParams = {
 
 export const adminApi = {
   // --- AUTH ---
-  login: async (payload: Record<string, string>): Promise<ApiResponse<{ token: string; admin: { id: string; username: string; email: string } }>> => {
-    const response = await client.post<ApiResponse<{ token: string; admin: { id: string; username: string; email: string } }>>("/admin/login", payload)
+  login: async (
+    payload: Record<string, string>
+  ): Promise<ApiResponse<{ token: string; admin: { id: string; username: string; email: string } }>> => {
+    const response = await client.post<
+      ApiResponse<{ token: string; admin: { id: string; username: string; email: string } }>
+    >("/admin/login", payload)
     return response.data
   },
 
-  refresh: async (): Promise<ApiResponse<{ token: string; admin: { id: string; username: string; email: string } }>> => {
-    const response = await client.post<ApiResponse<{ token: string; admin: { id: string; username: string; email: string } }>>("/admin/refresh")
+  refresh: async (): Promise<
+    ApiResponse<{ token: string; admin: { id: string; username: string; email: string } }>
+  > => {
+    const response =
+      await client.post<ApiResponse<{ token: string; admin: { id: string; username: string; email: string } }>>(
+        "/admin/refresh"
+      )
     return response.data
   },
 
@@ -105,8 +115,8 @@ export const adminApi = {
   },
 
   // --- PRODUCTS ---
-  getProducts: async (params?: ProductQueryParams): Promise<PaginatedResponse<ProductDetail>> => {
-    const response = await client.get<PaginatedResponse<ProductDetail>>("/admin/products", { params })
+  getProducts: async (params?: ProductQueryParams): Promise<PaginatedResponse<CatalogProduct>> => {
+    const response = await client.get<PaginatedResponse<CatalogProduct>>("/admin/products", { params })
     return response.data
   },
 
@@ -139,7 +149,9 @@ export const adminApi = {
   },
 
   addProductImageUrl: async (id: string, imageUrl: string): Promise<ApiResponse<ProductDetail>> => {
-    const response = await client.post<ApiResponse<ProductDetail>>(`/admin/products/${id}/images/url`, { image_url: imageUrl })
+    const response = await client.post<ApiResponse<ProductDetail>>(`/admin/products/${id}/images/url`, {
+      image_url: imageUrl,
+    })
     return response.data
   },
 
@@ -159,13 +171,23 @@ export const adminApi = {
     return response.data
   },
 
-  addVariant: async (id: string, payload: Omit<ProductVariant, "id" | "product_id" | "created_at" | "updated_at">): Promise<ApiResponse<ProductVariant>> => {
+  addVariant: async (
+    id: string,
+    payload: Omit<ProductVariant, "id" | "product_id" | "created_at" | "updated_at">
+  ): Promise<ApiResponse<ProductVariant>> => {
     const response = await client.post<ApiResponse<ProductVariant>>(`/admin/products/${id}/variants`, payload)
     return response.data
   },
 
-  updateVariant: async (id: string, variantId: string, payload: Partial<ProductVariant>): Promise<ApiResponse<ProductVariant>> => {
-    const response = await client.put<ApiResponse<ProductVariant>>(`/admin/products/${id}/variants/${variantId}`, payload)
+  updateVariant: async (
+    id: string,
+    variantId: string,
+    payload: Partial<ProductVariant>
+  ): Promise<ApiResponse<ProductVariant>> => {
+    const response = await client.put<ApiResponse<ProductVariant>>(
+      `/admin/products/${id}/variants/${variantId}`,
+      payload
+    )
     return response.data
   },
 
@@ -191,7 +213,9 @@ export const adminApi = {
   },
 
   updateOrderPaymentStatus: async (id: string, paymentStatus: string): Promise<ApiResponse<null>> => {
-    const response = await client.patch<ApiResponse<null>>(`/admin/orders/${id}/payment`, { payment_status: paymentStatus })
+    const response = await client.patch<ApiResponse<null>>(`/admin/orders/${id}/payment`, {
+      payment_status: paymentStatus,
+    })
     return response.data
   },
 
@@ -202,7 +226,9 @@ export const adminApi = {
   },
 
   getCustomerDetail: async (id: string): Promise<ApiResponse<ClientStatistics & { order_history?: AdminOrder[] }>> => {
-    const response = await client.get<ApiResponse<ClientStatistics & { order_history?: AdminOrder[] }>>(`/admin/customers/${id}`)
+    const response = await client.get<ApiResponse<ClientStatistics & { order_history?: AdminOrder[] }>>(
+      `/admin/customers/${id}`
+    )
     return response.data
   },
 
@@ -218,7 +244,9 @@ export const adminApi = {
   },
 
   toggleReviewPublish: async (id: string, isPublished: boolean): Promise<ApiResponse<null>> => {
-    const response = await client.patch<ApiResponse<null>>(`/admin/reviews/${id}/publish`, { is_published: isPublished })
+    const response = await client.patch<ApiResponse<null>>(`/admin/reviews/${id}/publish`, {
+      is_published: isPublished,
+    })
     return response.data
   },
 

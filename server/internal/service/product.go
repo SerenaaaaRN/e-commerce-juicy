@@ -113,10 +113,13 @@ func (s *productService) ListProducts(
 			CategoryID:     p.CategoryID,
 			Name:           p.Name,
 			Slug:           p.Slug,
+			Description:    p.Description,
 			Price:          p.Price,
 			CompareAtPrice: p.CompareAtPrice,
+			IsAvailable:    p.IsAvailable,
 			IsFeatured:     p.IsFeatured,
 			Tags:           p.Tags,
+			DisplayOrder:   p.DisplayOrder,
 			PrimaryImage:   primaryImg,
 			CategoryName:   p.Category.Name,
 			AvgRating:      pStats.AvgRating,
@@ -453,22 +456,36 @@ func (s *productService) mapToDetailResponse(ctx context.Context, p *model.Produ
 		}
 	}
 
+	var primaryImage string
+	for _, img := range p.Images {
+		if img.IsPrimary {
+			primaryImage = img.ImageURL
+			break
+		}
+	}
+
 	return &dto.ProductDetailResponse{
 		ID:             p.ID,
+		CategoryID:     p.CategoryID,
 		Name:           p.Name,
 		Slug:           p.Slug,
 		Description:    p.Description,
 		Price:          p.Price,
 		CompareAtPrice: p.CompareAtPrice,
+		IsAvailable:    p.IsAvailable,
+		IsFeatured:     p.IsFeatured,
 		Tags:           p.Tags,
+		DisplayOrder:   p.DisplayOrder,
+		PrimaryImage:   primaryImage,
 		Category: dto.CategoryDetailInfo{
 			ID:   p.Category.ID,
 			Name: p.Category.Name,
 			Slug: p.Category.Slug,
 		},
-		Images:      imagesRes,
-		Variants:    variantsRes,
-		AvgRating:   stats.AvgRating,
-		ReviewCount: stats.ReviewCount,
+		CategoryName: p.Category.Name,
+		Images:       imagesRes,
+		Variants:     variantsRes,
+		AvgRating:    stats.AvgRating,
+		ReviewCount:  stats.ReviewCount,
 	}, nil
 }
