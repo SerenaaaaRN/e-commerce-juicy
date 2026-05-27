@@ -27,38 +27,13 @@ import { VariantManagerDialog } from "@/features/admin/components/VariantManager
 import { ImageManagerDialog } from "@/features/admin/components/ImageManagerDialog"
 import type { CatalogProduct, ProductDetail, Category } from "@/types"
 import { adminApi } from "@/lib/api"
-
-function buildCategoryOptions(categories: Category[], excludeId?: string | null) {
-  const map = new Map(categories.map((c) => [c.id, c]))
-  const roots = categories.filter((c) => !c.parent_id)
-  const result: { value: string; label: string; depth: number }[] = []
-
-  function walk(list: Category[], depth: number) {
-    for (const cat of list) {
-      if (cat.id === excludeId) continue
-      result.push({ value: cat.id, label: cat.name, depth })
-      const children = categories.filter((c) => c.parent_id === cat.id)
-      if (children.length) walk(children, depth + 1)
-    }
-  }
-
-  walk(roots, 0)
-  const remaining = categories.filter(
-    (c) => c.parent_id && !map.get(c.parent_id) && c.id !== excludeId
-  )
-  for (const cat of remaining) {
-    if (!result.some((r) => r.value === cat.id)) {
-      result.push({ value: cat.id, label: cat.name, depth: 0 })
-    }
-  }
-  return result
-}
+import { buildCategoryOptions } from "@/features/admin/utils"
 
 export const ProductsPage = () => {
   const ctx = useProducts()
   const { confirm: confirmDelete, dialog: confirmDialog } = useConfirm()
   const { editingCategory, handleOpenEditCategory, handleCancelEditCategory } = ctx
-  const catOptions = buildCategoryOptions(ctx.categories, editingCategory?.id)
+  const catOptions = buildCategoryOptions(ctx.categories).filter((o) => o.value !== editingCategory?.id)
   const parentMap = new Map(ctx.categories.map((c) => [c.id, c.name]))
 
   const [variantsModalOpen, setVariantsModalOpen] = useState(false)

@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog"
 import type { Category, ProductDetail } from "@/types"
 import type { ProductFormValues } from "@/features/admin/types"
+import { buildCategoryOptions } from "@/features/admin/utils"
 
 type ProductFormDialogProps = {
   open: boolean
@@ -36,7 +37,9 @@ export const ProductFormDialog = ({
   form,
   onSubmit,
   isPending,
-}: ProductFormDialogProps) => (
+}: ProductFormDialogProps) => {
+  const catOptions = buildCategoryOptions(categories)
+  return (
   <Dialog open={open} onOpenChange={onOpenChange}>
     <DialogContent className="max-h-[90vh] max-w-xl overflow-y-auto border bg-card sm:max-w-3xl">
       <DialogHeader>
@@ -98,9 +101,12 @@ export const ProductFormDialog = ({
               <SelectValue placeholder="Choose Classification..." />
             </SelectTrigger>
             <SelectContent>
-              {categories.map((c) => (
-                <SelectItem key={c.id} value={c.id}>
-                  {c.name}
+              {catOptions.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  <span style={{ paddingLeft: opt.depth * 16 }}>
+                    {"\u00A0".repeat(opt.depth * 2)}
+                    {opt.label}
+                  </span>
                 </SelectItem>
               ))}
             </SelectContent>
@@ -171,3 +177,4 @@ export const ProductFormDialog = ({
     </DialogContent>
   </Dialog>
 )
+}

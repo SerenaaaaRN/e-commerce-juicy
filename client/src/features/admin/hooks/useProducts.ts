@@ -193,6 +193,7 @@ export const useProducts = () => {
         slug: values.slug.trim(),
         description: values.description?.trim() || undefined,
         parent_id: values.parent_id || null,
+        is_active: true,
         display_order: values.display_order,
       }
 
