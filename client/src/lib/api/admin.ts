@@ -208,12 +208,12 @@ export const adminApi = {
   },
 
   updateOrderStatus: async (id: string, status: string): Promise<ApiResponse<null>> => {
-    const response = await client.patch<ApiResponse<null>>(`/admin/orders/${id}/status`, { status })
+    const response = await client.put<ApiResponse<null>>(`/admin/orders/${id}/status`, { status })
     return response.data
   },
 
   updateOrderPaymentStatus: async (id: string, paymentStatus: string): Promise<ApiResponse<null>> => {
-    const response = await client.patch<ApiResponse<null>>(`/admin/orders/${id}/payment`, {
+    const response = await client.put<ApiResponse<null>>(`/admin/orders/${id}/payment`, {
       payment_status: paymentStatus,
     })
     return response.data

@@ -61,7 +61,8 @@ export const OrdersPage = () => {
   const {
     orders,
     loading,
-    isPending,
+    updating,
+    viewLoading,
     detailsOpen,
     setDetailsOpen,
     activeOrder,
@@ -128,7 +129,11 @@ export const OrdersPage = () => {
           </TableHeader>
           <TableBody>
             {filtered.length === 0 ? (
-              <EmptyState message="No boutique orders found matching your search." />
+              <TableRow>
+                <TableCell colSpan={7}>
+                  <EmptyState message="No boutique orders found matching your search." />
+                </TableCell>
+              </TableRow>
             ) : (
               filtered.map((o) => (
                 <TableRow key={o.id}>
@@ -163,7 +168,7 @@ export const OrdersPage = () => {
             </DialogDescription>
           </DialogHeader>
 
-          {isPending ? (
+          {viewLoading ? (
             <div className="flex h-64 w-full items-center justify-center">
               <Spinner className="size-8 text-primary" />
             </div>
@@ -185,7 +190,7 @@ export const OrdersPage = () => {
                         variant={activeOrder.status === st ? "default" : "outline"}
                         size="xs"
                         onClick={() => handleUpdateStatus(st)}
-                        disabled={isPending}
+                        disabled={updating}
                         className="h-auto py-1 text-[10px] font-bold uppercase"
                       >
                         {st}
@@ -204,7 +209,7 @@ export const OrdersPage = () => {
                         variant={activeOrder.payment_status === pst ? "default" : "outline"}
                         size="xs"
                         onClick={() => handleUpdatePaymentStatus(pst)}
-                        disabled={isPending}
+                        disabled={updating}
                         className="h-auto py-1 text-[10px] font-bold uppercase"
                       >
                         {pst}
@@ -279,7 +284,7 @@ export const OrdersPage = () => {
                       {activeOrder.address.postal_code}
                     </div>
                   </div>
-                  {activeOrder.notes && (
+                  {activeOrder.notes ? (
                     <>
                       <Separator className="my-1" />
                       <div className="flex flex-col gap-1.5">
@@ -289,7 +294,7 @@ export const OrdersPage = () => {
                         <div className="leading-relaxed text-muted-foreground italic">"{activeOrder.notes}"</div>
                       </div>
                     </>
-                  )}
+                  ) : null}
                   <Separator className="my-1" />
                   <div className="flex flex-col gap-1.5 text-[10px] font-medium text-muted-foreground">
                     <div>Placed: {formatDate(activeOrder.created_at)}</div>

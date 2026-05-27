@@ -149,17 +149,11 @@
 > **Status:** Unresolved — perlu diperbaiki.
 
 ### 15.1 Customer Dialog Bugs (admin panel)
-- [ ] Fix "Total spent Rp.null" display in Customer Dialog — `total_spent` null handling
-- [ ] Fix total spent for customer that has no order yet (show Rp 0, not null)
-- [ ] Empty order history message (show "Belum ada pesanan" placeholder)
-- [ ] Order lifecycle table not displaying (lifecycle order + lifecycle spent)
-- [ ] Can't suspend customer — toggle button fails silently
-
-### 15.2 Phase 10 Missing Components
-- [ ] Create `BrandSpotlight.tsx` — Editorial lookbook section dengan brand story
-- [ ] Create `InstagramFeed.tsx` — Social media feed grid (static placeholder)
-- [ ] Create `StyleDirectory.tsx` — Grid kategori besar ala Zalora
-- [ ] Integrate 3 components di HomePage.tsx (target 13 sections total)
+- [x] Fix "Total spent Rp.null" display in Customer Dialog — `total_spent` null handling
+- [x] Fix total spent for customer that has no order yet (show Rp 0, not null)
+- [x] Empty order history message (show "Belum ada pesanan" placeholder)
+- [x] Order lifecycle table not displaying (lifecycle order + lifecycle spent)
+- [x] Can't suspend customer — toggle button fails silently
 
 ---
 
