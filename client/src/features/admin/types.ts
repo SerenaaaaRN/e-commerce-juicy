@@ -29,6 +29,7 @@ export type CategoryFormValues = {
   name: string
   slug: string
   description?: string
+  parent_id?: string
   display_order: number
 }
 

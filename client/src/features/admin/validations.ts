@@ -26,5 +26,6 @@ export const categorySchema = z.object({
   name: z.string().min(1, "Category name is required"),
   slug: z.string().min(1, "Category slug is required"),
   description: z.string().optional(),
+  parent_id: z.string().optional(),
   display_order: z.coerce.number().default(1),
 })

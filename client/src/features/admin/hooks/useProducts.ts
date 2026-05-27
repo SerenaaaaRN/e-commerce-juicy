@@ -42,6 +42,7 @@ export const useProducts = () => {
       name: "",
       slug: "",
       description: "",
+      parent_id: "",
       display_order: 1,
     },
   })
@@ -187,10 +188,11 @@ export const useProducts = () => {
 
   const handleCategorySubmit = categoryForm.handleSubmit(async (values) => {
     startTransition(async () => {
-      const payload = {
+      const payload: Record<string, unknown> = {
         name: values.name.trim(),
         slug: values.slug.trim(),
         description: values.description?.trim() || undefined,
+        parent_id: values.parent_id || null,
         display_order: values.display_order,
       }
 
@@ -218,6 +220,7 @@ export const useProducts = () => {
             name: "",
             slug: "",
             description: "",
+            parent_id: "",
             display_order: 1,
           })
         }
@@ -234,6 +237,7 @@ export const useProducts = () => {
         name: cat.name,
         slug: cat.slug,
         description: cat.description || "",
+        parent_id: cat.parent_id || "",
         display_order: cat.display_order,
       })
     },
@@ -246,6 +250,7 @@ export const useProducts = () => {
       name: "",
       slug: "",
       description: "",
+      parent_id: "",
       display_order: 1,
     })
   }, [categoryForm])

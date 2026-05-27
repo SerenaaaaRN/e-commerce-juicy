@@ -25,13 +25,41 @@ import { SearchInput } from "@/features/admin/components/SearchInput"
 import { ProductFormDialog } from "@/features/admin/components/ProductFormDialog"
 import { VariantManagerDialog } from "@/features/admin/components/VariantManagerDialog"
 import { ImageManagerDialog } from "@/features/admin/components/ImageManagerDialog"
-import type { CatalogProduct, ProductDetail } from "@/types"
+import type { CatalogProduct, ProductDetail, Category } from "@/types"
 import { adminApi } from "@/lib/api"
+
+function buildCategoryOptions(categories: Category[], excludeId?: string | null) {
+  const map = new Map(categories.map((c) => [c.id, c]))
+  const roots = categories.filter((c) => !c.parent_id)
+  const result: { value: string; label: string; depth: number }[] = []
+
+  function walk(list: Category[], depth: number) {
+    for (const cat of list) {
+      if (cat.id === excludeId) continue
+      result.push({ value: cat.id, label: cat.name, depth })
+      const children = categories.filter((c) => c.parent_id === cat.id)
+      if (children.length) walk(children, depth + 1)
+    }
+  }
+
+  walk(roots, 0)
+  const remaining = categories.filter(
+    (c) => c.parent_id && !map.get(c.parent_id) && c.id !== excludeId
+  )
+  for (const cat of remaining) {
+    if (!result.some((r) => r.value === cat.id)) {
+      result.push({ value: cat.id, label: cat.name, depth: 0 })
+    }
+  }
+  return result
+}
 
 export const ProductsPage = () => {
   const ctx = useProducts()
   const { confirm: confirmDelete, dialog: confirmDialog } = useConfirm()
   const { editingCategory, handleOpenEditCategory, handleCancelEditCategory } = ctx
+  const catOptions = buildCategoryOptions(ctx.categories, editingCategory?.id)
+  const parentMap = new Map(ctx.categories.map((c) => [c.id, c.name]))
 
   const [variantsModalOpen, setVariantsModalOpen] = useState(false)
   const [imagesModalOpen, setImagesModalOpen] = useState(false)
@@ -288,6 +316,28 @@ export const ProductsPage = () => {
                     />
                   </Field>
                   <Field>
+                    <FieldLabel htmlFor="catParent">Parent Category</FieldLabel>
+                    <Select
+                      value={ctx.categoryForm.watch("parent_id") || "__none__"}
+                      onValueChange={(v) => ctx.categoryForm.setValue("parent_id", v === "__none__" ? "" : v)}
+                    >
+                      <SelectTrigger id="catParent">
+                        <SelectValue placeholder="None (Top Level)" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__none__">None (Top Level)</SelectItem>
+                        {catOptions.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            <span style={{ paddingLeft: opt.depth * 16 }}>
+                              {"\u00A0".repeat(opt.depth * 2)}
+                              {opt.label}
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                  <Field>
                     <FieldLabel htmlFor="catOrder">Display Order</FieldLabel>
                     <Input
                       id="catOrder"
@@ -327,7 +377,7 @@ export const ProductsPage = () => {
                   <TableRow>
                     <TableHead className="px-6 py-4">Name</TableHead>
                     <TableHead className="px-6 py-4">Slug</TableHead>
-                    <TableHead className="px-6 py-4">Description</TableHead>
+                    <TableHead className="px-6 py-4">Parent</TableHead>
                     <TableHead className="px-6 py-4">Display Order</TableHead>
                     <TableHead className="px-6 py-4 text-right">Actions</TableHead>
                   </TableRow>
@@ -340,8 +390,8 @@ export const ProductsPage = () => {
                       <TableRow key={cat.id}>
                         <TableCell className="px-6 py-4 font-semibold text-foreground">{cat.name}</TableCell>
                         <TableCell className="px-6 py-4 font-mono text-xs text-muted-foreground">{cat.slug}</TableCell>
-                        <TableCell className="max-w-xs truncate px-6 py-4 text-muted-foreground">
-                          {cat.description || "-"}
+                        <TableCell className="px-6 py-4 text-muted-foreground">
+                          {cat.parent_id ? (parentMap.get(cat.parent_id) || "-") : "-"}
                         </TableCell>
                         <TableCell className="px-6 py-4 font-medium text-foreground">{cat.display_order}</TableCell>
                         <TableCell className="px-6 py-4 text-right">
