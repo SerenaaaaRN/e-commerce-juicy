@@ -115,12 +115,17 @@ func (s *categoryService) GetCategoryByID(ctx context.Context, id uuid.UUID) (*m
 }
 
 func (s *categoryService) CreateCategory(ctx context.Context, req dto.CategoryRequest) (*model.Category, error) {
+	isActive := true
+	if req.IsActive != nil {
+		isActive = *req.IsActive
+	}
+
 	category := &model.Category{
 		Name:         req.Name,
 		Slug:         req.Slug,
 		Description:  req.Description,
 		DisplayOrder: req.DisplayOrder,
-		IsActive:     req.IsActive,
+		IsActive:     isActive,
 		ParentID:     req.ParentID,
 	}
 
@@ -141,7 +146,9 @@ func (s *categoryService) UpdateCategory(ctx context.Context, id uuid.UUID, req 
 	cat.Slug = req.Slug
 	cat.Description = req.Description
 	cat.DisplayOrder = req.DisplayOrder
-	cat.IsActive = req.IsActive
+	if req.IsActive != nil {
+		cat.IsActive = *req.IsActive
+	}
 	cat.ParentID = req.ParentID
 	cat.UpdatedAt = time.Now()
 

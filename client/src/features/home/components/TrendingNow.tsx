@@ -11,54 +11,62 @@ import type { CatalogProduct } from "@/types"
 const FALLBACKS: CatalogProduct[] = [
   {
     id: "t1",
+    category_id: "cat-004",
     name: "Linen Trench Coat",
     slug: "linen-trench-coat",
     price: 1850000,
     compare_at_price: 2400000,
+    is_available: true,
     is_featured: true,
+    display_order: 0,
     tags: ["popular"],
-    primary_image:
-      "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?q=80&w=600&auto=format&fit=crop",
+    primary_image: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?q=80&w=600&auto=format&fit=crop",
     category_name: "Outerwear",
     avg_rating: 4.9,
     review_count: 14,
   },
   {
     id: "t2",
+    category_id: "cat-002",
     name: "Slouchy Tailored Trouser",
     slug: "slouchy-tailored-trouser",
     price: 950000,
+    is_available: true,
     is_featured: true,
+    display_order: 0,
     tags: ["popular"],
-    primary_image:
-      "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?q=80&w=600&auto=format&fit=crop",
+    primary_image: "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?q=80&w=600&auto=format&fit=crop",
     category_name: "Bottoms",
     avg_rating: 4.7,
     review_count: 22,
   },
   {
     id: "t3",
+    category_id: "cat-003",
     name: "Minimalist Slip Dress",
     slug: "minimalist-slip-dress",
     price: 1200000,
     compare_at_price: 1500000,
+    is_available: true,
     is_featured: true,
+    display_order: 0,
     tags: ["popular", "bestseller"],
-    primary_image:
-      "https://images.unsplash.com/photo-1496747611176-843222e1e57c?q=80&w=600&auto=format&fit=crop",
+    primary_image: "https://images.unsplash.com/photo-1496747611176-843222e1e57c?q=80&w=600&auto=format&fit=crop",
     category_name: "Dresses",
     avg_rating: 4.8,
     review_count: 31,
   },
   {
     id: "t4",
+    category_id: "cat-001",
     name: "Classic Atelier Vest",
     slug: "classic-atelier-vest",
     price: 780000,
+    is_available: true,
     is_featured: true,
+    display_order: 0,
     tags: ["popular"],
-    primary_image:
-      "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600&auto=format&fit=crop",
+    primary_image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600&auto=format&fit=crop",
     category_name: "Tops",
     avg_rating: 4.6,
     review_count: 19,
@@ -73,10 +81,7 @@ export const TrendingNow = () => {
   const displayProducts = realTrending.length > 0 ? realTrending : FALLBACKS
 
   return (
-    <section
-      data-section="trending"
-      className="relative overflow-hidden bg-background py-24 md:py-32"
-    >
+    <section data-section="trending" className="relative overflow-hidden bg-background py-24 md:py-32">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,var(--color-gold-subtle)_0%,transparent_60%)]" />
 
       <div className="relative container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -103,8 +108,7 @@ export const TrendingNow = () => {
             className="hidden text-[10px] font-semibold tracking-wider text-muted-foreground uppercase transition-colors hover:text-(--color-gold) sm:flex"
           >
             <Link to={`${ROUTES.shop}?sort=popular`}>
-              Lihat Semua{" "}
-              <HugeiconsIcon icon={ArrowRightIcon} data-icon="inline-end" />
+              Lihat Semua <HugeiconsIcon icon={ArrowRightIcon} data-icon="inline-end" />
             </Link>
           </Button>
         </div>
@@ -117,7 +121,7 @@ export const TrendingNow = () => {
           {displayProducts.map((product, i) => (
             <div
               key={product.id}
-              className={`gsap-stagger-item will-change-transform ${STAGGER_OFFSETS[i] ?? "mt-0"}`}
+              className={cn("gsap-stagger-item will-change-transform", STAGGER_OFFSETS[i] ?? "mt-0")}
             >
               <ProductCard product={product} />
             </div>
@@ -130,10 +134,7 @@ export const TrendingNow = () => {
           style={{ scrollbarWidth: "none" }}
         >
           {displayProducts.map((product) => (
-            <div
-              key={product.id}
-              className="gsap-stagger-item w-65 shrink-0 snap-start"
-            >
+            <div key={product.id} className="gsap-stagger-item w-65 shrink-0 snap-start">
               <ProductCard product={product} />
             </div>
           ))}
@@ -141,15 +142,9 @@ export const TrendingNow = () => {
 
         {/* Mobile CTA */}
         <div className="mt-10 flex justify-center sm:hidden">
-          <Button
-            variant="outline"
-            size="sm"
-            asChild
-            className="text-[10px] tracking-wider uppercase"
-          >
+          <Button variant="outline" size="sm" asChild className="text-[10px] tracking-wider uppercase">
             <Link to={`${ROUTES.shop}?sort=popular`}>
-              Lihat Semua{" "}
-              <HugeiconsIcon icon={ArrowRightIcon} data-icon="inline-end" />
+              Lihat Semua <HugeiconsIcon icon={ArrowRightIcon} data-icon="inline-end" />
             </Link>
           </Button>
         </div>

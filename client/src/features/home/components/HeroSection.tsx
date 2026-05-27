@@ -3,8 +3,7 @@ import { Link } from "react-router-dom"
 import { ROUTES } from "@/constants/routes"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { ArrowUpRight01Icon } from "@hugeicons/core-free-icons"
+import { cn } from "@/lib/utils"
 
 const CAMPAIGN_SLIDES = [
   {
@@ -50,63 +49,59 @@ export const HeroSection = () => {
   return (
     <section
       data-section="hero"
-      className="relative w-full h-[75vh] min-h-[550px] lg:h-[85vh] overflow-hidden flex items-center bg-black"
+      className="relative flex h-[75vh] min-h-137.5 w-full items-center overflow-hidden bg-black lg:h-[85vh]"
     >
       {/* Background slideshow */}
       <div className="absolute inset-0 z-0">
         {CAMPAIGN_SLIDES.map((slide, index) => (
           <div
             key={index}
-            className={`absolute inset-0 transition-all duration-[1400ms] ease-out ${index === currentSlide
-                ? "opacity-100 scale-100"
-                : "opacity-0 scale-[1.03] pointer-events-none"
-              }`}
+            className={cn(
+              "absolute inset-0 transition-all duration-1400 ease-out",
+              index === currentSlide ? "scale-100 opacity-100" : "pointer-events-none scale-[1.03] opacity-0"
+            )}
           >
-            <img
-              src={slide.image}
-              alt={slide.title}
-              className="size-full object-cover object-center"
-            />
+            <img src={slide.image} alt={slide.title} className="size-full object-cover object-center" />
           </div>
         ))}
       </div>
 
-      {/* Cinematic gradient overlays */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/20 to-transparent z-10 pointer-events-none" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/10 z-10 pointer-events-none" />
+      {/* Cinematic linear overlays */}
+      <div className="pointer-events-none absolute inset-0 z-10 bg-linear-to-r from-black/60 via-black/20 to-transparent" />
+      <div className="pointer-events-none absolute inset-0 z-10 bg-linear-to-t from-black/50 via-transparent to-black/10" />
 
       {/* Main content */}
-      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-20 text-left">
-        <div className="max-w-xl flex flex-col gap-7 gsap-reveal">
-
+      <div className="relative z-20 container mx-auto max-w-7xl px-4 text-left sm:px-6 lg:px-8">
+        <div className="gsap-reveal flex max-w-xl flex-col gap-7">
           {/* Campaign tag */}
           <div className="flex items-center gap-4 select-none">
-            <span className="size-1 rotate-45 bg-[var(--color-gold)]" />
-            <span className="text-[9px] font-bold tracking-[0.4em] text-[var(--color-gold)] uppercase font-mono">
+            <span className="size-1 rotate-45 bg-(--color-gold)" />
+            <span className="font-mono text-[9px] font-bold tracking-[0.4em] text-(--color-gold) uppercase">
               Campaign Vol. I
             </span>
-            <Separator className="w-8 bg-white/[0.08] h-px" />
+            <Separator className="h-px w-8 bg-white/8" />
           </div>
 
           {/* Editorial title */}
-          <h1 className="font-heading text-4xl sm:text-5xl lg:text-7xl font-bold tracking-tight uppercase leading-[0.95] text-white gsap-slide-up">
+          <h1 className="gsap-slide-up font-heading text-4xl leading-[0.95] font-bold tracking-tight text-white uppercase sm:text-5xl lg:text-7xl">
             {CAMPAIGN_SLIDES[currentSlide].title}
           </h1>
 
           {/* Narrative */}
-          <p className="text-[11px] sm:text-xs text-white/40 uppercase tracking-[0.2em] leading-relaxed max-w-xs">
+          <p className="max-w-xs text-[11px] leading-relaxed tracking-[0.2em] text-white/40 uppercase sm:text-xs">
             Unstructured luxury garments tailored from premium flax fibers for effortless elegance.
           </p>
 
           {/* CTA suite */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-2">
-            <Button asChild variant="luxury" className="px-8 py-4.5 h-auto bg-[var(--color-gold)] text-foreground hover:bg-transparent hover:text-[var(--color-gold)]">
-              <Link to={ROUTES.shop}>
-                Explore Shop
-
-              </Link>
+          <div className="flex flex-col gap-3 pt-2 sm:flex-row">
+            <Button
+              asChild
+              variant="luxury"
+              className="h-auto bg-(--color-gold) px-8 py-4.5 text-foreground hover:bg-transparent hover:text-(--color-gold)"
+            >
+              <Link to={ROUTES.shop}>Explore Shop</Link>
             </Button>
-            <Button asChild variant="luxury" className="px-8 py-4.5 h-auto">
+            <Button asChild variant="luxury" className="h-auto px-8 py-4.5">
               <a href="#featured">View Collection</a>
             </Button>
           </div>
@@ -114,15 +109,11 @@ export const HeroSection = () => {
       </div>
 
       {/* Bottom pagination */}
-      <div className="absolute bottom-8 right-8 z-20 hidden md:flex items-center gap-6 select-none font-mono">
+      <div className="absolute right-8 bottom-8 z-20 hidden items-center gap-6 font-mono select-none md:flex">
         <div className="flex items-baseline gap-1">
-          <span className="text-xs font-bold text-white">
-            {(currentSlide + 1).toString().padStart(2, "0")}
-          </span>
+          <span className="text-xs font-bold text-white">{(currentSlide + 1).toString().padStart(2, "0")}</span>
           <span className="text-[9px] text-white/30">/</span>
-          <span className="text-[9px] text-white/30">
-            {CAMPAIGN_SLIDES.length.toString().padStart(2, "0")}
-          </span>
+          <span className="text-[9px] text-white/30">{CAMPAIGN_SLIDES.length.toString().padStart(2, "0")}</span>
         </div>
 
         <div className="flex gap-1.5">
@@ -130,10 +121,10 @@ export const HeroSection = () => {
             <button
               key={index}
               onClick={() => setCurrentSlide(index)}
-              className={`h-[2px] cursor-pointer transition-all duration-700 ${index === currentSlide
-                  ? "w-8 bg-[var(--color-gold)]"
-                  : "w-3 bg-white/15 hover:bg-white/30"
-                }`}
+              className={cn(
+                "h-0.5 cursor-pointer transition-all duration-700",
+                index === currentSlide ? "w-8 bg-(--color-gold)" : "w-3 bg-white/15 hover:bg-white/30"
+              )}
               aria-label={`Go to slide ${index + 1}`}
             />
           ))}
@@ -141,7 +132,7 @@ export const HeroSection = () => {
       </div>
 
       {/* Bottom gold accent line */}
-      <Separator className="absolute bottom-0 left-0 right-0 z-20 bg-gradient-to-r from-transparent via-[var(--color-gold)] to-transparent h-px" />
+      <Separator className="absolute right-0 bottom-0 left-0 z-20 h-px bg-linear-to-r from-transparent via-(--color-gold) to-transparent" />
     </section>
   )
 }

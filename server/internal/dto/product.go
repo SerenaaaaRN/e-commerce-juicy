@@ -11,7 +11,7 @@ type CategoryRequest struct {
 	Slug         string     `json:"slug" binding:"required"`
 	Description  *string    `json:"description" binding:"omitempty"`
 	DisplayOrder int        `json:"display_order"`
-	IsActive     bool       `json:"is_active"`
+	IsActive     *bool      `json:"is_active,omitempty"`
 	ParentID     *uuid.UUID `json:"parent_id" binding:"omitempty"`
 }
 
