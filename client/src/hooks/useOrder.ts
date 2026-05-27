@@ -1,7 +1,7 @@
-import { useState, useCallback } from "react"
-import { ordersApi } from "@/lib/api/orders"
+import { useCallback, useMemo } from "react"
+import { useOrderStore } from "@/stores/orderStore"
 import { ORDER_STATUS } from "@/constants/orderStatus"
-import type { OrderDetail, OrderStatus } from "@/types"
+import type { OrderStatus } from "@/types"
 
 const getStatusColor = (status: OrderStatus) => {
   switch (status) {
@@ -21,34 +21,22 @@ const getStatusColor = (status: OrderStatus) => {
 }
 
 export const useOrder = () => {
-  const [order, setOrder] = useState<OrderDetail | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const order = useOrderStore((s) => s.currentOrder)
+  const loading = useOrderStore((s) => s.loading)
+  const error = useOrderStore((s) => s.error)
+  const fetchByOrderNumber = useOrderStore((s) => s.fetchByOrderNumber)
 
-  const fetchOrderDetail = useCallback(async (orderNumber: string) => {
-    setLoading(true)
-    setError(null)
-    try {
-      const res = await ordersApi.getOrderDetail(orderNumber)
-      if (res.success && res.data) {
-        setOrder(res.data)
-      } else {
-        setError(res.message || "Failed to load order details.")
-      }
-    } catch {
-      setError("An unexpected error occurred.")
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  const fetchOrderDetail = useCallback(
+    async (orderNumber: string) => {
+      await fetchByOrderNumber(orderNumber)
+    },
+    [fetchByOrderNumber]
+  )
 
-  return {
-    order,
-    loading,
-    error,
-    fetchOrderDetail,
-    getStatusColor,
-  }
+  return useMemo(
+    () => ({ order, loading: loading || false, error, fetchOrderDetail, getStatusColor }),
+    [order, loading, error, fetchOrderDetail]
+  )
 }
 
 export default useOrder

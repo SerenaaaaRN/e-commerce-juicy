@@ -12,7 +12,10 @@ import { toast } from "sonner"
 import { formatPrice } from "@/lib/utils"
 
 export const WishlistPage = () => {
-  const { items, loading, fetchWishlist, removeItem } = useWishlistStore()
+  const items = useWishlistStore((s) => s.items)
+  const loading = useWishlistStore((s) => s.loading)
+  const fetchWishlist = useWishlistStore((s) => s.fetchWishlist)
+  const removeItem = useWishlistStore((s) => s.removeItem)
 
   useEffect(() => {
     fetchWishlist()

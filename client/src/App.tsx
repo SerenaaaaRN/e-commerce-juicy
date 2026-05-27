@@ -47,9 +47,10 @@ const ScrollToTop = () => {
 const AppContent = () => {
   const location = useLocation()
   const isAdmin = location.pathname.startsWith("/admin")
-  const { isAuthenticated, logout } = useCustomerAuthStore()
-  const { fetchCart } = useCartStore()
-  const { fetchWishlist } = useWishlistStore()
+  const isAuthenticated = useCustomerAuthStore((s) => s.isAuthenticated)
+  const logout = useCustomerAuthStore((s) => s.logout)
+  const fetchCart = useCartStore((s) => s.fetchCart)
+  const fetchWishlist = useWishlistStore((s) => s.fetchWishlist)
 
   // Auto-rehydrate profile and load cart/wishlist from database
   useEffect(() => {
@@ -73,9 +74,8 @@ const AppContent = () => {
 
   return (
     <div className="relative flex min-h-screen flex-col bg-background font-sans text-foreground antialiased selection:bg-primary/10 selection:text-primary">
-
       {/* Responsive Public Header */}
-      {!isAdmin && <Navbar />}
+      {!isAdmin && location.pathname !== ROUTES.login && location.pathname !== ROUTES.register && <Navbar />}
 
       {/* Primary Page Canvas */}
       <main className="flex-1">
@@ -116,11 +116,10 @@ const AppContent = () => {
       </main>
 
       {/* Responsive Typographic Footer */}
-      {!isAdmin ? <Footer /> : null}
+      {!isAdmin && location.pathname !== ROUTES.login && location.pathname !== ROUTES.register && <Footer />}
 
       {/* Toast Notifications */}
       <Toaster />
-
     </div>
   )
 }

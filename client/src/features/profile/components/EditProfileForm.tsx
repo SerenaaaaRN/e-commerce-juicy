@@ -8,7 +8,9 @@ import { Spinner } from "@/components/ui/spinner"
 import { toast } from "sonner"
 
 export const EditProfileForm = () => {
-  const { customer, login, token } = useCustomerAuthStore()
+  const customer = useCustomerAuthStore((s) => s.customer)
+  const login = useCustomerAuthStore((s) => s.login)
+  const token = useCustomerAuthStore((s) => s.token)
 
   const [fullName, setFullName] = useState(customer?.full_name || "")
   const [phone, setPhone] = useState(customer?.phone || "")

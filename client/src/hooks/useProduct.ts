@@ -1,21 +1,25 @@
+import { useMemo } from "react"
+import { useShallow } from "zustand/shallow"
 import { useProductStore } from "@/stores/productStore"
 
 export const useProduct = () => {
-  const store = useProductStore()
+  const store = useProductStore(
+    useShallow((s) => ({
+      products: s.products,
+      featuredProducts: s.featuredProducts,
+      categories: s.categories,
+      currentProduct: s.currentProduct,
+      isLoading: s.isLoading,
+      error: s.error,
+      meta: s.meta,
+      fetchProducts: s.fetchProducts,
+      fetchFeaturedProducts: s.fetchFeaturedProducts,
+      fetchProductBySlug: s.fetchProductBySlug,
+      clearCurrentProduct: s.clearCurrentProduct,
+    }))
+  )
 
-  return {
-    products: store.products,
-    featuredProducts: store.featuredProducts,
-    categories: store.categories,
-    currentProduct: store.currentProduct,
-    isLoading: store.isLoading,
-    error: store.error,
-    meta: store.meta,
-    fetchProducts: store.fetchProducts,
-    fetchFeaturedProducts: store.fetchFeaturedProducts,
-    fetchProductBySlug: store.fetchProductBySlug,
-    clearCurrentProduct: store.clearCurrentProduct,
-  }
+  return useMemo(() => store, [store])
 }
 
 export default useProduct

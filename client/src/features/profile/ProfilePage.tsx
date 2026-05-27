@@ -17,7 +17,8 @@ import {
 } from "@/components/ui/breadcrumb"
 
 export const ProfilePage = () => {
-  const { isAuthenticated, customer } = useCustomerAuthStore()
+  const isAuthenticated = useCustomerAuthStore((s) => s.isAuthenticated)
+  const customer = useCustomerAuthStore((s) => s.customer)
 
   // Guest route guard
   if (!isAuthenticated) {

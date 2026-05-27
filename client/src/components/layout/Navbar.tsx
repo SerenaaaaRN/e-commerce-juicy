@@ -35,8 +35,11 @@ export const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const totalItems = useCartStore((state) => state.totalItems)()
-  const { isAuthenticated, customer, logout } = useCustomerAuthStore()
-  const { categories, fetchCategories } = useProductStore()
+  const isAuthenticated = useCustomerAuthStore((s) => s.isAuthenticated)
+  const customer = useCustomerAuthStore((s) => s.customer)
+  const logout = useCustomerAuthStore((s) => s.logout)
+  const categories = useProductStore((s) => s.categories)
+  const fetchCategories = useProductStore((s) => s.fetchCategories)
 
   useEffect(() => {
     if (categories.length === 0) {

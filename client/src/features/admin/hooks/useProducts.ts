@@ -119,7 +119,7 @@ export const useProducts = () => {
               .map((t: string) => t.trim())
               .filter(Boolean)
           : []
-        const payload: Record<string, unknown> = {
+const payload: Record<string, unknown> = {
           name: values.name.trim(),
           slug: values.slug.trim(),
           description: values.description?.trim() || "",
@@ -188,7 +188,7 @@ export const useProducts = () => {
 
   const handleCategorySubmit = categoryForm.handleSubmit(async (values) => {
     startTransition(async () => {
-      const payload: Record<string, unknown> = {
+      const payload: Omit<Category, "id"> = {
         name: values.name.trim(),
         slug: values.slug.trim(),
         description: values.description?.trim() || undefined,

@@ -1,4 +1,4 @@
-import { useEffect, useState, useTransition } from "react"
+import { useEffect, useState, useTransition, type ReactNode } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { adminApi, type AnalyticsOverview, type AnalyticsChartItem } from "@/lib/api/admin"
@@ -17,8 +17,8 @@ const TOOLTIP_CONTENT_STYLE = {
 
 const TOOLTIP_LABEL_STYLE = { fontSize: "11px", fontWeight: "bold" }
 
-const REVENUE_FORMATTER = (value: unknown) => [formatPrice(Number(value)), "Revenue"] as const
-const ORDERS_FORMATTER = (value: unknown) => [value, "Orders Count"] as const
+const REVENUE_FORMATTER = (value: unknown): ReactNode[] => [formatPrice(Number(value)), "Revenue"]
+const ORDERS_FORMATTER = (value: unknown): ReactNode[] => [value as React.ReactNode, "Orders Count"]
 
 export const DashboardPage = () => {
   const [overview, setOverview] = useState<AnalyticsOverview | null>(null)

@@ -17,12 +17,22 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination"
+import { useShallow } from "zustand/shallow"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { FilterIcon } from "@hugeicons/core-free-icons"
 
 export const CollectionPage = () => {
   const [searchParams, setSearchParams] = useSearchParams()
-  const { products, categories, meta, isLoading, fetchCategories, fetchProducts } = useProductStore()
+  const { products, categories, meta, isLoading, fetchCategories, fetchProducts } = useProductStore(
+    useShallow((s) => ({
+      products: s.products,
+      categories: s.categories,
+      meta: s.meta,
+      isLoading: s.isLoading,
+      fetchCategories: s.fetchCategories,
+      fetchProducts: s.fetchProducts,
+    }))
+  )
 
   const [cols, setCols] = useState<2 | 4>(4)
   const [isInfiniteScroll, setIsInfiniteScroll] = useState(false)

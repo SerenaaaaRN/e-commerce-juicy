@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { useParams, Link } from "react-router-dom"
+import { useParams, Link, useNavigate } from "react-router-dom"
 import { ROUTES } from "@/constants/routes"
 import { useProductStore } from "@/stores/productStore"
 import { useCartStore } from "@/stores/cartStore"
@@ -14,6 +14,7 @@ import { ReviewsSection } from "./components/ReviewsSection"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyContent, EmptyMedia } from "@/components/ui/empty"
+import { useShallow } from "zustand/shallow"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { ShoppingBag01Icon, HeartAddIcon } from "@hugeicons/core-free-icons"
 import {
@@ -28,11 +29,23 @@ import { toast } from "sonner"
 
 export const ProductPage = () => {
   const { slug } = useParams<{ slug: string }>()
-  const { currentProduct, isLoading, error, fetchProductBySlug, clearCurrentProduct } = useProductStore()
-  const { addItem, isLoading: isAddingToCart } = useCartStore()
+  const navigate = useNavigate()
+  const { currentProduct, isLoading, error, fetchProductBySlug, clearCurrentProduct } = useProductStore(
+    useShallow((s) => ({
+      currentProduct: s.currentProduct,
+      isLoading: s.isLoading,
+      error: s.error,
+      fetchProductBySlug: s.fetchProductBySlug,
+      clearCurrentProduct: s.clearCurrentProduct,
+    }))
+  )
+  const addItem = useCartStore((s) => s.addItem)
+  const isAddingToCart = useCartStore((s) => s.isLoading)
   const { addItem: addToRecentlyViewed } = useRecentlyViewed()
-  const { isAuthenticated } = useCustomerAuthStore()
-  const { isInWishlist, addItem: addToWishlist, removeItem: removeFromWishlist } = useWishlistStore()
+  const isAuthenticated = useCustomerAuthStore((s) => s.isAuthenticated)
+  const isInWishlist = useWishlistStore((s) => s.isInWishlist)
+  const addToWishlist = useWishlistStore((s) => s.addItem)
+  const removeFromWishlist = useWishlistStore((s) => s.removeItem)
 
   // Selections state
   const [selectedSize, setSelectedSize] = useState("")
@@ -117,6 +130,12 @@ export const ProductPage = () => {
   const isSelectionComplete = !hasVariants || (selectedSize !== "" && selectedColor !== "")
 
   const handleAddToCart = async () => {
+    if (!isAuthenticated) {
+      navigate(`${ROUTES.login}?redirect=${encodeURIComponent(`/shop/${slug}`)}`)
+      toast.error("Please log in to add items to your cart.")
+      return
+    }
+
     if (hasVariants && !activeVariant) {
       toast.warning("Please choose your size and color variant options first.")
       return

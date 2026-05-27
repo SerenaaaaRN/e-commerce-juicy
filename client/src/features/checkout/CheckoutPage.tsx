@@ -19,8 +19,10 @@ import type { Address } from "@/types"
 
 export const CheckoutPage = () => {
   const navigate = useNavigate()
-  const { isAuthenticated } = useCustomerAuthStore()
-  const { items, totalPrice, clearCart } = useCartStore()
+  const isAuthenticated = useCustomerAuthStore((s) => s.isAuthenticated)
+  const items = useCartStore((s) => s.items)
+  const totalPrice = useCartStore((s) => s.totalPrice)
+  const clearCart = useCartStore((s) => s.clearCart)
 
   // Local state
   const [isPending, startTransition] = useTransition()

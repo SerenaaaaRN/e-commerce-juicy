@@ -11,8 +11,11 @@ import { toast } from "sonner"
 
 export const CartPage = () => {
   const navigate = useNavigate()
-  const { isAuthenticated } = useCustomerAuthStore()
-  const { items, totalPrice, updateQty, removeItem } = useCartStore()
+  const isAuthenticated = useCustomerAuthStore((s) => s.isAuthenticated)
+  const items = useCartStore((s) => s.items)
+  const totalPrice = useCartStore((s) => s.totalPrice)
+  const updateQty = useCartStore((s) => s.updateQty)
+  const removeItem = useCartStore((s) => s.removeItem)
 
   // Guest restriction redirect
   if (!isAuthenticated) {
