@@ -1,4 +1,5 @@
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom"
+import { ROUTES } from "@/constants/routes"
 import { useAdminAuthStore } from "@/stores/adminAuthStore"
 import { adminApi } from "@/lib/api"
 import { cn } from "@/lib/utils"
@@ -39,27 +40,27 @@ import { toast } from "sonner"
 const menuItems = [
   {
     name: "Dashboard",
-    path: "/admin/dashboard",
+    path: ROUTES.adminDashboard,
     icon: () => <HugeiconsIcon icon={DashboardBrowsingIcon} />,
   },
   {
     name: "Products",
-    path: "/admin/products",
+    path: ROUTES.adminProducts,
     icon: () => <HugeiconsIcon icon={ShoppingBag01Icon} />,
   },
   {
     name: "Orders",
-    path: "/admin/orders",
+    path: ROUTES.adminOrders,
     icon: () => <HugeiconsIcon icon={DeliveryTruck02Icon} />,
   },
   {
     name: "Customers",
-    path: "/admin/customers",
+    path: ROUTES.adminCustomers,
     icon: () => <HugeiconsIcon icon={UserIcon} />,
   },
   {
     name: "Reviews",
-    path: "/admin/reviews",
+    path: ROUTES.adminReviews,
     icon: () => <HugeiconsIcon icon={StarIcon} />,
   },
 ]
@@ -77,7 +78,7 @@ export const AdminLayout = () => {
     }
     logout()
     toast.success("Logged out from admin console.")
-    navigate("/admin/login")
+    navigate(ROUTES.adminLogin)
   }
 
   const activePath = location.pathname
@@ -151,7 +152,7 @@ export const AdminLayout = () => {
               tooltip="Back to Storefront"
               className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
-              <Link to="/">
+              <Link to={ROUTES.home}>
                 <HugeiconsIcon icon={ArrowLeft01Icon} />
                 <span>Back to Store</span>
               </Link>

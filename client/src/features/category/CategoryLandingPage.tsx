@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from "react"
 import { useParams, Link } from "react-router-dom"
+import { ROUTES } from "@/constants/routes"
 import { useProductStore } from "@/stores/productStore"
 import { CategoryHero } from "./components/CategoryHero"
 import { SubcategoryGrid } from "./components/SubcategoryGrid"
@@ -49,7 +50,7 @@ export const CategoryLandingPage = () => {
       <div className="container mx-auto max-w-7xl px-4 py-20 text-center">
         <p className="text-muted-foreground">Kategori tidak ditemukan.</p>
         <Button variant="outline" className="mt-4" asChild>
-          <Link to="/shop">Kembali ke Shop</Link>
+          <Link to={ROUTES.shop}>Kembali ke Shop</Link>
         </Button>
       </div>
     )
@@ -68,7 +69,7 @@ export const CategoryLandingPage = () => {
       <div className="container mx-auto max-w-7xl px-4 py-20 text-center">
         <p className="text-muted-foreground">Kategori "{slug}" tidak ditemukan.</p>
         <Button variant="outline" className="mt-4" asChild>
-          <Link to="/shop">Kembali ke Shop</Link>
+          <Link to={ROUTES.shop}>Kembali ke Shop</Link>
         </Button>
       </div>
     )

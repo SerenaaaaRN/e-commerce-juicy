@@ -1,5 +1,6 @@
 import { useTransition } from "react"
 import { Link, Navigate, useNavigate } from "react-router-dom"
+import { ROUTES } from "@/constants/routes"
 import { useCustomerAuthStore } from "@/stores/customerAuthStore"
 import { RegisterForm } from "./components/RegisterForm"
 import { Card, CardContent } from "@/components/ui/card"
@@ -14,7 +15,7 @@ export const RegisterPage = () => {
   const [isPending, startTransition] = useTransition()
 
   if (isAuthenticated) {
-    return <Navigate to="/" replace />
+    return <Navigate to={ROUTES.home} replace />
   }
 
   const handleSubmit = (data: RegisterFormValues) => {
@@ -29,7 +30,7 @@ export const RegisterPage = () => {
 
         if (res.success) {
           toast.success("Account created successfully! Please sign in.")
-          navigate("/login")
+          navigate(ROUTES.login)
         } else {
           toast.error(res.message || "Failed to create account. Email may already be in use.")
         }
@@ -63,7 +64,7 @@ export const RegisterPage = () => {
                 <div className="mt-4 text-center">
                   <span className="text-xs text-muted-foreground">
                     Already have an account?{" "}
-                    <Link to="/login" className="font-bold text-primary hover:underline">
+                    <Link to={ROUTES.login} className="font-bold text-primary hover:underline">
                       Sign In
                     </Link>
                   </span>
@@ -84,11 +85,11 @@ export const RegisterPage = () => {
           {/* Footer Notice */}
           <FieldDescription className="px-6 text-center text-xs">
             By clicking continue, you agree to our{" "}
-            <Link to="/terms" className="underline hover:text-primary">
+            <Link to={ROUTES.terms} className="underline hover:text-primary">
               Terms of Service
             </Link>{" "}
             and{" "}
-            <Link to="/privacy" className="underline hover:text-primary">
+            <Link to={ROUTES.privacy} className="underline hover:text-primary">
               Privacy Policy
             </Link>
             .

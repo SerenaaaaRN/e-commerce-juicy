@@ -15,6 +15,7 @@ import { formatPrice, formatDate } from "@/lib/utils/format"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { CheckmarkCircle01Icon, Cancel01Icon } from "@hugeicons/core-free-icons"
 import { cn } from "@/lib/utils"
+import { ORDER_STATUS, ORDER_STATUS_LABELS } from "@/constants/orderStatus"
 import { useConfirm } from "@/hooks/useConfirm"
 import { useCustomers } from "@/features/admin/hooks/useCustomers"
 import { useDataTableFilter } from "@/features/admin/hooks/useDataTableFilter"
@@ -216,7 +217,7 @@ export const CustomersPage = () => {
                         </div>
                         <div className="flex items-center gap-3">
                           <div className="text-right font-bold text-foreground">{formatPrice(ord.total)}</div>
-                          <Badge variant={ord.status === "delivered" ? "default" : "secondary"}>{ord.status}</Badge>
+                          <Badge variant={ord.status === ORDER_STATUS.DELIVERED ? "default" : "secondary"}>{ORDER_STATUS_LABELS[ord.status] ?? ord.status}</Badge>
                         </div>
                       </div>
                     ))

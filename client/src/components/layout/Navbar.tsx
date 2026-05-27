@@ -1,15 +1,29 @@
 import { useState, useEffect } from "react"
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom"
+import { ROUTES } from "@/constants/routes"
 import { useCartStore } from "@/stores/cartStore"
 import { useCustomerAuthStore } from "@/stores/customerAuthStore"
 import { useProductStore } from "@/stores/productStore"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { ShoppingBag01Icon, UserIcon, Menu01Icon, Cancel01Icon, SearchIcon, HeartAddIcon } from "@hugeicons/core-free-icons"
+import {
+  ShoppingBag01Icon,
+  UserIcon,
+  Menu01Icon,
+  Cancel01Icon,
+  SearchIcon,
+  HeartAddIcon,
+} from "@hugeicons/core-free-icons"
 import { useDebounce } from "@/hooks/useDebounce"
 
 const activeLinkClass = "text-primary font-medium"
@@ -17,6 +31,7 @@ const inactiveLinkClass = "text-muted-foreground hover:text-foreground transitio
 
 export const Navbar = () => {
   const location = useLocation()
+  const navigate = useNavigate()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const totalItems = useCartStore((state) => state.totalItems)()
@@ -31,7 +46,6 @@ export const Navbar = () => {
 
   const rootCategories = categories.filter((c) => !c.parent_id)
 
-  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "")
 
@@ -48,10 +62,10 @@ export const Navbar = () => {
     const trimmedQuery = debouncedSearchQuery.trim()
 
     if (trimmedQuery === "") {
-      if (currentQuery !== "" && location.pathname === "/shop") {
+      if (currentQuery !== "" && location.pathname === ROUTES.shop) {
         const updated = new URLSearchParams(searchParams)
         updated.delete("search")
-        navigate(`/shop?${updated.toString()}`, { replace: true })
+        navigate(`${ROUTES.shop}?${updated.toString()}`, { replace: true })
       }
       return
     }
@@ -59,15 +73,15 @@ export const Navbar = () => {
     if (trimmedQuery === currentQuery) {
       return
     }
-    if (location.pathname === "/shop") {
+    if (location.pathname === ROUTES.shop) {
       const updated = new URLSearchParams(searchParams)
       updated.set("search", trimmedQuery)
       updated.set("page", "1")
-      navigate(`/shop?${updated.toString()}`, { replace: true })
+      navigate(`${ROUTES.shop}?${updated.toString()}`, { replace: true })
       return
     }
 
-    navigate(`/shop?search=${encodeURIComponent(trimmedQuery)}`)
+    navigate(`${ROUTES.shop}?search=${encodeURIComponent(trimmedQuery)}`)
   }, [debouncedSearchQuery, navigate, location.pathname, searchParams])
 
   const toggleMobileMenu = () => setMobileMenuOpen((prev) => !prev)
@@ -75,56 +89,46 @@ export const Navbar = () => {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md">
       <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-
         {/* Mobile Navigation Trigger */}
-        <button
-          onClick={toggleMobileMenu}
-          className="flex p-2 text-foreground md:hidden"
-          aria-label="Toggle Menu"
-        >
+        <button onClick={toggleMobileMenu} className="flex p-2 text-foreground md:hidden" aria-label="Toggle Menu">
           <HugeiconsIcon icon={mobileMenuOpen ? Cancel01Icon : Menu01Icon} strokeWidth={2} />
         </button>
 
         {/* Brand Logo */}
-        <Link to="/" className="flex items-center gap-2">
-          <span className="font-heading text-2xl font-bold tracking-[0.25em] text-foreground hover:text-primary transition-colors duration-300">
+        <Link to={ROUTES.home} className="flex items-center gap-2">
+          <span className="font-heading text-2xl font-bold tracking-[0.25em] text-foreground transition-colors duration-300 hover:text-primary">
             JUICY
           </span>
         </Link>
 
         {/* Desktop Navigation Links */}
-        <nav className="hidden md:flex items-center gap-8 text-sm uppercase tracking-widest">
+        <nav className="hidden items-center gap-8 text-sm tracking-widest uppercase md:flex">
           <Link
-            to="/"
+            to={ROUTES.home}
             className={cn(
               "relative py-2 text-xs transition-colors duration-200",
-              location.pathname === "/" ? activeLinkClass : inactiveLinkClass
+              location.pathname === ROUTES.home ? activeLinkClass : inactiveLinkClass
             )}
           >
             Atelier
-            {location.pathname === "/" && (
-              <span className="absolute bottom-0 left-0 h-[2px] w-full bg-primary" />
-            )}
+            {location.pathname === ROUTES.home && <span className="absolute bottom-0 left-0 h-0.5 w-full bg-primary" />}
           </Link>
           <Link
-            to="/shop"
+            to={ROUTES.shop}
             className={cn(
               "relative py-2 text-xs transition-colors duration-200",
-              location.pathname === "/shop" ? activeLinkClass : inactiveLinkClass
+              location.pathname === ROUTES.shop ? activeLinkClass : inactiveLinkClass
             )}
           >
             Shop
-            {location.pathname === "/shop" && (
-              <span className="absolute bottom-0 left-0 h-[2px] w-full bg-primary" />
-            )}
+            {location.pathname === ROUTES.shop && <span className="absolute bottom-0 left-0 h-0.5 w-full bg-primary" />}
           </Link>
         </nav>
 
         {/* Action Controls */}
         <div className="flex items-center gap-2 md:gap-4">
-
           {/* Desktop Search Bar */}
-          <div className="hidden md:flex relative max-w-[200px] lg:max-w-[240px] w-full">
+          <div className="relative hidden w-full max-w-50 md:flex lg:max-w-60">
             <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
               <HugeiconsIcon icon={SearchIcon} className="size-4" />
             </span>
@@ -133,22 +137,25 @@ export const Navbar = () => {
               placeholder="Search silhouettes..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-muted/40 border border-input pl-9 pr-4 py-1 h-8 text-xs rounded-none transition-all duration-200"
+              className="h-8 w-full rounded-none border border-input bg-muted/40 py-1 pr-4 pl-9 text-xs transition-all duration-200"
             />
           </div>
 
           {/* Cart Badge */}
-          <Link to="/cart" className="relative p-2 text-foreground hover:text-primary transition-colors duration-200">
+          <Link
+            to={ROUTES.cart}
+            className="relative p-2 text-foreground transition-colors duration-200 hover:text-primary"
+          >
             <HugeiconsIcon icon={ShoppingBag01Icon} strokeWidth={1.8} />
             {totalItems > 0 && (
-              <span className="absolute top-0 right-0 flex size-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white animate-pulse">
+              <span className="absolute top-0 right-0 flex size-5 animate-pulse items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
                 {totalItems}
               </span>
             )}
           </Link>
 
           {/* Wishlist */}
-          <Link to="/wishlist" className="p-2 text-foreground hover:text-primary transition-colors duration-200">
+          <Link to={ROUTES.wishlist} className="p-2 text-foreground transition-colors duration-200 hover:text-primary">
             <HugeiconsIcon icon={HeartAddIcon} strokeWidth={1.8} />
           </Link>
 
@@ -156,24 +163,31 @@ export const Navbar = () => {
           {isAuthenticated ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted p-2">
+                <Button variant="ghost" size="icon" className="rounded-full p-2 hover:bg-muted">
                   <HugeiconsIcon icon={UserIcon} strokeWidth={1.8} />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 mt-2">
+              <DropdownMenuContent align="end" className="mt-2 w-56">
                 <div className="flex flex-col px-3 py-2 text-xs">
-                  <span className="font-semibold text-foreground truncate">{customer?.full_name}</span>
-                  <span className="text-muted-foreground truncate">{customer?.email}</span>
+                  <span className="truncate font-semibold text-foreground">{customer?.full_name}</span>
+                  <span className="truncate text-muted-foreground">{customer?.email}</span>
                 </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link to="/profile" className="w-full cursor-pointer">Account Settings</Link>
+                  <Link to={ROUTES.profile} className="w-full cursor-pointer">
+                    Account Settings
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/orders" className="w-full cursor-pointer">My Orders</Link>
+                  <Link to={ROUTES.orders} className="w-full cursor-pointer">
+                    My Orders
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={logout} className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer">
+                <DropdownMenuItem
+                  onClick={logout}
+                  className="cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive"
+                >
                   Log Out
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -181,29 +195,32 @@ export const Navbar = () => {
           ) : (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted p-2">
+                <Button variant="ghost" size="icon" className="rounded-full p-2 hover:bg-muted">
                   <HugeiconsIcon icon={UserIcon} strokeWidth={1.8} />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 mt-2">
+              <DropdownMenuContent align="end" className="mt-2 w-48">
                 <DropdownMenuItem asChild>
-                  <Link to="/login" className="w-full cursor-pointer">Log In</Link>
+                  <Link to={ROUTES.login} className="w-full cursor-pointer">
+                    Log In
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link to="/register" className="w-full cursor-pointer">Register</Link>
+                  <Link to={ROUTES.register} className="w-full cursor-pointer">
+                    Register
+                  </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           )}
-
         </div>
       </div>
 
       {/* Category Ribbon */}
-      {rootCategories.length > 0 && (
-        <div className="hidden md:block border-t border-border/40 bg-muted/30">
-          <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 overflow-x-auto">
-            <div className="flex items-center gap-1 py-2 min-w-max">
+      {rootCategories.length > 0 ? (
+        <div className="hidden border-t border-border/40 bg-muted/30 md:block">
+          <div className="container mx-auto max-w-7xl overflow-x-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex min-w-max items-center gap-1 py-2">
               {rootCategories.map((cat) => {
                 const isActive = location.pathname === `/category/${cat.slug}`
                 return (
@@ -211,10 +228,10 @@ export const Navbar = () => {
                     key={cat.id}
                     to={`/category/${cat.slug}`}
                     className={cn(
-                      "px-3 py-1.5 text-[11px] uppercase tracking-wider whitespace-nowrap rounded-sm transition-colors duration-200",
+                      "rounded-sm px-3 py-1.5 text-[11px] tracking-wider whitespace-nowrap uppercase transition-colors duration-200",
                       isActive
-                        ? "bg-primary/10 text-primary font-semibold"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                        ? "bg-primary/10 font-semibold text-primary"
+                        : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                     )}
                   >
                     {cat.name}
@@ -224,12 +241,11 @@ export const Navbar = () => {
             </div>
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* Mobile Drawer menu */}
-      {mobileMenuOpen && (
-        <div className="md:hidden bg-background px-4 py-4 animate-in fade-in slide-in-from-top-4 duration-300 flex flex-col gap-4">
-
+      {mobileMenuOpen ? (
+        <div className="flex animate-in flex-col gap-4 bg-background px-4 py-4 duration-300 fade-in slide-in-from-top-4 md:hidden">
           {/* Mobile Search Bar */}
           <div className="relative w-full">
             <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
@@ -240,49 +256,47 @@ export const Navbar = () => {
               placeholder="Search silhouettes..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-muted/40 border border-input pl-9 pr-4 py-2 h-9 text-xs rounded-none transition-all duration-200"
+              className="h-9 w-full rounded-none border border-input bg-muted/40 py-2 pr-4 pl-9 text-xs transition-all duration-200"
             />
           </div>
 
           <Separator />
-          <nav className="flex flex-col gap-4 uppercase tracking-widest text-sm">
+          <nav className="flex flex-col gap-4 text-sm tracking-widest uppercase">
             <Link
-              to="/"
+              to={ROUTES.home}
               onClick={toggleMobileMenu}
               className={cn(
-                "py-2 px-1 text-xs rounded-md block transition-colors",
-                location.pathname === "/"
-                  ? "text-primary font-semibold bg-accent/20"
+                "block rounded-md px-1 py-2 text-xs transition-colors",
+                location.pathname === ROUTES.home
+                  ? "bg-accent/20 font-semibold text-primary"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
               Atelier
             </Link>
             <Link
-              to="/shop"
+              to={ROUTES.shop}
               onClick={toggleMobileMenu}
               className={cn(
-                "py-2 px-1 text-xs rounded-md block transition-colors",
-                location.pathname === "/shop"
-                  ? "text-primary font-semibold bg-accent/20"
+                "block rounded-md px-1 py-2 text-xs transition-colors",
+                location.pathname === ROUTES.shop
+                  ? "bg-accent/20 font-semibold text-primary"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
               Shop
             </Link>
             <Separator className="my-1" />
-            <span className="text-[10px] text-muted-foreground tracking-widest px-1">
-              Kategori
-            </span>
+            <span className="px-1 text-[10px] tracking-widest text-muted-foreground">Kategori</span>
             {rootCategories.map((cat) => (
               <Link
                 key={cat.id}
                 to={`/category/${cat.slug}`}
                 onClick={toggleMobileMenu}
                 className={cn(
-                  "py-2 px-1 text-xs rounded-md block transition-colors",
+                  "block rounded-md px-1 py-2 text-xs transition-colors",
                   location.pathname === `/category/${cat.slug}`
-                    ? "text-primary font-semibold bg-accent/20"
+                    ? "bg-accent/20 font-semibold text-primary"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -291,7 +305,7 @@ export const Navbar = () => {
             ))}
           </nav>
         </div>
-      )}
+      ) : null}
     </header>
   )
 }

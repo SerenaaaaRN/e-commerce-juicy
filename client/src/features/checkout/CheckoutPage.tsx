@@ -1,5 +1,6 @@
 import { useState, useEffect, useTransition } from "react"
 import { Navigate, useNavigate } from "react-router-dom"
+import { ROUTES } from "@/constants/routes"
 import { useCartStore } from "@/stores/cartStore"
 import { useCustomerAuthStore } from "@/stores/customerAuthStore"
 import { AddressSelector } from "./components/AddressSelector"
@@ -59,11 +60,11 @@ export const CheckoutPage = () => {
 
   // Redirect checks
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />
+    return <Navigate to={ROUTES.login} replace />
   }
 
   if (items.length === 0) {
-    return <Navigate to="/shop" replace />
+    return <Navigate to={ROUTES.shop} replace />
   }
 
   const handlePlaceOrder = () => {
@@ -84,7 +85,7 @@ export const CheckoutPage = () => {
           toast.success("Your artisanal silhouette order has been placed successfully!")
           const orderNum = res.data.order_number
           clearCart()
-          navigate(`/orders/${orderNum}`)
+          navigate(`${ROUTES.orders}/${orderNum}`)
         } else {
           toast.error(res.message || "Failed to submit checkout order.")
         }

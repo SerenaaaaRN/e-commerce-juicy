@@ -1,4 +1,5 @@
 import { Navigate } from "react-router-dom"
+import { ROUTES } from "@/constants/routes"
 import { useCustomerAuthStore } from "@/stores/customerAuthStore"
 import { EditProfileForm } from "./components/EditProfileForm"
 import { ChangePasswordForm } from "./components/ChangePasswordForm"
@@ -20,7 +21,7 @@ export const ProfilePage = () => {
 
   // Guest route guard
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />
+    return <Navigate to={ROUTES.login} replace />
   }
 
   return (
@@ -29,7 +30,7 @@ export const ProfilePage = () => {
         <Breadcrumb className="mb-8 text-left text-xs font-bold uppercase">
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/">Home</BreadcrumbLink>
+              <BreadcrumbLink href={ROUTES.home}>Home</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator>/</BreadcrumbSeparator>
             <BreadcrumbPage className="font-bold text-primary">Profile Account</BreadcrumbPage>

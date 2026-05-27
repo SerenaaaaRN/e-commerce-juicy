@@ -22,22 +22,33 @@ import { EmptyState } from "@/features/admin/components/DataEmpty"
 import { DefferedContainer } from "@/features/admin/components/DefferedContainer"
 import { FullPageSpinner } from "@/features/admin/components/FullPageSpinner"
 import { SearchInput } from "@/features/admin/components/SearchInput"
+import { ORDER_STATUS, PAYMENT_STATUS } from "@/constants/orderStatus"
 import type { OrderStatus, PaymentStatus } from "@/types"
 
-const FULFILLMENT_STEPS: OrderStatus[] = ["pending", "confirmed", "processing", "shipped", "delivered"]
-const PAYMENT_STEPS: PaymentStatus[] = ["unpaid", "paid", "refunded"]
+const FULFILLMENT_STEPS: OrderStatus[] = [
+  ORDER_STATUS.PENDING,
+  ORDER_STATUS.CONFIRMED,
+  ORDER_STATUS.PROCESSING,
+  ORDER_STATUS.SHIPPED,
+  ORDER_STATUS.DELIVERED,
+]
+const PAYMENT_STEPS: PaymentStatus[] = [
+  PAYMENT_STATUS.UNPAID,
+  PAYMENT_STATUS.PAID,
+  PAYMENT_STATUS.REFUNDED,
+]
 
 const getStatusBadge = (status: OrderStatus) => {
   switch (status) {
-    case "pending":
+    case ORDER_STATUS.PENDING:
       return <Badge variant="secondary">Pending</Badge>
-    case "confirmed":
+    case ORDER_STATUS.CONFIRMED:
       return <Badge>Confirmed</Badge>
-    case "processing":
+    case ORDER_STATUS.PROCESSING:
       return <Badge variant="secondary">Processing</Badge>
-    case "shipped":
+    case ORDER_STATUS.SHIPPED:
       return <Badge>Shipped</Badge>
-    case "delivered":
+    case ORDER_STATUS.DELIVERED:
       return <Badge variant="default">Delivered</Badge>
     default:
       return <Badge variant="outline">{status}</Badge>
@@ -46,11 +57,11 @@ const getStatusBadge = (status: OrderStatus) => {
 
 const getPaymentBadge = (status: PaymentStatus) => {
   switch (status) {
-    case "unpaid":
+    case PAYMENT_STATUS.UNPAID:
       return <Badge variant="destructive">Unpaid</Badge>
-    case "paid":
+    case PAYMENT_STATUS.PAID:
       return <Badge variant="default">Paid</Badge>
-    case "refunded":
+    case PAYMENT_STATUS.REFUNDED:
       return <Badge variant="secondary">Refunded</Badge>
     default:
       return <Badge variant="outline">{status}</Badge>
@@ -104,11 +115,11 @@ export const OrdersPage = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Fulfillment Statuses</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="confirmed">Confirmed</SelectItem>
-              <SelectItem value="processing">Processing</SelectItem>
-              <SelectItem value="shipped">Shipped</SelectItem>
-              <SelectItem value="delivered">Delivered</SelectItem>
+              <SelectItem value={ORDER_STATUS.PENDING}>Pending</SelectItem>
+              <SelectItem value={ORDER_STATUS.CONFIRMED}>Confirmed</SelectItem>
+              <SelectItem value={ORDER_STATUS.PROCESSING}>Processing</SelectItem>
+              <SelectItem value={ORDER_STATUS.SHIPPED}>Shipped</SelectItem>
+              <SelectItem value={ORDER_STATUS.DELIVERED}>Delivered</SelectItem>
             </SelectContent>
           </Select>
         </div>

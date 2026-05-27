@@ -1,5 +1,6 @@
 import { useEffect } from "react"
 import { Link } from "react-router-dom"
+import { ROUTES } from "@/constants/routes"
 import { useWishlistStore } from "@/stores/wishlistStore"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
@@ -48,7 +49,7 @@ export const WishlistPage = () => {
           </EmptyHeader>
           <EmptyContent className="mt-6">
             <Button asChild variant="outline">
-              <Link to="/shop">Browse Silhouettes</Link>
+              <Link to={ROUTES.shop}>Browse Silhouettes</Link>
             </Button>
           </EmptyContent>
         </Empty>
@@ -78,7 +79,7 @@ export const WishlistPage = () => {
               </div>
             </Link>
             <CardContent className="p-4">
-              <Link to={`/product/${item.product_slug}`}>
+            <Link to={`${ROUTES.shop}/${item.product_slug}`}>
                 <h3 className="truncate text-sm font-semibold">{item.product_name}</h3>
               </Link>
               <p className="mt-1 text-xs text-muted-foreground">

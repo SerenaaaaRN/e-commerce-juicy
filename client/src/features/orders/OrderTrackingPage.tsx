@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react"
 import { useParams, Link, Navigate } from "react-router-dom"
+import { ROUTES } from "@/constants/routes"
+import { ORDER_STATUS, PAYMENT_STATUS } from "@/constants/orderStatus"
 import { useCustomerAuthStore } from "@/stores/customerAuthStore"
 import { OrderStatusTimeline } from "./components/OrderStatusTimeline"
 import { OrderItemRow } from "./components/OrderItemRow"
@@ -74,7 +76,7 @@ export const OrderTrackingPage = () => {
       const res = await ordersApi.completeOrder(orderNumber)
       if (res.success) {
         toast.success("Order marked as received. Thank you!")
-        setOrder((prev) => (prev ? { ...prev, status: "delivered", payment_status: "paid" } : null))
+        setOrder((prev) => (prev ? { ...prev, status: ORDER_STATUS.DELIVERED, payment_status: PAYMENT_STATUS.PAID } : null))
       } else {
         toast.error(res.message || "Failed to complete order.")
       }
@@ -96,7 +98,7 @@ export const OrderTrackingPage = () => {
       const res = await ordersApi.cancelOrder(orderNumber)
       if (res.success) {
         toast.success("Order cancelled successfully.")
-        setOrder((prev) => (prev ? { ...prev, status: "cancelled" } : null))
+        setOrder((prev) => (prev ? { ...prev, status: ORDER_STATUS.CANCELLED } : null))
       } else {
         toast.error(res.message || "Failed to cancel order.")
       }
@@ -109,7 +111,7 @@ export const OrderTrackingPage = () => {
 
   // Guest restriction redirect
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />
+    return <Navigate to={ROUTES.login} replace />
   }
 
   if (loading) {
@@ -143,7 +145,7 @@ export const OrderTrackingPage = () => {
           </EmptyHeader>
           <EmptyContent className="mt-6">
             <Button asChild variant="outline">
-              <Link to="/shop">Back to Shop</Link>
+              <Link to={ROUTES.shop}>Back to Shop</Link>
             </Button>
           </EmptyContent>
         </Empty>
@@ -162,7 +164,7 @@ export const OrderTrackingPage = () => {
         <Breadcrumb className="mb-8 text-left text-xs font-bold uppercase">
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/">Home</BreadcrumbLink>
+              <BreadcrumbLink href={ROUTES.home}>Home</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator>/</BreadcrumbSeparator>
             <BreadcrumbPage className="font-bold text-primary">Order #{orderNumber}</BreadcrumbPage>
@@ -305,14 +307,14 @@ export const OrderTrackingPage = () => {
               </Button>
 
               {/* Cancel order action */}
-              {(order.status === "pending" || order.status === "confirmed") && (
+              {(order.status === ORDER_STATUS.PENDING || order.status === ORDER_STATUS.CONFIRMED) && (
                 <Button variant="destructive" size="lg" onClick={handleCancelOrder} disabled={cancelling}>
                   {cancelling && <Spinner data-icon="inline-start" />}
                   {cancelling ? "Cancelling..." : "Cancel Order"}
                 </Button>
               )}
               <Button asChild variant="outline" size="lg">
-                <Link to="/shop">Return to Shop</Link>
+                <Link to={ROUTES.shop}>Return to Shop</Link>
               </Button>
             </div>
 

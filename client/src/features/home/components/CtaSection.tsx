@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom"
+import { ROUTES } from "@/constants/routes"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 
@@ -40,7 +41,7 @@ export const CtaSection = () => {
             size="lg"
             className="px-10 py-6"
           >
-            <Link to="/shop">Shop the Launch</Link>
+            <Link to={ROUTES.shop}>Shop the Launch</Link>
           </Button>
         </div>
 

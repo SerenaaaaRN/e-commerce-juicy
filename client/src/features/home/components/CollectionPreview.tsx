@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { Link } from "react-router-dom"
+import { ROUTES } from "@/constants/routes"
 import { Button } from "@/components/ui/button"
 import { productApi } from "@/lib/api/products"
 import { formatPrice } from "@/lib/utils"
@@ -137,7 +138,7 @@ export const CollectionPreview = () => {
             <span className="text-[10px] text-muted-foreground tracking-widest uppercase">Collection</span>
           </div>
           <Link
-            to="/shop"
+            to={ROUTES.shop}
             className="text-xs text-muted-foreground hover:text-foreground transition-colors border-b border-foreground/10 hover:border-foreground/40 pb-0.5"
           >
             Explore all →

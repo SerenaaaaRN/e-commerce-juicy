@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { useParams, Link } from "react-router-dom"
+import { ROUTES } from "@/constants/routes"
 import { useProductStore } from "@/stores/productStore"
 import { useCartStore } from "@/stores/cartStore"
 import { useWishlistStore } from "@/stores/wishlistStore"
@@ -93,7 +94,7 @@ export const ProductPage = () => {
           </EmptyHeader>
           <EmptyContent className="mt-6">
             <Button asChild variant="outline">
-              <Link to="/shop">Back to Shop</Link>
+              <Link to={ROUTES.shop}>Back to Shop</Link>
             </Button>
           </EmptyContent>
         </Empty>
@@ -158,13 +159,13 @@ export const ProductPage = () => {
           <BreadcrumbList className="text-xs">
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link to="/">Home</Link>
+                <Link to={ROUTES.home}>Home</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <BreadcrumbLink asChild>
-                <Link to="/shop">Shop</Link>
+                <Link to={ROUTES.shop}>Shop</Link>
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />

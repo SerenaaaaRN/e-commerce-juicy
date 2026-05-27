@@ -1,6 +1,7 @@
 import { useProductStore } from "@/stores/productStore"
 import { ProductCard } from "@/features/shop/components/ProductCard"
 import { Link } from "react-router-dom"
+import { ROUTES } from "@/constants/routes"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { HugeiconsIcon } from "@hugeicons/react"
@@ -101,7 +102,7 @@ export const TrendingNow = () => {
             asChild
             className="hidden text-[10px] font-semibold tracking-wider text-muted-foreground uppercase transition-colors hover:text-(--color-gold) sm:flex"
           >
-            <Link to="/shop?sort=popular">
+            <Link to={`${ROUTES.shop}?sort=popular`}>
               Lihat Semua{" "}
               <HugeiconsIcon icon={ArrowRightIcon} data-icon="inline-end" />
             </Link>
@@ -146,7 +147,7 @@ export const TrendingNow = () => {
             asChild
             className="text-[10px] tracking-wider uppercase"
           >
-            <Link to="/shop?sort=popular">
+            <Link to={`${ROUTES.shop}?sort=popular`}>
               Lihat Semua{" "}
               <HugeiconsIcon icon={ArrowRightIcon} data-icon="inline-end" />
             </Link>

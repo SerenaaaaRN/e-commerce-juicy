@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { Navigate, Link } from "react-router-dom"
+import { ROUTES } from "@/constants/routes"
 import { useCustomerAuthStore } from "@/stores/customerAuthStore"
 import { OrderCard } from "./components/OrderCard"
 import { ordersApi } from "@/lib/api/orders"
@@ -45,7 +46,7 @@ export const OrderHistoryPage = () => {
 
   // Guest restriction redirect
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />
+    return <Navigate to={ROUTES.login} replace />
   }
 
   if (loading) {
@@ -67,7 +68,7 @@ export const OrderHistoryPage = () => {
         <Breadcrumb className="mb-8 text-left text-xs font-bold uppercase">
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="/">Home</BreadcrumbLink>
+              <BreadcrumbLink href={ROUTES.home}>Home</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator>/</BreadcrumbSeparator>
             <BreadcrumbPage className="font-bold text-primary">Purchase History</BreadcrumbPage>
@@ -103,7 +104,7 @@ export const OrderHistoryPage = () => {
             </EmptyHeader>
             <EmptyContent className="mt-6">
               <Button asChild size="lg">
-                <Link to="/shop">Explore Atelier</Link>
+                <Link to={ROUTES.shop}>Explore Atelier</Link>
               </Button>
             </EmptyContent>
           </Empty>

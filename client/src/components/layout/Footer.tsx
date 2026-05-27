@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom"
+import { ROUTES } from "@/constants/routes"
 import { Separator } from "@/components/ui/separator"
 
 export const Footer = () => {
@@ -27,16 +28,16 @@ export const Footer = () => {
             </h4>
             <ul className="flex flex-col gap-2.5 text-xs text-muted-foreground uppercase tracking-widest">
               <li>
-                <Link to="/shop?category=tops" className="hover:text-foreground transition-colors duration-200">Tops</Link>
+                <Link to={`${ROUTES.shop}?category=tops`} className="hover:text-foreground transition-colors duration-200">Tops</Link>
               </li>
               <li>
-                <Link to="/shop?category=dresses" className="hover:text-foreground transition-colors duration-200">Dresses</Link>
+                <Link to={`${ROUTES.shop}?category=dresses`} className="hover:text-foreground transition-colors duration-200">Dresses</Link>
               </li>
               <li>
-                <Link to="/shop?category=sets" className="hover:text-foreground transition-colors duration-200">Sets</Link>
+                <Link to={`${ROUTES.shop}?category=sets`} className="hover:text-foreground transition-colors duration-200">Sets</Link>
               </li>
               <li>
-                <Link to="/shop?category=accessories" className="hover:text-foreground transition-colors duration-200">Accessories</Link>
+                <Link to={`${ROUTES.shop}?category=accessories`} className="hover:text-foreground transition-colors duration-200">Accessories</Link>
               </li>
             </ul>
           </div>

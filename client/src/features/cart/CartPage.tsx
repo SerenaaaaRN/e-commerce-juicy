@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Navigate, useNavigate } from "react-router-dom"
+import { ROUTES } from "@/constants/routes"
 import { useCartStore } from "@/stores/cartStore"
 import { useCustomerAuthStore } from "@/stores/customerAuthStore"
 import { CartItem } from "./components/CartItem"
@@ -15,7 +16,7 @@ export const CartPage = () => {
 
   // Guest restriction redirect
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />
+    return <Navigate to={ROUTES.login} replace />
   }
 
   const subtotal = totalPrice()
@@ -45,7 +46,7 @@ export const CartPage = () => {
   }
 
   const handleCheckout = () => {
-    navigate("/checkout")
+    navigate(ROUTES.checkout)
   }
 
   return (

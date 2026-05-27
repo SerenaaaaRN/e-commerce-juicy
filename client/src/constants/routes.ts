@@ -1,12 +1,25 @@
 export const ROUTES = {
   home: "/",
   shop: "/shop",
+  product: "/shop/:slug",
+  category: "/category/:slug",
   cart: "/cart",
   checkout: "/checkout",
   orders: "/orders",
+  orderTracking: "/orders/:orderNumber",
+  wishlist: "/wishlist",
   profile: "/profile",
   login: "/login",
   register: "/register",
+  adminLogin: "/admin/login",
+  admin: "/admin",
+  adminDashboard: "/admin/dashboard",
+  adminProducts: "/admin/products",
+  adminOrders: "/admin/orders",
+  adminCustomers: "/admin/customers",
+  adminReviews: "/admin/reviews",
+  terms: "/terms",
+  privacy: "/privacy",
 } as const
 
 export default ROUTES

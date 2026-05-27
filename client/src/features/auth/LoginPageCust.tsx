@@ -1,5 +1,6 @@
 import { useTransition } from "react"
 import { Navigate, useNavigate, Link } from "react-router-dom"
+import { ROUTES } from "@/constants/routes"
 import { Card, CardContent } from "@/components/ui/card"
 import { FieldDescription } from "@/components/ui/field"
 import { toast } from "sonner"
@@ -14,7 +15,7 @@ export const LoginPageCust = () => {
   const [isPending, startTransition] = useTransition()
 
   if (isAuthenticated) {
-    return <Navigate to="/" replace />
+    return <Navigate to={ROUTES.home} replace />
   }
 
   const handleSubmit = (data: LoginFormValues) => {
@@ -25,7 +26,7 @@ export const LoginPageCust = () => {
           const { token, customer } = res.data
           login(token, customer)
           toast.success(`Welcome back, ${customer.full_name}!`)
-          navigate("/shop")
+          navigate(ROUTES.shop)
         } else {
           toast.error(res.message || "Invalid credentials. Please try again.")
         }
@@ -57,7 +58,7 @@ export const LoginPageCust = () => {
                   isPending={isPending}
                   showForgotPassword
                   showSocialLogins
-                  registerUrl="/register"
+                  registerUrl={ROUTES.register}
                 />
               </aside>
 
@@ -75,11 +76,11 @@ export const LoginPageCust = () => {
           {/* Footer Notice */}
           <FieldDescription className="px-6 text-center text-xs">
             By clicking continue, you agree to our{" "}
-            <Link to="/terms" className="underline hover:text-primary">
+            <Link to={ROUTES.terms} className="underline hover:text-primary">
               Terms of Service
             </Link>{" "}
             and{" "}
-            <Link to="/privacy" className="underline hover:text-primary">
+            <Link to={ROUTES.privacy} className="underline hover:text-primary">
               Privacy Policy
             </Link>
             .

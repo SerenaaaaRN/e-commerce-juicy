@@ -1,5 +1,6 @@
 import { useEffect } from "react"
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom"
+import { ROUTES } from "@/constants/routes"
 import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
 import { HomePage } from "@/features/home/HomePage"
@@ -80,25 +81,25 @@ const AppContent = () => {
       <main className="flex-1">
         <Routes>
           {/* Public Storefront Routes */}
-          <Route path="/" element={<HomePage />} />
-          <Route path="/shop" element={<CollectionPage />} />
-          <Route path="/shop/:slug" element={<ProductPage />} />
-          <Route path="/category/:slug" element={<CategoryLandingPage />} />
-          <Route path="/cart" element={<CartPage />} />
-          <Route path="/checkout" element={<CheckoutPage />} />
-          <Route path="/orders" element={<OrderHistoryPage />} />
-          <Route path="/orders/:orderNumber" element={<OrderTrackingPage />} />
-          <Route path="/wishlist" element={<WishlistPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/login" element={<LoginPageCust />} />
-          <Route path="/register" element={<RegisterPage />} />
+          <Route path={ROUTES.home} element={<HomePage />} />
+          <Route path={ROUTES.shop} element={<CollectionPage />} />
+          <Route path={ROUTES.product} element={<ProductPage />} />
+          <Route path={ROUTES.category} element={<CategoryLandingPage />} />
+          <Route path={ROUTES.cart} element={<CartPage />} />
+          <Route path={ROUTES.checkout} element={<CheckoutPage />} />
+          <Route path={ROUTES.orders} element={<OrderHistoryPage />} />
+          <Route path={ROUTES.orderTracking} element={<OrderTrackingPage />} />
+          <Route path={ROUTES.wishlist} element={<WishlistPage />} />
+          <Route path={ROUTES.profile} element={<ProfilePage />} />
+          <Route path={ROUTES.login} element={<LoginPageCust />} />
+          <Route path={ROUTES.register} element={<RegisterPage />} />
 
           {/* Admin Unprotected Routes */}
-          <Route path="/admin/login" element={<LoginPageAdmin />} />
+          <Route path={ROUTES.adminLogin} element={<LoginPageAdmin />} />
 
           {/* Protected Console Suite */}
           <Route
-            path="/admin"
+            path={ROUTES.admin}
             element={
               <AdminRoute>
                 <AdminLayout />

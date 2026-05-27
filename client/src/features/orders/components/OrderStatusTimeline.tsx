@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils"
+import { ORDER_STATUS, ORDER_STATUS_LABELS } from "@/constants/orderStatus"
 import type { OrderStatus } from "@/types"
 
 type OrderStatusTimelineProps = {
@@ -12,11 +13,11 @@ type TimelineStep = {
 }
 
 const STEPS: TimelineStep[] = [
-  { label: "Pending", description: "Order Placed", key: "pending" },
-  { label: "Confirmed", description: "Payment Verified", key: "confirmed" },
-  { label: "Processing", description: "Atelier Assembly", key: "processing" },
-  { label: "Shipped", description: "En Route", key: "shipped" },
-  { label: "Delivered", description: "Delivered", key: "delivered" },
+  { label: ORDER_STATUS_LABELS[ORDER_STATUS.PENDING], description: "Order Placed", key: ORDER_STATUS.PENDING },
+  { label: ORDER_STATUS_LABELS[ORDER_STATUS.CONFIRMED], description: "Payment Verified", key: ORDER_STATUS.CONFIRMED },
+  { label: ORDER_STATUS_LABELS[ORDER_STATUS.PROCESSING], description: "Atelier Assembly", key: ORDER_STATUS.PROCESSING },
+  { label: ORDER_STATUS_LABELS[ORDER_STATUS.SHIPPED], description: "En Route", key: ORDER_STATUS.SHIPPED },
+  { label: ORDER_STATUS_LABELS[ORDER_STATUS.DELIVERED], description: "Delivered", key: ORDER_STATUS.DELIVERED },
 ]
 
 export const OrderStatusTimeline = ({ status }: OrderStatusTimelineProps) => {

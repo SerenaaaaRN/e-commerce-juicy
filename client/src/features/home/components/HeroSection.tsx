@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
+import { ROUTES } from "@/constants/routes"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { HugeiconsIcon } from "@hugeicons/react"
@@ -100,7 +101,7 @@ export const HeroSection = () => {
           {/* CTA suite */}
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
             <Button asChild variant="luxury" className="px-8 py-4.5 h-auto bg-[var(--color-gold)] text-foreground hover:bg-transparent hover:text-[var(--color-gold)]">
-              <Link to="/shop">
+              <Link to={ROUTES.shop}>
                 Explore Shop
 
               </Link>

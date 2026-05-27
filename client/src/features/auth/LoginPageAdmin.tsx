@@ -1,5 +1,6 @@
 import { useTransition } from "react"
 import { Navigate, useNavigate, Link } from "react-router-dom"
+import { ROUTES } from "@/constants/routes"
 import { Card, CardContent } from "@/components/ui/card"
 import { FieldDescription } from "@/components/ui/field"
 import { useAdminAuthStore } from "@/stores/adminAuthStore"
@@ -14,7 +15,7 @@ export const LoginPageAdmin = () => {
   const [isPending, startTransition] = useTransition()
 
   if (isAuthenticated) {
-    return <Navigate to="/admin/dashboard" replace />
+    return <Navigate to={ROUTES.adminDashboard} replace />
   }
 
   const handleSubmit = (data: LoginFormValues) => {
@@ -29,7 +30,7 @@ export const LoginPageAdmin = () => {
             name: admin.username,
           })
           toast.success(`Access granted. Welcome back, Admin ${admin.username}!`)
-          navigate("/admin/dashboard")
+          navigate(ROUTES.adminDashboard)
         } else {
           toast.error(res.message || "Invalid email or passcode. Access denied.")
         }
@@ -81,11 +82,11 @@ export const LoginPageAdmin = () => {
           {/* Footer Notice */}
           <FieldDescription className="px-6 text-center text-xs">
             By clicking continue, you agree to our{" "}
-            <Link to="/terms" className="underline hover:text-primary">
+            <Link to={ROUTES.terms} className="underline hover:text-primary">
               Terms of Service
             </Link>{" "}
             and{" "}
-            <Link to="/privacy" className="underline hover:text-primary">
+            <Link to={ROUTES.privacy} className="underline hover:text-primary">
               Privacy Policy
             </Link>
             .

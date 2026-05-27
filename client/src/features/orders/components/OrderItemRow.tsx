@@ -1,5 +1,6 @@
 import { WriteReviewCta } from "./WriteReviewCta"
 import { AspectRatio } from "@/components/ui/aspect-ratio"
+import { ORDER_STATUS } from "@/constants/orderStatus"
 import { formatPrice } from "@/lib/utils"
 import type { OrderItem } from "@/types"
 
@@ -10,7 +11,7 @@ type OrderItemRowProps = {
 }
 
 export const OrderItemRow = ({ item, orderId, orderStatus }: OrderItemRowProps) => {
-  const showReviewButton = orderStatus === "delivered" && orderId
+  const showReviewButton = orderStatus === ORDER_STATUS.DELIVERED && orderId
 
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 py-4 border-b border-border/40 last:border-b-0 text-left">
