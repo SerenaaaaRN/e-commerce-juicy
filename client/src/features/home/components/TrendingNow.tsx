@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { ArrowRightIcon } from "@hugeicons/core-free-icons"
 import type { CatalogProduct } from "@/types"
+import { cn } from "@/lib/utils"
 
 const FALLBACKS: CatalogProduct[] = [
   {

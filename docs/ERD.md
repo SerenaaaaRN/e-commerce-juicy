@@ -161,6 +161,7 @@ CREATE TYPE payment_status AS ENUM (
 | 013 | `alter_categories_add_parent_id` | Add `parent_id` for subcategory hierarchy |
 | 014 | `create_wishlist_items` | Customer wishlist items table |
 | 015 | `alter_product_images_nullable_cloudinary_id` | Make `cloudinary_public_id` nullable + add `updated_at` |
+| 016 | `set_categories_active_true` | Default all categories' active status to true |
 
 ---
 
@@ -401,6 +402,13 @@ CREATE INDEX idx_wishlist_variant_id ON wishlist_items(variant_id);
 ```sql
 ALTER TABLE product_images ALTER COLUMN cloudinary_public_id DROP NOT NULL;
 ALTER TABLE product_images ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+```
+
+---
+
+### 016 — Set Categories Active True
+```sql
+UPDATE categories SET is_active = true WHERE is_active = false;
 ```
 
 ---

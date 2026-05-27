@@ -5,10 +5,10 @@ import { cn } from "@/lib/utils"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { ArrowDown01Icon, ArrowUp01Icon } from "@hugeicons/core-free-icons"
 
-function Accordion({
+const Accordion = ({
   className,
   ...props
-}: React.ComponentProps<typeof AccordionPrimitive.Root>) {
+}: React.ComponentProps<typeof AccordionPrimitive.Root>) => {
   return (
     <AccordionPrimitive.Root
       data-slot="accordion"
@@ -18,10 +18,10 @@ function Accordion({
   )
 }
 
-function AccordionItem({
+const AccordionItem = ({
   className,
   ...props
-}: React.ComponentProps<typeof AccordionPrimitive.Item>) {
+}: React.ComponentProps<typeof AccordionPrimitive.Item>) => {
   return (
     <AccordionPrimitive.Item
       data-slot="accordion-item"
@@ -31,11 +31,11 @@ function AccordionItem({
   )
 }
 
-function AccordionTrigger({
+const AccordionTrigger = ({
   className,
   children,
   ...props
-}: React.ComponentProps<typeof AccordionPrimitive.Trigger>) {
+}: React.ComponentProps<typeof AccordionPrimitive.Trigger>) => {
   return (
     <AccordionPrimitive.Header className="flex">
       <AccordionPrimitive.Trigger
@@ -54,11 +54,11 @@ function AccordionTrigger({
   )
 }
 
-function AccordionContent({
+const AccordionContent = ({
   className,
   children,
   ...props
-}: React.ComponentProps<typeof AccordionPrimitive.Content>) {
+}: React.ComponentProps<typeof AccordionPrimitive.Content>) => {
   return (
     <AccordionPrimitive.Content
       data-slot="accordion-content"
@@ -67,7 +67,7 @@ function AccordionContent({
     >
       <div
         className={cn(
-          "h-(--radix-accordion-content-height) pt-0 pb-2.5 [&_a]:underline [&_a]:underline-offset-3 [&_a]:hover:text-foreground [&_p:not(:last-child)]:mb-4",
+          "pt-0 pb-2.5 [&_a]:underline [&_a]:underline-offset-3 [&_a]:hover:text-foreground [&_p:not(:last-child)]:mb-4",
           className
         )}
       >

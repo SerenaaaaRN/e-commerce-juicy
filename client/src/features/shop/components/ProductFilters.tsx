@@ -18,6 +18,72 @@ type ProductFiltersProps = {
   onReset: () => void
 }
 
+type CategoryNodeProps = {
+  cat: Category
+  level?: number
+  selectedCategory: string
+  onCategoryChange: (slug: string) => void
+}
+
+const CategoryNode = ({ cat, level = 0, selectedCategory, onCategoryChange }: CategoryNodeProps) => {
+  const [open, setOpen] = useState(false)
+  const hasChildren = cat.children && cat.children.length > 0
+  const isSelected = selectedCategory === cat.slug
+
+  return (
+    <div className="flex flex-col gap-1">
+      <div
+        className={cn(
+          "flex items-center justify-between rounded-none px-2 py-1.5 text-xs tracking-wider uppercase transition-colors duration-200",
+          isSelected
+            ? "border-l-2 border-primary bg-primary/10 font-semibold text-primary"
+            : "text-muted-foreground hover:bg-muted/30 hover:text-foreground"
+        )}
+        style={{ paddingLeft: `${level * 12 + 8}px` }}
+      >
+        <button
+          onClick={() => onCategoryChange(cat.slug)}
+          className="flex-1 cursor-pointer truncate text-left font-medium uppercase"
+        >
+          {cat.name}
+          {cat.product_count !== undefined ? (
+            <span className="ml-1.5 text-[10px] font-normal text-muted-foreground lowercase">
+              ({cat.product_count})
+            </span>
+          ) : null}
+        </button>
+
+        {hasChildren ? (
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              setOpen((prev) => !prev)
+            }}
+            className="cursor-pointer p-1 transition-transform duration-200 hover:text-foreground"
+            style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
+          >
+            <HugeiconsIcon icon={ArrowDownIcon} />
+          </button>
+        ) : null}
+      </div>
+
+      {open && hasChildren ? (
+        <div className="flex animate-in flex-col gap-1 duration-200 fade-in slide-in-from-top-1">
+          {cat.children?.map((child) => (
+            <CategoryNode
+              key={child.id}
+              cat={child}
+              level={level + 1}
+              selectedCategory={selectedCategory}
+              onCategoryChange={onCategoryChange}
+            />
+          ))}
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
 const AVAILABLE_SIZES = ["XS", "S", "M", "L", "XL", "XXL"]
 
 const sortOptions = [
@@ -37,65 +103,7 @@ export const ProductFilters = ({
   onSizesChange,
   onReset,
 }: ProductFiltersProps) => {
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({})
-
-  const toggleExpand = (catId: string) => {
-    setExpanded((prev) => ({ ...prev, [catId]: !prev[catId] }))
-  }
-
-  // Filter root categories (parent_id is null/undefined)
   const rootCategories = categories.filter((cat) => !cat.parent_id)
-
-  const renderCategoryNode = (cat: Category, level: number = 0) => {
-    const hasChildren = cat.children && cat.children.length > 0
-    const isExpanded = !!expanded[cat.id]
-    const isSelected = selectedCategory === cat.slug
-
-    return (
-      <div key={cat.id} className="flex flex-col gap-1">
-        <div
-          className={cn(
-            "flex items-center justify-between rounded-none px-2 py-1.5 text-xs tracking-wider uppercase transition-colors duration-200",
-            isSelected
-              ? "border-l-2 border-primary bg-primary/10 font-semibold text-primary"
-              : "text-muted-foreground hover:bg-muted/30 hover:text-foreground"
-          )}
-          style={{ paddingLeft: `${level * 12 + 8}px` }}
-        >
-          <button
-            onClick={() => onCategoryChange(cat.slug)}
-            className="flex-1 cursor-pointer truncate text-left font-medium uppercase"
-          >
-            {cat.name}
-            {cat.product_count !== undefined ? (
-              <span className="ml-1.5 text-[10px] font-normal text-muted-foreground lowercase">
-                ({cat.product_count})
-              </span>
-            ) : null}
-          </button>
-
-          {hasChildren ? (
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                toggleExpand(cat.id)
-              }}
-              className="cursor-pointer p-1 transition-transform duration-200 hover:text-foreground"
-              style={{ transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)" }}
-            >
-              <HugeiconsIcon icon={ArrowDownIcon} />
-            </button>
-          ) : null}
-        </div>
-
-        {hasChildren && isExpanded ? (
-          <div className="flex animate-in flex-col gap-1 duration-200 fade-in slide-in-from-top-1">
-            {cat.children?.map((child) => renderCategoryNode(child, level + 1))}
-          </div>
-        ) : null}
-      </div>
-    )
-  }
 
   return (
     <div className="flex flex-col gap-6 text-left">
@@ -118,7 +126,15 @@ export const ProductFilters = ({
               >
                 All Apparel
               </button>
-              {rootCategories.map((cat) => renderCategoryNode(cat, 0))}
+              {rootCategories.map((cat) => (
+                <CategoryNode
+                  key={cat.id}
+                  cat={cat}
+                  level={0}
+                  selectedCategory={selectedCategory}
+                  onCategoryChange={onCategoryChange}
+                />
+              ))}
             </div>
           </AccordionContent>
         </AccordionItem>

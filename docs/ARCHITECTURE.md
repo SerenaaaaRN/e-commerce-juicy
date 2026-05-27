@@ -320,6 +320,8 @@ server/
 │   ├── 000012_create_reviews.up.sql / .down.sql
 │   ├── 000013_add_parent_id_to_categories.up.sql / .down.sql
 │   ├── 000014_create_wishlist_items.up.sql / .down.sql
+│   ├── 000015_alter_product_images_nullable_cloudinary_id.up.sql / .down.sql
+│   ├── 000016_set_categories_active_true.up.sql / .down.sql
 │   ├── seed.sql
 │   └── seed_data.sql
 ├── .env
