@@ -29,11 +29,10 @@ import { CustomersPage } from "@/features/admin/CustomersPage"
 import { ReviewsPage } from "@/features/admin/ReviewsPage"
 
 import { useCustomerAuthStore } from "@/stores/customerAuthStore"
-import { useCartStore } from "@/stores/cartStore"
-import { useWishlistStore } from "@/stores/wishlistStore"
 import { customerApi } from "@/lib/api"
+import { useCartQuery } from "@/features/cart/hooks/useCartQueries"
+import { useWishlistQuery } from "@/features/wishlist/hooks/useWishlistQueries"
 
-// ScrollToTop component to reset viewport on route transition
 const ScrollToTop = () => {
   const { pathname } = useLocation()
 
@@ -49,19 +48,18 @@ const AppContent = () => {
   const isAdmin = location.pathname.startsWith("/admin")
   const isAuthenticated = useCustomerAuthStore((s) => s.isAuthenticated)
   const logout = useCustomerAuthStore((s) => s.logout)
-  const fetchCart = useCartStore((s) => s.fetchCart)
-  const fetchWishlist = useWishlistStore((s) => s.fetchWishlist)
 
-  // Auto-rehydrate profile and load cart/wishlist from database
+  // Auto-fetch cart and wishlist when authenticated
+  useCartQuery(isAuthenticated)
+  useWishlistQuery(isAuthenticated)
+
+  // Auto-rehydrate profile
   useEffect(() => {
-    const initializeAuthAndCart = async () => {
+    const initializeAuth = async () => {
       if (isAuthenticated) {
         try {
           const profileRes = await customerApi.getProfile()
-          if (profileRes.success) {
-            fetchCart()
-            fetchWishlist()
-          } else {
+          if (!profileRes.success) {
             logout()
           }
         } catch {
@@ -69,8 +67,8 @@ const AppContent = () => {
         }
       }
     }
-    initializeAuthAndCart()
-  }, [isAuthenticated, fetchCart, fetchWishlist, logout])
+    initializeAuth()
+  }, [isAuthenticated, logout])
 
   return (
     <div className="relative flex min-h-screen flex-col bg-background font-sans text-foreground antialiased selection:bg-primary/10 selection:text-primary">

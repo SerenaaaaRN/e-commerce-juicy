@@ -452,22 +452,26 @@ Order creation berjalan dalam PostgreSQL transaction:
 ### 7. Cart Upsert Pattern (Backend)
 `POST /cart/items` menggunakan `INSERT ... ON CONFLICT (customer_id, variant_id) DO UPDATE SET quantity = cart_items.quantity + EXCLUDED.quantity`.
 
-### 8. Zustand Store Pattern (Frontend)
-Setiap store berisi state + async actions yang langsung call API. Tidak ada TanStack Query / cache layer tambahan.
+### 8. TanStack Query Pattern (Frontend — Server State)
+Server state dikelola dengan TanStack Query. Query hooks di `features/<domain>/hooks/`, mutation hooks terpisah.
 
 ```typescript
-// Pola standar store
-interface CartStore {
-  items: CartItem[]
-  isLoading: boolean
-  error: string | null
-  fetchCart: () => Promise<void>
-  addItem: (variantId: string, qty: number) => Promise<void>
-  updateQty: (itemId: string, qty: number) => Promise<void>
-  removeItem: (itemId: string) => Promise<void>
-  clearCart: () => void
-}
+// Query hook (features/shop/hooks/useProductQueries.ts)
+const { data, isLoading, error } = useProductsQuery(params)
+// → auto-fetch, auto-cache, deduplication, background refetch
+
+// Mutation hook (features/cart/hooks/useCartMutations.ts)
+const { mutate, isPending } = useAddCartItemMutation()
+// → auto-invalidate query cache on success
 ```
+
+**State ownership:**
+| State type | Tool | Examples |
+|---|---|---|
+| Server state | TanStack Query | products, cart, wishlist, orders, reviews |
+| Client state (auth) | Zustand + persist | customerAuthStore, adminAuthStore |
+| UI state | React useState | modals, selections, toggles |
+| Local persistent | Custom hooks | useRecentlyViewed (localStorage) |
 
 ### 9. Protected Routes (Frontend)
 Dua jenis route guard yang terpisah:

@@ -1,8 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Navigate, useNavigate } from "react-router-dom"
 import { ROUTES } from "@/constants/routes"
-import { useCartStore } from "@/stores/cartStore"
 import { useCustomerAuthStore } from "@/stores/customerAuthStore"
+import { useCartQuery } from "@/features/cart/hooks/useCartQueries"
+import { useUpdateCartItemMutation, useRemoveCartItemMutation } from "@/features/cart/hooks/useCartMutations"
 import { CartItem } from "./components/CartItem"
 import { CartSummary } from "./components/CartSummary"
 import { EmptyCart } from "./components/EmptyCart"
@@ -12,40 +12,37 @@ import { toast } from "sonner"
 export const CartPage = () => {
   const navigate = useNavigate()
   const isAuthenticated = useCustomerAuthStore((s) => s.isAuthenticated)
-  const items = useCartStore((s) => s.items)
-  const totalPrice = useCartStore((s) => s.totalPrice)
-  const updateQty = useCartStore((s) => s.updateQty)
-  const removeItem = useCartStore((s) => s.removeItem)
+  const { data: cart } = useCartQuery()
+  const updateQtyMutation = useUpdateCartItemMutation()
+  const removeItemMutation = useRemoveCartItemMutation()
 
   // Guest restriction redirect
   if (!isAuthenticated) {
     return <Navigate to={ROUTES.login} replace />
   }
 
-  const subtotal = totalPrice()
+  const items = cart?.items ?? []
+  const subtotal = items.reduce((sum, item) => sum + item.unit_price * item.quantity, 0)
 
   if (items.length === 0) {
     return <EmptyCart />
   }
 
   const handleUpdateQty = async (itemId: string, qty: number, name: string) => {
-    try {
-      await updateQty(itemId, qty)
-      toast.success(`Updated ${name} quantity to ${qty}`)
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Failed to update quantity"
-      toast.error(msg)
-    }
+    updateQtyMutation.mutate(
+      { itemId, quantity: qty },
+      {
+        onSuccess: () => toast.success(`Updated ${name} quantity to ${qty}`),
+        onError: () => toast.error("Failed to update quantity"),
+      }
+    )
   }
 
   const handleRemoveItem = async (itemId: string, name: string) => {
-    try {
-      await removeItem(itemId)
-      toast.success(`${name} removed from cart`)
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Failed to remove item"
-      toast.error(msg)
-    }
+    removeItemMutation.mutate(itemId, {
+      onSuccess: () => toast.success(`${name} removed from cart`),
+      onError: () => toast.error("Failed to remove item"),
+    })
   }
 
   const handleCheckout = () => {

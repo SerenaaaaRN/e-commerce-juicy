@@ -1,7 +1,7 @@
-import { useEffect, useMemo } from "react"
+import { useMemo } from "react"
 import { useParams, Link } from "react-router-dom"
 import { ROUTES } from "@/constants/routes"
-import { useProductStore } from "@/stores/productStore"
+import { useCategoriesQuery, useProductsQuery } from "@/features/shop/hooks/useProductQueries"
 import { CategoryHero } from "./components/CategoryHero"
 import { SubcategoryGrid } from "./components/SubcategoryGrid"
 import { CategoryProducts } from "./components/CategoryProducts"
@@ -13,11 +13,10 @@ import { Button } from "@/components/ui/button"
 
 export const CategoryLandingPage = () => {
   const { slug } = useParams<{ slug: string }>()
-  const { categories, fetchCategories, fetchProducts, isLoading } = useProductStore()
-
-  useEffect(() => {
-    fetchCategories()
-  }, [fetchCategories])
+  const { data: categories = [] } = useCategoriesQuery()
+  const { data: productsData, isLoading } = useProductsQuery(
+    slug ? { category: slug, per_page: 8 } : undefined
+  )
 
   const category = useMemo(() => {
     if (!slug || categories.length === 0) return null
@@ -38,12 +37,6 @@ export const CategoryLandingPage = () => {
   const subcategories = useMemo(() => {
     return category?.children || []
   }, [category])
-
-  useEffect(() => {
-    if (slug) {
-      fetchProducts({ category: slug, per_page: 8 })
-    }
-  }, [slug, fetchProducts])
 
   if (!slug) {
     return (

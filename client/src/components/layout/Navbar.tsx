@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react"
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom"
 import { ROUTES } from "@/constants/routes"
-import { useCartStore } from "@/stores/cartStore"
 import { useCustomerAuthStore } from "@/stores/customerAuthStore"
-import { useProductStore } from "@/stores/productStore"
+import { useCartQuery } from "@/features/cart/hooks/useCartQueries"
+import { useCategoriesQuery } from "@/features/shop/hooks/useProductQueries"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -34,20 +34,15 @@ export const Navbar = () => {
   const navigate = useNavigate()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  const totalItems = useCartStore((state) => state.totalItems)()
   const isAuthenticated = useCustomerAuthStore((s) => s.isAuthenticated)
+  const { data: cart } = useCartQuery(isAuthenticated)
+  const { data: categories } = useCategoriesQuery()
   const customer = useCustomerAuthStore((s) => s.customer)
   const logout = useCustomerAuthStore((s) => s.logout)
-  const categories = useProductStore((s) => s.categories)
-  const fetchCategories = useProductStore((s) => s.fetchCategories)
 
-  useEffect(() => {
-    if (categories.length === 0) {
-      fetchCategories()
-    }
-  }, [fetchCategories, categories.length])
+  const totalItems = cart?.items.reduce((sum, item) => sum + item.quantity, 0) ?? 0
 
-  const rootCategories = categories.filter((c) => !c.parent_id)
+  const rootCategories = (categories ?? []).filter((c) => !c.parent_id)
 
   const [searchParams] = useSearchParams()
   const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "")

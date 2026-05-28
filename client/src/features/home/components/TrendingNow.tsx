@@ -1,4 +1,4 @@
-import { useProductStore } from "@/stores/productStore"
+import { useFeaturedProductsQuery } from "@/features/shop/hooks/useProductQueries"
 import { ProductCard } from "@/features/shop/components/ProductCard"
 import { Link } from "react-router-dom"
 import { ROUTES } from "@/constants/routes"
@@ -77,7 +77,7 @@ const FALLBACKS: CatalogProduct[] = [
 const STAGGER_OFFSETS = ["mt-0", "mt-12", "mt-4", "mt-16"]
 
 export const TrendingNow = () => {
-  const { featuredProducts } = useProductStore()
+  const { data: featuredProducts = [] } = useFeaturedProductsQuery()
   const realTrending = featuredProducts.slice(0, 4)
   const displayProducts = realTrending.length > 0 ? realTrending : FALLBACKS
 

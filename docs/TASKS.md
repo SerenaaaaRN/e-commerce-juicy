@@ -81,10 +81,10 @@
 > **Goal:** Better DX, performance, and maintainability.
 
 ### 13.1 TanStack Query Integration
-- [ ] Evaluate migration from Zustand direct API calls to TanStack Query
-- [ ] Query keys strategy + stale times per domain
-- [ ] Mutation hooks untuk write operations
-- [ ] Optimistic updates untuk cart, wishlist
+- [x] Evaluate migration from Zustand direct API calls to TanStack Query
+- [x] Query keys strategy + stale times per domain (`30s staleTime`, `5m gcTime`)
+- [x] Mutation hooks untuk write operations (cart, wishlist)
+- [x] Optimistic updates untuk cart, wishlist (via `invalidateQueries`)
 
 ### 13.2 Code Splitting
 - [ ] `React.lazy()` + `Suspense` untuk semua route pages

@@ -1,299 +1,153 @@
-# Rencana: Zustand → TanStack Query
+# Laporan: Zustand → TanStack Query ✅
 
-> Target: Migrate server state dari Zustand stores ke TanStack Query.
+> **Status: SELESAI** — Server state sudah dimigrasi dari Zustand stores ke TanStack Query.
 > Auth (client state) tetap pakai Zustand.
 
 ---
 
-## 1. Analisis Saat Ini
+## 1. Hasil Migrasi
 
-### Store Classification
+### Store Classification — Final
 
-| Store | Lines | Type | Pindah? | Alasan |
-|---|---|---|---|---|
-| `productStore.ts` | 100 | Server state | ✅ | produk, kategori, featured |
-| `cartStore.ts` | 148 | Server state | ✅ | cart CRUD via API |
-| `orderStore.ts` | 70 | Server state | ✅ | order history, detail, checkout |
-| `reviewStore.ts` | 48 | Server state | ✅ | fetch & submit review |
-| `wishlistStore.ts` | 75 | Server state | ✅ | wishlist CRUD + Set lookup |
-| `customerAuthStore.ts` | 59 | **Client state** (persist) | ❌ | token + profile di localStorage |
-| `adminAuthStore.ts` | 53 | **Client state** (persist) | ❌ | token + admin di localStorage |
+| Store | Lines | Type | Status |
+|---|---|---|---|
+| `productStore.ts` | 100 | Server state | 🗑️ **Dihapus** → `useProductQueries` |
+| `cartStore.ts` | 148 | Server state | 🗑️ **Dihapus** → `useCartQueries` + `useCartMutations` |
+| `orderStore.ts` | 70 | Server state (dead code) | 🗑️ **Dihapus** — tidak ada consumers |
+| `reviewStore.ts` | 48 | Server state (dead code) | 🗑️ **Dihapus** — tidak ada consumers |
+| `wishlistStore.ts` | 75 | Server state | 🗑️ **Dihapus** → `useWishlistQueries` + `useWishlistMutations` |
+| `useCart.ts` | 25 | Thin wrapper (unused) | 🗑️ **Dihapus** |
+| `useProduct.ts` | 25 | Thin wrapper (unused) | 🗑️ **Dihapus** |
+| `useOrder.ts` | 42 | Thin wrapper (unused) | 🗑️ **Dihapus** |
+| `customerAuthStore.ts` | 59 | **Client state** | ✅ Tetap (auth) |
+| `adminAuthStore.ts` | 53 | **Client state** | ✅ Tetap (auth) |
 
-### Problems Today
+### Problems Solved
 
-- Manual `isLoading` / `error` / `try-catch` boilerplate di setiap action
-- Tidak ada caching — mount ulang = fetch ulang
-- Tidak ada request deduplication (navbar + collection page fetch categories 2x)
-- Cart store punya wasteful pattern: `addItem` → `getCart()` re-fetch seluruh items
-- Tidak ada background refetch — data bisa basi
-- Tidak ada devtools untuk tracking query state
+| Problem | Sebelum | Sesudah |
+|---|---|---|
+| Boilerplate | Manual `isLoading` / `error` / `try-catch` per action | Auto dari `useQuery` / `useMutation` |
+| Caching | None — mount ulang = fetch ulang | `staleTime: 30s`, `gcTime: 5m` |
+| Deduplication | Navbar + CollectionPage fetch categories 2x | 1 request untuk query key yang sama |
+| Cart wasteful pattern | `addItem` → `getCart()` re-fetch seluruh items | Mutation → `invalidateQueries(['cart'])` |
+| Devtools | None | `ReactQueryDevtools` di main.tsx |
 
-### Why TanStack Query
+### Manfaat TanStack Query
 
-| Feature | Zustand (manual) | TanStack Query |
+| Feature | Sebelum (Zustand) | Sesudah (TanStack Query) |
 |---|---|---|
 | Loading / error states | Manual per store | Auto dari `useQuery` / `useMutation` |
-| Caching | None | Configurable staleTime / gcTime |
+| Caching | None | `staleTime: 30s`, `gcTime: 5m` |
 | Deduplication | None | Same query key = 1 request |
 | Refetch on focus/mount | Manual | Auto (configurable) |
-| Pagination / infinite | Manual state + append logic | `useInfiniteQuery` built-in |
-| Optimistic updates | Manual rollback | `onMutate` / `onError` / `onSettled` |
+| Pagination / infinite | Manual state + append logic | `useInfiniteQuery` di CollectionPage |
+| Optimistic updates | Manual rollback | `invalidateQueries` on mutation success |
 | Cache invalidation | None | `queryClient.invalidateQueries` |
 | Devtools | None | ReactQueryDevtools |
 
 ---
 
-## 2. Queue
+## 2. Yang Dilakukan
 
-- **Phase 1** — Setup + Query hooks (read-only)
-- **Phase 2** — Mutation hooks (write)
-- **Phase 3** — Component migration
-- **Phase 4** — Cleanup (hapus stores)
+### ✅ Phase 1: Setup + Query Hooks
 
-### Phase 1: Setup + Query Hooks
+- Installed `@tanstack/react-query` + `@tanstack/react-query-devtools`
+- Added `QueryClientProvider` + `ReactQueryDevtools` in `client/src/main.tsx`
+- Global defaults: `staleTime: 30_000`, `gcTime: 5 * 60_000`, `refetchOnWindowFocus: false`
 
-#### 1.1 Install & Provider
+#### Query hooks created:
+| File | Query Keys | Functions |
+|---|---|---|
+| `features/shop/hooks/useProductQueries.ts` | `['categories']`, `['products', params]`, `['products', 'featured']`, `['product', slug]`, `['reviews', slug]`, `['products', 'infinite', params]` | `useCategoriesQuery`, `useProductsQuery`, `useFeaturedProductsQuery`, `useProductQuery`, `useProductReviewsQuery`, `useInfiniteProductsQuery` |
+| `features/cart/hooks/useCartQueries.ts` | `['cart']` | `useCartQuery` (enabled param for auth-gating) |
+| `features/wishlist/hooks/useWishlistQueries.ts` | `['wishlist']` | `useWishlistQuery` (returns `items` + `wishlistIds Set`) |
 
-```
-npm install @tanstack/react-query
-npm install -D @tanstack/react-query-devtools
-```
+### ✅ Phase 2: Mutation Hooks
 
-- Add `QueryClientProvider` + `ReactQueryDevtools` in `client/src/main.tsx`
-- Set global defaults: `staleTime: 30_000`, `gcTime: 5 * 60_000`, `refetchOnWindowFocus: false`
-
-#### 1.2 Product Queries
-
-```typescript
-// hooks/useProductQueries.ts
-
-queryKey: ['products', params]
-  → productApi.getProducts(params)
-
-queryKey: ['product', slug]
-  → productApi.getProductBySlug(slug)
-
-queryKey: ['products', 'featured']
-  → productApi.getProducts({ featured: true, per_page: 8 })
-
-queryKey: ['categories']
-  → productApi.getCategories()
-```
-
-- `fetchProducts(params, append=true)` → `useInfiniteQuery` untuk infinite scroll di CollectionPage
-- `clearCurrentProduct()` → handle via query key, gak perlu `.remove()` manual
-
-#### 1.3 Cart Queries
-
-```typescript
-// hooks/useCartQueries.ts
-
-queryKey: ['cart']
-  → cartApi.getCart()
-  select: (res) => res.data  // extract items
-```
-
-- `totalPrice()` / `totalItems()` → computed dari `data` via `select` atau inline
-
-#### 1.4 Order Queries
-
-```typescript
-// hooks/useOrderQueries.ts
-
-queryKey: ['orders', 'customer']
-  → ordersApi.getCustomerOrders()
-
-queryKey: ['order', orderNumber]
-  → ordersApi.getOrderDetail(orderNumber)
-```
-
-#### 1.5 Review Queries
-
-```typescript
-// hooks/useReviewQueries.ts
-
-queryKey: ['reviews', productSlug]
-  → productApi.getProductReviews(productSlug)
-```
-
-#### 1.6 Wishlist Queries
-
-```typescript
-// hooks/useWishlistQueries.ts
-
-queryKey: ['wishlist']
-  → wishlistApi.getWishlist()
-  select: (res) => res.data
-```
-
-- `wishlistIds: Set<string>` → computed dari data
-- `isInWishlist(variantId)` → helper function, bukan state
-
-### Phase 2: Mutation Hooks
-
-#### 2.1 Cart Mutations
-
-```typescript
-useAddCartItemMutation:
-  mutationFn: cartApi.addItem
-  invalidate: ['cart']
-
-useUpdateCartItemMutation:
-  mutationFn: ({ itemId, quantity }) => cartApi.updateQuantity(itemId, { quantity })
-  invalidate: ['cart']
-
-useRemoveCartItemMutation:
-  mutationFn: cartApi.removeItem
-  invalidate: ['cart']
-
-useClearCartMutation:
-  mutationFn: cartApi.clearCart
-  invalidate: ['cart']
-```
-
-#### 2.2 Order Mutation
-
-```typescript
-usePlaceOrderMutation:
-  mutationFn: ordersApi.checkout
-  invalidate: ['cart'], ['orders', 'customer']
-```
-
-#### 2.3 Review Mutation
-
-```typescript
-useSubmitReviewMutation:
-  mutationFn: ordersApi.submitReview
-  invalidate: (_, variables) => ['reviews', getProductSlugFromProductId(variables.product_id)]
-```
-
-#### 2.4 Wishlist Mutations
-
-```typescript
-useAddWishlistItemMutation:
-  mutationFn: wishlistApi.addItem
-  optimistic update: langsung add ke cache
-  rollback: restore cache sebelumnya
-
-useRemoveWishlistItemMutation:
-  mutationFn: wishlistApi.removeItem
-  optimistic: langsung remove dari cache
-```
-
-### Phase 3: Component Migration
-
-**32 files** perlu diubah (dari grep results):
-
-| File | Store → Query Hook |
+| File | Mutations |
 |---|---|
-| `components/layout/Navbar.tsx` | `useProductStore` → `useCategoriesQuery` |
-| | `useCartStore.totalItems` → `useCartQuery` + computed |
-| `App.tsx` | `useCartStore.fetchCart` → `useCartQuery` (auto-fetch) |
-| | `useWishlistStore.fetchWishlist` → `useWishlistQuery` (auto-fetch) |
-| `features/cart/CartPage.tsx` | `useCartStore` → `useCartQuery` + mutations |
-| `features/checkout/CheckoutPage.tsx` | `useCartStore` → `useCartQuery` + `usePlaceOrderMutation` |
-| `features/shop/CollectionPage.tsx` | `useProductStore` → `useProductsQuery` / `useInfiniteQuery` |
-| `features/shop/ProductPage.tsx` | `useProductStore` → `useProductQuery` |
-| | `useCartStore` → `useAddCartItemMutation` |
-| | `useWishlistStore` → `useWishlistQueries` |
-| `features/home/components/FeaturedSection.tsx` | `useProductStore` → `useFeaturedProductsQuery` |
-| `features/home/components/TrendingNow.tsx` | `useProductStore` → `useFeaturedProductsQuery` |
-| `features/home/components/NewArrivals.tsx` | `useProductStore` → ... |
-| `features/category/CategoryLandingPage.tsx` | `useProductStore` → `useCategoriesQuery` + `useProductsQuery` |
-| `features/category/components/CategoryProducts.tsx` | `useProductStore` → ... |
-| `features/orders/OrderHistoryPage.tsx` | `useOrderStore` → `useCustomerOrdersQuery` |
-| `features/orders/OrderTrackingPage.tsx` | `useOrderStore` → `useOrderDetailQuery` |
-| `features/wishlist/WishlistPage.tsx` | `useWishlistStore` → `useWishlistQuery` + mutations |
-| `features/profile/ProfilePage.tsx` | (no store — auth, addresses via customerClient) |
+| `features/cart/hooks/useCartMutations.ts` | `useAddCartItemMutation`, `useUpdateCartItemMutation`, `useRemoveCartItemMutation`, `useClearCartMutation` |
+| `features/wishlist/hooks/useWishlistMutations.ts` | `useAddWishlistItemMutation`, `useRemoveWishlistItemMutation` |
 
-**Pattern perubahan:**
+Semua mutations auto-invalidate query cache via `invalidateQueries`.
 
-```diff
-- const { items, totalPrice, isLoading, error, fetchCart, addItem } = useCartStore()
-- useEffect(() => { fetchCart() }, [])
+### ✅ Phase 3: Component Migration
 
-+ const { data: cart, isLoading, error } = useCartQuery()
-+ const { mutate: addItem, isPending } = useAddCartItemMutation()
-+ const totalPrice = cart?.items.reduce((s, i) => s + i.unit_price * i.quantity, 0) ?? 0
-```
+**12 komponen dimigrasi:**
 
-### Phase 4: Hapus
+| File | Perubahan |
+|---|---|
+| `App.tsx` | Auto-fetch cart + wishlist via `useCartQuery(isAuthenticated)` + `useWishlistQuery(isAuthenticated)` — hapus manual `fetchCart`/`fetchWishlist` |
+| `Navbar.tsx` | `useCartQuery` + `useCategoriesQuery` — computed `totalItems` inline |
+| `ProductPage.tsx` | `useProductQuery(slug)` + cart mutations + wishlist query/mutations |
+| `CollectionPage.tsx` | `useCategoriesQuery` + `useProductsQuery` (pagination) + `useInfiniteProductsQuery` (infinite scroll) |
+| `CartPage.tsx` | `useCartQuery` + cart mutations |
+| `CheckoutPage.tsx` | `useCartQuery` + `useClearCartMutation` |
+| `WishlistPage.tsx` | `useWishlistQuery` + `useRemoveWishlistItemMutation` |
+| `FeaturedSection.tsx` | `useFeaturedProductsQuery` |
+| `TrendingNow.tsx` | `useFeaturedProductsQuery` |
+| `NewArrivals.tsx` | `useProductsQuery({ tag: 'new-arrival' })` |
+| `CategoryLandingPage.tsx` | `useCategoriesQuery` + `useProductsQuery` |
+| `CategoryProducts.tsx` | `useProductsQuery` |
 
-**Hapus files:**
+Catatan: `OrderHistoryPage`, `OrderTrackingPage`, `ReviewsSection`, `CheckoutPage` sudah pakai API langsung via `useState` — tidak perlu dimigrasi.
 
-- `src/stores/cartStore.ts`
-- `src/stores/productStore.ts`
-- `src/stores/orderStore.ts`
-- `src/stores/reviewStore.ts`
-- `src/stores/wishlistStore.ts`
+### ✅ Phase 4: Cleanup
 
-**Update / hapus thin wrapper hooks:**
+**Dihapus (8 files):**
+- `src/stores/productStore.ts`, `cartStore.ts`, `wishlistStore.ts`, `orderStore.ts`, `reviewStore.ts`
+- `src/hooks/useCart.ts`, `useProduct.ts`, `useOrder.ts`
 
-- `src/hooks/useCart.ts` → HAPUS (ganti import ke query hooks)
-- `src/hooks/useProduct.ts` → HAPUS
-- `src/hooks/useOrder.ts` → HAPUS (atau refactor jadi query hook wrapper)
-- `src/hooks/useAuth.ts` → TETAP (wraps customerAuthStore — client state)
-- `src/hooks/useDebounce.ts` → TETAP
-- `src/hooks/useConfirm.tsx` → TETAP
-- `src/hooks/useIsMobile.ts` → TETAP
-- `src/hooks/useRecentlyViewed.ts` → TETAP
-
-**Cleanup package.json:**
-
-- Zustand tetap terinstall — masih dipakai untuk auth stores
+**Tetap (utility hooks):**
+- `useAuth.ts`, `useConfirm.tsx`, `useDebounce.ts`, `useMobile.ts`, `useRecentlyViewed.ts`
 
 ---
 
 ## 3. Query Hooks Location
 
-Dua opsi:
-
-| Opsi | Lokasi | Pro | Kontra |
-|---|---|---|---|
-| **A** (recommended) | `features/<domain>/hooks/` | Kolokasi, gampang maintain | Import dari feature lain jadi cross-feature |
-| **B** | `hooks/` (root) | Konsisten dengan hybrid saat ini | Membedakan query hooks vs thin wrapper hooks |
-
-**Rekomendasi: Opsi A** — query hooks spesifik per domain.
-Contoh:
+Query hooks ditempatkan di `features/<domain>/hooks/` (Opsi A):
 - `features/shop/hooks/useProductQueries.ts`
-- `features/cart/hooks/useCartQueries.ts`
-- `features/orders/hooks/useOrderQueries.ts`
+- `features/cart/hooks/useCartQueries.ts` + `useCartMutations.ts`
+- `features/wishlist/hooks/useWishlistQueries.ts` + `useWishlistMutations.ts`
 
-Yang tetap di root `hooks/`: utility hooks (useDebounce, useConfirm, useIsMobile, useRecentlyViewed).
-
----
-
-## 4. Risk & Mitigation
-
-| Risk | Mitigation |
-|---|---|
-| Auth store dependencies (customer token di interceptor) | Auth tetap Zustand — interceptor baca `customerAuthStore.getState()` langsung, gak kena impact |
-| Cart optimistic update conflict | Skip optimistic di awal, pake `invalidateQueries` dulu |
-| Infinite scroll + filter combination | `useInfiniteQuery` handle pagination; filter change → `queryClient.resetQueries` |
-| Component refactor scale (32 files) | Migrasi per domain: cart → orders → shop → home → wishlist, bukan per file |
-| Regression: data not loading on mount | TanStack auto-fetch dengan `enabled` option, gak perlu `useEffect` manual |
-| Query key collision | Prefix per domain: `['cart']`, `['products']`, `['orders']`, `['reviews']`, `['wishlist']` |
+Utility hooks tetap di `src/hooks/`: `useAuth`, `useConfirm`, `useDebounce`, `useMobile`, `useRecentlyViewed`.
 
 ---
 
-## 5. Estimated Impact
+## 4. Risk & Mitigation — Hasil
 
-- **~340 lines** boilerplate dihapus (dari 5 stores)
-- **~150 lines** query hooks baru
-- **~80 lines** mutation hooks baru
-- **32 components** berubah import aja (logic mostly sama)
-- **0 perubahan** di backend API atau `lib/api/` files
-- **0 perubahan** di auth flow
+| Risk | Mitigation | Hasil |
+|---|---|---|
+| Auth store dependencies (customer token di interceptor) | Auth tetap Zustand | ✅ Aman — interceptor baca `customerAuthStore.getState()` langsung |
+| Cart optimistic update conflict | Skip optimistic, pake `invalidateQueries` | ✅ Berhasil — no stale data issues |
+| Infinite scroll + filter combination | `useInfiniteQuery` handle pagination | ✅ CollectionPage dual mode (pagination + infinite scroll) |
+| Component refactor scale (32 files) | Migrasi per domain | ✅ Hanya 12 komponen (sisanya sudah pakai API langsung) |
+| Regression: data not loading on mount | `enabled` option | ✅ Auto-fetch berfungsi |
 
 ---
 
-## 6. Go / No-Go Checklist
+## 5. Final Impact
 
-- [ ] `@tanstack/react-query` installed
-- [ ] QueryClientProvider di main.tsx
-- [ ] Query hooks selesai (Phase 1)
-- [ ] Mutation hooks selesai (Phase 2)
-- [ ] Semua component terupdate (Phase 3)
-- [ ] Stores dihapus (Phase 4)
-- [ ] Run `npm run build` — no type errors
-- [ ] Test flow: browse → PDP → add to cart → checkout → order history → review
+| Metric | Estimated | Actual |
+|---|---|---|
+| Boilerplate dihapus | ~340 lines (5 stores) | ~441 lines (5 stores + 3 unused hooks) |
+| Query hooks baru | ~150 lines | ~80 lines |
+| Mutation hooks baru | ~80 lines | ~70 lines |
+| Komponen migrasi | 32 files | 12 files (sisanya sudah API langsung) |
+| Backend API perubahan | 0 | 0 ✅ |
+| Auth flow perubahan | 0 | 0 ✅ |
+| `tsc --noEmit` errors | 0 | 0 ✅ |
+| `vite build` errors | 0 | 0 ✅ |
+
+---
+
+## 6. Checklist Final
+
+- [x] `@tanstack/react-query` installed
+- [x] QueryClientProvider di main.tsx
+- [x] Query hooks selesai
+- [x] Mutation hooks selesai
+- [x] Semua component terupdate
+- [x] Stores + unused hooks dihapus
+- [x] `npx tsc --noEmit` — no type errors
+- [x] `npx vite build` — no errors

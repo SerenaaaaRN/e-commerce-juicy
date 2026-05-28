@@ -1,7 +1,7 @@
-import { useEffect } from "react"
 import { Link } from "react-router-dom"
 import { ROUTES } from "@/constants/routes"
-import { useWishlistStore } from "@/stores/wishlistStore"
+import { useWishlistQuery } from "@/features/wishlist/hooks/useWishlistQueries"
+import { useRemoveWishlistItemMutation } from "@/features/wishlist/hooks/useWishlistMutations"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { Card, CardContent } from "@/components/ui/card"
@@ -12,21 +12,17 @@ import { toast } from "sonner"
 import { formatPrice } from "@/lib/utils"
 
 export const WishlistPage = () => {
-  const items = useWishlistStore((s) => s.items)
-  const loading = useWishlistStore((s) => s.loading)
-  const fetchWishlist = useWishlistStore((s) => s.fetchWishlist)
-  const removeItem = useWishlistStore((s) => s.removeItem)
-
-  useEffect(() => {
-    fetchWishlist()
-  }, [fetchWishlist])
+  const { data: wishlist, isLoading } = useWishlistQuery()
+  const removeItemMutation = useRemoveWishlistItemMutation()
+  const items = wishlist?.items ?? []
 
   const handleRemove = async (variantId: string) => {
-    const ok = await removeItem(variantId)
-    if (ok) toast.success("Removed from wishlist.")
+    removeItemMutation.mutate(variantId, {
+      onSuccess: () => toast.success("Removed from wishlist."),
+    })
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="container mx-auto flex min-h-[60vh] max-w-7xl items-center justify-center px-4 py-20">
         <Spinner size={32} className="text-primary" />
@@ -82,7 +78,7 @@ export const WishlistPage = () => {
               </div>
             </Link>
             <CardContent className="p-4">
-            <Link to={`${ROUTES.shop}/${item.product_slug}`}>
+              <Link to={`${ROUTES.shop}/${item.product_slug}`}>
                 <h3 className="truncate text-sm font-semibold">{item.product_name}</h3>
               </Link>
               <p className="mt-1 text-xs text-muted-foreground">

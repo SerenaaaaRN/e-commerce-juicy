@@ -76,7 +76,8 @@
 | Frontend | React + TypeScript + Vite |
 | Styling | Tailwind CSS v4 + shadcn/ui |
 | Icons | Hugeicons |
-| Global State | Zustand (stores call API directly — no TanStack Query) |
+| Server State | TanStack Query (React Query) — query/mutation hooks per domain |
+| Client State | Zustand (auth only — `customerAuthStore`, `adminAuthStore`) |
 | Forms | React Hook Form + Zod |
 | Backend | Golang + Gin |
 | ORM | GORM |
@@ -112,6 +113,7 @@
 | 8 | ✅ Done | Storefront Core & Bug Fixes — checkout schema, GORM integrity, scroll layout |
 | 9 | ✅ Done | Shop Experience — Cancel Order, Wishlist, Recently Viewed, Edit Address/Variant/Category |
 | 10 | ✅ Done | Zalora-Style Homepage & Category Landing Pages — 14-section homepage, category landing pages |
+| 11 | ✅ Done | TanStack Query Integration — server state migration from Zustand to React Query |
 
 ---
 
@@ -144,7 +146,9 @@ juicy/
 - DB migrations are handled via `golang-migrate` — never AutoMigrate in production.
 - Frontend communicates with backend only through the defined API contract in `API.md`.
 - Image URLs stored in DB are always Cloudinary `secure_url` strings.
-- Customer auth and Admin auth are completely separate JWT flows — different secrets, different middleware, different Zustand stores.
+- Customer auth and Admin auth are completely separate JWT flows — different secrets, different middleware, different Zustand stores (auth only).
+- **Server state** uses TanStack Query — query hooks in `features/<domain>/hooks/` (e.g., `useProductQueries`, `useCartQueries`), mutation hooks for writes. No Zustand stores for server data.
+- **Client state** (auth tokens, admin profile) remains in Zustand with `persist` middleware for localStorage. Auto-fetch queries on mount via `enabled` option — no manual `useEffect`.
 - **Admin UI must use shadcn primitives** — `Table` not `<table>`, `Select` not `<select>`, `Checkbox` not `<input type="checkbox">`, `Separator` not `<hr>`, `Badge` variants not raw color classes (`text-green-600`, etc.). Inline SVG icons must be replaced with `HugeiconsIcon`. Chart colors must reference CSS variables (`hsl(var(--primary))`) not raw `oklch()` values.
 - **Admin feature follows clean architecture** — business logic in `hooks/`, validation schemas in `validations.ts`, form/derived types in `types.ts`, presentational dialogs in `components/`, page files are thin orchestrators. Do not put business logic inside page components.
 - **Use `type` not `interface`** for all TypeScript definitions (props, form values, domain models). Always use arrow function components.

@@ -1,11 +1,15 @@
 import { useState, useEffect } from "react"
 import { useParams, Link, useNavigate } from "react-router-dom"
 import { ROUTES } from "@/constants/routes"
-import { useProductStore } from "@/stores/productStore"
-import { useCartStore } from "@/stores/cartStore"
-import { useWishlistStore } from "@/stores/wishlistStore"
 import { useCustomerAuthStore } from "@/stores/customerAuthStore"
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed"
+import { useProductQuery } from "@/features/shop/hooks/useProductQueries"
+import { useAddCartItemMutation } from "@/features/cart/hooks/useCartMutations"
+import { useWishlistQuery } from "@/features/wishlist/hooks/useWishlistQueries"
+import {
+  useAddWishlistItemMutation,
+  useRemoveWishlistItemMutation,
+} from "@/features/wishlist/hooks/useWishlistMutations"
 import { ProductImageGallery } from "./components/ProductImageGallery"
 import { ProductInfo } from "./components/ProductInfo"
 import { VariantSelector } from "./components/VariantSelector"
@@ -14,7 +18,6 @@ import { ReviewsSection } from "./components/ReviewsSection"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyContent, EmptyMedia } from "@/components/ui/empty"
-import { useShallow } from "zustand/shallow"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { ShoppingBag01Icon, HeartAddIcon } from "@hugeicons/core-free-icons"
 import {
@@ -30,36 +33,17 @@ import { toast } from "sonner"
 export const ProductPage = () => {
   const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
-  const { currentProduct, isLoading, error, fetchProductBySlug, clearCurrentProduct } = useProductStore(
-    useShallow((s) => ({
-      currentProduct: s.currentProduct,
-      isLoading: s.isLoading,
-      error: s.error,
-      fetchProductBySlug: s.fetchProductBySlug,
-      clearCurrentProduct: s.clearCurrentProduct,
-    }))
-  )
-  const addItem = useCartStore((s) => s.addItem)
-  const isAddingToCart = useCartStore((s) => s.isLoading)
+  const { data: currentProduct, isLoading, error } = useProductQuery(slug || "")
+  const addCartMutation = useAddCartItemMutation()
+  const { data: wishlist } = useWishlistQuery(isAuthenticated)
+  const addWishlistMutation = useAddWishlistItemMutation()
+  const removeWishlistMutation = useRemoveWishlistItemMutation()
   const { addItem: addToRecentlyViewed } = useRecentlyViewed()
   const isAuthenticated = useCustomerAuthStore((s) => s.isAuthenticated)
-  const isInWishlist = useWishlistStore((s) => s.isInWishlist)
-  const addToWishlist = useWishlistStore((s) => s.addItem)
-  const removeFromWishlist = useWishlistStore((s) => s.removeItem)
 
   // Selections state
   const [selectedSize, setSelectedSize] = useState("")
   const [selectedColor, setSelectedColor] = useState("")
-
-  // Fetch product detail on mount/slug change
-  useEffect(() => {
-    if (slug) {
-      fetchProductBySlug(slug)
-    }
-    return () => {
-      clearCurrentProduct()
-    }
-  }, [slug, fetchProductBySlug, clearCurrentProduct])
 
   // Reset selections when product changes
   useEffect(() => {
@@ -119,7 +103,7 @@ export const ProductPage = () => {
   const variants = currentProduct.variants || []
   const activeVariant = variants.find((v) => v.size === selectedSize && v.color === selectedColor)
   const wishlistVariantId = activeVariant?.id || variants[0]?.id || ""
-  const inWishlist = wishlistVariantId ? isInWishlist(wishlistVariantId) : false
+  const inWishlist = wishlistVariantId ? (wishlist?.wishlistIds.has(wishlistVariantId) ?? false) : false
 
   // Settle active unit price (base product price + variant specific surcharge if any)
   const unitPrice = activeVariant ? currentProduct.price + activeVariant.additional_price : currentProduct.price
@@ -147,12 +131,13 @@ export const ProductPage = () => {
       return
     }
 
-    try {
-      await addItem(variantId, 1)
-      toast.success(`${currentProduct.name} has been added to your cart.`)
-    } catch {
-      toast.error("Failed to add silhouette to cart. Please try again.")
-    }
+    addCartMutation.mutate(
+      { variantId, quantity: 1 },
+      {
+        onSuccess: () => toast.success(`${currentProduct.name} has been added to your cart.`),
+        onError: () => toast.error("Failed to add silhouette to cart. Please try again."),
+      }
+    )
   }
 
   const handleToggleWishlist = async () => {
@@ -162,11 +147,13 @@ export const ProductPage = () => {
       return
     }
     if (inWishlist) {
-      await removeFromWishlist(wishlistVariantId)
-      toast.success("Removed from wishlist.")
+      removeWishlistMutation.mutate(wishlistVariantId, {
+        onSuccess: () => toast.success("Removed from wishlist."),
+      })
     } else {
-      await addToWishlist(wishlistVariantId)
-      toast.success("Added to wishlist.")
+      addWishlistMutation.mutate(wishlistVariantId, {
+        onSuccess: () => toast.success("Added to wishlist."),
+      })
     }
   }
 
@@ -235,7 +222,7 @@ export const ProductPage = () => {
                   <AddToCartButton
                     onClick={handleAddToCart}
                     disabled={!isSelectionComplete}
-                    isLoading={isAddingToCart}
+                    isLoading={addCartMutation.isPending}
                     stock={hasVariants ? availableStock : 99}
                   />
                 </div>

@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react"
 import { useSearchParams } from "react-router-dom"
-import { useProductStore } from "@/stores/productStore"
+import { useCategoriesQuery, useInfiniteProductsQuery, useProductsQuery } from "@/features/shop/hooks/useProductQueries"
 import { ProductFilters } from "./components/ProductFilters"
 import { ProductGrid } from "./components/ProductGrid"
 import { Button } from "@/components/ui/button"
@@ -17,26 +17,11 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination"
-import { useShallow } from "zustand/shallow"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { FilterIcon } from "@hugeicons/core-free-icons"
 
 export const CollectionPage = () => {
   const [searchParams, setSearchParams] = useSearchParams()
-  const { products, categories, meta, isLoading, fetchCategories, fetchProducts } = useProductStore(
-    useShallow((s) => ({
-      products: s.products,
-      categories: s.categories,
-      meta: s.meta,
-      isLoading: s.isLoading,
-      fetchCategories: s.fetchCategories,
-      fetchProducts: s.fetchProducts,
-    }))
-  )
-
-  const [cols, setCols] = useState<2 | 4>(4)
-  const [isInfiniteScroll, setIsInfiniteScroll] = useState(false)
-  const sentinelRef = useRef<HTMLDivElement | null>(null)
 
   const currentCategory = searchParams.get("category") || ""
   const currentSort = (searchParams.get("sort") as any) || ""
@@ -47,72 +32,73 @@ export const CollectionPage = () => {
 
   const currentSizes = currentSizesStr ? currentSizesStr.split(",") : []
 
-  useEffect(() => {
-    fetchCategories()
-  }, [fetchCategories])
+  const [cols, setCols] = useState<2 | 4>(4)
+  const [isInfiniteScroll, setIsInfiniteScroll] = useState(false)
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
+
+  const queryParams = {
+    category: currentCategory || undefined,
+    sort: currentSort || undefined,
+    sizes: currentSizesStr || undefined,
+    search: currentSearch || undefined,
+    page: currentPage,
+    per_page: perPage,
+  }
+
+  const { data: categoriesData } = useCategoriesQuery()
+  const { data: productsData, isLoading: isPaginationLoading } = useProductsQuery(
+    queryParams,
+    { enabled: !isInfiniteScroll }
+  )
+
+  const infiniteQuery = useInfiniteProductsQuery({
+    category: currentCategory || undefined,
+    sort: currentSort || undefined,
+    sizes: currentSizesStr || undefined,
+    search: currentSearch || undefined,
+    per_page: perPage,
+  })
+
+  const products = isInfiniteScroll
+    ? (infiniteQuery.data?.pages.flatMap((p) => p.products) ?? [])
+    : (productsData?.products ?? [])
+  const meta = isInfiniteScroll
+    ? (infiniteQuery.data?.pages[infiniteQuery.data.pages.length - 1]?.meta ?? null)
+    : (productsData?.meta ?? null)
+  const categories = categoriesData ?? []
+  const isLoading = isInfiniteScroll ? infiniteQuery.isLoading && products.length === 0 : isPaginationLoading
+
+  const handleObserver = useRef<IntersectionObserver | null>(null)
 
   useEffect(() => {
-    if (isInfiniteScroll && currentPage > 1) {
-      return
+    if (!isInfiniteScroll) return
+
+    if (handleObserver.current) {
+      handleObserver.current.disconnect()
     }
 
-    fetchProducts(
-      {
-        category: currentCategory || undefined,
-        sort: currentSort || undefined,
-        sizes: currentSizesStr || undefined,
-        search: currentSearch || undefined,
-        page: currentPage,
-        per_page: perPage,
-      },
-      false
-    )
-  }, [fetchProducts, currentCategory, currentSort, currentSizesStr, currentSearch, currentPage, isInfiniteScroll])
-
-  useEffect(() => {
-    if (!isInfiniteScroll || !meta || meta.page >= meta.total_pages) return
-
-    const observer = new IntersectionObserver(
+    handleObserver.current = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && !isLoading) {
-          const nextPage = meta.page + 1
-
-          fetchProducts(
-            {
-              category: currentCategory || undefined,
-              sort: currentSort || undefined,
-              sizes: currentSizesStr || undefined,
-              search: currentSearch || undefined,
-              page: nextPage,
-              per_page: perPage,
-            },
-            true
-          )
-
-          const updated = new URLSearchParams(searchParams)
-          updated.set("page", String(nextPage))
-          setSearchParams(updated, { replace: true })
+        const target = entries[0]
+        if (target.isIntersecting && infiniteQuery.hasNextPage && !infiniteQuery.isFetchingNextPage) {
+          infiniteQuery.fetchNextPage()
         }
       },
       { threshold: 0.1 }
     )
 
     if (sentinelRef.current) {
-      observer.observe(sentinelRef.current)
+      handleObserver.current.observe(sentinelRef.current)
     }
 
-    return () => observer.disconnect()
+    return () => {
+      handleObserver.current?.disconnect()
+    }
   }, [
     isInfiniteScroll,
-    meta,
-    isLoading,
-    searchParams,
-    setSearchParams,
-    fetchProducts,
-    currentCategory,
-    currentSort,
-    currentSizesStr,
-    currentSearch,
+    infiniteQuery.hasNextPage,
+    infiniteQuery.isFetchingNextPage,
+    infiniteQuery.fetchNextPage,
   ])
 
   const updateParams = (newParams: Record<string, string | number | null>) => {
@@ -313,7 +299,7 @@ export const CollectionPage = () => {
             {/* Infinite Scroll Sentinel indicator */}
             {isInfiniteScroll && (
               <div ref={sentinelRef} className="flex h-10 w-full items-center justify-center">
-                {isLoading && <Spinner size={20} className="text-primary" />}
+                {infiniteQuery.isFetchingNextPage && <Spinner size={20} className="text-primary" />}
               </div>
             )}
 

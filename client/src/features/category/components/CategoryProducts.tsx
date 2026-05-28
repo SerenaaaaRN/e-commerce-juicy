@@ -1,4 +1,4 @@
-import { useProductStore } from "@/stores/productStore"
+import { useProductsQuery } from "@/features/shop/hooks/useProductQueries"
 import { ProductCard } from "@/features/shop/components/ProductCard"
 import { Spinner } from "@/components/ui/spinner"
 import { Link } from "react-router-dom"
@@ -10,7 +10,8 @@ type CategoryProductsProps = {
 }
 
 export const CategoryProducts = ({ slug, categoryName }: CategoryProductsProps) => {
-  const { products, isLoading } = useProductStore()
+  const { data: productsData, isLoading } = useProductsQuery({ category: slug, per_page: 8 })
+  const products = productsData?.products ?? []
 
   if (isLoading && products.length === 0) {
     return (

@@ -1,8 +1,9 @@
 import { useState, useEffect, useTransition } from "react"
 import { Navigate, useNavigate } from "react-router-dom"
 import { ROUTES } from "@/constants/routes"
-import { useCartStore } from "@/stores/cartStore"
 import { useCustomerAuthStore } from "@/stores/customerAuthStore"
+import { useCartQuery } from "@/features/cart/hooks/useCartQueries"
+import { useClearCartMutation } from "@/features/cart/hooks/useCartMutations"
 import { AddressSelector } from "./components/AddressSelector"
 import { AddressForm } from "./components/AddressForm"
 import { OrderSummary } from "./components/OrderSummary"
@@ -20,9 +21,11 @@ import type { Address } from "@/types"
 export const CheckoutPage = () => {
   const navigate = useNavigate()
   const isAuthenticated = useCustomerAuthStore((s) => s.isAuthenticated)
-  const items = useCartStore((s) => s.items)
-  const totalPrice = useCartStore((s) => s.totalPrice)
-  const clearCart = useCartStore((s) => s.clearCart)
+  const { data: cart } = useCartQuery()
+  const clearCartMutation = useClearCartMutation()
+
+  const items = cart?.items ?? []
+  const subtotal = items.reduce((sum, item) => sum + item.unit_price * item.quantity, 0)
 
   // Local state
   const [isPending, startTransition] = useTransition()
@@ -31,8 +34,6 @@ export const CheckoutPage = () => {
   const [paymentMethod, setPaymentMethod] = useState("cod")
   const [fetchingAddresses, setFetchingAddresses] = useState(false)
   const [showAddressForm, setShowAddressForm] = useState(false)
-
-  const subtotal = totalPrice()
 
   // Fetch addresses
   const loadAddresses = async () => {
@@ -86,7 +87,7 @@ export const CheckoutPage = () => {
         if (res.success && res.data) {
           toast.success("Your artisanal silhouette order has been placed successfully!")
           const orderNum = res.data.order_number
-          clearCart()
+          clearCartMutation.mutate()
           navigate(`${ROUTES.orders}/${orderNum}`)
         } else {
           toast.error(res.message || "Failed to submit checkout order.")
@@ -100,16 +101,11 @@ export const CheckoutPage = () => {
   return (
     <div className="bg-background py-12">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-
         {/* Page Title */}
-        <div className="text-left flex flex-col gap-2">
-          <span className="text-xs font-semibold tracking-wider text-primary uppercase">
-            Atelier Checkout Flow
-          </span>
-          <h1 className="text-4xl font-bold tracking-tight text-foreground font-heading">
-            Checkout
-          </h1>
-          <p className="text-sm text-muted-foreground max-w-md leading-relaxed">
+        <div className="flex flex-col gap-2 text-left">
+          <span className="text-xs font-semibold tracking-wider text-primary uppercase">Atelier Checkout Flow</span>
+          <h1 className="font-heading text-4xl font-bold tracking-tight text-foreground">Checkout</h1>
+          <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
             Configure your delivery destination and confirm your slow fashion order details.
           </p>
         </div>
@@ -117,15 +113,13 @@ export const CheckoutPage = () => {
         <Separator className="my-8" />
 
         {/* Checkout Split Grid Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-
+        <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
           {/* Form & Choices Column */}
-          <div className="lg:col-span-8 flex flex-col gap-6 w-full">
-
+          <div className="flex w-full flex-col gap-6 lg:col-span-8">
             {showAddressForm ? (
               <Card className="border border-border/80 shadow-md">
                 <CardHeader className="pb-0">
-                  <CardTitle className="text-sm font-semibold tracking-tight text-foreground uppercase text-left">
+                  <CardTitle className="text-left text-sm font-semibold tracking-tight text-foreground uppercase">
                     Create New Address
                   </CardTitle>
                 </CardHeader>
@@ -140,12 +134,12 @@ export const CheckoutPage = () => {
                 </CardContent>
               </Card>
             ) : fetchingAddresses ? (
-              <div className="flex justify-center items-center py-12">
+              <div className="flex items-center justify-center py-12">
                 <Spinner className="text-primary" />
               </div>
             ) : (
               <Card className="border border-border/80 shadow-md">
-                <CardContent className="p-6 flex flex-col gap-6">
+                <CardContent className="flex flex-col gap-6 p-6">
                   <AddressSelector
                     addresses={addresses}
                     selectedAddressId={selectedAddressId}
@@ -153,19 +147,14 @@ export const CheckoutPage = () => {
                     onAddNewTrigger={() => setShowAddressForm(true)}
                   />
 
-                  <PaymentSelector
-                    selectedPaymentMethod={paymentMethod}
-                    onSelectPaymentMethod={setPaymentMethod}
-                  />
+                  <PaymentSelector selectedPaymentMethod={paymentMethod} onSelectPaymentMethod={setPaymentMethod} />
                 </CardContent>
               </Card>
             )}
-
           </div>
 
           {/* Checkout Submit Sidebar Column */}
-          <div className="lg:col-span-4 flex flex-col gap-6 w-full">
-
+          <div className="flex w-full flex-col gap-6 lg:col-span-4">
             {/* Immutable Order Items breakdown */}
             <OrderSummary items={items} subtotal={subtotal} />
 
@@ -184,17 +173,14 @@ export const CheckoutPage = () => {
                 )}
                 {isPending ? "Placing Order..." : "Confirm & Place Order"}
               </Button>
-              {(!selectedAddressId && !showAddressForm) && (
-                <span className="text-[10px] uppercase tracking-widest text-destructive font-semibold mt-2 block text-left">
+              {!selectedAddressId && !showAddressForm && (
+                <span className="mt-2 block text-left text-[10px] font-semibold tracking-widest text-destructive uppercase">
                   * Address selection is required to checkout
                 </span>
               )}
             </div>
-
           </div>
-
         </div>
-
       </div>
     </div>
   )
