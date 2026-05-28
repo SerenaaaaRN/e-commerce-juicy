@@ -89,20 +89,14 @@ export const VariantSelector = ({
           >
             {uniqueColors.map((color) => {
               const oos = isColorOutOfStock(color)
-              const variantObj = variants.find((v) => v.color === color)
-              const hex = variantObj?.color_hex || "#ccc"
 
               return (
                 <ToggleGroupItem
                   key={color}
                   value={color}
                   disabled={oos}
-                  className="flex h-10 cursor-pointer items-center gap-2 px-3 disabled:cursor-not-allowed disabled:opacity-40"
+                  className="h-10 cursor-pointer px-3 font-semibold disabled:cursor-not-allowed disabled:opacity-40"
                 >
-                  <span
-                    className="inline-block size-3.5 rounded-full border border-white/20"
-                    style={{ backgroundColor: hex }}
-                  />
                   {color}
                 </ToggleGroupItem>
               )

@@ -51,8 +51,6 @@
 │ product_id                   │ FK → products.id
 │ size                         │ VARCHAR(20), NOT NULL  -- XS, S, M, L, XL, XXL, or numeric
 │ color                        │ VARCHAR(50), NOT NULL
-│ color_hex                    │ VARCHAR(7)             -- e.g. #ffffff for color swatch
-│ sku                          │ VARCHAR(100), UNIQUE, NOT NULL
 │ stock                        │ INT NOT NULL DEFAULT 0
 │ additional_price             │ NUMERIC(12,2) DEFAULT 0  -- price delta from base
 │ is_active                    │ BOOLEAN DEFAULT true

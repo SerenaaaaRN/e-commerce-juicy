@@ -18,8 +18,6 @@ export type ProductFormValues = {
 export type VariantFormValues = {
   size: string
   color?: string
-  color_hex?: string
-  sku: string
   stock: number
   additional_price: number
 }

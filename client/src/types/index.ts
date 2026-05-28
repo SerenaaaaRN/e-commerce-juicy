@@ -43,8 +43,6 @@ export type ProductVariant = {
   id: string
   size: string
   color: string
-  color_hex?: string
-  sku: string
   stock: number
   additional_price: number
   is_active: boolean
@@ -142,8 +140,8 @@ export type Cart = {
   total: number
 }
 
-export type OrderStatus = 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
-export type PaymentStatus = 'unpaid' | 'paid' | 'refunded'
+export type OrderStatus = "pending" | "confirmed" | "processing" | "shipped" | "delivered" | "cancelled"
+export type PaymentStatus = "unpaid" | "paid" | "refunded"
 
 export type Order = {
   id: string

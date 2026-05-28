@@ -78,8 +78,6 @@ type ProductVariant struct {
 	ProductID       uuid.UUID `gorm:"type:uuid;not null;index" json:"product_id"`
 	Size            string    `gorm:"type:varchar(20);not null" json:"size"`
 	Color           string    `gorm:"type:varchar(50);not null" json:"color"`
-	ColorHex        *string   `gorm:"type:varchar(7)" json:"color_hex"`
-	SKU             string    `gorm:"type:varchar(100);uniqueIndex;not null" json:"sku"`
 	Stock           int       `gorm:"not null;default:0" json:"stock"`
 	AdditionalPrice float64   `gorm:"type:numeric(12,2);not null;default:0" json:"additional_price"`
 	IsActive        bool      `gorm:"not null;default:true" json:"is_active"`

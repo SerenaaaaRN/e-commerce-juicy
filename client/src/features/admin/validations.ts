@@ -16,8 +16,6 @@ export const productSchema = z.object({
 export const variantSchema = z.object({
   size: z.string().min(1, "Size identifier is required (e.g. 250ml)"),
   color: z.string().optional(),
-  color_hex: z.string().optional(),
-  sku: z.string().min(1, "Unique SKU is required"),
   stock: z.coerce.number().min(0, "Valid non-negative stock quantity is required"),
   additional_price: z.coerce.number().default(0),
 })

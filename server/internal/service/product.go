@@ -100,9 +100,7 @@ func (s *productService) ListProducts(
 				ID:              v.ID,
 				Size:            v.Size,
 				Color:           v.Color,
-				ColorHex:        v.ColorHex,
-				SKU:             v.SKU,
-				Stock:           v.Stock,
+					Stock:           v.Stock,
 				AdditionalPrice: v.AdditionalPrice,
 				IsActive:        v.IsActive,
 			}
@@ -339,8 +337,6 @@ func (s *productService) GetProductVariants(ctx context.Context, productID uuid.
 			ID:              v.ID,
 			Size:            v.Size,
 			Color:           v.Color,
-			ColorHex:        v.ColorHex,
-			SKU:             v.SKU,
 			Stock:           v.Stock,
 			AdditionalPrice: v.AdditionalPrice,
 			IsActive:        v.IsActive,
@@ -359,8 +355,6 @@ func (s *productService) AddProductVariant(ctx context.Context, productID uuid.U
 		ProductID:       productID,
 		Size:            req.Size,
 		Color:           req.Color,
-		ColorHex:        req.ColorHex,
-		SKU:             req.SKU,
 		Stock:           req.Stock,
 		AdditionalPrice: req.AdditionalPrice,
 		IsActive:        true,
@@ -390,8 +384,6 @@ func (s *productService) UpdateProductVariant(
 
 	variant.Size = req.Size
 	variant.Color = req.Color
-	variant.ColorHex = req.ColorHex
-	variant.SKU = req.SKU
 	variant.Stock = req.Stock
 	variant.AdditionalPrice = req.AdditionalPrice
 	variant.IsActive = req.IsActive
@@ -448,8 +440,6 @@ func (s *productService) mapToDetailResponse(ctx context.Context, p *model.Produ
 			ID:              v.ID,
 			Size:            v.Size,
 			Color:           v.Color,
-			ColorHex:        v.ColorHex,
-			SKU:             v.SKU,
 			Stock:           v.Stock,
 			AdditionalPrice: v.AdditionalPrice,
 			IsActive:        v.IsActive,

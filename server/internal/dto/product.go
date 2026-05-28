@@ -30,8 +30,6 @@ type CategoryTreeResponse struct {
 type ProductVariantRequest struct {
 	Size            string  `json:"size" binding:"required"`
 	Color           string  `json:"color" binding:"omitempty"`
-	ColorHex        *string `json:"color_hex" binding:"omitempty"`
-	SKU             string  `json:"sku" binding:"required"`
 	Stock           int     `json:"stock"`
 	AdditionalPrice float64 `json:"additional_price"`
 	IsActive        bool    `json:"is_active"`
@@ -95,8 +93,6 @@ type ProductVariantRes struct {
 	ID              uuid.UUID `json:"id"`
 	Size            string    `json:"size"`
 	Color           string    `json:"color"`
-	ColorHex        *string   `json:"color_hex"`
-	SKU             string    `json:"sku"`
 	Stock           int       `json:"stock"`
 	AdditionalPrice float64   `json:"additional_price"`
 	IsActive        bool      `json:"is_active"`

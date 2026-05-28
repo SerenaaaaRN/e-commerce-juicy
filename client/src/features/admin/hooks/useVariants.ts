@@ -43,8 +43,6 @@ export const useVariants = (
     defaultValues: {
       size: "",
       color: "",
-      color_hex: "",
-      sku: "",
       stock: 0,
       additional_price: 0,
     },
@@ -55,8 +53,6 @@ export const useVariants = (
     variantForm.reset({
       size: "",
       color: "",
-      color_hex: "",
-      sku: "",
       stock: 0,
       additional_price: 0,
     })
@@ -68,8 +64,6 @@ export const useVariants = (
       variantForm.reset({
         size: variant.size,
         color: variant.color || "",
-        color_hex: variant.color_hex || "",
-        sku: variant.sku,
         stock: variant.stock,
         additional_price: variant.additional_price,
       })
@@ -88,8 +82,6 @@ export const useVariants = (
       const payload = {
         size: values.size.trim(),
         color: values.color?.trim() || "",
-        color_hex: values.color_hex?.trim() || undefined,
-        sku: values.sku.trim(),
         stock: values.stock,
         additional_price: values.additional_price,
         is_active: true,

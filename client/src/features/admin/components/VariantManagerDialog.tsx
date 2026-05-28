@@ -52,8 +52,7 @@ export const VariantManagerDialog = ({
       <DialogHeader>
         <DialogTitle className="font-heading text-lg font-bold">Manage Variants: {activeProduct?.name}</DialogTitle>
         <DialogDescription className="text-xs">
-          Configure variant options (Volume size, customized colors, localized SKU strings, stock values, and pricing
-          offsets).
+          Configure variant options (Volume size, customized colors, stock values, and pricing offsets).
         </DialogDescription>
       </DialogHeader>
 
@@ -72,21 +71,9 @@ export const VariantManagerDialog = ({
                 {form.formState.errors.size && <FieldError>{form.formState.errors.size.message}</FieldError>}
               </Field>
 
-              <div className="grid grid-cols-2 gap-3">
-                <Field>
-                  <FieldLabel htmlFor="varColor">Color Name</FieldLabel>
-                  <Input id="varColor" {...form.register("color")} placeholder="Beet Red" />
-                </Field>
-                <Field>
-                  <FieldLabel htmlFor="varColorHex">Color Hex Code</FieldLabel>
-                  <Input id="varColorHex" {...form.register("color_hex")} placeholder="#8b0000" />
-                </Field>
-              </div>
-
-              <Field data-invalid={!!form.formState.errors.sku}>
-                <FieldLabel htmlFor="varSku">SKU Code</FieldLabel>
-                <Input id="varSku" {...form.register("sku")} placeholder="JUICE-BEET-250" />
-                {form.formState.errors.sku && <FieldError>{form.formState.errors.sku.message}</FieldError>}
+              <Field>
+                <FieldLabel htmlFor="varColor">Color Name</FieldLabel>
+                <Input id="varColor" {...form.register("color")} placeholder="Beet Red" />
               </Field>
 
               <div className="grid grid-cols-2 gap-3">
@@ -153,16 +140,9 @@ export const VariantManagerDialog = ({
                       {v.color && (
                         <span className="flex items-center gap-1 font-normal text-muted-foreground">
                           • {v.color}
-                          {v.color_hex && (
-                            <span
-                              className="inline-block size-3 rounded-full border border-border"
-                              style={{ backgroundColor: v.color_hex }}
-                            />
-                          )}
                         </span>
                       )}
                     </div>
-                    <div className="font-mono text-[10px] text-muted-foreground">{v.sku}</div>
                     <div className="mt-1 flex items-center gap-3 text-[10px] font-semibold">
                       <Badge variant="default">{v.stock} in stock</Badge>
                       <span className="text-primary">+{formatPrice(v.additional_price)} offset</span>
