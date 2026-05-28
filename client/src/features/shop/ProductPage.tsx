@@ -33,13 +33,13 @@ import { toast } from "sonner"
 export const ProductPage = () => {
   const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
+  const isAuthenticated = useCustomerAuthStore((s) => s.isAuthenticated)
   const { data: currentProduct, isLoading, error } = useProductQuery(slug || "")
   const addCartMutation = useAddCartItemMutation()
   const { data: wishlist } = useWishlistQuery(isAuthenticated)
   const addWishlistMutation = useAddWishlistItemMutation()
   const removeWishlistMutation = useRemoveWishlistItemMutation()
   const { addItem: addToRecentlyViewed } = useRecentlyViewed()
-  const isAuthenticated = useCustomerAuthStore((s) => s.isAuthenticated)
 
   // Selections state
   const [selectedSize, setSelectedSize] = useState("")

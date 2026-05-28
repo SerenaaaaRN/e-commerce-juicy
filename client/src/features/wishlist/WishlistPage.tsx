@@ -68,7 +68,7 @@ export const WishlistPage = () => {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {items.map((item) => (
           <Card key={item.id} className="group overflow-hidden border-border/50">
-            <Link to={`/product/${item.product_slug}`}>
+            <Link to={`${ROUTES.shop}/${item.product_slug}`}>
               <div className="aspect-4/5 overflow-hidden bg-muted">
                 <img
                   src={item.image_url || "/placeholder.svg"}
@@ -78,9 +78,6 @@ export const WishlistPage = () => {
               </div>
             </Link>
             <CardContent className="p-4">
-              <Link to={`${ROUTES.shop}/${item.product_slug}`}>
-                <h3 className="truncate text-sm font-semibold">{item.product_name}</h3>
-              </Link>
               <p className="mt-1 text-xs text-muted-foreground">
                 {item.variant_size} / {item.variant_color}
               </p>

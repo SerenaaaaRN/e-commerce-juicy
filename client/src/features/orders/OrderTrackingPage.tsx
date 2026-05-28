@@ -76,7 +76,9 @@ export const OrderTrackingPage = () => {
       const res = await ordersApi.completeOrder(orderNumber)
       if (res.success) {
         toast.success("Order marked as received. Thank you!")
-        setOrder((prev) => (prev ? { ...prev, status: ORDER_STATUS.DELIVERED, payment_status: PAYMENT_STATUS.PAID } : null))
+        setOrder((prev) =>
+          prev ? { ...prev, status: ORDER_STATUS.DELIVERED, payment_status: PAYMENT_STATUS.PAID } : null
+        )
       } else {
         toast.error(res.message || "Failed to complete order.")
       }
@@ -295,16 +297,18 @@ export const OrderTrackingPage = () => {
 
             <div className="flex flex-col gap-2">
               {/* Confirm received action */}
-              <Button size="lg" onClick={handleCompleteOrder} disabled={completing}>
-                {completing ? (
-                  <>
-                    <Spinner data-icon="inline-start" />
-                    "Confirming..."
-                  </>
-                ) : (
-                  "Confirm Received"
-                )}
-              </Button>
+              {order.status === ORDER_STATUS.SHIPPED ? (
+                <Button size="lg" onClick={handleCompleteOrder} disabled={completing}>
+                  {completing ? (
+                    <>
+                      <Spinner data-icon="inline-start" />
+                      "Confirming..."
+                    </>
+                  ) : (
+                    "Confirm Received"
+                  )}
+                </Button>
+              ) : null}
 
               {/* Cancel order action */}
               {(order.status === ORDER_STATUS.PENDING || order.status === ORDER_STATUS.CONFIRMED) && (
