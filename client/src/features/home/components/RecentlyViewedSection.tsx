@@ -9,30 +9,27 @@ export const RecentlyViewedSection = () => {
   if (items.length === 0) return null
 
   return (
-    <section
-      data-section="recently-viewed"
-      className="w-full bg-background py-20 md:py-24 overflow-hidden"
-    >
+    <section data-section="recently-viewed" className="w-full overflow-hidden bg-background py-20 md:py-24">
       {/* Top accent */}
-      <Separator className="bg-gradient-to-r from-transparent via-[var(--color-gold)] to-transparent h-px" />
+      <Separator className="h-px bg-linear-to-r from-transparent via-(--color-gold) to-transparent" />
 
-      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-16 md:mt-20 mb-10 md:mb-14">
-        <div className="flex items-end justify-between gsap-reveal">
+      <div className="container mx-auto mt-16 mb-10 max-w-7xl px-4 sm:px-6 md:mt-20 md:mb-14 lg:px-8">
+        <div className="gsap-reveal flex items-end justify-between">
           <div className="flex items-start gap-5">
-            <span className="text-6xl md:text-7xl font-heading font-extralight text-foreground/[0.04] leading-none select-none hidden md:block">
+            <span className="hidden font-heading text-6xl leading-none font-extralight text-foreground/4 select-none md:block md:text-7xl">
               ◆
             </span>
             <div className="flex flex-col gap-1.5">
-              <span className="text-[9px] font-bold tracking-[0.4em] text-[var(--color-gold)] uppercase font-mono flex items-center gap-2.5">
-                <span className="size-1 rotate-45 bg-[var(--color-gold)]" />
+              <span className="flex items-center gap-2.5 font-mono text-[9px] font-bold tracking-[0.4em] text-(--color-gold) uppercase">
+                <span className="size-1 rotate-45 bg-(--color-gold)" />
                 Recently Viewed
               </span>
-              <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground font-heading leading-none">
+              <h2 className="font-heading text-2xl leading-none font-bold tracking-tight text-foreground md:text-3xl">
                 Lanjutkan Jelajahi
               </h2>
             </div>
           </div>
-          <span className="text-[10px] font-mono text-muted-foreground/50 hidden sm:block">
+          <span className="hidden font-mono text-[10px] text-muted-foreground/50 sm:block">
             {items.length} item{items.length > 1 ? "s" : ""}
           </span>
         </div>
@@ -40,40 +37,42 @@ export const RecentlyViewedSection = () => {
 
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div
-          className="flex gap-5 overflow-x-auto snap-x snap-mandatory scrollbar-none -mx-4 px-4"
+          className="-mx-4 flex snap-x snap-mandatory scrollbar-none gap-5 overflow-x-auto px-4"
           style={{ scrollbarWidth: "none" }}
         >
           {items.map((item, i) => (
             <Link
               key={item.slug}
               to={`/shop/${item.slug}`}
-              className="snap-start shrink-0 w-[200px] md:w-[220px] group gsap-stagger-item will-change-transform"
+              className="group gsap-stagger-item w-50 shrink-0 snap-start will-change-transform md:w-55"
             >
               {/* Image with index overlay */}
-              <div className="relative aspect-[3/4] bg-muted overflow-hidden">
+              <div className="relative aspect-3/4 overflow-hidden bg-muted">
                 <img
                   src={item.image_url || "/placeholder-product.svg"}
                   alt={item.name}
-                  className="size-full object-cover group-hover:scale-[1.03] transition-transform duration-700 ease-out"
-                  onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder-product.svg" }}
+                  className="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                  onError={(e) => {
+                    ;(e.target as HTMLImageElement).src = "/placeholder-product.svg"
+                  }}
                 />
                 {/* Hover lift overlay */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500" />
+                <div className="absolute inset-0 bg-black/0 transition-colors duration-500 group-hover:bg-black/10" />
                 {/* Index number */}
-                <span className="absolute bottom-3 right-3 text-[9px] font-mono text-white/40 mix-blend-difference">
+                <span className="absolute right-3 bottom-3 font-mono text-[9px] text-white/40 mix-blend-difference">
                   {String(i + 1).padStart(2, "0")}
                 </span>
               </div>
 
               {/* Info */}
-              <div className="pt-3.5 flex flex-col gap-0.5">
+              <div className="flex flex-col gap-0.5 pt-3.5">
                 <span className="text-[8px] font-bold tracking-[0.3em] text-muted-foreground/60 uppercase">
                   {item.category_name}
                 </span>
-                <p className="text-xs font-semibold text-foreground truncate group-hover:text-[var(--color-gold)] transition-colors duration-300 tracking-wide">
+                <p className="truncate text-xs font-semibold tracking-wide text-foreground transition-colors duration-300 group-hover:text-(--color-gold)">
                   {item.name}
                 </p>
-                <span className="text-[11px] font-mono font-semibold text-foreground/70 mt-0.5">
+                <span className="mt-0.5 font-mono text-[11px] font-semibold text-foreground/70">
                   {formatPrice(item.price)}
                 </span>
               </div>
@@ -83,7 +82,7 @@ export const RecentlyViewedSection = () => {
       </div>
 
       {/* Bottom accent */}
-      <Separator className="mt-16 md:mt-20 bg-gradient-to-r from-transparent via-[var(--color-gold)] to-transparent h-px" />
+      <Separator className="mt-16 h-px bg-linear-to-r from-transparent via-(--color-gold) to-transparent md:mt-20" />
     </section>
   )
 }

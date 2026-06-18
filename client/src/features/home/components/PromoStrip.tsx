@@ -7,11 +7,11 @@ const PROMOS = [
 
 export const PromoStrip = () => {
   return (
-    <section className="bg-foreground text-background overflow-hidden">
+    <section className="overflow-hidden bg-foreground text-background">
       <div className="relative flex overflow-x-hidden">
-        <div className="animate-marquee whitespace-nowrap flex items-center py-2.5">
+        <div className="animate-marquee flex items-center py-2.5 whitespace-nowrap">
           {[...PROMOS, ...PROMOS].map((text, i) => (
-            <span key={i} className="mx-8 text-[11px] font-medium tracking-widest uppercase flex items-center gap-4">
+            <span key={i} className="mx-8 flex items-center gap-4 text-[11px] font-medium tracking-widest uppercase">
               <span className="size-1.5 rounded-full bg-primary" />
               {text}
             </span>

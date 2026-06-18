@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom"
 import { ROUTES } from "@/constants/routes"
 import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
+import { SmoothScroll } from "@/components/layout/SmoothScroll"
 import { HomePage } from "@/features/home/HomePage"
 import { CollectionPage } from "@/features/shop/CollectionPage"
 import { ProductPage } from "@/features/shop/ProductPage"
@@ -70,7 +71,7 @@ const AppContent = () => {
     initializeAuth()
   }, [isAuthenticated, logout])
 
-  return (
+  const content = (
     <div className="relative flex min-h-screen flex-col bg-background font-sans text-foreground antialiased selection:bg-primary/10 selection:text-primary">
       {/* Responsive Public Header */}
       {!isAdmin && location.pathname !== ROUTES.login && location.pathname !== ROUTES.register && <Navbar />}
@@ -120,6 +121,8 @@ const AppContent = () => {
       <Toaster />
     </div>
   )
+
+  return isAdmin ? content : <SmoothScroll>{content}</SmoothScroll>
 }
 
 export const App = () => {

@@ -13,14 +13,19 @@ export const CollectionPreview = () => {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    productApi.getProducts({ per_page: 4 }).then((res) => {
-      if (res.success) setProducts(res.data)
-    }).finally(() => setLoading(false))
+    productApi
+      .getProducts({ per_page: 4 })
+      .then((res) => {
+        if (res.success) setProducts(res.data)
+      })
+      .finally(() => setLoading(false))
   }, [])
 
   useEffect(() => {
     const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setVisible(true) },
+      ([entry]) => {
+        if (entry.isIntersecting) setVisible(true)
+      },
       { threshold: 0.1 }
     )
     if (sectionRef.current) observer.observe(sectionRef.current)
@@ -32,68 +37,74 @@ export const CollectionPreview = () => {
   const hero = products[0]
 
   return (
-    <section
-      ref={sectionRef}
-      className="relative py-24 bg-background overflow-hidden"
-    >
+    <section ref={sectionRef} className="relative overflow-hidden bg-background py-24">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className={`flex items-start justify-between mb-16 transition-all duration-700 ${visible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"}`}>
+        <div
+          className={`mb-16 flex items-start justify-between transition-all duration-700 ${visible ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"}`}
+        >
           <div>
-            <div className="flex items-center gap-3 mb-3">
-              <span className="inline-block size-1.5 bg-primary rotate-45" />
+            <div className="mb-3 flex items-center gap-3">
+              <span className="inline-block size-1.5 rotate-45 bg-primary" />
               <span className="text-[10px] font-semibold tracking-[0.3em] text-muted-foreground uppercase">
                 {hero ? hero.category_name : "Collection"}
               </span>
             </div>
-            <h2 className="text-4xl sm:text-5xl font-bold tracking-tight text-foreground leading-[0.95]">
-              Featured<br />
+            <h2 className="text-4xl leading-[0.95] font-bold tracking-tight text-foreground sm:text-5xl">
+              Featured
+              <br />
               <span className="text-primary italic">Products</span>
             </h2>
           </div>
-          <p className="hidden md:block text-xs text-muted-foreground max-w-[200px] text-right self-end leading-relaxed">
+          <p className="hidden max-w-50 self-end text-right text-xs leading-relaxed text-muted-foreground md:block">
             A curated edit of our latest silhouettes.
           </p>
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
-            <div className="lg:col-span-3 aspect-[4/5] animate-pulse bg-muted/30" />
-            <div className="lg:col-span-2 flex flex-col gap-4">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-5 lg:gap-12">
+            <div className="aspect-4/5 animate-pulse bg-muted/30 lg:col-span-3" />
+            <div className="flex flex-col gap-4 lg:col-span-2">
               {[...Array(3)].map((_, i) => (
                 <div key={i} className="h-4 animate-pulse bg-muted/30" />
               ))}
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
-            <div className={`lg:col-span-3 relative transition-all duration-700 delay-100 ${visible ? "translate-y-0 opacity-100" : "translate-y-12 opacity-0"}`}>
-              <Link to={`/shop/${hero.slug}`} className="group block relative bg-muted/20">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-5 lg:gap-12">
+            <div
+              className={`relative transition-all delay-100 duration-700 lg:col-span-3 ${visible ? "translate-y-0 opacity-100" : "translate-y-12 opacity-0"}`}
+            >
+              <Link to={`/shop/${hero.slug}`} className="group relative block bg-muted/20">
                 <img
                   src={hero.primary_image || "/placeholder.webp"}
                   alt={hero.name}
-                  className="w-full aspect-[4/5] object-cover"
+                  className="aspect-4/5 w-full object-cover"
                 />
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_transparent_40%,_rgba(0,0,0,0.25)_100%)] pointer-events-none" />
-                <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span className="text-white text-xs font-medium">View Product →</span>
+                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,rgba(0,0,0,0.25)_100%)]" />
+                <div className="absolute right-0 bottom-0 left-0 bg-linear-to-t from-black/60 via-transparent to-transparent p-6 opacity-0 transition-opacity group-hover:opacity-100">
+                  <span className="text-xs font-medium text-white">View Product →</span>
                 </div>
               </Link>
             </div>
 
-            <div className={`lg:col-span-2 flex flex-col justify-between transition-all duration-700 delay-200 ${visible ? "translate-y-0 opacity-100" : "translate-y-12 opacity-0"}`}>
+            <div
+              className={`flex flex-col justify-between transition-all delay-200 duration-700 lg:col-span-2 ${visible ? "translate-y-0 opacity-100" : "translate-y-12 opacity-0"}`}
+            >
               <div>
                 <h3 className="text-2xl font-bold text-foreground">{hero.name}</h3>
-                <p className="text-lg font-semibold text-primary mt-2">{formatPrice(hero.price)}</p>
+                <p className="mt-2 text-lg font-semibold text-primary">{formatPrice(hero.price)}</p>
                 {hero.compare_at_price && (
-                  <p className="text-sm text-muted-foreground line-through mt-0.5">{formatPrice(hero.compare_at_price)}</p>
+                  <p className="mt-0.5 text-sm text-muted-foreground line-through">
+                    {formatPrice(hero.compare_at_price)}
+                  </p>
                 )}
-                <p className="text-xs text-muted-foreground mt-4 leading-relaxed">
+                <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
                   {hero.tags?.length ? hero.tags.join(" · ") : hero.category_name}
                 </p>
 
                 {products.length > 1 && (
-                  <div className="mt-8 pt-6 border-t border-border/10">
-                    <p className="text-[10px] font-semibold tracking-wider text-muted-foreground uppercase mb-3">
+                  <div className="mt-8 border-t border-border/10 pt-6">
+                    <p className="mb-3 text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
                       More in Collection
                     </p>
                     <div className="flex flex-col gap-2">
@@ -101,20 +112,22 @@ export const CollectionPreview = () => {
                         <Link
                           key={p.id}
                           to={`/shop/${p.slug}`}
-                          className="flex items-center gap-3 p-2 hover:bg-muted/20 transition-colors group/card"
+                          className="group/card flex items-center gap-3 p-2 transition-colors hover:bg-muted/20"
                         >
-                          <div className="size-12 shrink-0 bg-muted overflow-hidden">
+                          <div className="size-12 shrink-0 overflow-hidden bg-muted">
                             <img
                               src={p.primary_image || "/placeholder.webp"}
                               alt={p.name}
                               className="size-full object-cover"
                             />
                           </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-semibold text-foreground truncate">{p.name}</p>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-xs font-semibold text-foreground">{p.name}</p>
                             <p className="text-[10px] text-muted-foreground">{formatPrice(p.price)}</p>
                           </div>
-                          <span className="text-[10px] text-muted-foreground group-hover/card:text-foreground transition-colors">→</span>
+                          <span className="text-[10px] text-muted-foreground transition-colors group-hover/card:text-foreground">
+                            →
+                          </span>
                         </Link>
                       ))}
                     </div>
@@ -131,15 +144,17 @@ export const CollectionPreview = () => {
           </div>
         )}
 
-        <div className={`flex items-center justify-between mt-16 transition-all duration-700 delay-500 ${visible ? "opacity-100" : "opacity-0"}`}>
+        <div
+          className={`mt-16 flex items-center justify-between transition-all delay-500 duration-700 ${visible ? "opacity-100" : "opacity-0"}`}
+        >
           <div className="flex items-center gap-3">
-            <span className="text-[10px] font-mono text-muted-foreground">01 — {products.length}</span>
+            <span className="font-mono text-[10px] text-muted-foreground">01 — {products.length}</span>
             <span className="h-px w-12 bg-border" />
-            <span className="text-[10px] text-muted-foreground tracking-widest uppercase">Collection</span>
+            <span className="text-[10px] tracking-widest text-muted-foreground uppercase">Collection</span>
           </div>
           <Link
             to={ROUTES.shop}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors border-b border-foreground/10 hover:border-foreground/40 pb-0.5"
+            className="border-b border-foreground/10 pb-0.5 text-xs text-muted-foreground transition-colors hover:border-foreground/40 hover:text-foreground"
           >
             Explore all →
           </Link>

@@ -45,7 +45,7 @@ export const WhyJuicy = () => {
                 />
               )}
 
-              <div className="flex size-12 shrink-0 items-center justify-center rounded-full border border-(--color-gold-muted) bg-(--color-gold-subtle) transition-colors duration-500 group-hover:border-[var(--color-gold)] group-hover:bg-[var(--color-gold)]/10">
+              <div className="flex size-12 shrink-0 items-center justify-center rounded-full border border-(--color-gold-muted) bg-(--color-gold-subtle) transition-colors duration-500 group-hover:border-(--color-gold) group-hover:bg-(--color-gold)/10">
                 <HugeiconsIcon icon={v.icon} className="size-4.5 text-(--color-gold)" />
               </div>
 

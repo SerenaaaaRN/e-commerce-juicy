@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react"
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom"
+import { motion, AnimatePresence } from "motion/react"
 import { ROUTES } from "@/constants/routes"
 import { useCustomerAuthStore } from "@/stores/customerAuthStore"
 import { useCartQuery } from "@/features/cart/hooks/useCartQueries"
 import { useCategoriesQuery } from "@/features/shop/hooks/useProductQueries"
 import { cn } from "@/lib/utils"
+import { slideDown, staggerContainer, fadeInUp } from "@/lib/animations"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import {
@@ -241,69 +243,92 @@ export const Navbar = () => {
         </div>
       ) : null}
 
-      {/* Mobile Drawer menu */}
-      {mobileMenuOpen ? (
-        <div className="flex animate-in flex-col gap-4 bg-background px-4 py-4 duration-300 fade-in slide-in-from-top-4 md:hidden">
-          {/* Mobile Search Bar */}
-          <div className="relative w-full">
-            <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
-              <HugeiconsIcon icon={SearchIcon} className="size-4" />
-            </span>
-            <Input
-              type="text"
-              placeholder="Search silhouettes..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-9 w-full rounded-none border border-input bg-muted/40 py-2 pr-4 pl-9 text-xs transition-all duration-200"
-            />
-          </div>
+      {/* Mobile Drawer menu — AnimatePresence */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            key="mobile-menu"
+            variants={slideDown}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="flex flex-col gap-4 bg-background px-4 py-4 md:hidden"
+          >
+            {/* Mobile Search Bar */}
+            <div className="relative w-full">
+              <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
+                <HugeiconsIcon icon={SearchIcon} className="size-4" />
+              </span>
+              <Input
+                type="text"
+                placeholder="Search silhouettes..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-9 w-full rounded-none border border-input bg-muted/40 py-2 pr-4 pl-9 text-xs transition-all duration-200"
+              />
+            </div>
 
-          <Separator />
-          <nav className="flex flex-col gap-4 text-sm tracking-widest uppercase">
-            <Link
-              to={ROUTES.home}
-              onClick={toggleMobileMenu}
-              className={cn(
-                "block rounded-md px-1 py-2 text-xs transition-colors",
-                location.pathname === ROUTES.home
-                  ? "bg-accent/20 font-semibold text-primary"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
+            <Separator />
+            <motion.nav
+              variants={staggerContainer}
+              initial="hidden"
+              animate="visible"
+              className="flex flex-col gap-4 text-sm tracking-widest uppercase"
             >
-              Atelier
-            </Link>
-            <Link
-              to={ROUTES.shop}
-              onClick={toggleMobileMenu}
-              className={cn(
-                "block rounded-md px-1 py-2 text-xs transition-colors",
-                location.pathname === ROUTES.shop
-                  ? "bg-accent/20 font-semibold text-primary"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Shop
-            </Link>
-            <Separator className="my-1" />
-            <span className="px-1 text-[10px] tracking-widest text-muted-foreground">Kategori</span>
-            {rootCategories.map((cat) => (
-              <Link
-                key={cat.id}
-                to={`/category/${cat.slug}`}
-                onClick={toggleMobileMenu}
-                className={cn(
-                  "block rounded-md px-1 py-2 text-xs transition-colors",
-                  location.pathname === `/category/${cat.slug}`
-                    ? "bg-accent/20 font-semibold text-primary"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {cat.name}
-              </Link>
-            ))}
-          </nav>
-        </div>
-      ) : null}
+              <motion.div variants={fadeInUp}>
+                <Link
+                  to={ROUTES.home}
+                  onClick={toggleMobileMenu}
+                  className={cn(
+                    "block rounded-md px-1 py-2 text-xs transition-colors",
+                    location.pathname === ROUTES.home
+                      ? "bg-accent/20 font-semibold text-primary"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  Atelier
+                </Link>
+              </motion.div>
+              <motion.div variants={fadeInUp}>
+                <Link
+                  to={ROUTES.shop}
+                  onClick={toggleMobileMenu}
+                  className={cn(
+                    "block rounded-md px-1 py-2 text-xs transition-colors",
+                    location.pathname === ROUTES.shop
+                      ? "bg-accent/20 font-semibold text-primary"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  Shop
+                </Link>
+              </motion.div>
+              <motion.div variants={fadeInUp}>
+                <Separator className="my-1" />
+              </motion.div>
+              <motion.div variants={fadeInUp}>
+                <span className="px-1 text-[10px] tracking-widest text-muted-foreground">Kategori</span>
+              </motion.div>
+              {rootCategories.map((cat) => (
+                <motion.div key={cat.id} variants={fadeInUp}>
+                  <Link
+                    to={`/category/${cat.slug}`}
+                    onClick={toggleMobileMenu}
+                    className={cn(
+                      "block rounded-md px-1 py-2 text-xs transition-colors",
+                      location.pathname === `/category/${cat.slug}`
+                        ? "bg-accent/20 font-semibold text-primary"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {cat.name}
+                  </Link>
+                </motion.div>
+              ))}
+            </motion.nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   )
 }

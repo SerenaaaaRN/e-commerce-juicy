@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { motion, AnimatePresence } from "motion/react"
 import { Button } from "@/components/ui/button"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion"
@@ -6,6 +7,7 @@ import { cn } from "@/lib/utils"
 import type { Category } from "@/types"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { ArrowDownIcon } from "@hugeicons/core-free-icons"
+import { editorialSpring } from "@/lib/animations"
 
 type ProductFiltersProps = {
   categories: Category[]
@@ -59,27 +61,41 @@ const CategoryNode = ({ cat, level = 0, selectedCategory, onCategoryChange }: Ca
               e.stopPropagation()
               setOpen((prev) => !prev)
             }}
-            className="cursor-pointer p-1 transition-transform duration-200 hover:text-foreground"
-            style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
+            className="cursor-pointer p-1 hover:text-foreground"
           >
-            <HugeiconsIcon icon={ArrowDownIcon} />
+            <motion.span
+              animate={{ rotate: open ? 180 : 0 }}
+              transition={editorialSpring}
+              className="block"
+            >
+              <HugeiconsIcon icon={ArrowDownIcon} />
+            </motion.span>
           </button>
         ) : null}
       </div>
 
-      {open && hasChildren ? (
-        <div className="flex animate-in flex-col gap-1 duration-200 fade-in slide-in-from-top-1">
-          {cat.children?.map((child) => (
-            <CategoryNode
-              key={child.id}
-              cat={child}
-              level={level + 1}
-              selectedCategory={selectedCategory}
-              onCategoryChange={onCategoryChange}
-            />
-          ))}
-        </div>
-      ) : null}
+      <AnimatePresence>
+        {open && hasChildren ? (
+          <motion.div
+            key="children"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={editorialSpring}
+            className="flex flex-col gap-1 overflow-hidden"
+          >
+            {cat.children?.map((child) => (
+              <CategoryNode
+                key={child.id}
+                cat={child}
+                level={level + 1}
+                selectedCategory={selectedCategory}
+                onCategoryChange={onCategoryChange}
+              />
+            ))}
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </div>
   )
 }

@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button"
 export const CategoryLandingPage = () => {
   const { slug } = useParams<{ slug: string }>()
   const { data: categories = [] } = useCategoriesQuery()
-  const { data: productsData, isLoading } = useProductsQuery(
+  const { isLoading } = useProductsQuery(
     slug ? { category: slug, per_page: 8 } : undefined
   )
 
