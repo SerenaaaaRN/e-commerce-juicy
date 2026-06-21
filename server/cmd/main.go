@@ -114,7 +114,7 @@ func main() {
 	worker.Shutdown()
 
 	if err := srv.Shutdown(ctx); err != nil {
-		log.Fatalf("Fatal: Server Shutdown Forced: %v", err)
+		log.Printf("Error: Server Shutdown Forced: %v", err)
 	}
 
 	log.Println("Juicy Backend terminated gracefully.")

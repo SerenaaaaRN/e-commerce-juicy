@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"crypto/rand"
+
 	"errors"
 	"fmt"
 	"math/big"
@@ -391,8 +392,7 @@ func generateRandomAlphanumeric(length int) string {
 	for i := range b {
 		n, err := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
 		if err != nil {
-			// Fallback if crypto rand fails
-			b[i] = charset[0]
+			b[i] = charset[time.Now().UnixNano()%int64(len(charset))]
 			continue
 		}
 		b[i] = charset[n.Int64()]

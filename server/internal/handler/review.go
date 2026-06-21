@@ -113,12 +113,19 @@ func (h *ReviewHandler) GetProductReviews(c *gin.Context) {
 		return
 	}
 
-	okJSON(c, gin.H{
-		"items": reviews,
+	totalPages := (int(total) + perPage - 1) / perPage
+	if totalPages == 0 {
+		totalPages = 1
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    reviews,
 		"meta": gin.H{
-			"total":    total,
-			"page":     page,
-			"per_page": perPage,
+			"total":       total,
+			"page":        page,
+			"per_page":    perPage,
+			"total_pages": totalPages,
 		},
 	})
 }
@@ -153,12 +160,19 @@ func (h *ReviewHandler) ListAllReviews(c *gin.Context) {
 		return
 	}
 
-	okJSON(c, gin.H{
-		"items": reviews,
+	totalPages := (int(total) + perPage - 1) / perPage
+	if totalPages == 0 {
+		totalPages = 1
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    reviews,
 		"meta": gin.H{
-			"total":    total,
-			"page":     page,
-			"per_page": perPage,
+			"total":       total,
+			"page":        page,
+			"per_page":    perPage,
+			"total_pages": totalPages,
 		},
 	})
 }

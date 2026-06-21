@@ -52,14 +52,15 @@ func (w *BackgroundWorker) worker() {
 }
 
 func (w *BackgroundWorker) drainRemaining() {
-	// Skip executing remaining tasks if context is cancelled
-	// unless they are absolutely critical. For now we just flush the channel.
+	dropped := 0
 	for {
 		select {
 		case <-w.tasks:
-			// Just drain the channel to allow producers to unblock,
-			// but we don't execute the task since we are shutting down.
+			dropped++
 		default:
+			if dropped > 0 {
+				log.Printf("[BackgroundWorker] WARNING: %d tasks were dropped during shutdown", dropped)
+			}
 			return
 		}
 	}

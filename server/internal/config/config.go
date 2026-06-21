@@ -66,7 +66,7 @@ func Load() (*Config, error) {
 	cfg.JWTAdminAccessExpiryMinutes = getEnvInt("JWT_ADMIN_ACCESS_EXPIRY_MINUTES", 15)
 	cfg.JWTAdminRefreshExpiryDays = getEnvInt("JWT_ADMIN_REFRESH_EXPIRY_DAYS", 7)
 	cfg.JWTCustomerExpiryDays = getEnvInt("JWT_CUSTOMER_EXPIRY_DAYS", 7)
-	cfg.DefaultShippingFee = getEnvFloat("DEFAULT_SHIPPING_FEE", 25000)
+	cfg.DefaultShippingFee = getEnvFloat("DEFAULT_SHIPPING_FEE", 25000.0)
 
 	if cfg.JWTAdminSecret == "" {
 		return nil, fmt.Errorf("JWT_ADMIN_SECRET is required")

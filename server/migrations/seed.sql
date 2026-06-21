@@ -1,292 +1,206 @@
--- Seed file for Juicy database
--- Clean up existing seed data if necessary
-TRUNCATE TABLE reviews CASCADE;
-TRUNCATE TABLE order_items CASCADE;
-TRUNCATE TABLE orders CASCADE;
-TRUNCATE TABLE cart_items CASCADE;
-TRUNCATE TABLE product_variants CASCADE;
-TRUNCATE TABLE product_images CASCADE;
-TRUNCATE TABLE products CASCADE;
-TRUNCATE TABLE categories CASCADE;
-TRUNCATE TABLE addresses CASCADE;
-TRUNCATE TABLE customers CASCADE;
-TRUNCATE TABLE admins CASCADE;
+-- Fresh Seed from juicy DB (Extracted from live DB)
+-- Truncate all tables first to avoid conflict
 
--- 1. Seed Admin
-INSERT INTO admins (username, email, password_hash)
-VALUES (
-  'admin',
-  'admin@juicy.com',
-  '$2a$12$.xiGFzad7/HaalXETL9mRejv0L3fNA9ggXzh3zi64a2wmUuVehEWy' -- bcrypt hash of 'admin123'
-);
+DO $$
+BEGIN
+    EXECUTE 'TRUNCATE TABLE reviews, order_items, orders, cart_items, wishlist_items, product_variants, product_images, products, categories, addresses, customers, admins RESTART IDENTITY CASCADE';
+EXCEPTION WHEN OTHERS THEN
+    -- Ignore error if table doesn't exist
+END $$;
 
--- 2. Seed Categories
-INSERT INTO categories (id, name, slug, description, display_order) VALUES
-  ('11111111-1111-1111-1111-111111111111', 'Tops', 'tops', 'Warm editorial crop shirts, wrap blouses, and premium linen tops.', 1),
-  ('22222222-2222-2222-2222-222222222222', 'Bottoms', 'bottoms', 'Linen trousers, silk slip skirts, and tailored wool shorts.', 2),
-  ('33333333-3333-3333-3333-333333333333', 'Dresses', 'dresses', 'Elegant column dresses, asymmetric drape designs, and backless midis.', 3),
-  ('44444444-4444-4444-4444-444444444444', 'Outerwear', 'outerwear', 'Oversized canvas trenches, linen blazers, and double breasted coats.', 4),
-  ('55555555-5555-5555-5555-555555555555', 'Accessories', 'accessories', 'Premium leather bags, wide straw hats, and handcrafted jewellery.', 5),
-  ('66666666-6666-6666-6666-666666666666', 'Sets', 'sets', 'Coordinated linen loungewear and structural suit pairings.', 6);
-
--- 3. Seed Products
-INSERT INTO products (id, category_id, name, slug, description, price, compare_at_price, is_available, is_featured, tags, display_order) VALUES
-  -- Tops
-  ('a1010101-1010-1010-1010-101010101010', '11111111-1111-1111-1111-111111111111', 
-   'Linen Boxy Shirt', 'linen-boxy-shirt', 
-   'A relaxed, boxy shirt cut from organic linen. Featuring a clean collar, drop shoulders, and mother-of-pearl buttons. Designed for a light, breezy look.', 
-   120.00, 150.00, true, true, '["new-arrival", "sustainable"]'::jsonb, 1),
-
-  ('a1020202-1020-1020-1020-102010201020', '11111111-1111-1111-1111-111111111111', 
-   'Silk Wrap Blouse', 'silk-wrap-blouse', 
-   'Crafted from fluid mulberry silk, this wrap blouse contours beautifully. Features elongated cuffs and a delicate waist tie for structural elegance.', 
-   180.00, NULL, true, false, '["limited-edition"]'::jsonb, 2),
-
-  ('a1030303-1030-1030-1030-103010301030', '11111111-1111-1111-1111-111111111111', 
-   'Ribbed Knit Tank', 'ribbed-knit-tank', 
-   'An essential layering piece knit from a premium cotton-silk blend. Form-fitting ribbed texture with a classic scoop neckline.', 
-   75.00, 90.00, true, false, '["bestseller"]'::jsonb, 3),
-
-  -- Bottoms
-  ('b2010101-2010-2010-2010-201020102010', '22222222-2222-2222-2222-222222222222', 
-   'Tailored Linen Trouser', 'tailored-linen-trouser', 
-   'High-waisted linen trousers featuring wide legs, double front pleats, and side slip pockets. A perfect structural matching piece for hot summer afternoons.', 
-   210.00, NULL, true, true, '["sustainable", "new-arrival"]'::jsonb, 1),
-
-  ('b2020202-2020-2020-2020-202020202020', '22222222-2222-2222-2222-222222222222', 
-   'Silk Slip Skirt', 'silk-slip-skirt', 
-   'An elegant, bias-cut midi skirt made from heavy silk satin. Elasticated waist for comfort, draping smoothly to a raw midi hem.', 
-   195.00, NULL, true, false, '["bestseller"]'::jsonb, 2),
-
-  ('b2030303-2030-2030-2030-203020302030', '22222222-2222-2222-2222-222222222222', 
-   'Pleated Wool Short', 'pleated-wool-short', 
-   'Tailored shorts crafted from a lightweight wool-crepe blend. High-rise fit with crisp pressed creases and an adjustable tab waist.', 
-   160.00, 220.00, true, false, '["sale"]'::jsonb, 3),
-
-  -- Dresses
-  ('c3010101-3010-3010-3010-301030103010', '33333333-3333-3333-3333-333333333333', 
-   'Asymmetric Drape Dress', 'asymmetric-drape-dress', 
-   'A sculptural midi dress showcasing an asymmetric neckline and elegant side draping. Crafted from dry wool-crepe for an architectural silhouette.', 
-   340.00, NULL, true, true, '["limited-edition", "new-arrival"]'::jsonb, 1),
-
-  ('c3020202-3020-3020-3020-302030203020', '33333333-3333-3333-3333-333333333333', 
-   'Backless Linen Midi', 'backless-linen-midi', 
-   'Summer standard dress with a plunging open back and delicate crossover straps. Made from breathable sand-washed linen.', 
-   280.00, NULL, true, false, '["bestseller", "sustainable"]'::jsonb, 2),
-
-  ('c3030303-3030-3030-3030-303030303030', '33333333-3333-3333-3333-333333333333', 
-   'Knit Column Dress', 'knit-column-dress', 
-   'Floor-length, form-fitting dress in a fine open-knit cotton. Features a high collar, sleeveless design, and slide split hem.', 
-   310.00, 380.00, true, false, '["new-arrival"]'::jsonb, 3),
-
-  -- Outerwear
-  ('d4010101-4010-4010-4010-401040104010', '44444444-4444-4444-4444-444444444444', 
-   'Oversized Canvas Trench', 'oversized-canvas-trench', 
-   'A bold reimagining of the classic trench coat. Made from structural cotton canvas with wide lapels, storm flaps, and an adjustable waist belt.', 
-   450.00, NULL, true, true, '["new-arrival", "bestseller"]'::jsonb, 1),
-
-  ('d4020202-4020-4020-4020-402040204020', '44444444-4444-4444-4444-444444444444', 
-   'Cropped Linen Blazer', 'cropped-linen-blazer', 
-   'A sharp, collarless cropped blazer in heavy linen. Padded shoulders add clean structural lines to a relaxed summer silhouette.', 
-   320.00, NULL, true, false, '["sustainable"]'::jsonb, 2),
-
-  ('d4030303-4030-4030-4030-403040304030', '44444444-4444-4444-4444-444444444444', 
-   'Wool Double Breasted Coat', 'wool-double-breasted-coat', 
-   'A heavy winter essential made from virgin wool. Double breasted layout, oversized notch collars, and deep patch pockets.', 
-   580.00, 720.00, true, false, '["sale", "limited-edition"]'::jsonb, 3),
-
-  -- Accessories
-  ('e5010101-5010-5010-5010-501050105010', '55555555-5555-5555-5555-555555555555', 
-   'Le Rond Leather Bag', 'le-rond-leather-bag', 
-   'A signature circular leather handbag with a structured top handle. Crafted from smooth vegetable-tanned calfskin with gold hardware.', 
-   420.00, NULL, true, true, '["bestseller", "limited-edition"]'::jsonb, 1),
-
-  ('e5020202-5020-5020-5020-502050205020', '55555555-5555-5555-5555-555555555555', 
-   'Wide Brim Straw Hat', 'wide-brim-straw-hat', 
-   'Hand-woven from natural palm straw. Features a dramatically oversized flat brim and a terracotta cotton ribbon under the chin.', 
-   140.00, NULL, true, false, '["new-arrival"]'::jsonb, 2),
-
-  ('e5030303-5030-5030-5030-503050305030', '55555555-5555-5555-5555-555555555555', 
-   'Chunky Link Necklace', 'chunky-link-necklace', 
-   'A statement necklace featuring interlocking hammered brass links dipped in 24k gold. Handcrafted by local artisans.', 
-   95.00, 120.00, true, false, '["handcrafted"]'::jsonb, 3),
-
-  -- Sets
-  ('f6010101-6010-6010-6010-601060106010', '66666666-6666-6666-6666-666666666666', 
-   'Linen Lounge Set', 'linen-lounge-set', 
-   'A matching summer set comprising a relaxed drop-shoulder button-down and comfortable drawstring shorts. Cut from washed breathable linen.', 
-   290.00, 340.00, true, true, '["bestseller", "sustainable"]'::jsonb, 1),
-
-  ('f6020202-6020-6020-6020-602060206020', '66666666-6666-6666-6666-666666666666', 
-   'Ribbed Knit Lounge Set', 'ribbed-knit-lounge-set', 
-   'Cozy matching duo featuring a fine-knit sleeveless top and loose-fit palazzo trousers in our signature cream shade.', 
-   260.00, NULL, true, false, '["new-arrival"]'::jsonb, 2),
-
-  ('f6030303-6030-6030-6030-603060306030', '66666666-6666-6666-6666-666666666666', 
-   'Tailored Blazer Suit Set', 'tailored-blazer-suit-set', 
-   'The ultimate editorial power suit. Combines a structural peak-lapel double-breasted blazer and matching high-waisted wide-leg trousers.', 
-   680.00, NULL, true, false, '["limited-edition"]'::jsonb, 3);
-
--- 4. Seed Product Variants (Size x Color combos)
--- S: Cream (#f5efe6), M: Terracotta (#b5633a), L: Soil (#3d2e22)
-INSERT INTO product_variants (product_id, size, color, stock, additional_price) VALUES
-  -- Linen Boxy Shirt
-  ('a1010101-1010-1010-1010-101010101010', 'S', 'Cream', 15, 0.00),
-  ('a1010101-1010-1010-1010-101010101010', 'M', 'Terracotta', 10, 0.00),
-  ('a1010101-1010-1010-1010-101010101010', 'L', 'Soil', 8, 0.00),
-
-  -- Silk Wrap Blouse
-  ('a1020202-1020-1020-1020-102010201020', 'S', 'Cream', 12, 0.00),
-  ('a1020202-1020-1020-1020-102010201020', 'M', 'Terracotta', 8, 0.00),
-  ('a1020202-1020-1020-1020-102010201020', 'L', 'Soil', 5, 0.00),
-
-  -- Ribbed Knit Tank
-  ('a1030303-1030-1030-1030-103010301030', 'S', 'Cream', 30, 0.00),
-  ('a1030303-1030-1030-1030-103010301030', 'M', 'Terracotta', 25, 0.00),
-  ('a1030303-1030-1030-1030-103010301030', 'L', 'Soil', 20, 0.00),
-
-  -- Tailored Linen Trouser
-  ('b2010101-2010-2010-2010-201020102010', 'S', 'Cream', 10, 0.00),
-  ('b2010101-2010-2010-2010-201020102010', 'M', 'Terracotta', 10, 0.00),
-  ('b2010101-2010-2010-2010-201020102010', 'L', 'Soil', 7, 0.00),
-
-  -- Silk Slip Skirt
-  ('b2020202-2020-2020-2020-202020202020', 'S', 'Cream', 14, 0.00),
-  ('b2020202-2020-2020-2020-202020202020', 'M', 'Terracotta', 12, 0.00),
-  ('b2020202-2020-2020-2020-202020202020', 'L', 'Soil', 6, 0.00),
-
-  -- Pleated Wool Short
-  ('b2030303-2030-2030-2030-203020302030', 'S', 'Cream', 8, 0.00),
-  ('b2030303-2030-2030-2030-203020302030', 'M', 'Terracotta', 8, 0.00),
-  ('b2030303-2030-2030-2030-203020302030', 'L', 'Soil', 5, 0.00),
-
-  -- Asymmetric Drape Dress
-  ('c3010101-3010-3010-3010-301030103010', 'S', 'Cream', 6, 15.00),
-  ('c3010101-3010-3010-3010-301030103010', 'M', 'Terracotta', 8, 15.00),
-  ('c3010101-3010-3010-3010-301030103010', 'L', 'Soil', 4, 15.00),
-
-  -- Backless Linen Midi
-  ('c3020202-3020-3020-3020-302030203020', 'S', 'Cream', 15, 0.00),
-  ('c3020202-3020-3020-3020-302030203020', 'M', 'Terracotta', 10, 0.00),
-  ('c3020202-3020-3020-3020-302030203020', 'L', 'Soil', 8, 0.00),
-
-  -- Knit Column Dress
-  ('c3030303-3030-3030-3030-303030303030', 'S', 'Cream', 10, 10.00),
-  ('c3030303-3030-3030-3030-303030303030', 'M', 'Terracotta', 8, 10.00),
-  ('c3030303-3030-3030-3030-303030303030', 'L', 'Soil', 5, 10.00),
-
-  -- Oversized Canvas Trench
-  ('d4010101-4010-4010-4010-401040104010', 'S', 'Cream', 5, 20.00),
-  ('d4010101-4010-4010-4010-401040104010', 'M', 'Terracotta', 6, 20.00),
-  ('d4010101-4010-4010-4010-401040104010', 'L', 'Soil', 4, 20.00),
-
-  -- Cropped Linen Blazer
-  ('d4020202-4020-4020-4020-402040204020', 'S', 'Cream', 10, 0.00),
-  ('d4020202-4020-4020-4020-402040204020', 'M', 'Terracotta', 8, 0.00),
-  ('d4020202-4020-4020-4020-402040204020', 'L', 'Soil', 5, 0.00),
-
-  -- Wool Double Breasted Coat
-  ('d4030303-4030-4030-4030-403040304030', 'S', 'Cream', 4, 30.00),
-  ('d4030303-4030-4030-4030-403040304030', 'M', 'Terracotta', 4, 30.00),
-  ('d4030303-4030-4030-4030-403040304030', 'L', 'Soil', 3, 30.00),
-
-  -- Le Rond Leather Bag
-  ('e5010101-5010-5010-5010-501050105010', 'O/S', 'Cream', 10, 0.00),
-  ('e5010101-5010-5010-5010-501050105010', 'O/S', 'Terracotta', 15, 0.00),
-  ('e5010101-5010-5010-5010-501050105010', 'O/S', 'Soil', 8, 0.00),
-
-  -- Wide Brim Straw Hat
-  ('e5020202-5020-5020-5020-502050205020', 'O/S', 'Cream', 12, 0.00),
-  ('e5020202-5020-5020-5020-502050205020', 'O/S', 'Terracotta', 8, 0.00),
-
-  -- Chunky Link Necklace
-  ('e5030303-5030-5030-5030-503050305030', 'O/S', 'Gold', 25, 0.00),
-
-  -- Linen Lounge Set
-  ('f6010101-6010-6010-6010-601060106010', 'S', 'Cream', 12, 0.00),
-  ('f6010101-6010-6010-6010-601060106010', 'M', 'Terracotta', 10, 0.00),
-  ('f6010101-6010-6010-6010-601060106010', 'L', 'Soil', 6, 0.00),
-
-  -- Ribbed Knit Lounge Set
-  ('f6020202-6020-6020-6020-602060206020', 'S', 'Cream', 15, 0.00),
-  ('f6020202-6020-6020-6020-602060206020', 'M', 'Terracotta', 12, 0.00),
-  ('f6020202-6020-6020-6020-602060206020', 'L', 'Soil', 8, 0.00),
-
-  -- Tailored Blazer Suit Set
-  ('f6030303-6030-6030-6030-603060306030', 'S', 'Cream', 6, 40.00),
-  ('f6030303-6030-6030-6030-603060306030', 'M', 'Terracotta', 6, 40.00),
-  ('f6030303-6030-6030-6030-603060306030', 'L', 'Soil', 4, 40.00);
-
--- 5. Seed Product Images (Primary + Secondary)
-INSERT INTO product_images (product_id, image_url, cloudinary_public_id, alt_text, display_order, is_primary) VALUES
-  -- Linen Boxy Shirt
-  ('a1010101-1010-1010-1010-101010101010', 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?q=80&w=600&auto=format&fit=crop', 'juicy/tops/linen_boxy_primary', 'Linen Boxy Shirt Front View', 1, true),
-  ('a1010101-1010-1010-1010-101010101010', 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?q=80&w=600&auto=format&fit=crop', 'juicy/tops/linen_boxy_detail', 'Linen Boxy Shirt Fabric Detail', 2, false),
-
-  -- Silk Wrap Blouse
-  ('a1020202-1020-1020-1020-102010201020', 'https://images.unsplash.com/photo-1548624149-f8b03d65f528?q=80&w=600&auto=format&fit=crop', 'juicy/tops/silk_wrap_primary', 'Silk Wrap Blouse Front View', 1, true),
-  ('a1020202-1020-1020-1020-102010201020', 'https://images.unsplash.com/photo-1589310243389-96a5483213a8?q=80&w=600&auto=format&fit=crop', 'juicy/tops/silk_wrap_detail', 'Silk Wrap Blouse Style Detail', 2, false),
-
-  -- Ribbed Knit Tank
-  ('a1030303-1030-1030-1030-103010301030', 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600&auto=format&fit=crop', 'juicy/tops/ribbed_knit_primary', 'Ribbed Knit Tank Model View', 1, true),
-  ('a1030303-1030-1030-1030-103010301030', 'https://images.unsplash.com/photo-1485968579580-b6d095142e6e?q=80&w=600&auto=format&fit=crop', 'juicy/tops/ribbed_knit_detail', 'Ribbed Knit Tank Detail View', 2, false),
-
-  -- Tailored Linen Trouser
-  ('b2010101-2010-2010-2010-201020102010', 'https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?q=80&w=600&auto=format&fit=crop', 'juicy/bottoms/tailored_trouser_primary', 'Tailored Linen Trouser Front View', 1, true),
-  ('b2010101-2010-2010-2010-201020102010', 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?q=80&w=600&auto=format&fit=crop', 'juicy/bottoms/tailored_trouser_detail', 'Tailored Linen Trouser Detail', 2, false),
-
-  -- Silk Slip Skirt
-  ('b2020202-2020-2020-2020-202020202020', 'https://images.unsplash.com/photo-1583496661160-fb48862c4a4e?q=80&w=600&auto=format&fit=crop', 'juicy/bottoms/silk_skirt_primary', 'Silk Slip Skirt Model View', 1, true),
-  ('b2020202-2020-2020-2020-202020202020', 'https://images.unsplash.com/photo-1609357605129-26f69add5d6e?q=80&w=600&auto=format&fit=crop', 'juicy/bottoms/silk_skirt_detail', 'Silk Slip Skirt Movement View', 2, false),
-
-  -- Pleated Wool Short
-  ('b2030303-2030-2030-2030-203020302030', 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?q=80&w=600&auto=format&fit=crop', 'juicy/bottoms/pleated_short_primary', 'Pleated Wool Short Front View', 1, true),
-  ('b2030303-2030-2030-2030-203020302030', 'https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=600&auto=format&fit=crop', 'juicy/bottoms/pleated_short_detail', 'Pleated Wool Short Model Detail', 2, false),
-
-  -- Asymmetric Drape Dress
-  ('c3010101-3010-3010-3010-301030103010', 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=600&auto=format&fit=crop', 'juicy/dresses/drape_dress_primary', 'Asymmetric Drape Dress Model View', 1, true),
-  ('c3010101-3010-3010-3010-301030103010', 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?q=80&w=600&auto=format&fit=crop', 'juicy/dresses/drape_dress_detail', 'Asymmetric Drape Dress Texture', 2, false),
-
-  -- Backless Linen Midi
-  ('c3020202-3020-3020-3020-302030203020', 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?q=80&w=600&auto=format&fit=crop', 'juicy/dresses/backless_midi_primary', 'Backless Linen Midi Front View', 1, true),
-  ('c3020202-3020-3020-3020-302030203020', 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?q=80&w=600&auto=format&fit=crop', 'juicy/dresses/backless_midi_back', 'Backless Linen Midi Open Back Detail', 2, false),
-
-  -- Knit Column Dress
-  ('c3030303-3030-3030-3030-303030303030', 'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?q=80&w=600&auto=format&fit=crop', 'juicy/dresses/knit_column_primary', 'Knit Column Dress Front View', 1, true),
-  ('c3030303-3030-3030-3030-303030303030', 'https://images.unsplash.com/photo-1618932260643-eee4a2f6c9d6?q=80&w=600&auto=format&fit=crop', 'juicy/dresses/knit_column_detail', 'Knit Column Dress Material Detail', 2, false),
-
-  -- Oversized Canvas Trench
-  ('d4010101-4010-4010-4010-401040104010', 'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?q=80&w=600&auto=format&fit=crop', 'juicy/outerwear/canvas_trench_primary', 'Oversized Canvas Trench Front View', 1, true),
-  ('d4010101-4010-4010-4010-401040104010', 'https://images.unsplash.com/photo-1544441893-675973e31985?q=80&w=600&auto=format&fit=crop', 'juicy/outerwear/canvas_trench_back', 'Oversized Canvas Trench Back View', 2, false),
-
-  -- Cropped Linen Blazer
-  ('d4020202-4020-4020-4020-402040204020', 'https://images.unsplash.com/photo-1582533561751-ef6f6ab93a2e?q=80&w=600&auto=format&fit=crop', 'juicy/outerwear/cropped_blazer_primary', 'Cropped Linen Blazer Model View', 1, true),
-  ('d4020202-4020-4020-4020-402040204020', 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?q=80&w=600&auto=format&fit=crop', 'juicy/outerwear/cropped_blazer_detail', 'Cropped Linen Blazer Stitch Detail', 2, false),
-
-  -- Wool Double Breasted Coat
-  ('d4030303-4030-4030-4030-403040304030', 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=600&auto=format&fit=crop', 'juicy/outerwear/wool_coat_primary', 'Wool Double Breasted Coat Front View', 1, true),
-  ('d4030303-4030-4030-4030-403040304030', 'https://images.unsplash.com/photo-1551232864-3f0890e580d9?q=80&w=600&auto=format&fit=crop', 'juicy/outerwear/wool_coat_detail', 'Wool Double Breasted Coat Detail', 2, false),
-
-  -- Le Rond Leather Bag
-  ('e5010101-5010-5010-5010-501050105010', 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?q=80&w=600&auto=format&fit=crop', 'juicy/accessories/leather_bag_primary', 'Le Rond Leather Bag Studio Front', 1, true),
-  ('e5010101-5010-5010-5010-501050105010', 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?q=80&w=600&auto=format&fit=crop', 'juicy/accessories/leather_bag_detail', 'Le Rond Leather Bag Handle Detail', 2, false),
-
-  -- Wide Brim Straw Hat
-  ('e5020202-5020-5020-5020-502050205020', 'https://images.unsplash.com/photo-1572451479139-6a308211d8be?q=80&w=600&auto=format&fit=crop', 'juicy/accessories/straw_hat_primary', 'Wide Brim Straw Hat Front View', 1, true),
-  ('e5020202-5020-5020-5020-502050205020', 'https://images.unsplash.com/photo-1533827432537-70133748f5c8?q=80&w=600&auto=format&fit=crop', 'juicy/accessories/straw_hat_detail', 'Wide Brim Straw Hat Flat Lay', 2, false),
-
-  -- Chunky Link Necklace
-  ('e5030303-5030-5030-5030-503050305030', 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=600&auto=format&fit=crop', 'juicy/accessories/link_necklace_primary', 'Chunky Link Necklace Flat View', 1, true),
-  ('e5030303-5030-5030-5030-503050305030', 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=600&auto=format&fit=crop', 'juicy/accessories/link_necklace_detail', 'Chunky Link Necklace Clasp Detail', 2, false),
-
-  -- Linen Lounge Set
-  ('f6010101-6010-6010-6010-601060106010', 'https://images.unsplash.com/photo-1607345366928-199e5760eeaa?q=80&w=600&auto=format&fit=crop', 'juicy/sets/linen_lounge_primary', 'Linen Lounge Set Model Front', 1, true),
-  ('f6010101-6010-6010-6010-601060106010', 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?q=80&w=600&auto=format&fit=crop', 'juicy/sets/linen_lounge_flat', 'Linen Lounge Set Flat Lay', 2, false),
-
-  -- Ribbed Knit Lounge Set
-  ('f6020202-6020-6020-6020-602060206020', 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?q=80&w=600&auto=format&fit=crop', 'juicy/sets/knit_lounge_primary', 'Ribbed Knit Lounge Set Model View', 1, true),
-  ('f6020202-6020-6020-6020-602060206020', 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?q=80&w=600&auto=format&fit=crop', 'juicy/sets/knit_lounge_detail', 'Ribbed Knit Lounge Set Fabric Close-up', 2, false),
-
-  -- Tailored Blazer Suit Set
-  ('f6030303-6030-6030-6030-603060306030', 'https://images.unsplash.com/photo-1548624149-f8b03d65f528?q=80&w=600&auto=format&fit=crop', 'juicy/sets/blazer_suit_primary', 'Tailored Blazer Suit Set Front View', 1, true),
-  ('f6030303-6030-6030-6030-603060306030', 'https://images.unsplash.com/photo-1617137968427-85924c800a22?q=80&w=600&auto=format&fit=crop', 'juicy/sets/blazer_suit_detail', 'Tailored Blazer Suit Set Model Detail', 2, false);
+\restrict UbnYKWKQLb24GBe1z0WqhjEadX2jmukjzmEJ99ZzrBXOQSnJuQEJT8Ook4jZbsa
+INSERT INTO public.customers VALUES ('7eb8ac10-7cfb-4610-85b4-44584dcaf385', 'Serena', 'reyner@mail.com', '$2a$10$Qp1WGvDGclGJTH0cQVMTc.bBr83ZSLGkWAk0pR0SwziieBf.Af82C', '+6281210828785', true, '2026-05-26 12:10:38.702165+07', '2026-05-27 19:14:36.850607+07');
+INSERT INTO public.customers VALUES ('e7f11b2b-6fb8-46c7-b959-74cb7f804897', 'Rillah', 'rillah@gmail.com', '$2a$10$H1bZAhhQvfDj3IA/DoymzOdLspEyQamrjo52Te0B2l/ugFAVcnuoy', '+6281210828785', true, '2026-05-29 01:29:46.321277+07', '2026-05-29 01:32:54.060504+07');
+INSERT INTO public.addresses VALUES ('c8d98b8d-657a-4860-988d-45b8573699e2', '7eb8ac10-7cfb-4610-85b4-44584dcaf385', 'Home', 'rillah', '+6281210828785', 'Apart', 'Palembang', 'Palembang', '30764', true, '2026-05-26 15:08:09.122566+07', '2026-05-26 15:08:12.318238+07');
+INSERT INTO public.addresses VALUES ('262b4836-3fdf-4aba-b640-5d6d4559b778', 'e7f11b2b-6fb8-46c7-b959-74cb7f804897', 'Home', 'Rillah', '+6281210828785', 'Jl. Sudirman', 'Bandung', 'Jawa Barat', '23431', false, '2026-05-29 01:31:29.321869+07', '2026-05-29 01:31:29.321869+07');
+INSERT INTO public.admins VALUES ('c2a4ba90-83bb-4bb7-9479-8c656fe2d1bb', 'admin', 'admin@juicy.com', '$2a$10$y58ZRzNuJqE5wd5abYZgNu78EgmStYnBRYcgZlnFjAXUd2JixbAkm', '2026-05-25 10:41:54.984828+07', '2026-05-25 10:41:54.984828+07');
+INSERT INTO public.categories VALUES ('d9f10547-3e08-48cd-823e-d248c5c89185', 'Accessories', 'accessories', 'The subtle details that complete your style narrative. An exclusive curation of fine accessories to provide a distinctive finishing touch.', 4, true, '2026-05-28 12:06:59.500808+07', '2026-05-28 12:07:16.280836+07', NULL);
+INSERT INTO public.categories VALUES ('40b65bf4-9f2e-4d0b-817f-8650277940af', 'Shoes', 'shoes', 'Footwear meticulously crafted by exceptional artisans. Step forward with absolute confidence in silhouettes built to last', 3, true, '2026-05-28 12:06:51.191895+07', '2026-05-28 12:07:37.087629+07', NULL);
+INSERT INTO public.categories VALUES ('8561733b-e658-40d9-aaaf-c0faf7827e13', 'Shoulder Bags', 'shoulder-bags', 'Versatile shoulder and crossbody bags in medium silhouettes. The ideal flexible companion for your daily routine.', 1, true, '2026-05-28 12:09:20.04257+07', '2026-05-28 12:09:20.04257+07', '3d28b0ad-37e1-4452-ba96-8223bbe15a98');
+INSERT INTO public.categories VALUES ('b7969dc1-13b2-4573-a5b5-a3ed20fdb683', 'Totes & Shoppers', 'totes--shoppers', 'Spacious carryalls engineered from robust leather. The ultimate compromise between functional room and luxury visual impact.', 2, true, '2026-05-28 12:09:35.512729+07', '2026-05-28 12:09:49.682673+07', '3d28b0ad-37e1-4452-ba96-8223bbe15a98');
+INSERT INTO public.categories VALUES ('5b21e5bf-107f-485a-a1e9-0f329af5472a', 'Clutches & Mini Bags', 'clutches--mini-bags', 'Minimalist silhouettes designed for evening essentials. Housing your belongings in striking, compact designs', 3, true, '2026-05-28 12:10:23.811918+07', '2026-05-28 12:10:23.811918+07', '3d28b0ad-37e1-4452-ba96-8223bbe15a98');
+INSERT INTO public.categories VALUES ('8c22b476-78e7-423d-aa6c-05d1993fb45e', 'Backpacks', 'backpacks', 'Premium backpacks approaching luxury streetwear. A casual alternative that strictly maintains high-fashion standards.', 4, true, '2026-05-28 12:10:45.663745+07', '2026-05-28 12:10:45.663745+07', '3d28b0ad-37e1-4452-ba96-8223bbe15a98');
+INSERT INTO public.categories VALUES ('977572c4-a69f-4076-9732-406bd08347f3', 'Heels and Pumps', 'heels-and-pumps', 'Elegant stiletto curves meets optimized comfort. Designed for formal galas, red carpets, and sophisticated evening wear', 1, true, '2026-05-28 12:11:10.085764+07', '2026-05-28 12:11:10.085764+07', '40b65bf4-9f2e-4d0b-817f-8650277940af');
+INSERT INTO public.categories VALUES ('de7ad84e-c602-44f3-8e50-737fed931d24', 'Boots', 'boots', 'Ankle and knee-high boots crafted from premium leather. Delivering a bold character and stylish protection across all seasons', 2, true, '2026-05-28 12:11:27.901299+07', '2026-05-28 12:11:27.901299+07', '40b65bf4-9f2e-4d0b-817f-8650277940af');
+INSERT INTO public.categories VALUES ('260e23de-d224-430c-8d60-0f806debd97a', 'Flat Shoes', 'flat-shoes', 'Smart flat-sole options for a refined smart-casual aesthetic. Maximum comfort without sacrificing a sharp, professional edge.', 3, true, '2026-05-28 12:11:53.171786+07', '2026-05-28 12:11:53.171786+07', '40b65bf4-9f2e-4d0b-817f-8650277940af');
+INSERT INTO public.categories VALUES ('80bb16d6-d80c-4997-85bf-ca21063232fc', 'Sneakers', 'sneakers', 'Contemporary low and high-tops featuring premium material curation. Redefining modern comfort within the high-fashion realm', 4, true, '2026-05-28 12:12:09.432618+07', '2026-05-28 12:12:09.432618+07', '40b65bf4-9f2e-4d0b-817f-8650277940af');
+INSERT INTO public.categories VALUES ('686bf01c-0ca1-40ac-9d5c-0e95e20abcc0', 'Belts', 'belts', 'Fine leather belts adorned with minimalist buckles, acting as the perfect accent to define your clothing''s silhouette.', 1, true, '2026-05-28 12:12:29.350414+07', '2026-05-28 12:12:29.350414+07', 'd9f10547-3e08-48cd-823e-d248c5c89185');
+INSERT INTO public.categories VALUES ('323c213b-e16e-486a-aa2c-c95ab4f28b2b', 'Sunglasses', 'sunglasses', 'Avant-garde frames pairing maximum UV protection with runway aesthetics. A sharp statement piece under the sun', 2, true, '2026-05-28 12:12:53.136935+07', '2026-05-28 12:12:53.136935+07', 'd9f10547-3e08-48cd-823e-d248c5c89185');
+INSERT INTO public.categories VALUES ('6b9ece63-984e-492f-98c7-3749ec068815', 'Beuty', 'beuty', 'Beauty', 5, true, '2026-05-28 12:14:48.455921+07', '2026-05-28 12:14:48.455921+07', NULL);
+INSERT INTO public.categories VALUES ('233bf271-e8b7-4d37-be50-d7f4e0fd11b1', 'Skincare', 'skincare', NULL, 1, true, '2026-05-28 01:06:56.735617+07', '2026-05-28 12:15:15.419048+07', '6b9ece63-984e-492f-98c7-3749ec068815');
+INSERT INTO public.categories VALUES ('0e8d5c1d-2c12-4b4f-b990-ae8ba8244957', 'Perfume', 'perfume', NULL, 2, true, '2026-05-27 23:38:02.176023+07', '2026-05-28 12:15:25.760438+07', '6b9ece63-984e-492f-98c7-3749ec068815');
+INSERT INTO public.categories VALUES ('24f1e4a3-be88-47ac-9ae6-020a46d10e33', 'Apparel', 'apparel', 'An editorially curated collection of foundational garments. Featuring modern silhouettes, sharp tailoring, and premium materials designed to define your personal style', 1, true, '2026-05-28 12:04:05.017583+07', '2026-05-28 12:04:05.017583+07', NULL);
+INSERT INTO public.categories VALUES ('8c0c7547-78b2-43ff-87e3-6af2cc19843b', 'Outerwear', 'outerwear', 'From classic trench coats to sharply tailored blazers. Engineered as definitive statement pieces to complete any look', 1, true, '2026-05-28 12:04:32.221195+07', '2026-05-28 12:04:32.221195+07', '24f1e4a3-be88-47ac-9ae6-020a46d10e33');
+INSERT INTO public.categories VALUES ('332a8332-3913-4399-b2de-f167e2f5db74', 'Dresses & Jumpsuits', 'dresses--jumpsuits', 'Editorial dresses and luxury one-pieces for formal occasions and elevated casual settings. Offering instant elegance in a single silhouette.', 4, true, '2026-05-28 12:05:36.870873+07', '2026-05-28 12:05:36.870873+07', '24f1e4a3-be88-47ac-9ae6-020a46d10e33');
+INSERT INTO public.categories VALUES ('39623d5e-f4f4-4a12-97cb-d279da4f9383', 'Bottoms', 'bottoms', 'Tailored trousers, premium denim, and contemporary skirts crafted for precise fit and high-end comfort', 3, true, '2026-05-28 12:05:01.122087+07', '2026-05-28 12:05:48.220274+07', '24f1e4a3-be88-47ac-9ae6-020a46d10e33');
+INSERT INTO public.categories VALUES ('ef45f154-bee0-41f9-8d86-e0da24268ab0', 'Tops', 'tops', 'Sartorial shirts, silk blouses, and premium tees. Essential building blocks for a clean, effortless daily wardrobe.', 2, true, '2026-05-28 12:04:44.424402+07', '2026-05-28 12:05:54.17629+07', '24f1e4a3-be88-47ac-9ae6-020a46d10e33');
+INSERT INTO public.categories VALUES ('10a21018-325f-4916-9564-50457d62f261', 'Knitwear', 'knitwear', 'Sweaters and cardigans meticulously knit from selected wool and cashmere blends. Luxurious warmth with rich textural depth.', 5, true, '2026-05-28 12:06:18.338703+07', '2026-05-28 12:06:18.338703+07', '24f1e4a3-be88-47ac-9ae6-020a46d10e33');
+INSERT INTO public.categories VALUES ('3d28b0ad-37e1-4452-ba96-8223bbe15a98', 'Bags', 'bags', 'An investment in enduring style. A curated lineup of premium bags that perfectly balances high functionality with timeless artistic aesthetic.', 2, true, '2026-05-28 12:06:41.04979+07', '2026-05-28 12:06:41.04979+07', NULL);
+INSERT INTO public.products VALUES ('e5bdf343-8f5c-402c-97ef-58aab2a7dd45', '8c0c7547-78b2-43ff-87e3-6af2cc19843b', 'Monogram Hooded Parka', 'monogram-hooded-parka', 'This parka is a sporty staple in water-resistant nylon featuring a tonal allover Monogram motif as a subtle signature. A generous drawstring hood and elasticized cuffs keep out the weather, while flap pockets add a practical detail to the sides. Complete with a golden zipper fastening.', 63000000.00, 3000000.00, true, false, '[]', 2, '2026-05-28 12:28:56.875673+07', '2026-05-28 13:29:02.738847+07');
+INSERT INTO public.products VALUES ('805bbe04-3f6b-49eb-abca-ed922acf170e', '8c0c7547-78b2-43ff-87e3-6af2cc19843b', 'Parka With Cuts', 'parka-with-cuts', '', 72000000.00, 2000000.00, true, false, '[]', 3, '2026-05-28 13:21:52.106165+07', '2026-05-28 13:29:16.367277+07');
+INSERT INTO public.products VALUES ('7e539860-9f6a-481b-99a2-60e4c76065d7', '8c0c7547-78b2-43ff-87e3-6af2cc19843b', 'Shiny Monogram Short Parka', 'shiny-monogram-short-parka', '', 71000000.00, 500000.00, true, true, '[]', 4, '2026-05-28 13:26:40.678984+07', '2026-05-28 13:30:23.593567+07');
+INSERT INTO public.products VALUES ('e852bf2e-561d-448a-8a63-91105e6f654c', 'ef45f154-bee0-41f9-8d86-e0da24268ab0', 'Scarf Collar Long-Sleeved Top', 'scarf-collar-long-sleeved-top', '', 28400000.00, NULL, true, false, '[]', 2, '2026-05-28 14:26:06.2501+07', '2026-05-28 14:26:06.2501+07');
+INSERT INTO public.products VALUES ('c938553a-6dc3-4e10-b236-9a4d9fb1d7f3', '8561733b-e658-40d9-aaaf-c0faf7827e13', 'Nano Madeleine', 'nano-madeleine', '', 47500000.00, NULL, true, false, '[]', 3, '2026-05-28 14:35:31.641296+07', '2026-05-28 14:35:31.641296+07');
+INSERT INTO public.products VALUES ('a6ebe9d5-3ae1-464e-861d-58257db53911', '332a8332-3913-4399-b2de-f167e2f5db74', 'Monogram Silk Shirt Dress', 'monogram-silk-shirt-dress', '', 66500000.00, NULL, true, false, '[]', 1, '2026-05-28 14:39:13.140582+07', '2026-05-28 14:39:13.140582+07');
+INSERT INTO public.products VALUES ('52c08a93-8619-46d0-b53c-600f257f7bef', '332a8332-3913-4399-b2de-f167e2f5db74', 'Color-Blocked Belted Shirt Dress', 'color-blocked-belted-shirt-dress', '', 76000000.00, NULL, true, false, '[]', 2, '2026-05-28 14:40:55.992436+07', '2026-05-28 14:41:10.948396+07');
+INSERT INTO public.products VALUES ('fc314bd9-27a8-4f76-88c2-28522bfb0ad4', '10a21018-325f-4916-9564-50457d62f261', 'Fringe Hem Toweling Jacket', 'fringe-hem-toweling-jacket', '', 61000000.00, NULL, true, false, '[]', -1, '2026-05-29 00:55:17.304127+07', '2026-05-29 00:55:17.304127+07');
+INSERT INTO public.products VALUES ('1a5ebe63-0503-4f3c-b4c2-9e8efcbe0eda', '10a21018-325f-4916-9564-50457d62f261', 'Utility Flap Gilet', 'utility-flap-gilet', '', 60000000.00, NULL, true, false, '[]', 2, '2026-05-29 01:04:20.686405+07', '2026-05-29 01:04:20.686405+07');
+INSERT INTO public.products VALUES ('f3d27cea-be82-429a-8135-924ae98ac12d', '10a21018-325f-4916-9564-50457d62f261', 'Sailor Collar Knit Dress', 'sailor-collar-knit-dress', '', 59000000.00, NULL, true, false, '[]', 3, '2026-05-29 01:06:08.25048+07', '2026-05-29 01:06:08.25048+07');
+INSERT INTO public.products VALUES ('ba5f36b8-b4dd-43d0-9385-f05184d9143f', '10a21018-325f-4916-9564-50457d62f261', 'Anchor Button Knit Jacket', 'anchor-button-knit-jacket', '', 61000000.00, NULL, true, false, '[]', 4, '2026-05-29 01:07:55.803376+07', '2026-05-29 01:08:00.55888+07');
+INSERT INTO public.products VALUES ('743d3359-41c3-4e60-9370-112f30c402de', '39623d5e-f4f4-4a12-97cb-d279da4f9383', 'Monogram Jacquard Shorts', 'monogram-jacquard-shorts', '', 32500000.00, NULL, true, false, '[]', 1, '2026-05-29 01:13:22.624767+07', '2026-05-29 01:13:22.624767+07');
+INSERT INTO public.products VALUES ('c9f092ad-514a-486e-ad21-4e311ade6c63', 'ef45f154-bee0-41f9-8d86-e0da24268ab0', 'Knot Front Knit Top', 'knot-front-knit-top', '', 88500000.00, NULL, true, true, '[]', 3, '2026-05-29 01:10:10.265669+07', '2026-05-29 01:20:44.013167+07');
+INSERT INTO public.products VALUES ('9446ee75-b503-45d8-ae7a-847d45bec1ca', 'ef45f154-bee0-41f9-8d86-e0da24268ab0', 'Flared Sleeve Lavallière Blouse', 'flared-sleeve-lavallire-blouse', '', 48500000.00, NULL, true, false, '[]', 1, '2026-05-28 14:24:00.40029+07', '2026-05-29 01:21:03.700068+07');
+INSERT INTO public.products VALUES ('8ea2722a-d2e1-44c3-bd58-bd5cf4ee8d14', '8c0c7547-78b2-43ff-87e3-6af2cc19843b', 'Damier Hooded Parka', 'damier-hooded-parka', '', 72000000.00, NULL, true, false, '[]', 1, '2026-05-28 13:23:57.645099+07', '2026-05-29 01:21:42.426923+07');
+INSERT INTO public.products VALUES ('84c47106-d7a3-4e91-8d03-d30c6dde7eb0', '8561733b-e658-40d9-aaaf-c0faf7827e13', 'Pochette Métis East West', 'pochette-mtis-east-west', '', 69500000.00, NULL, true, false, '[]', 2, '2026-05-28 14:32:32.268923+07', '2026-05-29 01:22:30.915287+07');
+INSERT INTO public.products VALUES ('3f0b9743-fc4a-49b6-beec-8e0e28e148e9', '8561733b-e658-40d9-aaaf-c0faf7827e13', 'Speedy Bandouliere 20', 'speedy-bandouliere-20', '', 56000000.00, NULL, true, false, '[]', 1, '2026-05-28 14:27:58.345603+07', '2026-05-29 01:22:53.109741+07');
+INSERT INTO public.product_variants VALUES ('a9ff233c-2a30-400d-adc3-c794e2be3b24', '8ea2722a-d2e1-44c3-bd58-bd5cf4ee8d14', '36', 'Warm', 48, 0.00, true, '2026-05-28 13:24:32.619483+07', '2026-05-28 14:12:05.919284+07');
+INSERT INTO public.product_variants VALUES ('2df23483-9dfd-4962-a876-35c7f414f711', 'e5bdf343-8f5c-402c-97ef-58aab2a7dd45', '36', 'White', 100, 0.00, true, '2026-05-28 13:20:15.715159+07', '2026-05-28 14:12:17.888147+07');
+INSERT INTO public.product_variants VALUES ('0bcb67c6-2381-4ff6-aaa2-7856c58b2786', 'e852bf2e-561d-448a-8a63-91105e6f654c', '40', 'White', 36, 0.00, true, '2026-05-28 14:26:32.591119+07', '2026-05-28 14:26:32.591119+07');
+INSERT INTO public.product_variants VALUES ('2f7a3771-3544-4172-9d92-ece4390eed63', 'e5bdf343-8f5c-402c-97ef-58aab2a7dd45', '38', 'Beet Red', 100, 0.00, false, '2026-05-28 12:36:26.600909+07', '2026-05-28 12:37:15.967451+07');
+INSERT INTO public.product_variants VALUES ('83dce56d-69dd-41af-a81c-f2cf5bed55e4', 'c938553a-6dc3-4e10-b236-9a4d9fb1d7f3', 'md', 'Purple', 10, 0.00, true, '2026-05-28 14:36:07.176044+07', '2026-05-28 14:36:07.176044+07');
+INSERT INTO public.product_variants VALUES ('71c6c8ab-8d8b-4381-83cb-25600a2acd36', 'a6ebe9d5-3ae1-464e-861d-58257db53911', '38', 'Black', 50, 0.00, true, '2026-05-28 14:39:31.600643+07', '2026-05-28 14:39:31.600643+07');
+INSERT INTO public.product_variants VALUES ('d6dc4704-f8b1-40ce-8330-845f152f6d22', 'a6ebe9d5-3ae1-464e-861d-58257db53911', '40', 'Black', 50, 0.00, true, '2026-05-28 14:39:40.740202+07', '2026-05-28 14:39:40.740202+07');
+INSERT INTO public.product_variants VALUES ('d9010a26-9f49-49dc-aab4-195665178258', '52c08a93-8619-46d0-b53c-600f257f7bef', '38', 'White', 50, 0.00, true, '2026-05-28 14:41:28.710673+07', '2026-05-28 14:41:28.710673+07');
+INSERT INTO public.product_variants VALUES ('d9e37315-dc65-4dc4-8e60-c8ba53e61984', '52c08a93-8619-46d0-b53c-600f257f7bef', '40', 'White', 50, 0.00, true, '2026-05-28 14:41:37.236565+07', '2026-05-28 14:41:37.236565+07');
+INSERT INTO public.product_variants VALUES ('8cb167fa-5342-4359-80ae-73f56232c0a1', 'e852bf2e-561d-448a-8a63-91105e6f654c', '38', 'White', 39, 0.00, true, '2026-05-28 14:26:24.297799+07', '2026-05-28 14:58:30.698147+07');
+INSERT INTO public.product_variants VALUES ('1c738139-1f4e-4152-bb26-8c55dba0bbdb', '8ea2722a-d2e1-44c3-bd58-bd5cf4ee8d14', '38', 'Warm', 50, 0.00, true, '2026-05-28 13:24:41.051126+07', '2026-05-28 13:26:03.425875+07');
+INSERT INTO public.product_variants VALUES ('2faeadd5-8f7d-428e-82bd-17d1234f7902', 'fc314bd9-27a8-4f76-88c2-28522bfb0ad4', 'XS', 'White', 20, 0.00, true, '2026-05-29 00:56:24.092904+07', '2026-05-29 00:56:36.321223+07');
+INSERT INTO public.product_variants VALUES ('558ed5b8-7fe2-4162-bbd6-538a4f26905b', 'fc314bd9-27a8-4f76-88c2-28522bfb0ad4', 'S', 'White', 20, 0.00, true, '2026-05-29 00:56:42.324513+07', '2026-05-29 00:56:42.324513+07');
+INSERT INTO public.product_variants VALUES ('901f5497-2ad7-49c1-af4b-cc9c700a653f', 'fc314bd9-27a8-4f76-88c2-28522bfb0ad4', 'L', 'White', 20, 0.00, true, '2026-05-29 00:57:01.334213+07', '2026-05-29 00:57:01.334213+07');
+INSERT INTO public.product_variants VALUES ('1fb62755-74b5-4141-aab5-bc97e54a3066', 'fc314bd9-27a8-4f76-88c2-28522bfb0ad4', 'XL', 'White', 20, 0.00, true, '2026-05-29 00:57:07.924937+07', '2026-05-29 00:57:13.105557+07');
+INSERT INTO public.product_variants VALUES ('1dde4414-aae0-44b6-938b-93aaae277099', 'fc314bd9-27a8-4f76-88c2-28522bfb0ad4', 'XS', 'Ping', 20, 0.00, true, '2026-05-29 00:58:02.421034+07', '2026-05-29 00:58:02.421034+07');
+INSERT INTO public.product_variants VALUES ('92cef6f8-34d0-4a21-a0f5-bf4b89eabef5', 'fc314bd9-27a8-4f76-88c2-28522bfb0ad4', 'S', 'Ping', 20, 0.00, true, '2026-05-29 00:58:24.628402+07', '2026-05-29 00:58:24.628402+07');
+INSERT INTO public.product_variants VALUES ('ce2362ac-4c78-4b86-a8a8-b5c262f956d5', 'fc314bd9-27a8-4f76-88c2-28522bfb0ad4', 'M', 'Ping', 20, 0.00, true, '2026-05-29 00:58:30.640926+07', '2026-05-29 00:58:30.640926+07');
+INSERT INTO public.product_variants VALUES ('581b94de-29c5-47de-b3d5-2764783783a6', 'fc314bd9-27a8-4f76-88c2-28522bfb0ad4', 'L', 'Ping', 20, 0.00, true, '2026-05-29 00:58:36.475428+07', '2026-05-29 00:58:36.475428+07');
+INSERT INTO public.product_variants VALUES ('28528391-b734-47c8-86c5-518b1dd1bb73', 'fc314bd9-27a8-4f76-88c2-28522bfb0ad4', 'XL', 'Ping', 20, 0.00, true, '2026-05-29 00:58:43.232049+07', '2026-05-29 00:58:43.232049+07');
+INSERT INTO public.product_variants VALUES ('0517e415-4dc7-4339-82e8-a2ab6e462d42', '1a5ebe63-0503-4f3c-b4c2-9e8efcbe0eda', 'S', 'Gray', 20, 0.00, true, '2026-05-29 01:04:42.110693+07', '2026-05-29 01:04:46.632506+07');
+INSERT INTO public.product_variants VALUES ('5f8286d7-9a2f-46a9-93da-5fe86cf84d77', '1a5ebe63-0503-4f3c-b4c2-9e8efcbe0eda', 'M', 'Gray', 20, 0.00, true, '2026-05-29 01:04:54.018578+07', '2026-05-29 01:04:54.018578+07');
+INSERT INTO public.product_variants VALUES ('631919a3-cde7-4e9a-95a5-1e8b7fcc353e', '1a5ebe63-0503-4f3c-b4c2-9e8efcbe0eda', 'L', 'Gray', 20, 0.00, true, '2026-05-29 01:05:00.865024+07', '2026-05-29 01:05:00.865024+07');
+INSERT INTO public.product_variants VALUES ('6aa1e4e3-0458-4917-ada1-f77413a8cb5f', 'f3d27cea-be82-429a-8135-924ae98ac12d', 'S', 'Navy', 20, 0.00, true, '2026-05-29 01:06:23.862438+07', '2026-05-29 01:06:23.862438+07');
+INSERT INTO public.product_variants VALUES ('586d542b-750a-4ca5-805a-80e2d95a1232', '8ea2722a-d2e1-44c3-bd58-bd5cf4ee8d14', '40', 'Warm', 20, 0.00, true, '2026-05-28 13:24:48.082335+07', '2026-05-28 13:26:06.830868+07');
+INSERT INTO public.product_variants VALUES ('56e796a2-427e-4da9-9781-82d3602f61c7', 'f3d27cea-be82-429a-8135-924ae98ac12d', 'M', 'Navy', 20, 0.00, true, '2026-05-29 01:06:34.651564+07', '2026-05-29 01:06:34.651564+07');
+INSERT INTO public.product_variants VALUES ('65360ee7-8ab3-4741-a353-1a6a8973432d', 'e5bdf343-8f5c-402c-97ef-58aab2a7dd45', '38', 'White', 100, 0.00, true, '2026-05-28 12:47:09.162146+07', '2026-05-28 12:47:09.162146+07');
+INSERT INTO public.product_variants VALUES ('41748e61-fed7-472e-afb8-5fa30336d772', 'e5bdf343-8f5c-402c-97ef-58aab2a7dd45', '40', 'White', 100, 0.00, true, '2026-05-28 13:20:02.903039+07', '2026-05-28 13:20:02.903039+07');
+INSERT INTO public.product_variants VALUES ('f0d71bd0-2037-48d6-b331-5a0091dc7de3', '805bbe04-3f6b-49eb-abca-ed922acf170e', '36', 'Orange', 100, 0.00, true, '2026-05-28 13:22:12.653165+07', '2026-05-28 13:22:12.653165+07');
+INSERT INTO public.product_variants VALUES ('477e4109-fa10-46e9-98ee-6637b328f5b8', '805bbe04-3f6b-49eb-abca-ed922acf170e', '38', 'Orange', 100, 0.00, true, '2026-05-28 13:22:19.579136+07', '2026-05-28 13:22:19.579136+07');
+INSERT INTO public.product_variants VALUES ('b27ce1ad-fc5d-4ac7-b1c7-91e5f01c42bb', '805bbe04-3f6b-49eb-abca-ed922acf170e', '40', 'Orange', 100, 0.00, true, '2026-05-28 13:22:28.820648+07', '2026-05-28 13:22:28.820648+07');
+INSERT INTO public.product_variants VALUES ('06a45385-2969-4dd4-8675-9f753abb9e28', 'f3d27cea-be82-429a-8135-924ae98ac12d', 'L', 'Navy', 20, 0.00, true, '2026-05-29 01:06:41.538693+07', '2026-05-29 01:06:46.866498+07');
+INSERT INTO public.product_variants VALUES ('c5989af5-d723-4af9-a7f5-b7f29cfd5c72', '7e539860-9f6a-481b-99a2-60e4c76065d7', '36', 'White', 20, 0.00, true, '2026-05-28 13:27:06.44195+07', '2026-05-28 13:27:06.44195+07');
+INSERT INTO public.product_variants VALUES ('63fcb19a-46d8-41e3-8952-bfb98c650d0b', 'ba5f36b8-b4dd-43d0-9385-f05184d9143f', 'S', 'Warm', 20, 0.00, true, '2026-05-29 01:08:11.442659+07', '2026-05-29 01:08:11.442659+07');
+INSERT INTO public.product_variants VALUES ('5e389d11-2926-43b0-82cd-6244533ef8b4', 'ba5f36b8-b4dd-43d0-9385-f05184d9143f', 'M', 'Warm', 20, 0.00, true, '2026-05-29 01:08:18.421471+07', '2026-05-29 01:08:18.421471+07');
+INSERT INTO public.product_variants VALUES ('1c26a9ac-e95f-4638-b4cd-820409cf41d9', 'ba5f36b8-b4dd-43d0-9385-f05184d9143f', 'L', 'Warm', 20, 0.00, true, '2026-05-29 01:08:24.310099+07', '2026-05-29 01:08:24.310099+07');
+INSERT INTO public.product_variants VALUES ('1ae143db-2133-41f5-8b00-c4aa0a40877a', '743d3359-41c3-4e60-9370-112f30c402de', '38', 'Navy', 20, 0.00, true, '2026-05-29 01:13:37.191313+07', '2026-05-29 01:13:37.191313+07');
+INSERT INTO public.product_variants VALUES ('420a6ee7-66d5-4c0b-bec6-90dfb3ac6c28', '743d3359-41c3-4e60-9370-112f30c402de', '40', 'Navy', 20, 0.00, true, '2026-05-29 01:13:42.662379+07', '2026-05-29 01:13:42.662379+07');
+INSERT INTO public.product_variants VALUES ('cd8bdb7d-d7d3-494f-bfb1-7503be6e383b', 'c9f092ad-514a-486e-ad21-4e311ade6c63', '3L', 'Black', 20, 0.00, true, '2026-05-29 01:10:58.25168+07', '2026-05-29 01:10:58.25168+07');
+INSERT INTO public.product_variants VALUES ('d4d0c832-6583-4ef4-86b8-6bc4313f0b4a', 'c9f092ad-514a-486e-ad21-4e311ade6c63', 'S', 'Black', 20, 0.00, true, '2026-05-29 01:10:32.0427+07', '2026-05-29 01:10:32.0427+07');
+INSERT INTO public.product_variants VALUES ('a9fe5d88-99c1-40de-9421-762d6dc8866b', '9446ee75-b503-45d8-ae7a-847d45bec1ca', '36', 'Warm', 30, 0.00, true, '2026-05-28 14:24:23.124633+07', '2026-05-28 14:24:23.124633+07');
+INSERT INTO public.product_variants VALUES ('cd755305-5d23-4a46-a62d-516a9aa272e5', '9446ee75-b503-45d8-ae7a-847d45bec1ca', '38', 'Warm', 19, 0.00, true, '2026-05-28 14:24:29.917032+07', '2026-05-28 14:58:30.703467+07');
+INSERT INTO public.product_variants VALUES ('39103aa1-4142-4c11-928a-3207f7ef7162', '9446ee75-b503-45d8-ae7a-847d45bec1ca', '40', 'Warm', 6, 0.00, true, '2026-05-28 14:24:44.076861+07', '2026-05-28 14:24:44.076861+07');
+INSERT INTO public.product_variants VALUES ('56c10589-7af4-4175-9efb-4962a5bf93f7', '84c47106-d7a3-4e91-8d03-d30c6dde7eb0', 'md', 'Brown', 10, 0.00, true, '2026-05-28 14:34:45.01415+07', '2026-05-28 14:34:55.921137+07');
+INSERT INTO public.product_variants VALUES ('fd8ea88c-024f-4c58-bd4c-c7f4b8854fe2', '84c47106-d7a3-4e91-8d03-d30c6dde7eb0', 'md', 'Ping', 10, 0.00, true, '2026-05-28 14:34:18.776304+07', '2026-05-28 14:34:18.776304+07');
+INSERT INTO public.product_variants VALUES ('88a71d0c-eff4-42b7-8079-3d0008e642b0', '3f0b9743-fc4a-49b6-beec-8e0e28e148e9', 'md', 'Brown', 10, 0.00, true, '2026-05-28 14:30:42.211357+07', '2026-05-28 14:30:42.211357+07');
+INSERT INTO public.product_variants VALUES ('aec2d913-4bd6-4025-ba70-d83a0a6d50de', '3f0b9743-fc4a-49b6-beec-8e0e28e148e9', 'md', 'Pink', 8, 0.00, true, '2026-05-28 14:30:27.670557+07', '2026-05-29 01:31:33.542654+07');
+INSERT INTO public.product_variants VALUES ('38aa866f-49be-487b-97d7-fa3d8d8619fa', 'fc314bd9-27a8-4f76-88c2-28522bfb0ad4', 'M', 'White', 19, 0.00, true, '2026-05-29 00:56:51.282859+07', '2026-05-29 01:31:33.54843+07');
+INSERT INTO public.product_variants VALUES ('6fe96420-eb91-48d9-af31-cd68a16c92ad', 'c9f092ad-514a-486e-ad21-4e311ade6c63', 'M', 'Black', 20, 0.00, true, '2026-05-29 01:10:40.52136+07', '2026-05-29 01:32:38.758676+07');
+INSERT INTO public.product_variants VALUES ('d49aa614-283c-48bc-a2d9-bf1c6b3ac686', '7e539860-9f6a-481b-99a2-60e4c76065d7', '38', 'White', 15, 0.00, true, '2026-05-28 13:26:52.255152+07', '2026-06-18 06:43:16.127927+07');
+INSERT INTO public.orders VALUES ('1b4361c7-5335-4eaa-a74e-e12f647daa9d', '7eb8ac10-7cfb-4610-85b4-44584dcaf385', 'c8d98b8d-657a-4860-988d-45b8573699e2', 'JUICY-260528-UO85BU', 'delivered', 497000000.00, 25000.00, 497025000.00, 'paid', 'cod', 'Checkout from storefront customer app', NULL, '2026-05-28 14:10:44.42309+07', '2026-05-28 14:10:35.385562+07', '2026-05-28 14:10:44.424936+07');
+INSERT INTO public.orders VALUES ('f5defc32-8b17-4fbc-85dd-a9603e262b71', '7eb8ac10-7cfb-4610-85b4-44584dcaf385', 'c8d98b8d-657a-4860-988d-45b8573699e2', 'JUICY-260528-Q27ZVH', 'pending', 72000000.00, 25000.00, 72025000.00, 'unpaid', 'cod', 'Checkout from storefront customer app', NULL, NULL, '2026-05-28 14:12:05.91893+07', '2026-05-28 14:12:05.91893+07');
+INSERT INTO public.orders VALUES ('c2d243e8-2cd4-4e52-bef9-8a8f1c8bd10d', '7eb8ac10-7cfb-4610-85b4-44584dcaf385', 'c8d98b8d-657a-4860-988d-45b8573699e2', 'JUICY-260528-ZRZEWJ', 'cancelled', 63000000.00, 25000.00, 63025000.00, 'unpaid', 'cod', 'Checkout from storefront customer app', NULL, NULL, '2026-05-28 14:12:17.887691+07', '2026-05-28 14:12:21.908345+07');
+INSERT INTO public.orders VALUES ('775f4fa4-38e9-4b86-bf49-075bf92bdd88', '7eb8ac10-7cfb-4610-85b4-44584dcaf385', 'c8d98b8d-657a-4860-988d-45b8573699e2', 'JUICY-260526-JRRYMJ', 'delivered', 2060000.00, 25000.00, 2085000.00, 'paid', 'cod', 'Checkout from storefront customer app', NULL, '2026-05-26 20:15:27.057902+07', '2026-05-26 19:11:44.836171+07', '2026-05-26 20:15:27.060336+07');
+INSERT INTO public.orders VALUES ('6fa1a9fc-fc58-464d-8762-e0a568a45c5b', '7eb8ac10-7cfb-4610-85b4-44584dcaf385', 'c8d98b8d-657a-4860-988d-45b8573699e2', 'JUICY-260528-SB7Y5E', 'delivered', 132900000.00, 25000.00, 132925000.00, 'paid', 'cod', 'Checkout from storefront customer app', '2026-05-28 14:59:02.719904+07', '2026-05-28 14:59:24.675062+07', '2026-05-28 14:58:30.696708+07', '2026-05-28 14:59:24.67749+07');
+INSERT INTO public.orders VALUES ('57169eb8-9bf9-4463-bfb1-d6eeee124bcf', '7eb8ac10-7cfb-4610-85b4-44584dcaf385', 'c8d98b8d-657a-4860-988d-45b8573699e2', 'JUICY-260526-I4X0GH', 'delivered', 1245000.00, 25000.00, 1270000.00, 'paid', 'cod', 'Checkout from storefront customer app', NULL, '2026-05-26 20:28:51.973687+07', '2026-05-26 20:15:46.938298+07', '2026-05-26 20:28:51.975685+07');
+INSERT INTO public.orders VALUES ('d476ec21-4e78-4292-8297-2249ee294d58', '7eb8ac10-7cfb-4610-85b4-44584dcaf385', 'c8d98b8d-657a-4860-988d-45b8573699e2', 'JUICY-260526-66IZDB', 'confirmed', 400000.00, 25000.00, 425000.00, 'paid', 'cod', 'Checkout from storefront customer app', '2026-05-27 22:14:03.544241+07', '2026-05-27 22:14:02.288037+07', '2026-05-26 20:29:11.027591+07', '2026-05-28 13:56:57.355916+07');
+INSERT INTO public.orders VALUES ('e7a627b4-9eaa-4229-b74e-5fadf0010e7c', '7eb8ac10-7cfb-4610-85b4-44584dcaf385', 'c8d98b8d-657a-4860-988d-45b8573699e2', 'JUICY-260528-C4T7US', 'delivered', 72000000.00, 25000.00, 72025000.00, 'paid', 'cod', 'Checkout from storefront customer app', '2026-05-28 13:56:02.607307+07', '2026-05-28 13:57:42.42841+07', '2026-05-28 13:55:29.368153+07', '2026-05-28 13:57:42.440122+07');
+INSERT INTO public.orders VALUES ('c2df6f30-e15a-42da-9d96-610997c02b3b', 'e7f11b2b-6fb8-46c7-b959-74cb7f804897', '262b4836-3fdf-4aba-b640-5d6d4559b778', 'JUICY-260529-XXSIEA', 'cancelled', 88500000.00, 25000.00, 88525000.00, 'unpaid', 'cod', 'Checkout from storefront customer app', NULL, '2026-05-29 01:33:11.664556+07', '2026-05-29 01:32:38.758057+07', '2026-05-29 01:33:36.626069+07');
+INSERT INTO public.orders VALUES ('da9c31c1-8622-4a90-bad7-5c60d7c1ba8e', 'e7f11b2b-6fb8-46c7-b959-74cb7f804897', '262b4836-3fdf-4aba-b640-5d6d4559b778', 'JUICY-260529-3IO5RL', 'pending', 205500000.00, 25000.00, 205525000.00, 'paid', 'cod', 'Checkout from storefront customer app', NULL, NULL, '2026-05-29 01:31:33.542036+07', '2026-05-29 01:33:57.005731+07');
+INSERT INTO public.orders VALUES ('ba25cf61-fac3-4e72-8733-b31d9c7b89a7', '7eb8ac10-7cfb-4610-85b4-44584dcaf385', 'c8d98b8d-657a-4860-988d-45b8573699e2', 'JUICY-260618-YDSYIX', 'delivered', 355000000.00, 25000.00, 355025000.00, 'paid', 'cod', 'Checkout from storefront customer app', NULL, '2026-06-18 06:44:31.064709+07', '2026-06-18 06:43:16.125655+07', '2026-06-18 06:44:52.32425+07');
+INSERT INTO public.order_items VALUES ('59b5ceae-3113-40d8-afd1-f442062b90a0', '775f4fa4-38e9-4b86-bf49-075bf92bdd88', NULL, 'Yves Saint Lauren', '7.5ml', 'Beet Red', 'https://dynamic.zacdn.com/ZBqXrdn22QwZeXdDXV1KE11XJ1g=/filters:quality(70):format(webp)/https://static-id.zacdn.com/p/yves-saint-laurent-3296-8085825-1.jpg', 4, 415000.00, '2026-05-26 19:11:44.836171+07');
+INSERT INTO public.order_items VALUES ('debe8c7a-fb18-4820-b7ae-648b16c718a5', '57169eb8-9bf9-4463-bfb1-d6eeee124bcf', NULL, 'Yves Saint Lauren', '7.5ml', 'Beet Red', 'https://dynamic.zacdn.com/ZBqXrdn22QwZeXdDXV1KE11XJ1g=/filters:quality(70):format(webp)/https://static-id.zacdn.com/p/yves-saint-laurent-3296-8085825-1.jpg', 3, 415000.00, '2026-05-26 20:15:46.938298+07');
+INSERT INTO public.order_items VALUES ('443b35a9-d2e5-4f3d-aa92-2231cb7829b8', '775f4fa4-38e9-4b86-bf49-075bf92bdd88', NULL, 'Organic Glow Facial Serum', 'O/S', 'Cream', 'https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?q=80&w=600&auto=format&fit=crop', 2, 200000.00, '2026-05-26 19:11:44.836171+07');
+INSERT INTO public.order_items VALUES ('5acc722b-4463-4c68-9504-f6b3d038e3eb', 'd476ec21-4e78-4292-8297-2249ee294d58', NULL, 'Organic Glow Facial Serum', 'O/S', 'Cream', 'https://images.unsplash.com/photo-1608248597279-f99d160bfcbc?q=80&w=600&auto=format&fit=crop', 2, 200000.00, '2026-05-26 20:29:11.027591+07');
+INSERT INTO public.order_items VALUES ('964065c5-f49a-4562-94f8-b75e60d8dc5e', 'e7a627b4-9eaa-4229-b74e-5fadf0010e7c', 'a9ff233c-2a30-400d-adc3-c794e2be3b24', 'Damier Hooded Parka', '36', 'Warm', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-damier-hooded-parka--FVOW16538004_PM2_Front%20view.png?wid=730&hei=730', 1, 72000000.00, '2026-05-28 13:55:29.368153+07');
+INSERT INTO public.order_items VALUES ('a3980c6a-3f10-42a3-9762-67c7baa2d413', '1b4361c7-5335-4eaa-a74e-e12f647daa9d', 'd49aa614-283c-48bc-a2d9-bf1c6b3ac686', 'Shiny Monogram Short Parka', '38', 'White', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-shiny-monogram-short-parka--FUOI01ZL9001_PM2_Front%20view.png?wid=730&hei=730', 7, 71000000.00, '2026-05-28 14:10:35.385562+07');
+INSERT INTO public.order_items VALUES ('07c27ab1-b67b-4b91-a10b-037e28d1b175', 'f5defc32-8b17-4fbc-85dd-a9603e262b71', 'a9ff233c-2a30-400d-adc3-c794e2be3b24', 'Damier Hooded Parka', '36', 'Warm', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-damier-hooded-parka--FVOW16538004_PM2_Front%20view.png?wid=730&hei=730', 1, 72000000.00, '2026-05-28 14:12:05.91893+07');
+INSERT INTO public.order_items VALUES ('abc07884-6025-41b0-b426-fe5f6d3d0ca8', 'c2d243e8-2cd4-4e52-bef9-8a8f1c8bd10d', '2df23483-9dfd-4962-a876-35c7f414f711', 'Monogram Hooded Parka', '36', 'White', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-monogram-hooded-parka--FVOW18MCI001_PM2_Front%20view.png?wid=730&hei=730', 1, 63000000.00, '2026-05-28 14:12:17.887691+07');
+INSERT INTO public.order_items VALUES ('2c2d47e1-2d43-400f-a622-c0eb3a5d35fd', '6fa1a9fc-fc58-464d-8762-e0a568a45c5b', '8cb167fa-5342-4359-80ae-73f56232c0a1', 'Scarf Collar Long-Sleeved Top', '38', 'White', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-scarf-collar-long-sleeved-top--FUJT20W63002_PM2_Front%20view.png?wid=730&hei=730', 1, 28400000.00, '2026-05-28 14:58:30.696708+07');
+INSERT INTO public.order_items VALUES ('4f9f41d5-54a9-4462-9ec0-8a1cc5aaf741', '6fa1a9fc-fc58-464d-8762-e0a568a45c5b', 'cd755305-5d23-4a46-a62d-516a9aa272e5', 'Flared Sleeve Lavallière Blouse', '38', 'Warm', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-flared-sleeve-lavalliere-blouse--FUBL79PHL006_PM2_Front%20view.png?wid=730&hei=730', 1, 48500000.00, '2026-05-28 14:58:30.696708+07');
+INSERT INTO public.order_items VALUES ('432cf448-58ee-40f7-833c-a76b9591f5ec', '6fa1a9fc-fc58-464d-8762-e0a568a45c5b', 'aec2d913-4bd6-4025-ba70-d83a0a6d50de', 'Speedy Bandouliere 20', 'md', 'Pink', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-speedy-bandouliere-20--M28529_PM2_Front%20view.png?wid=730&hei=730', 1, 56000000.00, '2026-05-28 14:58:30.696708+07');
+INSERT INTO public.order_items VALUES ('7f9c6453-b921-4fc3-b5b7-778f493844b5', 'da9c31c1-8622-4a90-bad7-5c60d7c1ba8e', 'aec2d913-4bd6-4025-ba70-d83a0a6d50de', 'Speedy Bandouliere 20', 'md', 'Pink', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-speedy-bandouliere-20--M28529_PM2_Front%20view.png?wid=730&hei=730', 1, 56000000.00, '2026-05-29 01:31:33.542036+07');
+INSERT INTO public.order_items VALUES ('3d7f7ccc-c7f0-4dcb-94ce-54a36e92dedf', 'da9c31c1-8622-4a90-bad7-5c60d7c1ba8e', '38aa866f-49be-487b-97d7-fa3d8d8619fa', 'Fringe Hem Toweling Jacket', 'M', 'White', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-fringe-hem-toweling-jacket--FVKC35689545_PM1_Worn%20view.png?wid=730&hei=730', 1, 61000000.00, '2026-05-29 01:31:33.542036+07');
+INSERT INTO public.order_items VALUES ('f2b3fc3a-a935-45cb-a44f-b40a4a0fd6de', 'da9c31c1-8622-4a90-bad7-5c60d7c1ba8e', '6fe96420-eb91-48d9-af31-cd68a16c92ad', 'Knot Front Knit Top', 'M', 'Black', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-knot-front-knit-top--FUKM98B8O900_PM1_Cropped%20view.png?wid=730&hei=730', 1, 88500000.00, '2026-05-29 01:31:33.542036+07');
+INSERT INTO public.order_items VALUES ('d9c24ea4-d216-495e-add5-ede9d51ac397', 'c2df6f30-e15a-42da-9d96-610997c02b3b', '6fe96420-eb91-48d9-af31-cd68a16c92ad', 'Knot Front Knit Top', 'M', 'Black', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-knot-front-knit-top--FUKM98B8O900_PM1_Cropped%20view.png?wid=730&hei=730', 1, 88500000.00, '2026-05-29 01:32:38.758057+07');
+INSERT INTO public.order_items VALUES ('4214f589-3f82-40cd-9762-ef252d089be8', 'ba25cf61-fac3-4e72-8733-b31d9c7b89a7', 'd49aa614-283c-48bc-a2d9-bf1c6b3ac686', 'Shiny Monogram Short Parka', '38', 'White', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-shiny-monogram-short-parka--FUOI01ZL9001_PM2_Front%20view.png?wid=730&hei=730', 5, 71000000.00, '2026-06-18 06:43:16.125655+07');
+INSERT INTO public.product_images VALUES ('b78bf419-dad2-44cb-9b01-a166764040d5', '52c08a93-8619-46d0-b53c-600f257f7bef', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-color-blocked-belted-shirt-dress--FVDS21WSZ108_PM1_Worn%20view.png?wid=730&hei=730', NULL, NULL, 0, true, '2026-05-28 14:41:46.396773+07', '2026-05-28 14:41:46.396773+07');
+INSERT INTO public.product_images VALUES ('fe047c8e-f098-4b7c-b51a-268ea5774b33', '52c08a93-8619-46d0-b53c-600f257f7bef', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-color-blocked-belted-shirt-dress--FVDS21WSZ108_PM2_Front%20view.png?wid=730&hei=730', NULL, NULL, 1, false, '2026-05-28 14:41:50.72961+07', '2026-05-28 14:41:50.72961+07');
+INSERT INTO public.product_images VALUES ('9e850490-1c42-47bc-8b08-bedcb13ed524', '52c08a93-8619-46d0-b53c-600f257f7bef', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-color-blocked-belted-shirt-dress--FVDS21WSZ108_PM1_Cropped%20view.png?wid=730&hei=730', NULL, NULL, 2, false, '2026-05-28 14:42:00.120263+07', '2026-05-28 14:42:00.120263+07');
+INSERT INTO public.product_images VALUES ('c81b3f19-5f76-406c-ba7a-5617dac11638', 'fc314bd9-27a8-4f76-88c2-28522bfb0ad4', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-fringe-hem-toweling-jacket--FVKC35689545_PM1_Worn%20view.png?wid=730&hei=730', NULL, NULL, 0, true, '2026-05-29 00:55:55.042741+07', '2026-05-29 00:55:55.042741+07');
+INSERT INTO public.product_images VALUES ('611d1f84-2986-4a6f-8d25-f5c4e90421e4', 'fc314bd9-27a8-4f76-88c2-28522bfb0ad4', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-fringe-hem-toweling-jacket--FVKC35689545_PM2_Front%20view.png?wid=730&hei=730', NULL, NULL, 1, false, '2026-05-29 00:59:19.974392+07', '2026-05-29 00:59:19.974392+07');
+INSERT INTO public.product_images VALUES ('1635d0c6-79a8-4cbd-b95f-d41c31aaeda9', 'fc314bd9-27a8-4f76-88c2-28522bfb0ad4', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-fringe-hem-toweling-jacket--FVKC35689545_PM1_Cropped%20view.png?wid=730&hei=730', NULL, NULL, 2, false, '2026-05-29 00:59:35.379737+07', '2026-05-29 00:59:35.379737+07');
+INSERT INTO public.product_images VALUES ('114c9339-316a-43ca-a544-86ba0a4e7bd6', '1a5ebe63-0503-4f3c-b4c2-9e8efcbe0eda', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-utility-flap-gilet--FVKC12PUS704_PM1_Worn%20view.png?wid=730&hei=730', NULL, NULL, 0, true, '2026-05-29 01:05:07.728977+07', '2026-05-29 01:05:07.728977+07');
+INSERT INTO public.product_images VALUES ('810848bc-f973-43f7-a39e-f30c4ae40b8d', '1a5ebe63-0503-4f3c-b4c2-9e8efcbe0eda', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-utility-flap-gilet--FVKC12PUS704_PM2_Front%20view.png?wid=730&hei=730', NULL, NULL, 1, false, '2026-05-29 01:05:13.200783+07', '2026-05-29 01:05:13.200783+07');
+INSERT INTO public.product_images VALUES ('92ecbcb0-b8f1-485a-b7bb-5feb7c4003a7', '1a5ebe63-0503-4f3c-b4c2-9e8efcbe0eda', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-utility-flap-gilet--FVKC12PUS704_PM1_Side%20view.png?wid=730&hei=730', NULL, NULL, 2, false, '2026-05-29 01:05:18.334538+07', '2026-05-29 01:05:18.334538+07');
+INSERT INTO public.product_images VALUES ('e30aad5b-d876-4200-9316-28e43f4df84e', '1a5ebe63-0503-4f3c-b4c2-9e8efcbe0eda', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-utility-flap-gilet--FVKC12PUS704_PM1_Cropped%20view.png?wid=730&hei=730', NULL, NULL, 3, false, '2026-05-29 01:05:25.743106+07', '2026-05-29 01:05:25.743106+07');
+INSERT INTO public.product_images VALUES ('d531852a-a0c1-4022-a6e9-927ef8d5cb78', 'e5bdf343-8f5c-402c-97ef-58aab2a7dd45', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-monogram-hooded-parka--FVOW18MCI001_PM2_Front%20view.png?wid=730&hei=730', NULL, NULL, 0, true, '2026-05-28 12:29:10.108863+07', '2026-05-28 12:29:10.108863+07');
+INSERT INTO public.product_images VALUES ('e1b770d4-6eff-4177-8c5a-701c9527bed6', 'e5bdf343-8f5c-402c-97ef-58aab2a7dd45', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-monogram-hooded-parka--FVOW18MCI001_PM1_Side%20view.png?wid=730&hei=730', NULL, NULL, 1, false, '2026-05-28 12:29:16.620188+07', '2026-05-28 12:29:16.620188+07');
+INSERT INTO public.product_images VALUES ('dec49ae9-ad59-489a-a2e4-5c3fb7f40ead', 'e5bdf343-8f5c-402c-97ef-58aab2a7dd45', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-monogram-hooded-parka--FVOW18MCI001_PM1_Back%20view.png?wid=730&hei=730', NULL, NULL, 2, false, '2026-05-28 12:29:22.181056+07', '2026-05-28 12:29:22.181056+07');
+INSERT INTO public.product_images VALUES ('27ae53aa-4db0-4073-978a-593fd279bf98', '3f0b9743-fc4a-49b6-beec-8e0e28e148e9', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-speedy-bandouliere-20--M28529_PM2_Front%20view.png?wid=730&hei=730', NULL, NULL, 0, true, '2026-05-28 14:31:23.194698+07', '2026-05-28 14:31:23.194698+07');
+INSERT INTO public.product_images VALUES ('0a6ebcbe-f4e4-41f7-a47b-75b6111cf80d', 'ba5f36b8-b4dd-43d0-9385-f05184d9143f', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-anchor-button-knit-jacket--FVKC09496002_PM1_Cropped%20view.png?wid=730&hei=730', NULL, NULL, 0, true, '2026-05-29 01:08:40.606987+07', '2026-05-29 01:08:40.606987+07');
+INSERT INTO public.product_images VALUES ('42215270-d32b-4dab-b600-7566c81eda67', 'ba5f36b8-b4dd-43d0-9385-f05184d9143f', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-anchor-button-knit-jacket--FVKC09496002_PM2_Front%20view.png?wid=730&hei=730', NULL, NULL, 1, false, '2026-05-29 01:08:45.612049+07', '2026-05-29 01:08:45.612049+07');
+INSERT INTO public.product_images VALUES ('d59801e1-0030-43c3-9e1e-a8fc17572535', 'ba5f36b8-b4dd-43d0-9385-f05184d9143f', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-anchor-button-knit-jacket--FVKC09496002_PM1_Cropped%20worn%20view.png?wid=730&hei=730', NULL, NULL, 2, false, '2026-05-29 01:08:52.965511+07', '2026-05-29 01:08:52.965511+07');
+INSERT INTO public.product_images VALUES ('ad625be8-437f-4822-80b3-b4065bc0e48b', '9446ee75-b503-45d8-ae7a-847d45bec1ca', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-flared-sleeve-lavalliere-blouse--FUBL79PHL006_PM1_Ambiance%20view.png?wid=730&hei=730', NULL, NULL, 3, false, '2026-05-28 14:25:14.485704+07', '2026-05-28 14:25:14.485704+07');
+INSERT INTO public.product_images VALUES ('2bdc77e8-41ec-440c-8fca-31b2d1165ffa', '8ea2722a-d2e1-44c3-bd58-bd5cf4ee8d14', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-damier-hooded-parka--FVOW16538004_PM2_Front%20view.png?wid=730&hei=730', NULL, NULL, 0, true, '2026-05-28 13:25:00.731646+07', '2026-05-28 13:25:00.731646+07');
+INSERT INTO public.product_images VALUES ('d45d90a4-7e7b-45ba-b33b-c97288380956', '8ea2722a-d2e1-44c3-bd58-bd5cf4ee8d14', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-damier-hooded-parka--FVOW16538004_PM1_Side%20view.png?wid=730&hei=730', NULL, NULL, 1, false, '2026-05-28 13:25:05.084168+07', '2026-05-28 13:25:05.084168+07');
+INSERT INTO public.product_images VALUES ('7b71b119-7b9c-4016-91a9-f746989c2f48', '8ea2722a-d2e1-44c3-bd58-bd5cf4ee8d14', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-damier-hooded-parka--FVOW16538004_PM1_Back%20view.png?wid=730&hei=730', NULL, NULL, 2, false, '2026-05-28 13:25:08.776532+07', '2026-05-28 13:25:08.776532+07');
+INSERT INTO public.product_images VALUES ('68be19b6-a318-4ec5-a390-0ea5d3b1eca8', '8ea2722a-d2e1-44c3-bd58-bd5cf4ee8d14', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-damier-hooded-parka--FVOW16538004_PM1_Worn%20view.png?wid=730&hei=730', NULL, NULL, 3, false, '2026-05-28 13:25:17.100333+07', '2026-05-28 13:25:17.100333+07');
+INSERT INTO public.product_images VALUES ('b2b9e8e0-1b38-471f-a354-3f6f59467bdc', '84c47106-d7a3-4e91-8d03-d30c6dde7eb0', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-pochette-metis-east-west--M29488_PM1_Side%20view.png?wid=730&hei=730', NULL, NULL, 2, false, '2026-05-28 14:32:59.850284+07', '2026-05-28 14:32:59.850284+07');
+INSERT INTO public.product_images VALUES ('7d6dced3-97f9-4ef8-a0ad-75683de75fd3', '84c47106-d7a3-4e91-8d03-d30c6dde7eb0', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-pochette-metis-east-west--M29488_PM1_Interior%20view.png?wid=730&hei=730', NULL, NULL, 3, false, '2026-05-28 14:33:04.243511+07', '2026-05-28 14:33:04.243511+07');
+INSERT INTO public.product_images VALUES ('0c0b117a-b20a-4e50-82d8-48eaeb5813b4', '84c47106-d7a3-4e91-8d03-d30c6dde7eb0', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-pochette-metis-east-west--M46279_PM2_Front%20view.png?wid=730&hei=730', NULL, NULL, 5, false, '2026-05-28 14:33:27.278765+07', '2026-05-28 14:33:27.278765+07');
+INSERT INTO public.product_images VALUES ('22dd6b0b-0f2f-40d2-b8b0-783785b30566', '84c47106-d7a3-4e91-8d03-d30c6dde7eb0', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-pochette-metis-east-west--M46279_PM1_Closeup%20view.png?wid=730&hei=730', NULL, NULL, 6, false, '2026-05-28 14:33:34.795598+07', '2026-05-28 14:33:34.795598+07');
+INSERT INTO public.product_images VALUES ('6849be10-61c5-4dfe-aaa0-3c823cbdabda', '84c47106-d7a3-4e91-8d03-d30c6dde7eb0', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-pochette-metis-east-west--M46279_PM1_Side%20view.png?wid=730&hei=730', NULL, NULL, 7, false, '2026-05-28 14:33:40.400437+07', '2026-05-28 14:33:40.400437+07');
+INSERT INTO public.product_images VALUES ('e6f69173-bdd4-49cc-88b7-73c2eccda1aa', 'a6ebe9d5-3ae1-464e-861d-58257db53911', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-monogram-silk-shirt-dress--FTDI01VVU900_PM1_Worn%20view.png?wid=730&hei=730', NULL, NULL, 0, true, '2026-05-28 14:39:48.180036+07', '2026-05-28 14:39:48.180036+07');
+INSERT INTO public.product_images VALUES ('18e38788-c8b4-488a-bc88-b586b34ccb5a', 'a6ebe9d5-3ae1-464e-861d-58257db53911', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-monogram-silk-shirt-dress--FTDI01VVU900_PM2_Front%20view.png?wid=730&hei=730', NULL, NULL, 1, false, '2026-05-28 14:39:54.72335+07', '2026-05-28 14:39:54.72335+07');
+INSERT INTO public.product_images VALUES ('26855c72-5bf3-4595-a1a3-d6b75b3ec56e', 'a6ebe9d5-3ae1-464e-861d-58257db53911', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-monogram-silk-shirt-dress--FTDI01VVU900_PM1_Cropped%20view.png?wid=730&hei=730', NULL, NULL, 2, false, '2026-05-28 14:39:58.626747+07', '2026-05-28 14:39:58.626747+07');
+INSERT INTO public.product_images VALUES ('c84bdd28-3525-494e-87c7-9fd152a581de', '805bbe04-3f6b-49eb-abca-ed922acf170e', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-parka-with-cuts--FVOW11Y27400_PM2_Front%20view.png?wid=730&hei=730', NULL, NULL, 0, true, '2026-05-28 13:23:07.499851+07', '2026-05-28 13:23:07.499851+07');
+INSERT INTO public.product_images VALUES ('e365e487-a10b-44ae-8c6a-01e74d0207fa', '805bbe04-3f6b-49eb-abca-ed922acf170e', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-parka-with-cuts--FVOW11Y27400_PM1_Side%20view.png?wid=730&hei=730', NULL, NULL, 1, false, '2026-05-28 13:23:16.093216+07', '2026-05-28 13:23:16.093216+07');
+INSERT INTO public.product_images VALUES ('d124ebec-31d3-4837-b161-1ed55278f667', '805bbe04-3f6b-49eb-abca-ed922acf170e', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-parka-with-cuts--FVOW11Y27400_PM1_Back%20view.png?wid=730&hei=730', NULL, NULL, 2, false, '2026-05-28 13:23:20.515057+07', '2026-05-28 13:23:20.515057+07');
+INSERT INTO public.product_images VALUES ('5e76ae10-c4da-4fa3-923f-55ff732f44cf', 'a6ebe9d5-3ae1-464e-861d-58257db53911', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-monogram-silk-shirt-dress--FTDI01VVU900_PM1_Cropped%20worn%20view.png?wid=730&hei=730', NULL, NULL, 3, false, '2026-05-28 14:40:06.236118+07', '2026-05-28 14:40:06.236118+07');
+INSERT INTO public.product_images VALUES ('c1f2d9a7-1d87-4a0b-a173-e2e92d4aadf9', 'fc314bd9-27a8-4f76-88c2-28522bfb0ad4', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-fringe-hem-toweling-jacket--FVKC35689000_PM1_Worn%20view.png?wid=730&hei=730', NULL, NULL, 3, false, '2026-05-29 01:00:21.453251+07', '2026-05-29 01:00:21.453251+07');
+INSERT INTO public.product_images VALUES ('9c483275-7385-48d5-bdc5-fffd19b37ff7', '7e539860-9f6a-481b-99a2-60e4c76065d7', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-shiny-monogram-short-parka--FUOI01ZL9001_PM2_Front%20view.png?wid=730&hei=730', NULL, NULL, 0, true, '2026-05-28 13:27:13.380988+07', '2026-05-28 13:27:13.380988+07');
+INSERT INTO public.product_images VALUES ('d3c1d736-f774-4736-9c14-7c1fa730c4f6', '7e539860-9f6a-481b-99a2-60e4c76065d7', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-shiny-monogram-short-parka--FUOI01ZL9001_PM1_Side%20view.png?wid=730&hei=730', NULL, NULL, 1, false, '2026-05-28 13:27:19.109707+07', '2026-05-28 13:27:19.109707+07');
+INSERT INTO public.product_images VALUES ('fd8acb86-9f5e-43ea-b8bc-444dbe4cfaab', '7e539860-9f6a-481b-99a2-60e4c76065d7', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-shiny-monogram-short-parka--FUOI01ZL9001_PM1_Back%20view.png?wid=730&hei=730', NULL, NULL, 2, false, '2026-05-28 13:27:22.958902+07', '2026-05-28 13:27:22.958902+07');
+INSERT INTO public.product_images VALUES ('62d91555-1307-4a79-a512-038106f53605', 'e852bf2e-561d-448a-8a63-91105e6f654c', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-scarf-collar-long-sleeved-top--FUJT20W63002_PM2_Front%20view.png?wid=730&hei=730', NULL, NULL, 0, true, '2026-05-28 14:26:49.410817+07', '2026-05-28 14:26:49.410817+07');
+INSERT INTO public.product_images VALUES ('cf8d5760-a575-4aeb-a284-f5292b0615b5', 'e852bf2e-561d-448a-8a63-91105e6f654c', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-scarf-collar-long-sleeved-top--FUJT20W63002_PM1_Cropped%20view.png?wid=730&hei=730', NULL, NULL, 1, false, '2026-05-28 14:26:53.182884+07', '2026-05-28 14:26:53.182884+07');
+INSERT INTO public.product_images VALUES ('9fa664ac-72e1-43bd-a50d-334549ddf444', 'c938553a-6dc3-4e10-b236-9a4d9fb1d7f3', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-nano-madeleine--M29380_PM2_Front%20view.png?wid=730&hei=730', NULL, NULL, 0, true, '2026-05-28 14:35:43.796117+07', '2026-05-28 14:35:43.796117+07');
+INSERT INTO public.product_images VALUES ('850f8841-c002-4a05-a67f-ccb1267626cd', 'c938553a-6dc3-4e10-b236-9a4d9fb1d7f3', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-nano-madeleine--M29380_PM1_Side%20view.png?wid=730&hei=730', NULL, NULL, 1, false, '2026-05-28 14:35:49.702057+07', '2026-05-28 14:35:49.702057+07');
+INSERT INTO public.product_images VALUES ('1597b376-4ef1-481c-8676-d438705d6196', 'fc314bd9-27a8-4f76-88c2-28522bfb0ad4', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-fringe-hem-toweling-jacket--FVKC35689000_PM2_Front%20view.png?wid=730&hei=730', NULL, NULL, 4, false, '2026-05-29 01:00:26.59816+07', '2026-05-29 01:00:26.59816+07');
+INSERT INTO public.product_images VALUES ('b2d1aeb3-f196-4884-99d1-5c5ed85912bb', 'fc314bd9-27a8-4f76-88c2-28522bfb0ad4', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-fringe-hem-toweling-jacket--FVKC35689000_PM1_Cropped%20view.png?wid=730&hei=730', NULL, NULL, 5, false, '2026-05-29 01:00:32.740379+07', '2026-05-29 01:00:32.740379+07');
+INSERT INTO public.product_images VALUES ('739193a4-ace3-4f70-9dc1-2a322e1be119', 'f3d27cea-be82-429a-8135-924ae98ac12d', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-sailor-collar-knit-dress--FVKD01389609_PM1_Worn%20view.png?wid=730&hei=730', NULL, NULL, 0, true, '2026-05-29 01:06:58.921578+07', '2026-05-29 01:06:58.921578+07');
+INSERT INTO public.product_images VALUES ('bf2fcfc1-795f-425b-b75c-eb6e5763ffba', 'f3d27cea-be82-429a-8135-924ae98ac12d', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-sailor-collar-knit-dress--FVKD01389609_PM2_Front%20view.png?wid=730&hei=730', NULL, NULL, 1, false, '2026-05-29 01:07:07.49439+07', '2026-05-29 01:07:07.49439+07');
+INSERT INTO public.product_images VALUES ('8b58848f-c424-4a88-ace8-3fe2332a8b35', 'f3d27cea-be82-429a-8135-924ae98ac12d', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-sailor-collar-knit-dress--FVKD01389609_PM1_Cropped%20view.png?wid=730&hei=730', NULL, NULL, 2, false, '2026-05-29 01:07:11.58981+07', '2026-05-29 01:07:11.58981+07');
+INSERT INTO public.product_images VALUES ('30d6749a-8b5a-4f3c-8fd8-579d5ef9a3d1', 'f3d27cea-be82-429a-8135-924ae98ac12d', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-sailor-collar-knit-dress--FVKD01389609_PM1_Ambiance%20view.png?wid=730&hei=730', NULL, NULL, 3, false, '2026-05-29 01:07:21.895086+07', '2026-05-29 01:07:21.895086+07');
+INSERT INTO public.product_images VALUES ('4813ebf7-e85c-44a0-b314-c0810af31ade', '743d3359-41c3-4e60-9370-112f30c402de', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-monogram-jacquard-shorts--FVPA12EK1650_PM2_Front%20view.png?wid=730&hei=730', NULL, NULL, 0, true, '2026-05-29 01:14:00.761193+07', '2026-05-29 01:14:00.761193+07');
+INSERT INTO public.product_images VALUES ('1bf1bab0-9f9b-49d6-8661-7b62751a7a69', '9446ee75-b503-45d8-ae7a-847d45bec1ca', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-flared-sleeve-lavalliere-blouse--FUBL79PHL006_PM2_Front%20view.png?wid=730&hei=730', NULL, NULL, 0, true, '2026-05-28 14:24:52.705638+07', '2026-05-28 14:24:52.705638+07');
+INSERT INTO public.product_images VALUES ('b8dfb02a-4172-4953-8a13-b12fac4d184a', '9446ee75-b503-45d8-ae7a-847d45bec1ca', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-flared-sleeve-lavalliere-blouse--FUBL79PHL006_PM1_Cropped%20view.png?wid=730&hei=730', NULL, NULL, 1, false, '2026-05-28 14:24:57.016459+07', '2026-05-28 14:24:57.016459+07');
+INSERT INTO public.product_images VALUES ('da0eca9e-4901-4594-ad89-17a00859974c', '9446ee75-b503-45d8-ae7a-847d45bec1ca', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-flared-sleeve-lavalliere-blouse--FUBL79PHL006_PM1_Cropped%20worn%20view.png?wid=730&hei=730', NULL, NULL, 2, false, '2026-05-28 14:25:01.548252+07', '2026-05-28 14:25:01.548252+07');
+INSERT INTO public.product_images VALUES ('a4c710b4-8859-4a8b-9b36-ab1b41aea8e6', '3f0b9743-fc4a-49b6-beec-8e0e28e148e9', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-speedy-bandouliere-20--N40489_PM1_Side%20view.png?wid=730&hei=730', NULL, NULL, 4, false, '2026-05-28 14:31:54.104443+07', '2026-05-28 14:31:54.104443+07');
+INSERT INTO public.product_images VALUES ('3ca069e8-82a9-4a12-ba29-b2e334b56b27', '3f0b9743-fc4a-49b6-beec-8e0e28e148e9', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-speedy-bandouliere-20--N40489_PM1_Interior%20view.png?wid=730&hei=730', NULL, NULL, 5, false, '2026-05-28 14:31:58.273752+07', '2026-05-28 14:31:58.273752+07');
+INSERT INTO public.product_images VALUES ('57ef61a4-0d1e-4ef0-9601-f9346575c967', '84c47106-d7a3-4e91-8d03-d30c6dde7eb0', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-pochette-metis-east-west--M29488_PM2_Front%20view.png?wid=730&hei=730', NULL, NULL, 0, true, '2026-05-28 14:32:45.946277+07', '2026-05-28 14:32:45.946277+07');
+INSERT INTO public.product_images VALUES ('760f2938-0e88-4f01-9964-6f36f0c11433', '84c47106-d7a3-4e91-8d03-d30c6dde7eb0', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-pochette-metis-east-west--M29488_PM1_Closeup%20view.png?wid=730&hei=730', NULL, NULL, 1, false, '2026-05-28 14:32:54.966848+07', '2026-05-28 14:32:54.966848+07');
+INSERT INTO public.product_images VALUES ('f8ab5c67-6367-4348-a4e3-a84bfdf05828', '84c47106-d7a3-4e91-8d03-d30c6dde7eb0', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-pochette-metis-east-west--M29488_PM1_Back%20view.png?wid=730&hei=730', NULL, NULL, 4, false, '2026-05-28 14:33:09.444989+07', '2026-05-28 14:33:09.444989+07');
+INSERT INTO public.product_images VALUES ('46af40f7-08c0-43ba-9b2f-e48304b37e85', '743d3359-41c3-4e60-9370-112f30c402de', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-monogram-jacquard-shorts--FVPA12EK1650_PM1_Cropped%20view.png?wid=730&hei=730', NULL, NULL, 1, false, '2026-05-29 01:14:06.203646+07', '2026-05-29 01:14:06.203646+07');
+INSERT INTO public.product_images VALUES ('0338bfd3-8e84-4b17-b179-35d64fc16a61', '743d3359-41c3-4e60-9370-112f30c402de', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-monogram-jacquard-shorts--FVPA12EK1650_PM1_Cropped%20worn%20view.png?wid=730&hei=730', NULL, NULL, 2, false, '2026-05-29 01:14:11.261703+07', '2026-05-29 01:14:11.261703+07');
+INSERT INTO public.product_images VALUES ('944722fd-7a5b-45a2-b89b-7dba214fad23', 'c9f092ad-514a-486e-ad21-4e311ade6c63', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-knot-front-knit-top--FUKM98B8O900_PM1_Cropped%20view.png?wid=730&hei=730', NULL, NULL, 0, true, '2026-05-29 01:11:10.178892+07', '2026-05-29 01:11:10.178892+07');
+INSERT INTO public.product_images VALUES ('c46297ed-5f41-48a6-a1ca-837cb4dcfbdb', 'c9f092ad-514a-486e-ad21-4e311ade6c63', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-knot-front-knit-top--FUKM98B8O900_PM1_Cropped%20worn%20view.png?wid=730&hei=730', NULL, NULL, 1, false, '2026-05-29 01:11:15.391609+07', '2026-05-29 01:11:15.391609+07');
+INSERT INTO public.product_images VALUES ('e9d866d1-1469-424b-a6b5-ab622c1b5ed2', 'c9f092ad-514a-486e-ad21-4e311ade6c63', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-knot-front-knit-top--FUKM98B8O900_PM1_Ambiance%20view.png?wid=730&hei=730', NULL, NULL, 2, false, '2026-05-29 01:11:19.967718+07', '2026-05-29 01:11:19.967718+07');
+INSERT INTO public.product_images VALUES ('3898d217-1167-4358-b470-0325bb1b917f', 'c9f092ad-514a-486e-ad21-4e311ade6c63', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-knot-front-knit-top--FUKM98B8O900_PM2_Front%20view.png?wid=730&hei=730', NULL, NULL, 3, false, '2026-05-29 01:11:28.470072+07', '2026-05-29 01:11:28.470072+07');
+INSERT INTO public.product_images VALUES ('92a8a797-06df-49b1-bd21-f1a5672e5bf6', '8ea2722a-d2e1-44c3-bd58-bd5cf4ee8d14', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-damier-hooded-parka--FVOW16538004_PM1_Cropped%20view.png?wid=730&hei=730', NULL, NULL, 4, false, '2026-05-28 13:25:23.067865+07', '2026-05-28 13:25:23.067865+07');
+INSERT INTO public.product_images VALUES ('c5f5e549-9b83-4c1a-8322-718a7b9468ec', '84c47106-d7a3-4e91-8d03-d30c6dde7eb0', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-pochette-metis-east-west--M46279_PM1_Back%20view.png?wid=730&hei=730', NULL, NULL, 8, false, '2026-05-28 14:33:58.628469+07', '2026-05-28 14:33:58.628469+07');
+INSERT INTO public.product_images VALUES ('41fbefda-df4b-4b22-89b9-8eaaf7728c1e', '3f0b9743-fc4a-49b6-beec-8e0e28e148e9', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-speedy-bandouliere-20--M28529_PM1_Closeup%20view.png?wid=730&hei=730', NULL, NULL, 1, false, '2026-05-28 14:31:30.791346+07', '2026-05-28 14:31:30.791346+07');
+INSERT INTO public.product_images VALUES ('4e825c3d-71bd-46a1-ac38-f6e5c99da9d5', '3f0b9743-fc4a-49b6-beec-8e0e28e148e9', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-speedy-bandouliere-20--M28529_PM1_Interior%20view.png?wid=2400&hei=2400', NULL, NULL, 2, false, '2026-05-28 14:31:37.234545+07', '2026-05-28 14:31:37.234545+07');
+INSERT INTO public.product_images VALUES ('1128b9d4-9d39-40b0-89e4-0eead1fe13c0', '3f0b9743-fc4a-49b6-beec-8e0e28e148e9', 'https://id.louisvuitton.com/images/is/image/lv/1/PP_VP_L/louis-vuitton-speedy-bandouliere-20--N40489_PM2_Front%20view.png?wid=730&hei=730', NULL, NULL, 3, false, '2026-05-28 14:31:49.651796+07', '2026-05-28 14:31:49.651796+07');
+INSERT INTO public.reviews VALUES ('c946d7a7-5621-460b-9566-cd2b092544f6', '3f0b9743-fc4a-49b6-beec-8e0e28e148e9', '7eb8ac10-7cfb-4610-85b4-44584dcaf385', '6fa1a9fc-fc58-464d-8762-e0a568a45c5b', 5, 'Tas nya bagus', true, '2026-05-30 15:59:45.860505+07', '2026-05-30 15:59:45.860505+07');
+INSERT INTO public.reviews VALUES ('10b86e88-abb1-42d2-97aa-cc307f046acd', '9446ee75-b503-45d8-ae7a-847d45bec1ca', '7eb8ac10-7cfb-4610-85b4-44584dcaf385', '6fa1a9fc-fc58-464d-8762-e0a568a45c5b', 5, 'bajunya bagus', true, '2026-05-30 16:00:06.314998+07', '2026-05-30 16:00:06.314998+07');
+INSERT INTO public.reviews VALUES ('b1d97f0e-9e20-4c43-becc-95d9d212544a', 'e852bf2e-561d-448a-8a63-91105e6f654c', '7eb8ac10-7cfb-4610-85b4-44584dcaf385', '6fa1a9fc-fc58-464d-8762-e0a568a45c5b', 2, NULL, true, '2026-05-30 16:00:12.696947+07', '2026-05-30 16:00:12.696947+07');
+INSERT INTO public.schema_migrations VALUES (15, false);
+INSERT INTO public.wishlist_items VALUES ('95915833-7b4b-4ab0-a93b-4502de571a40', '7eb8ac10-7cfb-4610-85b4-44584dcaf385', 'd49aa614-283c-48bc-a2d9-bf1c6b3ac686', '2026-05-28 14:11:10.959554+07');
+\unrestrict UbnYKWKQLb24GBe1z0WqhjEadX2jmukjzmEJ99ZzrBXOQSnJuQEJT8Ook4jZbsa

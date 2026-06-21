@@ -169,12 +169,19 @@ func (h *CustomerHandler) ListCustomers(c *gin.Context) {
 		return
 	}
 
-	okJSON(c, gin.H{
-		"items": customers,
+	totalPages := (int(total) + perPage - 1) / perPage
+	if totalPages == 0 {
+		totalPages = 1
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data":    customers,
 		"meta": gin.H{
-			"total":    total,
-			"page":     page,
-			"per_page": perPage,
+			"total":       total,
+			"page":        page,
+			"per_page":    perPage,
+			"total_pages": totalPages,
 		},
 	})
 }

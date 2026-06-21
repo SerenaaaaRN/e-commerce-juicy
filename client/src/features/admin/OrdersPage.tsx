@@ -133,11 +133,7 @@ export const OrdersPage = () => {
           </TableHeader>
           <TableBody>
             {filtered.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7}>
-                  <EmptyState message="No boutique orders found matching your search." />
-                </TableCell>
-              </TableRow>
+              <EmptyState message="No boutique orders found matching your search." />
             ) : (
               filtered.map((o) => <OrderRow key={o.id} order={o} onViewDetails={handleViewDetails} />)
             )}
