@@ -257,3 +257,15 @@ func (r *orderRepo) GetItemCounts(ctx context.Context, orderIDs []uuid.UUID) (ma
 	}
 	return counts, nil
 }
+
+func (r *orderRepo) CompleteOrderTx(ctx context.Context, orderID uuid.UUID) error {
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Model(&model.Order{}).Where("id = ?", orderID).Update("status", string(model.OrderStatusDelivered)).Error; err != nil {
+			return err
+		}
+		if err := tx.Model(&model.Order{}).Where("id = ?", orderID).Update("payment_status", string(model.PaymentStatusPaid)).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+}

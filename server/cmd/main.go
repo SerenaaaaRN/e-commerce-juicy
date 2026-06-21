@@ -58,7 +58,7 @@ func main() {
 	categoryService := service.NewCategoryService(categoryRepo)
 	productService := service.NewProductService(productRepo, cloudinaryService, db)
 	cartService := service.NewCartService(cartRepo, productRepo)
-	orderService := service.NewOrderService(orderRepo, cartRepo, addressRepo, productRepo, customerRepo, emailService, worker)
+	orderService := service.NewOrderService(orderRepo, cartRepo, addressRepo, productRepo, customerRepo, emailService, worker, cfg)
 	reviewService := service.NewReviewService(reviewRepo, orderRepo, productRepo, customerRepo)
 	wishlistService := service.NewWishlistService(wishlistRepo)
 	analyticsService := service.NewAnalyticsService(db)
@@ -111,11 +111,11 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
+	worker.Shutdown()
+
 	if err := srv.Shutdown(ctx); err != nil {
 		log.Fatalf("Fatal: Server Shutdown Forced: %v", err)
 	}
-
-	worker.Shutdown()
 
 	log.Println("Juicy Backend terminated gracefully.")
 }

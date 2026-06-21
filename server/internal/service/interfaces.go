@@ -84,6 +84,7 @@ type OrderRepository interface {
 	UpdateStatus(ctx context.Context, id uuid.UUID, status string) error
 	UpdatePaymentStatus(ctx context.Context, id uuid.UUID, paymentStatus string) error
 	CancelOrder(ctx context.Context, orderID uuid.UUID) error
+	CompleteOrderTx(ctx context.Context, orderID uuid.UUID) error
 	HasCustomerPurchasedProduct(ctx context.Context, customerID uuid.UUID, productID uuid.UUID) (bool, error)
 	IsProductReviewable(ctx context.Context, customerID uuid.UUID, productID uuid.UUID, orderID uuid.UUID) (bool, error)
 	GetItemCounts(ctx context.Context, orderIDs []uuid.UUID) (map[uuid.UUID]int, error)

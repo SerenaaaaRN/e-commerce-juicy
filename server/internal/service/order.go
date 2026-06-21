@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/SerenaaaaRN/juicy/internal/config"
 	"github.com/SerenaaaaRN/juicy/internal/dto"
 	"github.com/SerenaaaaRN/juicy/internal/model"
 	"github.com/SerenaaaaRN/juicy/internal/repository"
@@ -27,6 +28,7 @@ type orderService struct {
 	customerRepo CustomerRepository
 	emailService *EmailService
 	worker       *BackgroundWorker
+	config       *config.Config
 }
 
 func NewOrderService(
@@ -37,6 +39,7 @@ func NewOrderService(
 	customerRepo CustomerRepository,
 	emailService *EmailService,
 	worker *BackgroundWorker,
+	cfg *config.Config,
 ) *orderService {
 	return &orderService{
 		repo:         repo,
@@ -46,6 +49,7 @@ func NewOrderService(
 		customerRepo: customerRepo,
 		emailService: emailService,
 		worker:       worker,
+		config:       cfg,
 	}
 }
 
@@ -107,7 +111,7 @@ func (s *orderService) Checkout(ctx context.Context, customerID uuid.UUID, req d
 		})
 	}
 
-	var shippingFee float64 = 25000
+	shippingFee := s.config.DefaultShippingFee
 	total := subtotal + shippingFee
 
 	dateStr := time.Now().Format("060102")
@@ -256,12 +260,7 @@ func (s *orderService) CompleteOrder(ctx context.Context, orderNumber string, cu
 		return ErrOrderNotFound
 	}
 
-	err = s.repo.UpdateStatus(ctx, order.ID, string(model.OrderStatusDelivered))
-	if err != nil {
-		return err
-	}
-
-	return s.repo.UpdatePaymentStatus(ctx, order.ID, string(model.PaymentStatusPaid))
+	return s.repo.CompleteOrderTx(ctx, order.ID)
 }
 
 func (s *orderService) ListAllOrders(
@@ -390,7 +389,12 @@ func generateRandomAlphanumeric(length int) string {
 	const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 	b := make([]byte, length)
 	for i := range b {
-		n, _ := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
+		n, err := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
+		if err != nil {
+			// Fallback if crypto rand fails
+			b[i] = charset[0]
+			continue
+		}
 		b[i] = charset[n.Int64()]
 	}
 	return string(b)

@@ -52,13 +52,13 @@ func (w *BackgroundWorker) worker() {
 }
 
 func (w *BackgroundWorker) drainRemaining() {
+	// Skip executing remaining tasks if context is cancelled 
+	// unless they are absolutely critical. For now we just flush the channel.
 	for {
 		select {
-		case task, ok := <-w.tasks:
-			if !ok {
-				return
-			}
-			w.execute(task)
+		case <-w.tasks:
+			// Just drain the channel to allow producers to unblock,
+			// but we don't execute the task since we are shutting down.
 		default:
 			return
 		}
