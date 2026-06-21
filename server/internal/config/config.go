@@ -31,10 +31,10 @@ type Config struct {
 	CloudinaryAPISecret    string
 	CloudinaryUploadFolder string
 
-	ResendAPIKey    string
-	ResendFromEmail string
-	AdminAlertEmail string
-	AllowedOrigins  string
+	ResendAPIKey       string
+	ResendFromEmail    string
+	AdminAlertEmail    string
+	AllowedOrigins     string
 	DefaultShippingFee float64
 }
 
@@ -109,4 +109,16 @@ func getEnvInt(key string, fallback int) int {
 		return fallback
 	}
 	return n
+}
+
+func getEnvFloat(key string, fallback float64) float64 {
+	val := os.Getenv(key)
+	if val == "" {
+		return fallback
+	}
+	f, err := strconv.ParseFloat(val, 64)
+	if err != nil {
+		return fallback
+	}
+	return f
 }

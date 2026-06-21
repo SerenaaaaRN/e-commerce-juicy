@@ -13,7 +13,7 @@ import (
 	"github.com/SerenaaaaRN/juicy/internal/model"
 	"github.com/SerenaaaaRN/juicy/internal/repository"
 	"github.com/google/uuid"
-	)
+)
 
 var (
 	ErrCartEmpty         = errors.New("CART_EMPTY")
@@ -159,12 +159,12 @@ func (s *orderService) GetCustomerOrders(ctx context.Context, customerID uuid.UU
 	if err != nil {
 		return nil, 0, err
 	}
-	
+
 	orderIDs := make([]uuid.UUID, len(orders))
 	for i, o := range orders {
 		orderIDs[i] = o.ID
 	}
-	
+
 	counts, _ := s.repo.GetItemCounts(ctx, orderIDs)
 
 	res := make([]dto.OrderResponse, len(orders))
@@ -274,12 +274,12 @@ func (s *orderService) ListAllOrders(
 	if err != nil {
 		return nil, 0, err
 	}
-	
+
 	orderIDs := make([]uuid.UUID, len(orders))
 	for i, o := range orders {
 		orderIDs[i] = o.ID
 	}
-	
+
 	counts, _ := s.repo.GetItemCounts(ctx, orderIDs)
 
 	res := make([]dto.AdminOrderResponse, len(orders))

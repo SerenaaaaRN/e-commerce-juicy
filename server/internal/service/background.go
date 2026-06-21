@@ -52,7 +52,7 @@ func (w *BackgroundWorker) worker() {
 }
 
 func (w *BackgroundWorker) drainRemaining() {
-	// Skip executing remaining tasks if context is cancelled 
+	// Skip executing remaining tasks if context is cancelled
 	// unless they are absolutely critical. For now we just flush the channel.
 	for {
 		select {
