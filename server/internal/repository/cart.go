@@ -20,6 +20,10 @@ func NewCartRepository(db *gorm.DB) *cartRepo {
 func (r *cartRepo) FindByCustomerID(ctx context.Context, customerID uuid.UUID) ([]model.CartItem, error) {
 	var items []model.CartItem
 	err := r.db.WithContext(ctx).
+		Preload("Variant.Product.Images", func(db *gorm.DB) *gorm.DB {
+			return db.Order("display_order ASC")
+		}).
+		Preload("Variant.Product").
 		Preload("Variant").
 		Where("customer_id = ?", customerID).
 		Order("created_at DESC").

@@ -109,3 +109,8 @@ type ProductReviewResponse struct {
 type AddProductImageUrlRequest struct {
 	ImageURL string `json:"image_url" binding:"required,url"`
 }
+
+type ProductReviewStat struct {
+	AvgRating   float64
+	ReviewCount int
+}

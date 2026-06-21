@@ -9,7 +9,6 @@ import (
 	"github.com/SerenaaaaRN/juicy/internal/dto"
 	"github.com/SerenaaaaRN/juicy/internal/model"
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 var (
@@ -19,11 +18,10 @@ var (
 
 type categoryService struct {
 	repo CategoryRepository
-	db   *gorm.DB
 }
 
-func NewCategoryService(repo CategoryRepository, db *gorm.DB) *categoryService {
-	return &categoryService{repo: repo, db: db}
+func NewCategoryService(repo CategoryRepository) *categoryService {
+	return &categoryService{repo: repo}
 }
 
 func (s *categoryService) ListActiveCategories(ctx context.Context) ([]dto.CategoryTreeResponse, error) {
@@ -32,23 +30,10 @@ func (s *categoryService) ListActiveCategories(ctx context.Context) ([]dto.Categ
 		return nil, err
 	}
 
-	type CategoryCount struct {
-		CategoryID uuid.UUID
-		Count      int64
-	}
-	var counts []CategoryCount
-	err = s.db.WithContext(ctx).Model(&model.Product{}).
-		Where("is_available = ?", true).
-		Select("category_id, COUNT(*) as count").
-		Group("category_id").
-		Scan(&counts).Error
+	countMap, err := s.repo.GetProductCounts(ctx)
 	if err != nil {
 		log.Printf("Warning: failed to query product counts for categories: %v", err)
-	}
-
-	countMap := make(map[uuid.UUID]int64)
-	for _, c := range counts {
-		countMap[c.CategoryID] = c.Count
+		countMap = make(map[uuid.UUID]int64)
 	}
 
 	// Maps for tree construction
@@ -165,11 +150,11 @@ func (s *categoryService) DeleteCategory(ctx context.Context, id uuid.UUID) erro
 		return ErrCategoryNotFound
 	}
 
-	var count int64
-	if err := s.db.WithContext(ctx).Model(&model.Product{}).Where("category_id = ?", id).Count(&count).Error; err != nil {
+	counts, err := s.repo.GetProductCounts(ctx)
+	if err != nil {
 		return err
 	}
-	if count > 0 {
+	if counts[id] > 0 {
 		return ErrCategoryHasProducts
 	}
 

@@ -7,7 +7,6 @@ import (
 	"github.com/SerenaaaaRN/juicy/internal/dto"
 	"github.com/SerenaaaaRN/juicy/internal/model"
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 var (
@@ -16,11 +15,10 @@ var (
 
 type wishlistService struct {
 	repo WishlistRepository
-	db   *gorm.DB
 }
 
-func NewWishlistService(repo WishlistRepository, db *gorm.DB) *wishlistService {
-	return &wishlistService{repo: repo, db: db}
+func NewWishlistService(repo WishlistRepository) *wishlistService {
+	return &wishlistService{repo: repo}
 }
 
 func (s *wishlistService) GetWishlist(ctx context.Context, customerID uuid.UUID) ([]dto.WishlistItemResponse, error) {

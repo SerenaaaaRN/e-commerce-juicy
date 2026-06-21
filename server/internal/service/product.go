@@ -58,24 +58,10 @@ func (s *productService) ListProducts(
 		productIDs[i] = p.ID
 	}
 
-	type Stats struct {
-		ProductID   uuid.UUID
-		AvgRating   float64
-		ReviewCount int
-	}
-	var statsList []Stats
-	err = s.db.WithContext(ctx).Model(&model.Review{}).
-		Select("product_id, COALESCE(AVG(rating), 0) as avg_rating, COUNT(*) as review_count").
-		Where("product_id IN ? AND is_published = ?", productIDs, true).
-		Group("product_id").
-		Scan(&statsList).Error
+	statsMap, err := s.repo.GetReviewStats(ctx, productIDs)
 	if err != nil {
 		log.Printf("Warning: failed to fetch review statistics: %v", err)
-	}
-
-	statsMap := make(map[uuid.UUID]Stats)
-	for _, s := range statsList {
-		statsMap[s.ProductID] = s
+		statsMap = make(map[uuid.UUID]dto.ProductReviewStat)
 	}
 
 	res := make([]dto.ProductResponse, len(products))
@@ -411,16 +397,10 @@ func (s *productService) DeleteProductVariant(ctx context.Context, productID uui
 
 func (s *productService) mapToDetailResponse(ctx context.Context, p *model.Product) (*dto.ProductDetailResponse, error) {
 
-	var stats struct {
-		AvgRating   float64
-		ReviewCount int
-	}
-	err := s.db.WithContext(ctx).Model(&model.Review{}).
-		Select("COALESCE(AVG(rating), 0) as avg_rating, COUNT(*) as review_count").
-		Where("product_id = ? AND is_published = ?", p.ID, true).
-		Scan(&stats).Error
+	stat, err := s.repo.GetReviewStat(ctx, p.ID)
 	if err != nil {
 		log.Printf("Warning: failed to query product detail stats: %v", err)
+		stat = &dto.ProductReviewStat{}
 	}
 
 	imagesRes := make([]dto.ProductImageResponse, len(p.Images))
@@ -475,7 +455,7 @@ func (s *productService) mapToDetailResponse(ctx context.Context, p *model.Produ
 		CategoryName: p.Category.Name,
 		Images:       imagesRes,
 		Variants:     variantsRes,
-		AvgRating:    stats.AvgRating,
-		ReviewCount:  stats.ReviewCount,
+		AvgRating:    stat.AvgRating,
+		ReviewCount:  stat.ReviewCount,
 	}, nil
 }

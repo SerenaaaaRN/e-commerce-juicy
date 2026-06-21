@@ -235,3 +235,25 @@ func (r *orderRepo) IsProductReviewable(ctx context.Context, customerID uuid.UUI
 		Count(&count).Error
 	return count > 0, err
 }
+
+func (r *orderRepo) GetItemCounts(ctx context.Context, orderIDs []uuid.UUID) (map[uuid.UUID]int, error) {
+	type Result struct {
+		OrderID uuid.UUID
+		Count   int
+	}
+	var results []Result
+	err := r.db.WithContext(ctx).Model(&model.OrderItem{}).
+		Select("order_id, count(*) as count").
+		Where("order_id IN ?", orderIDs).
+		Group("order_id").
+		Scan(&results).Error
+	if err != nil {
+		return nil, err
+	}
+
+	counts := make(map[uuid.UUID]int)
+	for _, res := range results {
+		counts[res.OrderID] = res.Count
+	}
+	return counts, nil
+}

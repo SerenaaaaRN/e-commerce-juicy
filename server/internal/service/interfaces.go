@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 
+	"github.com/SerenaaaaRN/juicy/internal/dto"
 	"github.com/SerenaaaaRN/juicy/internal/model"
 	"github.com/google/uuid"
 )
@@ -40,6 +41,7 @@ type CategoryRepository interface {
 	Create(ctx context.Context, category *model.Category) error
 	Update(ctx context.Context, category *model.Category) error
 	Delete(ctx context.Context, id uuid.UUID) error
+	GetProductCounts(ctx context.Context) (map[uuid.UUID]int64, error)
 }
 
 type ProductRepository interface {
@@ -60,6 +62,8 @@ type ProductRepository interface {
 	CreateVariant(ctx context.Context, variant *model.ProductVariant) error
 	UpdateVariant(ctx context.Context, variant *model.ProductVariant) error
 	DeactivateVariant(ctx context.Context, id uuid.UUID, productID uuid.UUID) error
+	GetReviewStats(ctx context.Context, productIDs []uuid.UUID) (map[uuid.UUID]dto.ProductReviewStat, error)
+	GetReviewStat(ctx context.Context, productID uuid.UUID) (*dto.ProductReviewStat, error)
 }
 
 type CartRepository interface {
@@ -82,6 +86,7 @@ type OrderRepository interface {
 	CancelOrder(ctx context.Context, orderID uuid.UUID) error
 	HasCustomerPurchasedProduct(ctx context.Context, customerID uuid.UUID, productID uuid.UUID) (bool, error)
 	IsProductReviewable(ctx context.Context, customerID uuid.UUID, productID uuid.UUID, orderID uuid.UUID) (bool, error)
+	GetItemCounts(ctx context.Context, orderIDs []uuid.UUID) (map[uuid.UUID]int, error)
 }
 
 type WishlistRepository interface {

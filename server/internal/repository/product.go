@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	"github.com/SerenaaaaRN/juicy/internal/dto"
 	"github.com/SerenaaaaRN/juicy/internal/model"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -211,4 +212,39 @@ func (r *productRepo) UpdateVariant(ctx context.Context, variant *model.ProductV
 
 func (r *productRepo) DeactivateVariant(ctx context.Context, id uuid.UUID, productID uuid.UUID) error {
 	return r.db.WithContext(ctx).Model(&model.ProductVariant{}).Where("id = ? AND product_id = ?", id, productID).Update("is_active", false).Error
+}
+
+func (r *productRepo) GetReviewStats(ctx context.Context, productIDs []uuid.UUID) (map[uuid.UUID]dto.ProductReviewStat, error) {
+	type Result struct {
+		ProductID   uuid.UUID
+		AvgRating   float64
+		ReviewCount int
+	}
+	var results []Result
+	err := r.db.WithContext(ctx).Model(&model.Review{}).
+		Select("product_id, COALESCE(AVG(rating), 0) as avg_rating, COUNT(*) as review_count").
+		Where("product_id IN ? AND is_published = ?", productIDs, true).
+		Group("product_id").
+		Scan(&results).Error
+	if err != nil {
+		return nil, err
+	}
+
+	stats := make(map[uuid.UUID]dto.ProductReviewStat)
+	for _, res := range results {
+		stats[res.ProductID] = dto.ProductReviewStat{
+			AvgRating:   res.AvgRating,
+			ReviewCount: res.ReviewCount,
+		}
+	}
+	return stats, nil
+}
+
+func (r *productRepo) GetReviewStat(ctx context.Context, productID uuid.UUID) (*dto.ProductReviewStat, error) {
+	var stat dto.ProductReviewStat
+	err := r.db.WithContext(ctx).Model(&model.Review{}).
+		Select("COALESCE(AVG(rating), 0) as avg_rating, COUNT(*) as review_count").
+		Where("product_id = ? AND is_published = ?", productID, true).
+		Scan(&stat).Error
+	return &stat, err
 }

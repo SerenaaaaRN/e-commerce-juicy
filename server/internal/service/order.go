@@ -12,8 +12,7 @@ import (
 	"github.com/SerenaaaaRN/juicy/internal/model"
 	"github.com/SerenaaaaRN/juicy/internal/repository"
 	"github.com/google/uuid"
-	"gorm.io/gorm"
-)
+	)
 
 var (
 	ErrCartEmpty         = errors.New("CART_EMPTY")
@@ -28,7 +27,6 @@ type orderService struct {
 	customerRepo CustomerRepository
 	emailService *EmailService
 	worker       *BackgroundWorker
-	db           *gorm.DB
 }
 
 func NewOrderService(
@@ -39,7 +37,6 @@ func NewOrderService(
 	customerRepo CustomerRepository,
 	emailService *EmailService,
 	worker *BackgroundWorker,
-	db *gorm.DB,
 ) *orderService {
 	return &orderService{
 		repo:         repo,
@@ -49,7 +46,6 @@ func NewOrderService(
 		customerRepo: customerRepo,
 		emailService: emailService,
 		worker:       worker,
-		db:           db,
 	}
 }
 
@@ -159,18 +155,22 @@ func (s *orderService) GetCustomerOrders(ctx context.Context, customerID uuid.UU
 	if err != nil {
 		return nil, 0, err
 	}
+	
+	orderIDs := make([]uuid.UUID, len(orders))
+	for i, o := range orders {
+		orderIDs[i] = o.ID
+	}
+	
+	counts, _ := s.repo.GetItemCounts(ctx, orderIDs)
 
 	res := make([]dto.OrderResponse, len(orders))
 	for i, o := range orders {
-		var itemCount int64
-		s.db.WithContext(ctx).Model(&model.OrderItem{}).Where("order_id = ?", o.ID).Count(&itemCount)
-
 		res[i] = dto.OrderResponse{
 			ID:          o.ID,
 			OrderNumber: o.OrderNumber,
 			Status:      o.Status,
 			Total:       o.Total,
-			ItemCount:   int(itemCount),
+			ItemCount:   counts[o.ID],
 			CreatedAt:   o.CreatedAt,
 		}
 	}
@@ -184,17 +184,19 @@ func (s *orderService) GetCustomerOrderDetail(ctx context.Context, orderNumber s
 		return nil, ErrOrderNotFound
 	}
 
-	var address model.Address
+	var address *model.Address
 	if order.AddressID != nil {
-		s.db.WithContext(ctx).Where("id = ?", *order.AddressID).First(&address)
+		address, _ = s.addressRepo.FindByID(ctx, *order.AddressID)
+	}
+	if address == nil {
+		address = &model.Address{}
 	}
 
 	itemsRes := make([]dto.OrderItemResponse, len(order.Items))
 	for i, item := range order.Items {
 		var pID *uuid.UUID
 		if item.VariantID != nil {
-			var variant model.ProductVariant
-			if err := s.db.WithContext(ctx).Select("product_id").Where("id = ?", *item.VariantID).First(&variant).Error; err == nil {
+			if variant, err := s.productRepo.FindVariantByID(ctx, *item.VariantID); err == nil {
 				pID = &variant.ProductID
 			}
 		}
@@ -273,12 +275,16 @@ func (s *orderService) ListAllOrders(
 	if err != nil {
 		return nil, 0, err
 	}
+	
+	orderIDs := make([]uuid.UUID, len(orders))
+	for i, o := range orders {
+		orderIDs[i] = o.ID
+	}
+	
+	counts, _ := s.repo.GetItemCounts(ctx, orderIDs)
 
 	res := make([]dto.AdminOrderResponse, len(orders))
 	for i, o := range orders {
-		var itemCount int64
-		s.db.WithContext(ctx).Model(&model.OrderItem{}).Where("order_id = ?", o.ID).Count(&itemCount)
-
 		res[i] = dto.AdminOrderResponse{
 			ID:            o.ID,
 			OrderNumber:   o.OrderNumber,
@@ -287,7 +293,7 @@ func (s *orderService) ListAllOrders(
 			Status:        o.Status,
 			PaymentStatus: o.PaymentStatus,
 			Total:         o.Total,
-			ItemCount:     int(itemCount),
+			ItemCount:     counts[o.ID],
 			CreatedAt:     o.CreatedAt,
 		}
 	}
@@ -305,8 +311,7 @@ func (s *orderService) GetOrderDetail(ctx context.Context, id uuid.UUID) (*dto.O
 	for i, item := range order.Items {
 		var pID *uuid.UUID
 		if item.VariantID != nil {
-			var variant model.ProductVariant
-			if err := s.db.WithContext(ctx).Select("product_id").Where("id = ?", *item.VariantID).First(&variant).Error; err == nil {
+			if variant, err := s.productRepo.FindVariantByID(ctx, *item.VariantID); err == nil {
 				pID = &variant.ProductID
 			}
 		}

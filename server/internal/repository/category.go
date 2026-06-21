@@ -57,3 +57,25 @@ func (r *categoryRepo) Update(ctx context.Context, category *model.Category) err
 func (r *categoryRepo) Delete(ctx context.Context, id uuid.UUID) error {
 	return r.db.WithContext(ctx).Where("id = ?", id).Delete(&model.Category{}).Error
 }
+
+func (r *categoryRepo) GetProductCounts(ctx context.Context) (map[uuid.UUID]int64, error) {
+	type Result struct {
+		CategoryID uuid.UUID
+		Count      int64
+	}
+	var results []Result
+	err := r.db.WithContext(ctx).Model(&model.Product{}).
+		Where("is_available = ?", true).
+		Select("category_id, COUNT(*) as count").
+		Group("category_id").
+		Scan(&results).Error
+	if err != nil {
+		return nil, err
+	}
+
+	counts := make(map[uuid.UUID]int64)
+	for _, res := range results {
+		counts[res.CategoryID] = res.Count
+	}
+	return counts, nil
+}
