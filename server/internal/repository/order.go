@@ -167,7 +167,7 @@ func (r *orderRepo) CancelOrder(ctx context.Context, orderID uuid.UUID) error {
 		}
 
 		if err := tx.Model(&model.Order{}).Where("id = ?", orderID).Updates(map[string]interface{}{
-			"status":     "cancelled",
+			"status":     string(model.OrderStatusCancelled),
 			"updated_at": gorm.Expr("NOW()"),
 		}).Error; err != nil {
 			return err
@@ -198,9 +198,9 @@ func (r *orderRepo) UpdateStatus(ctx context.Context, id uuid.UUID, status strin
 		"status":     status,
 		"updated_at": gorm.Expr("NOW()"),
 	}
-	if status == "shipped" {
+	if status == string(model.OrderStatusShipped) {
 		updates["shipped_at"] = gorm.Expr("NOW()")
-	} else if status == "delivered" {
+	} else if status == string(model.OrderStatusDelivered) {
 		updates["delivered_at"] = gorm.Expr("NOW()")
 	}
 
@@ -221,7 +221,7 @@ func (r *orderRepo) HasCustomerPurchasedProduct(ctx context.Context, customerID 
 	err := r.db.WithContext(ctx).Model(&model.Order{}).
 		Joins("JOIN order_items ON order_items.order_id = orders.id").
 		Joins("JOIN product_variants ON product_variants.id = order_items.variant_id").
-		Where("orders.customer_id = ? AND product_variants.product_id = ? AND orders.status = ?", customerID, productID, "delivered").
+		Where("orders.customer_id = ? AND product_variants.product_id = ? AND orders.status = ?", customerID, productID, string(model.OrderStatusDelivered)).
 		Count(&count).Error
 	return count > 0, err
 }
@@ -231,7 +231,7 @@ func (r *orderRepo) IsProductReviewable(ctx context.Context, customerID uuid.UUI
 	err := r.db.WithContext(ctx).Model(&model.Order{}).
 		Joins("JOIN order_items ON order_items.order_id = orders.id").
 		Joins("JOIN product_variants ON product_variants.id = order_items.variant_id").
-		Where("orders.customer_id = ? AND orders.id = ? AND product_variants.product_id = ? AND orders.status = ?", customerID, orderID, productID, "delivered").
+		Where("orders.customer_id = ? AND orders.id = ? AND product_variants.product_id = ? AND orders.status = ?", customerID, orderID, productID, string(model.OrderStatusDelivered)).
 		Count(&count).Error
 	return count > 0, err
 }

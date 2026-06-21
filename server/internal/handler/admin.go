@@ -8,7 +8,6 @@ import (
 	"github.com/SerenaaaaRN/juicy/internal/dto"
 	"github.com/SerenaaaaRN/juicy/internal/service"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 type AdminHandler struct {
@@ -16,6 +15,7 @@ type AdminHandler struct {
 	config *config.Config
 }
 
+// NewAdminHandler membuat instance baru dari AdminHandler.
 func NewAdminHandler(srv AdminService, cfg *config.Config) *AdminHandler {
 	return &AdminHandler{
 		srv:    srv,
@@ -23,17 +23,11 @@ func NewAdminHandler(srv AdminService, cfg *config.Config) *AdminHandler {
 	}
 }
 
+// Login menangani proses autentikasi admin dan memberikan token akses serta refresh cookie.
 func (h *AdminHandler) Login(c *gin.Context) {
 	var req dto.AdminLoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Validation error",
-				"code":    "VALIDATION_ERROR",
-				"details": err.Error(),
-			},
-		})
+		validationErrJSON(c, err.Error())
 		return
 	}
 
@@ -49,12 +43,7 @@ func (h *AdminHandler) Login(c *gin.Context) {
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
@@ -69,12 +58,10 @@ func (h *AdminHandler) Login(c *gin.Context) {
 		true,
 	)
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    resp,
-	})
+	okJSON(c, resp)
 }
 
+// Refresh menangani pembaruan token akses admin menggunakan refresh token dari cookie.
 func (h *AdminHandler) Refresh(c *gin.Context) {
 	refreshToken, err := c.Cookie("refresh_token")
 	if err != nil {
@@ -111,12 +98,10 @@ func (h *AdminHandler) Refresh(c *gin.Context) {
 		true,
 	)
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    resp,
-	})
+	okJSON(c, resp)
 }
 
+// Logout menangani proses keluar sistem admin dengan menghapus cookie refresh token.
 func (h *AdminHandler) Logout(c *gin.Context) {
 
 	secure := h.config.AppEnv == "production"
@@ -130,26 +115,15 @@ func (h *AdminHandler) Logout(c *gin.Context) {
 		true,
 	)
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "Successfully logged out",
-	})
+	okMessageJSON(c, "Successfully logged out")
 }
 
+// GetProfile mengambil data profil admin yang sedang login berdasarkan ID.
 func (h *AdminHandler) GetProfile(c *gin.Context) {
-	adminIDVal, exists := c.Get("admin_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Unauthorized context",
-				"code":    "UNAUTHORIZED",
-			},
-		})
+	adminID, ok := getAdminID(c)
+	if !ok {
 		return
 	}
-
-	adminID := adminIDVal.(uuid.UUID)
 	profile, err := h.srv.GetAdminByID(c.Request.Context(), adminID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
@@ -162,8 +136,5 @@ func (h *AdminHandler) GetProfile(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    profile,
-	})
+	okJSON(c, profile)
 }

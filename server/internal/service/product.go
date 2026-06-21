@@ -20,16 +20,16 @@ var (
 )
 
 type productService struct {
-	repo       ProductRepository
-	cldService *CloudinaryService
-	db         *gorm.DB
+	repo              ProductRepository
+	cloudinaryService *CloudinaryService
+	db                *gorm.DB
 }
 
-func NewProductService(repo ProductRepository, cldService *CloudinaryService, db *gorm.DB) *productService {
+func NewProductService(repo ProductRepository, cloudinaryService *CloudinaryService, db *gorm.DB) *productService {
 	return &productService{
-		repo:       repo,
-		cldService: cldService,
-		db:         db,
+		repo:              repo,
+		cloudinaryService: cloudinaryService,
+		db:                db,
 	}
 }
 
@@ -94,13 +94,13 @@ func (s *productService) ListProducts(
 
 		pStats := statsMap[p.ID]
 
-		variantsRes := make([]dto.ProductVariantRes, len(p.Variants))
+		variantsRes := make([]dto.ProductVariantResponse, len(p.Variants))
 		for j, v := range p.Variants {
-			variantsRes[j] = dto.ProductVariantRes{
+			variantsRes[j] = dto.ProductVariantResponse{
 				ID:              v.ID,
 				Size:            v.Size,
 				Color:           v.Color,
-					Stock:           v.Stock,
+				Stock:           v.Stock,
 				AdditionalPrice: v.AdditionalPrice,
 				IsActive:        v.IsActive,
 			}
@@ -189,7 +189,7 @@ func (s *productService) DeleteProduct(ctx context.Context, id uuid.UUID) error 
 		if img.CloudinaryPublicID != nil {
 			cldID = *img.CloudinaryPublicID
 		}
-		if err := s.cldService.DeleteImage(ctx, cldID); err != nil {
+		if err := s.cloudinaryService.DeleteImage(ctx, cldID); err != nil {
 			log.Printf("Warning: failed to delete cloudinary image: %v", err)
 		}
 	}
@@ -217,7 +217,7 @@ func (s *productService) AddProductImages(ctx context.Context, id uuid.UUID, fil
 	for _, path := range filePaths {
 		maxOrder++
 
-		secureURL, publicID, err := s.cldService.UploadImage(ctx, path)
+		secureURL, publicID, err := s.cloudinaryService.UploadImage(ctx, path)
 		if err != nil {
 			return fmt.Errorf("failed to upload image: %w", err)
 		}
@@ -292,7 +292,7 @@ func (s *productService) DeleteProductImage(ctx context.Context, id uuid.UUID, i
 	if image.CloudinaryPublicID != nil {
 		cldID = *image.CloudinaryPublicID
 	}
-	if err := s.cldService.DeleteImage(ctx, cldID); err != nil {
+	if err := s.cloudinaryService.DeleteImage(ctx, cldID); err != nil {
 		log.Printf("Warning: failed to delete cloudinary image %s: %v", cldID, err)
 	}
 
@@ -325,15 +325,15 @@ func (s *productService) SetPrimaryProductImage(ctx context.Context, id uuid.UUI
 	return s.repo.SetPrimaryImage(ctx, imageID, id)
 }
 
-func (s *productService) GetProductVariants(ctx context.Context, productID uuid.UUID) ([]dto.ProductVariantRes, error) {
+func (s *productService) GetProductVariants(ctx context.Context, productID uuid.UUID) ([]dto.ProductVariantResponse, error) {
 	variants, err := s.repo.FindVariantsByProductID(ctx, productID)
 	if err != nil {
 		return nil, err
 	}
 
-	res := make([]dto.ProductVariantRes, len(variants))
+	res := make([]dto.ProductVariantResponse, len(variants))
 	for i, v := range variants {
-		res[i] = dto.ProductVariantRes{
+		res[i] = dto.ProductVariantResponse{
 			ID:              v.ID,
 			Size:            v.Size,
 			Color:           v.Color,
@@ -406,7 +406,7 @@ func (s *productService) DeleteProductVariant(ctx context.Context, productID uui
 		return ErrVariantNotFound
 	}
 
-	return s.repo.DeleteVariant(ctx, variantID, productID)
+	return s.repo.DeactivateVariant(ctx, variantID, productID)
 }
 
 func (s *productService) mapToDetailResponse(ctx context.Context, p *model.Product) (*dto.ProductDetailResponse, error) {
@@ -434,9 +434,9 @@ func (s *productService) mapToDetailResponse(ctx context.Context, p *model.Produ
 		}
 	}
 
-	variantsRes := make([]dto.ProductVariantRes, len(p.Variants))
+	variantsRes := make([]dto.ProductVariantResponse, len(p.Variants))
 	for i, v := range p.Variants {
-		variantsRes[i] = dto.ProductVariantRes{
+		variantsRes[i] = dto.ProductVariantResponse{
 			ID:              v.ID,
 			Size:            v.Size,
 			Color:           v.Color,

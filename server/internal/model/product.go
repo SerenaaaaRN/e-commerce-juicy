@@ -90,3 +90,15 @@ type ProductVariant struct {
 func (ProductVariant) TableName() string {
 	return "product_variants"
 }
+
+func (p *Product) PrimaryImageURL() string {
+	for _, img := range p.Images {
+		if img.IsPrimary {
+			return img.ImageURL
+		}
+	}
+	if len(p.Images) > 0 {
+		return p.Images[0].ImageURL
+	}
+	return ""
+}

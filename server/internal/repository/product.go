@@ -209,6 +209,6 @@ func (r *productRepo) UpdateVariant(ctx context.Context, variant *model.ProductV
 	return r.db.WithContext(ctx).Save(variant).Error
 }
 
-func (r *productRepo) DeleteVariant(ctx context.Context, id uuid.UUID, productID uuid.UUID) error {
+func (r *productRepo) DeactivateVariant(ctx context.Context, id uuid.UUID, productID uuid.UUID) error {
 	return r.db.WithContext(ctx).Model(&model.ProductVariant{}).Where("id = ? AND product_id = ?", id, productID).Update("is_active", false).Error
 }

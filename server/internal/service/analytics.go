@@ -35,7 +35,7 @@ func (s *analyticsService) GetOverview(ctx context.Context) (map[string]interfac
 		if err := db.Model(&model.Order{}).Count(&ordersTotal).Error; err != nil {
 			return err
 		}
-		if err := db.Model(&model.Order{}).Where("status = ?", "pending").Count(&ordersPending).Error; err != nil {
+		if err := db.Model(&model.Order{}).Where("status = ?", string(model.OrderStatusPending)).Count(&ordersPending).Error; err != nil {
 			return err
 		}
 		if err := db.Model(&model.Order{}).Where("status = ?", "processing").Count(&ordersProcessing).Error; err != nil {
@@ -53,7 +53,7 @@ func (s *analyticsService) GetOverview(ctx context.Context) (map[string]interfac
 		var totalRev *float64
 		err := db.Model(&model.Order{}).
 			Select("SUM(total)").
-			Where("payment_status = ?", "paid").
+			Where("payment_status = ?", string(model.PaymentStatusPaid)).
 			Scan(&totalRev).Error
 		if err != nil {
 			return err
@@ -65,7 +65,7 @@ func (s *analyticsService) GetOverview(ctx context.Context) (map[string]interfac
 		var monthRev *float64
 		err = db.Model(&model.Order{}).
 			Select("SUM(total)").
-			Where("payment_status = ? AND created_at >= ?", "paid", startOfMonth).
+			Where("payment_status = ? AND created_at >= ?", string(model.PaymentStatusPaid), startOfMonth).
 			Scan(&monthRev).Error
 		if err != nil {
 			return err
@@ -106,10 +106,10 @@ func (s *analyticsService) GetOverview(ctx context.Context) (map[string]interfac
 
 	return map[string]interface{}{
 		"orders": map[string]interface{}{
-			"total":      ordersTotal,
-			"pending":    ordersPending,
-			"processing": ordersProcessing,
-			"this_month": ordersThisMonth,
+			"total":                          ordersTotal,
+			string(model.OrderStatusPending): ordersPending,
+			"processing":                     ordersProcessing,
+			"this_month":                     ordersThisMonth,
 		},
 		"revenue": map[string]interface{}{
 			"total":      revenueTotal,

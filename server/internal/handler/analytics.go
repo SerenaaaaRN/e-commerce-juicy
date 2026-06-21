@@ -10,42 +10,29 @@ type AnalyticsHandler struct {
 	srv AnalyticsService
 }
 
+// NewAnalyticsHandler membuat instance baru dari AnalyticsHandler.
 func NewAnalyticsHandler(srv AnalyticsService) *AnalyticsHandler {
 	return &AnalyticsHandler{srv: srv}
 }
 
+// GetOverview mengambil ringkasan statistik performa bisnis Juicy.
 func (h *AnalyticsHandler) GetOverview(c *gin.Context) {
 	data, err := h.srv.GetOverview(c.Request.Context())
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    data,
-	})
+	okJSON(c, data)
 }
 
+// GetOrdersChart mengambil data historis pesanan untuk grafik analitik.
 func (h *AnalyticsHandler) GetOrdersChart(c *gin.Context) {
 	data, err := h.srv.GetOrdersChart(c.Request.Context())
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    data,
-	})
+	okJSON(c, data)
 }

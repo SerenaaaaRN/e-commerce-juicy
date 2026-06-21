@@ -48,4 +48,3 @@ func CORS(cfg *config.Config) gin.HandlerFunc {
 		c.Next()
 	}
 }
-

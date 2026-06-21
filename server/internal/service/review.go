@@ -50,7 +50,7 @@ func (s *reviewService) SubmitReview(ctx context.Context, customerID uuid.UUID, 
 		return nil, ErrOrderNotFound
 	}
 
-	if order.Status != "delivered" {
+	if order.Status != string(model.OrderStatusDelivered) {
 		return nil, ErrOrderNotDelivered
 	}
 

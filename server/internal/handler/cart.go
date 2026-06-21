@@ -14,65 +14,35 @@ type CartHandler struct {
 	srv CartService
 }
 
+// NewCartHandler membuat instance baru dari CartHandler.
 func NewCartHandler(srv CartService) *CartHandler {
 	return &CartHandler{srv: srv}
 }
 
+// GetCart mengambil isi keranjang belanja customer beserta total harganya.
 func (h *CartHandler) GetCart(c *gin.Context) {
-	customerIDVal, exists := c.Get("customer_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Unauthorized context",
-				"code":    "UNAUTHORIZED",
-			},
-		})
+	customerID, ok := getCustomerID(c)
+	if !ok {
 		return
 	}
-
-	customerID := customerIDVal.(uuid.UUID)
 	cart, err := h.srv.GetCart(c.Request.Context(), customerID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    cart,
-	})
+	okJSON(c, cart)
 }
 
+// AddCartItem menambahkan item produk ke keranjang belanja customer.
 func (h *CartHandler) AddCartItem(c *gin.Context) {
-	customerIDVal, exists := c.Get("customer_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Unauthorized context",
-				"code":    "UNAUTHORIZED",
-			},
-		})
+	customerID, ok := getCustomerID(c)
+	if !ok {
 		return
 	}
-
-	customerID := customerIDVal.(uuid.UUID)
 	var req dto.AddCartItemRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Validation error",
-				"code":    "VALIDATION_ERROR",
-				"details": err.Error(),
-			},
-		})
+		validationErrJSON(c, err.Error())
 		return
 	}
 
@@ -98,35 +68,19 @@ func (h *CartHandler) AddCartItem(c *gin.Context) {
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "Item added to cart successfully",
-	})
+	okMessageJSON(c, "Item added to cart successfully")
 }
 
+// UpdateCartItemQuantity memperbarui kuantitas item produk di keranjang belanja.
 func (h *CartHandler) UpdateCartItemQuantity(c *gin.Context) {
-	customerIDVal, exists := c.Get("customer_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Unauthorized context",
-				"code":    "UNAUTHORIZED",
-			},
-		})
+	customerID, ok := getCustomerID(c)
+	if !ok {
 		return
 	}
-
-	customerID := customerIDVal.(uuid.UUID)
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
@@ -142,14 +96,7 @@ func (h *CartHandler) UpdateCartItemQuantity(c *gin.Context) {
 
 	var req dto.UpdateCartItemQuantityRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Validation error",
-				"code":    "VALIDATION_ERROR",
-				"details": err.Error(),
-			},
-		})
+		validationErrJSON(c, err.Error())
 		return
 	}
 
@@ -165,35 +112,19 @@ func (h *CartHandler) UpdateCartItemQuantity(c *gin.Context) {
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "Cart item quantity updated successfully",
-	})
+	okMessageJSON(c, "Cart item quantity updated successfully")
 }
 
+// RemoveCartItem menghapus satu item produk dari keranjang belanja.
 func (h *CartHandler) RemoveCartItem(c *gin.Context) {
-	customerIDVal, exists := c.Get("customer_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Unauthorized context",
-				"code":    "UNAUTHORIZED",
-			},
-		})
+	customerID, ok := getCustomerID(c)
+	if !ok {
 		return
 	}
-
-	customerID := customerIDVal.(uuid.UUID)
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
@@ -209,48 +140,24 @@ func (h *CartHandler) RemoveCartItem(c *gin.Context) {
 
 	err = h.srv.RemoveCartItem(c.Request.Context(), id, customerID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "Item removed from cart successfully",
-	})
+	okMessageJSON(c, "Item removed from cart successfully")
 }
 
+// ClearCart mengosongkan seluruh isi keranjang belanja customer.
 func (h *CartHandler) ClearCart(c *gin.Context) {
-	customerIDVal, exists := c.Get("customer_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Unauthorized context",
-				"code":    "UNAUTHORIZED",
-			},
-		})
+	customerID, ok := getCustomerID(c)
+	if !ok {
 		return
 	}
-
-	customerID := customerIDVal.(uuid.UUID)
 	err := h.srv.ClearCart(c.Request.Context(), customerID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "Cart cleared successfully",
-	})
+	okMessageJSON(c, "Cart cleared successfully")
 }

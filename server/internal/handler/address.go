@@ -14,55 +14,32 @@ type AddressHandler struct {
 	srv AddressService
 }
 
+// NewAddressHandler membuat instance baru dari AddressHandler.
 func NewAddressHandler(srv AddressService) *AddressHandler {
 	return &AddressHandler{srv: srv}
 }
 
+// GetAddresses menangani pengambilan semua daftar alamat milik customer yang sedang login.
 func (h *AddressHandler) GetAddresses(c *gin.Context) {
-	customerIDVal, exists := c.Get("customer_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Unauthorized context",
-				"code":    "UNAUTHORIZED",
-			},
-		})
+	customerID, ok := getCustomerID(c)
+	if !ok {
 		return
 	}
-
-	customerID := customerIDVal.(uuid.UUID)
 	addresses, err := h.srv.GetAddresses(c.Request.Context(), customerID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    addresses,
-	})
+	okJSON(c, addresses)
 }
 
+// GetAddressByID menangani pengambilan detail alamat spesifik berdasarkan ID.
 func (h *AddressHandler) GetAddressByID(c *gin.Context) {
-	customerIDVal, exists := c.Get("customer_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Unauthorized context",
-				"code":    "UNAUTHORIZED",
-			},
-		})
+	customerID, ok := getCustomerID(c)
+	if !ok {
 		return
 	}
-
-	customerID := customerIDVal.(uuid.UUID)
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
@@ -88,79 +65,40 @@ func (h *AddressHandler) GetAddressByID(c *gin.Context) {
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    address,
-	})
+	okJSON(c, address)
 }
 
+// CreateAddress menangani pembuatan alamat pengiriman baru untuk customer.
 func (h *AddressHandler) CreateAddress(c *gin.Context) {
-	customerIDVal, exists := c.Get("customer_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Unauthorized context",
-				"code":    "UNAUTHORIZED",
-			},
-		})
+	customerID, ok := getCustomerID(c)
+	if !ok {
 		return
 	}
-
-	customerID := customerIDVal.(uuid.UUID)
 	var req dto.AddressRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Validation error",
-				"code":    "VALIDATION_ERROR",
-				"details": err.Error(),
-			},
-		})
+		validationErrJSON(c, err.Error())
 		return
 	}
 
 	address, err := h.srv.CreateAddress(c.Request.Context(), customerID, req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{
-		"success": true,
-		"data":    address,
-	})
+	createdJSON(c, address)
 }
 
+// UpdateAddress menangani pembaruan data alamat pengiriman customer.
 func (h *AddressHandler) UpdateAddress(c *gin.Context) {
-	customerIDVal, exists := c.Get("customer_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Unauthorized context",
-				"code":    "UNAUTHORIZED",
-			},
-		})
+	customerID, ok := getCustomerID(c)
+	if !ok {
 		return
 	}
-
-	customerID := customerIDVal.(uuid.UUID)
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
@@ -176,14 +114,7 @@ func (h *AddressHandler) UpdateAddress(c *gin.Context) {
 
 	var req dto.AddressRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Validation error",
-				"code":    "VALIDATION_ERROR",
-				"details": err.Error(),
-			},
-		})
+		validationErrJSON(c, err.Error())
 		return
 	}
 
@@ -199,35 +130,19 @@ func (h *AddressHandler) UpdateAddress(c *gin.Context) {
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    address,
-	})
+	okJSON(c, address)
 }
 
+// DeleteAddress menangani penghapusan alamat pengiriman customer.
 func (h *AddressHandler) DeleteAddress(c *gin.Context) {
-	customerIDVal, exists := c.Get("customer_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Unauthorized context",
-				"code":    "UNAUTHORIZED",
-			},
-		})
+	customerID, ok := getCustomerID(c)
+	if !ok {
 		return
 	}
-
-	customerID := customerIDVal.(uuid.UUID)
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
@@ -253,35 +168,19 @@ func (h *AddressHandler) DeleteAddress(c *gin.Context) {
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "Address deleted successfully",
-	})
+	okMessageJSON(c, "Address deleted successfully")
 }
 
+// SetDefaultAddress mengubah alamat pengiriman tertentu menjadi alamat utama (default).
 func (h *AddressHandler) SetDefaultAddress(c *gin.Context) {
-	customerIDVal, exists := c.Get("customer_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Unauthorized context",
-				"code":    "UNAUTHORIZED",
-			},
-		})
+	customerID, ok := getCustomerID(c)
+	if !ok {
 		return
 	}
-
-	customerID := customerIDVal.(uuid.UUID)
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
@@ -307,17 +206,9 @@ func (h *AddressHandler) SetDefaultAddress(c *gin.Context) {
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "Address set as default successfully",
-	})
+	okMessageJSON(c, "Address set as default successfully")
 }

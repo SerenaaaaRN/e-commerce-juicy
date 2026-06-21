@@ -49,14 +49,14 @@ func main() {
 	wishlistRepo := repository.NewWishlistRepository(db)
 
 	worker := service.NewBackgroundWorker(context.Background(), 5, 100)
-	cldService := service.NewCloudinaryService(cfg)
+	cloudinaryService := service.NewCloudinaryService(cfg)
 	emailService := service.NewEmailService(cfg)
 
 	adminService := service.NewAdminService(adminRepo, cfg)
 	customerService := service.NewCustomerService(customerRepo, cfg)
 	addressService := service.NewAddressService(addressRepo)
 	categoryService := service.NewCategoryService(categoryRepo, db)
-	productService := service.NewProductService(productRepo, cldService, db)
+	productService := service.NewProductService(productRepo, cloudinaryService, db)
 	cartService := service.NewCartService(cartRepo, productRepo)
 	orderService := service.NewOrderService(orderRepo, cartRepo, addressRepo, productRepo, customerRepo, emailService, worker, db)
 	reviewService := service.NewReviewService(reviewRepo, orderRepo, productRepo, customerRepo)

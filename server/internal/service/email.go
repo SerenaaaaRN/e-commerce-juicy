@@ -73,7 +73,7 @@ func (s *EmailService) SendAdminOrderAlert(ctx context.Context, order *model.Ord
 		<p>Total: Rp %.2f</p>
 		<p>Payment Method: %s</p>
 		<p>Notes: %s</p>
-	`, order.OrderNumber, order.Total, getSafeString(order.PaymentMethod), getSafeString(order.Notes))
+	`, order.OrderNumber, order.Total, strOrDash(order.PaymentMethod), strOrDash(order.Notes))
 
 	if s.mock {
 		log.Printf("[Email Mock] Sending Admin Alert to %s. Subject: %s", s.adminAlertEmail, subject)
@@ -125,7 +125,7 @@ func (s *EmailService) SendShippingUpdate(ctx context.Context, customerEmail, cu
 	}
 }
 
-func getSafeString(s *string) string {
+func strOrDash(s *string) string {
 	if s == nil {
 		return "-"
 	}

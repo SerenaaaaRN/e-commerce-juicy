@@ -90,7 +90,7 @@ func (r *customerRepo) GetStats(ctx context.Context, customerIDs []uuid.UUID) (m
 	}
 
 	statsMap := make(map[uuid.UUID]model.CustomerStats)
-	
+
 	for _, id := range customerIDs {
 		statsMap[id] = model.CustomerStats{
 			CustomerID: id,
@@ -121,4 +121,3 @@ func (r *customerRepo) GetOrderHistory(ctx context.Context, customerID uuid.UUID
 	}
 	return orders, nil
 }
-

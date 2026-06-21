@@ -19,10 +19,12 @@ type ProductHandler struct {
 	srv ProductService
 }
 
+// NewProductHandler membuat instance baru dari ProductHandler.
 func NewProductHandler(srv ProductService) *ProductHandler {
 	return &ProductHandler{srv: srv}
 }
 
+// ListProducts mengambil daftar produk dengan berbagai opsi filter, pencarian, dan paginasi.
 func (h *ProductHandler) ListProducts(c *gin.Context) {
 	category := c.Query("category")
 	featuredStr := c.Query("featured")
@@ -53,12 +55,7 @@ func (h *ProductHandler) ListProducts(c *gin.Context) {
 
 	products, total, err := h.srv.ListProducts(c.Request.Context(), category, featured, tag, sort, page, perPage, includeUnavailable, sizes, search)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
@@ -79,6 +76,7 @@ func (h *ProductHandler) ListProducts(c *gin.Context) {
 	})
 }
 
+// GetProductBySlug mengambil rincian detail produk berdasarkan slug.
 func (h *ProductHandler) GetProductBySlug(c *gin.Context) {
 	slug := c.Param("slug")
 	product, err := h.srv.GetProductBySlug(c.Request.Context(), slug)
@@ -93,21 +91,14 @@ func (h *ProductHandler) GetProductBySlug(c *gin.Context) {
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    product,
-	})
+	okJSON(c, product)
 }
 
+// GetProductByID mengambil rincian detail produk berdasarkan ID.
 func (h *ProductHandler) GetProductByID(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
@@ -134,21 +125,14 @@ func (h *ProductHandler) GetProductByID(c *gin.Context) {
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    product,
-	})
+	okJSON(c, product)
 }
 
+// CreateProduct membuat data produk baru.
 func (h *ProductHandler) CreateProduct(c *gin.Context) {
 	var req struct {
 		CategoryID     uuid.UUID `json:"category_id" binding:"required"`
@@ -164,14 +148,7 @@ func (h *ProductHandler) CreateProduct(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Validation error",
-				"code":    "VALIDATION_ERROR",
-				"details": err.Error(),
-			},
-		})
+		validationErrJSON(c, err.Error())
 		return
 	}
 
@@ -190,21 +167,14 @@ func (h *ProductHandler) CreateProduct(c *gin.Context) {
 
 	created, err := h.srv.CreateProduct(c.Request.Context(), product)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{
-		"success": true,
-		"data":    created,
-	})
+	createdJSON(c, created)
 }
 
+// UpdateProduct memperbarui informasi produk yang sudah ada.
 func (h *ProductHandler) UpdateProduct(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
@@ -233,14 +203,7 @@ func (h *ProductHandler) UpdateProduct(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Validation error",
-				"code":    "VALIDATION_ERROR",
-				"details": err.Error(),
-			},
-		})
+		validationErrJSON(c, err.Error())
 		return
 	}
 
@@ -269,21 +232,14 @@ func (h *ProductHandler) UpdateProduct(c *gin.Context) {
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    updated,
-	})
+	okJSON(c, updated)
 }
 
+// DeleteProduct menghapus produk beserta seluruh aset gambarnya.
 func (h *ProductHandler) DeleteProduct(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
@@ -310,21 +266,14 @@ func (h *ProductHandler) DeleteProduct(c *gin.Context) {
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "Product deleted successfully",
-	})
+	okMessageJSON(c, "Product deleted successfully")
 }
 
+// AddProductImages mengunggah beberapa file gambar baru untuk produk.
 func (h *ProductHandler) AddProductImages(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
@@ -411,12 +360,7 @@ func (h *ProductHandler) AddProductImages(c *gin.Context) {
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
@@ -432,12 +376,13 @@ func (h *ProductHandler) AddProductImages(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"success":  true,
-		"message":  "Product images uploaded successfully",
-		"data":     updatedProduct,
+		"success": true,
+		"message": "Product images uploaded successfully",
+		"data":    updatedProduct,
 	})
 }
 
+// AddProductImageUrl menambahkan gambar produk baru melalui URL eksternal.
 func (h *ProductHandler) AddProductImageUrl(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
@@ -476,12 +421,7 @@ func (h *ProductHandler) AddProductImageUrl(c *gin.Context) {
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
@@ -497,12 +437,13 @@ func (h *ProductHandler) AddProductImageUrl(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"success":  true,
-		"message":  "Product image URL added successfully",
-		"data":     updatedProduct,
+		"success": true,
+		"message": "Product image URL added successfully",
+		"data":    updatedProduct,
 	})
 }
 
+// DeleteProductImage menghapus aset gambar spesifik dari produk.
 func (h *ProductHandler) DeleteProductImage(c *gin.Context) {
 	productIDStr := c.Param("id")
 	productID, err := uuid.Parse(productIDStr)
@@ -542,21 +483,14 @@ func (h *ProductHandler) DeleteProductImage(c *gin.Context) {
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "Product image deleted successfully",
-	})
+	okMessageJSON(c, "Product image deleted successfully")
 }
 
+// SetPrimaryProductImage menentukan gambar utama yang akan ditampilkan untuk produk.
 func (h *ProductHandler) SetPrimaryProductImage(c *gin.Context) {
 	productIDStr := c.Param("id")
 	productID, err := uuid.Parse(productIDStr)
@@ -596,21 +530,14 @@ func (h *ProductHandler) SetPrimaryProductImage(c *gin.Context) {
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "Product image set as primary successfully",
-	})
+	okMessageJSON(c, "Product image set as primary successfully")
 }
 
+// GetProductVariants mengambil semua varian ukuran/warna milik produk.
 func (h *ProductHandler) GetProductVariants(c *gin.Context) {
 	productIDStr := c.Param("id")
 	productID, err := uuid.Parse(productIDStr)
@@ -627,21 +554,14 @@ func (h *ProductHandler) GetProductVariants(c *gin.Context) {
 
 	variants, err := h.srv.GetProductVariants(c.Request.Context(), productID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    variants,
-	})
+	okJSON(c, variants)
 }
 
+// AddProductVariant menambahkan varian baru untuk produk.
 func (h *ProductHandler) AddProductVariant(c *gin.Context) {
 	productIDStr := c.Param("id")
 	productID, err := uuid.Parse(productIDStr)
@@ -658,14 +578,7 @@ func (h *ProductHandler) AddProductVariant(c *gin.Context) {
 
 	var req dto.ProductVariantRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Validation error",
-				"code":    "VALIDATION_ERROR",
-				"details": err.Error(),
-			},
-		})
+		validationErrJSON(c, err.Error())
 		return
 	}
 
@@ -681,21 +594,14 @@ func (h *ProductHandler) AddProductVariant(c *gin.Context) {
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{
-		"success": true,
-		"data":    variant,
-	})
+	createdJSON(c, variant)
 }
 
+// UpdateProductVariant memperbarui data varian produk.
 func (h *ProductHandler) UpdateProductVariant(c *gin.Context) {
 	productIDStr := c.Param("id")
 	productID, err := uuid.Parse(productIDStr)
@@ -725,14 +631,7 @@ func (h *ProductHandler) UpdateProductVariant(c *gin.Context) {
 
 	var req dto.ProductVariantRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Validation error",
-				"code":    "VALIDATION_ERROR",
-				"details": err.Error(),
-			},
-		})
+		validationErrJSON(c, err.Error())
 		return
 	}
 
@@ -748,21 +647,14 @@ func (h *ProductHandler) UpdateProductVariant(c *gin.Context) {
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    variant,
-	})
+	okJSON(c, variant)
 }
 
+// DeleteProductVariant menonaktifkan varian produk (soft-delete).
 func (h *ProductHandler) DeleteProductVariant(c *gin.Context) {
 	productIDStr := c.Param("id")
 	productID, err := uuid.Parse(productIDStr)
@@ -802,17 +694,9 @@ func (h *ProductHandler) DeleteProductVariant(c *gin.Context) {
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "Product variant deleted successfully",
-	})
+	okMessageJSON(c, "Product variant deleted successfully")
 }

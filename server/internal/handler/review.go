@@ -15,34 +15,20 @@ type ReviewHandler struct {
 	srv ReviewService
 }
 
+// NewReviewHandler membuat instance baru dari ReviewHandler.
 func NewReviewHandler(srv ReviewService) *ReviewHandler {
 	return &ReviewHandler{srv: srv}
 }
 
+// SubmitReview mengirimkan ulasan baru untuk produk yang telah dibeli.
 func (h *ReviewHandler) SubmitReview(c *gin.Context) {
-	customerIDVal, exists := c.Get("customer_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Unauthorized context",
-				"code":    "UNAUTHORIZED",
-			},
-		})
+	customerID, ok := getCustomerID(c)
+	if !ok {
 		return
 	}
-
-	customerID := customerIDVal.(uuid.UUID)
 	var req dto.CreateReviewRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Validation error",
-				"code":    "VALIDATION_ERROR",
-				"details": err.Error(),
-			},
-		})
+		validationErrJSON(c, err.Error())
 		return
 	}
 
@@ -98,21 +84,14 @@ func (h *ReviewHandler) SubmitReview(c *gin.Context) {
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{
-		"success": true,
-		"data":    resp,
-	})
+	createdJSON(c, resp)
 }
 
+// GetProductReviews mengambil daftar ulasan produk yang telah dipublikasikan.
 func (h *ReviewHandler) GetProductReviews(c *gin.Context) {
 	slug := c.Param("slug")
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
@@ -130,18 +109,12 @@ func (h *ReviewHandler) GetProductReviews(c *gin.Context) {
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    reviews,
+	okJSON(c, gin.H{
+		"items": reviews,
 		"meta": gin.H{
 			"total":    total,
 			"page":     page,
@@ -150,6 +123,7 @@ func (h *ReviewHandler) GetProductReviews(c *gin.Context) {
 	})
 }
 
+// ListAllReviews mengambil daftar semua ulasan masuk untuk moderasi (untuk admin).
 func (h *ReviewHandler) ListAllReviews(c *gin.Context) {
 	var productID *uuid.UUID
 	productIDStr := c.Query("product_id")
@@ -175,18 +149,12 @@ func (h *ReviewHandler) ListAllReviews(c *gin.Context) {
 
 	reviews, total, err := h.srv.ListAllReviews(c.Request.Context(), productID, published, page, perPage)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    reviews,
+	okJSON(c, gin.H{
+		"items": reviews,
 		"meta": gin.H{
 			"total":    total,
 			"page":     page,
@@ -195,6 +163,7 @@ func (h *ReviewHandler) ListAllReviews(c *gin.Context) {
 	})
 }
 
+// UpdateReviewPublishStatus memperbarui status publikasi ulasan (untuk admin).
 func (h *ReviewHandler) UpdateReviewPublishStatus(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
@@ -211,13 +180,7 @@ func (h *ReviewHandler) UpdateReviewPublishStatus(c *gin.Context) {
 
 	var req dto.ReviewPublishRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Validation error",
-				"code":    "VALIDATION_ERROR",
-			},
-		})
+		validationErrJSON(c, "")
 		return
 	}
 
@@ -233,21 +196,14 @@ func (h *ReviewHandler) UpdateReviewPublishStatus(c *gin.Context) {
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "Review publish status updated successfully",
-	})
+	okMessageJSON(c, "Review publish status updated successfully")
 }
 
+// DeleteReview menghapus ulasan produk secara permanen (untuk admin).
 func (h *ReviewHandler) DeleteReview(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
@@ -274,17 +230,9 @@ func (h *ReviewHandler) DeleteReview(c *gin.Context) {
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "Review deleted successfully",
-	})
+	okMessageJSON(c, "Review deleted successfully")
 }

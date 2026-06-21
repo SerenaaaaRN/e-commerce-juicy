@@ -36,43 +36,43 @@ type ProductVariantRequest struct {
 }
 
 type ProductResponse struct {
-	ID             uuid.UUID `json:"id"`
-	CategoryID     uuid.UUID `json:"category_id"`
-	Name           string    `json:"name"`
-	Slug           string    `json:"slug"`
-	Description    *string   `json:"description"`
-	Price          float64   `json:"price"`
-	CompareAtPrice *float64  `json:"compare_at_price"`
-	IsAvailable    bool      `json:"is_available"`
-	IsFeatured     bool      `json:"is_featured"`
-	Tags           []string  `json:"tags"`
-	DisplayOrder   int       `json:"display_order"`
-	PrimaryImage   string    `json:"primary_image"`
-	CategoryName   string              `json:"category_name"`
-	AvgRating      float64             `json:"avg_rating"`
-	ReviewCount    int                 `json:"review_count"`
-	Variants       []ProductVariantRes `json:"variants,omitempty"`
+	ID             uuid.UUID                `json:"id"`
+	CategoryID     uuid.UUID                `json:"category_id"`
+	Name           string                   `json:"name"`
+	Slug           string                   `json:"slug"`
+	Description    *string                  `json:"description"`
+	Price          float64                  `json:"price"`
+	CompareAtPrice *float64                 `json:"compare_at_price"`
+	IsAvailable    bool                     `json:"is_available"`
+	IsFeatured     bool                     `json:"is_featured"`
+	Tags           []string                 `json:"tags"`
+	DisplayOrder   int                      `json:"display_order"`
+	PrimaryImage   string                   `json:"primary_image"`
+	CategoryName   string                   `json:"category_name"`
+	AvgRating      float64                  `json:"avg_rating"`
+	ReviewCount    int                      `json:"review_count"`
+	Variants       []ProductVariantResponse `json:"variants,omitempty"`
 }
 
 type ProductDetailResponse struct {
-	ID             uuid.UUID              `json:"id"`
-	CategoryID     uuid.UUID              `json:"category_id"`
-	Name           string                 `json:"name"`
-	Slug           string                 `json:"slug"`
-	Description    *string                `json:"description"`
-	Price          float64                `json:"price"`
-	CompareAtPrice *float64               `json:"compare_at_price"`
-	IsAvailable    bool                   `json:"is_available"`
-	IsFeatured     bool                   `json:"is_featured"`
-	Tags           []string               `json:"tags"`
-	DisplayOrder   int                    `json:"display_order"`
-	PrimaryImage   string                 `json:"primary_image"`
-	Category       CategoryDetailInfo     `json:"category"`
-	CategoryName   string                 `json:"category_name"`
-	Images         []ProductImageResponse `json:"images"`
-	Variants       []ProductVariantRes    `json:"variants"`
-	AvgRating      float64                `json:"avg_rating"`
-	ReviewCount    int                    `json:"review_count"`
+	ID             uuid.UUID                `json:"id"`
+	CategoryID     uuid.UUID                `json:"category_id"`
+	Name           string                   `json:"name"`
+	Slug           string                   `json:"slug"`
+	Description    *string                  `json:"description"`
+	Price          float64                  `json:"price"`
+	CompareAtPrice *float64                 `json:"compare_at_price"`
+	IsAvailable    bool                     `json:"is_available"`
+	IsFeatured     bool                     `json:"is_featured"`
+	Tags           []string                 `json:"tags"`
+	DisplayOrder   int                      `json:"display_order"`
+	PrimaryImage   string                   `json:"primary_image"`
+	Category       CategoryDetailInfo       `json:"category"`
+	CategoryName   string                   `json:"category_name"`
+	Images         []ProductImageResponse   `json:"images"`
+	Variants       []ProductVariantResponse `json:"variants"`
+	AvgRating      float64                  `json:"avg_rating"`
+	ReviewCount    int                      `json:"review_count"`
 }
 
 type CategoryDetailInfo struct {
@@ -89,7 +89,7 @@ type ProductImageResponse struct {
 	DisplayOrder int       `json:"display_order"`
 }
 
-type ProductVariantRes struct {
+type ProductVariantResponse struct {
 	ID              uuid.UUID `json:"id"`
 	Size            string    `json:"size"`
 	Color           string    `json:"color"`

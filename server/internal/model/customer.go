@@ -28,4 +28,3 @@ type CustomerStats struct {
 	OrderCount int
 	TotalSpent float64
 }
-

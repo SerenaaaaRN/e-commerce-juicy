@@ -14,10 +14,12 @@ type WishlistHandler struct {
 	srv WishlistService
 }
 
+// NewWishlistHandler membuat instance baru dari WishlistHandler.
 func NewWishlistHandler(srv WishlistService) *WishlistHandler {
 	return &WishlistHandler{srv: srv}
 }
 
+// GetWishlist mengambil semua item produk dalam wishlist customer.
 func (h *WishlistHandler) GetWishlist(c *gin.Context) {
 	customerIDVal, exists := c.Get("customer_id")
 	if !exists {
@@ -35,6 +37,7 @@ func (h *WishlistHandler) GetWishlist(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true, "data": items})
 }
 
+// CheckWishlist memeriksa apakah suatu varian produk sudah ada di wishlist customer.
 func (h *WishlistHandler) CheckWishlist(c *gin.Context) {
 	customerIDVal, exists := c.Get("customer_id")
 	if !exists {
@@ -58,6 +61,7 @@ func (h *WishlistHandler) CheckWishlist(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"success": true, "data": dto.WishlistCheckResponse{InWishlist: inWishlist}})
 }
 
+// AddToWishlist menambahkan varian produk ke dalam wishlist.
 func (h *WishlistHandler) AddToWishlist(c *gin.Context) {
 	customerIDVal, exists := c.Get("customer_id")
 	if !exists {
@@ -85,6 +89,7 @@ func (h *WishlistHandler) AddToWishlist(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"success": true, "message": "Added to wishlist"})
 }
 
+// RemoveFromWishlist menghapus varian produk dari wishlist customer.
 func (h *WishlistHandler) RemoveFromWishlist(c *gin.Context) {
 	customerIDVal, exists := c.Get("customer_id")
 	if !exists {

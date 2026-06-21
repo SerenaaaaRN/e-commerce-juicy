@@ -16,8 +16,8 @@ import (
 )
 
 var (
-	ErrCartEmpty          = errors.New("CART_EMPTY")
-	ErrCannotCancelOrder  = errors.New("CANNOT_CANCEL_ORDER")
+	ErrCartEmpty         = errors.New("CART_EMPTY")
+	ErrCannotCancelOrder = errors.New("CANNOT_CANCEL_ORDER")
 )
 
 type orderService struct {
@@ -121,11 +121,11 @@ func (s *orderService) Checkout(ctx context.Context, customerID uuid.UUID, req d
 		CustomerID:    customerID,
 		AddressID:     &req.AddressID,
 		OrderNumber:   orderNumber,
-		Status:        "pending",
+		Status:        string(model.OrderStatusPending),
 		Subtotal:      subtotal,
 		ShippingFee:   shippingFee,
 		Total:         total,
-		PaymentStatus: "unpaid",
+		PaymentStatus: string(model.PaymentStatusUnpaid),
 		PaymentMethod: &req.PaymentMethod,
 		Notes:         req.Notes,
 	}
@@ -241,7 +241,7 @@ func (s *orderService) CancelOrder(ctx context.Context, orderNumber string, cust
 		return ErrOrderNotFound
 	}
 
-	if order.Status != "pending" && order.Status != "confirmed" {
+	if order.Status != string(model.OrderStatusPending) && order.Status != string(model.OrderStatusConfirmed) {
 		return ErrCannotCancelOrder
 	}
 
@@ -254,12 +254,12 @@ func (s *orderService) CompleteOrder(ctx context.Context, orderNumber string, cu
 		return ErrOrderNotFound
 	}
 
-	err = s.repo.UpdateStatus(ctx, order.ID, "delivered")
+	err = s.repo.UpdateStatus(ctx, order.ID, string(model.OrderStatusDelivered))
 	if err != nil {
 		return err
 	}
 
-	return s.repo.UpdatePaymentStatus(ctx, order.ID, "paid")
+	return s.repo.UpdatePaymentStatus(ctx, order.ID, string(model.PaymentStatusPaid))
 }
 
 func (s *orderService) ListAllOrders(
@@ -363,7 +363,7 @@ func (s *orderService) UpdateOrderStatus(ctx context.Context, id uuid.UUID, stat
 		return err
 	}
 
-	if status == "shipped" {
+	if status == string(model.OrderStatusShipped) {
 		_ = s.worker.Submit(func(workerCtx context.Context) {
 			s.emailService.SendShippingUpdate(workerCtx, order.Customer.Email, order.Customer.FullName, order)
 		})

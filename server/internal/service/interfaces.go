@@ -59,7 +59,7 @@ type ProductRepository interface {
 	FindVariantByID(ctx context.Context, id uuid.UUID) (*model.ProductVariant, error)
 	CreateVariant(ctx context.Context, variant *model.ProductVariant) error
 	UpdateVariant(ctx context.Context, variant *model.ProductVariant) error
-	DeleteVariant(ctx context.Context, id uuid.UUID, productID uuid.UUID) error
+	DeactivateVariant(ctx context.Context, id uuid.UUID, productID uuid.UUID) error
 }
 
 type CartRepository interface {

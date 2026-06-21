@@ -15,21 +15,16 @@ type CustomerHandler struct {
 	srv CustomerService
 }
 
+// NewCustomerHandler membuat instance baru dari CustomerHandler.
 func NewCustomerHandler(srv CustomerService) *CustomerHandler {
 	return &CustomerHandler{srv: srv}
 }
 
+// Register menangani registrasi akun customer baru.
 func (h *CustomerHandler) Register(c *gin.Context) {
 	var req dto.CustomerRegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Validation error",
-				"code":    "VALIDATION_ERROR",
-				"details": err.Error(),
-			},
-		})
+		validationErrJSON(c, err.Error())
 		return
 	}
 
@@ -45,32 +40,18 @@ func (h *CustomerHandler) Register(c *gin.Context) {
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{
-		"success": true,
-		"data":    resp,
-	})
+	createdJSON(c, resp)
 }
 
+// Login menangani proses autentikasi admin dan memberikan token akses serta refresh cookie.
 func (h *CustomerHandler) Login(c *gin.Context) {
 	var req dto.CustomerLoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Validation error",
-				"code":    "VALIDATION_ERROR",
-				"details": err.Error(),
-			},
-		})
+		validationErrJSON(c, err.Error())
 		return
 	}
 
@@ -96,35 +77,19 @@ func (h *CustomerHandler) Login(c *gin.Context) {
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    resp,
-	})
+	okJSON(c, resp)
 }
 
+// GetProfile mengambil data profil admin yang sedang login berdasarkan ID.
 func (h *CustomerHandler) GetProfile(c *gin.Context) {
-	customerIDVal, exists := c.Get("customer_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Unauthorized context",
-				"code":    "UNAUTHORIZED",
-			},
-		})
+	customerID, ok := getCustomerID(c)
+	if !ok {
 		return
 	}
-
-	customerID := customerIDVal.(uuid.UUID)
 	profile, err := h.srv.GetProfile(c.Request.Context(), customerID)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
@@ -137,80 +102,39 @@ func (h *CustomerHandler) GetProfile(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    profile,
-	})
+	okJSON(c, profile)
 }
 
+// UpdateProfile memperbarui informasi profil customer.
 func (h *CustomerHandler) UpdateProfile(c *gin.Context) {
-	customerIDVal, exists := c.Get("customer_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Unauthorized context",
-				"code":    "UNAUTHORIZED",
-			},
-		})
+	customerID, ok := getCustomerID(c)
+	if !ok {
 		return
 	}
-
-	customerID := customerIDVal.(uuid.UUID)
 	var req dto.UpdateProfileRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Validation error",
-				"code":    "VALIDATION_ERROR",
-				"details": err.Error(),
-			},
-		})
+		validationErrJSON(c, err.Error())
 		return
 	}
 
 	profile, err := h.srv.UpdateProfile(c.Request.Context(), customerID, req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    profile,
-	})
+	okJSON(c, profile)
 }
 
+// ChangePassword memproses perubahan kata sandi untuk customer yang sedang login.
 func (h *CustomerHandler) ChangePassword(c *gin.Context) {
-	customerIDVal, exists := c.Get("customer_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Unauthorized context",
-				"code":    "UNAUTHORIZED",
-			},
-		})
+	customerID, ok := getCustomerID(c)
+	if !ok {
 		return
 	}
-
-	customerID := customerIDVal.(uuid.UUID)
 	var req dto.ChangePasswordRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Validation error",
-				"code":    "VALIDATION_ERROR",
-				"details": err.Error(),
-			},
-		})
+		validationErrJSON(c, err.Error())
 		return
 	}
 
@@ -226,21 +150,14 @@ func (h *CustomerHandler) ChangePassword(c *gin.Context) {
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "Password updated successfully",
-	})
+	okMessageJSON(c, "Password updated successfully")
 }
 
+// ListCustomers mengambil daftar customer dengan fitur pencarian dan paginasi (untuk admin).
 func (h *CustomerHandler) ListCustomers(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	perPage, _ := strconv.Atoi(c.DefaultQuery("per_page", "10"))
@@ -248,18 +165,12 @@ func (h *CustomerHandler) ListCustomers(c *gin.Context) {
 
 	customers, total, err := h.srv.ListCustomers(c.Request.Context(), page, perPage, search)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    customers,
+	okJSON(c, gin.H{
+		"items": customers,
 		"meta": gin.H{
 			"total":    total,
 			"page":     page,
@@ -268,6 +179,7 @@ func (h *CustomerHandler) ListCustomers(c *gin.Context) {
 	})
 }
 
+// GetCustomerDetail mengambil detail profil customer secara lengkap (untuk admin).
 func (h *CustomerHandler) GetCustomerDetail(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
@@ -294,12 +206,10 @@ func (h *CustomerHandler) GetCustomerDetail(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    profile,
-	})
+	okJSON(c, profile)
 }
 
+// UpdateCustomerStatus memperbarui status aktif/nonaktif akun customer (untuk admin).
 func (h *CustomerHandler) UpdateCustomerStatus(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
@@ -318,29 +228,15 @@ func (h *CustomerHandler) UpdateCustomerStatus(c *gin.Context) {
 		IsActive *bool `json:"is_active" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Validation error",
-				"code":    "VALIDATION_ERROR",
-			},
-		})
+		validationErrJSON(c, "")
 		return
 	}
 
 	err = h.srv.UpdateCustomerStatus(c.Request.Context(), id, *req.IsActive)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "Customer status updated successfully",
-	})
+	okMessageJSON(c, "Customer status updated successfully")
 }

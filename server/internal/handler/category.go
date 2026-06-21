@@ -14,46 +14,34 @@ type CategoryHandler struct {
 	srv CategoryService
 }
 
+// NewCategoryHandler membuat instance baru dari CategoryHandler.
 func NewCategoryHandler(srv CategoryService) *CategoryHandler {
 	return &CategoryHandler{srv: srv}
 }
 
+// ListActiveCategories mengambil daftar kategori yang aktif untuk ditampilkan di toko.
 func (h *CategoryHandler) ListActiveCategories(c *gin.Context) {
 	categories, err := h.srv.ListActiveCategories(c.Request.Context())
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    categories,
-	})
+	okJSON(c, categories)
 }
 
+// ListAllCategories mengambil semua daftar kategori untuk kebutuhan admin.
 func (h *CategoryHandler) ListAllCategories(c *gin.Context) {
 	categories, err := h.srv.ListAllCategories(c.Request.Context())
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    categories,
-	})
+	okJSON(c, categories)
 }
 
+// GetCategoryByID mengambil detail informasi kategori berdasarkan ID.
 func (h *CategoryHandler) GetCategoryByID(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
@@ -80,52 +68,31 @@ func (h *CategoryHandler) GetCategoryByID(c *gin.Context) {
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    category,
-	})
+	okJSON(c, category)
 }
 
+// CreateCategory membuat kategori produk baru.
 func (h *CategoryHandler) CreateCategory(c *gin.Context) {
 	var req dto.CategoryRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Validation error",
-				"code":    "VALIDATION_ERROR",
-				"details": err.Error(),
-			},
-		})
+		validationErrJSON(c, err.Error())
 		return
 	}
 
 	category, err := h.srv.CreateCategory(c.Request.Context(), req)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{
-		"success": true,
-		"data":    category,
-	})
+	createdJSON(c, category)
 }
 
+// UpdateCategory memperbarui data kategori produk yang sudah ada.
 func (h *CategoryHandler) UpdateCategory(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
@@ -142,14 +109,7 @@ func (h *CategoryHandler) UpdateCategory(c *gin.Context) {
 
 	var req dto.CategoryRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Validation error",
-				"code":    "VALIDATION_ERROR",
-				"details": err.Error(),
-			},
-		})
+		validationErrJSON(c, err.Error())
 		return
 	}
 
@@ -165,21 +125,14 @@ func (h *CategoryHandler) UpdateCategory(c *gin.Context) {
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    category,
-	})
+	okJSON(c, category)
 }
 
+// DeleteCategory menghapus kategori produk jika tidak memiliki keterkaitan produk.
 func (h *CategoryHandler) DeleteCategory(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
@@ -216,17 +169,9 @@ func (h *CategoryHandler) DeleteCategory(c *gin.Context) {
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "Category deleted successfully",
-	})
+	okMessageJSON(c, "Category deleted successfully")
 }

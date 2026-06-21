@@ -16,34 +16,20 @@ type OrderHandler struct {
 	srv OrderService
 }
 
+// NewOrderHandler membuat instance baru dari OrderHandler.
 func NewOrderHandler(srv OrderService) *OrderHandler {
 	return &OrderHandler{srv: srv}
 }
 
+// Checkout memproses pembuatan pesanan baru (checkout) dari item keranjang belanja.
 func (h *OrderHandler) Checkout(c *gin.Context) {
-	customerIDVal, exists := c.Get("customer_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Unauthorized context",
-				"code":    "UNAUTHORIZED",
-			},
-		})
+	customerID, ok := getCustomerID(c)
+	if !ok {
 		return
 	}
-
-	customerID := customerIDVal.(uuid.UUID)
 	var req dto.CheckoutRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Validation error",
-				"code":    "VALIDATION_ERROR",
-				"details": err.Error(),
-			},
-		})
+		validationErrJSON(c, err.Error())
 		return
 	}
 
@@ -79,52 +65,30 @@ func (h *OrderHandler) Checkout(c *gin.Context) {
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{
-		"success": true,
-		"data":    resp,
-	})
+	createdJSON(c, resp)
 }
 
+// GetCustomerOrders mengambil daftar riwayat pesanan milik customer.
 func (h *OrderHandler) GetCustomerOrders(c *gin.Context) {
-	customerIDVal, exists := c.Get("customer_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Unauthorized context",
-				"code":    "UNAUTHORIZED",
-			},
-		})
+	customerID, ok := getCustomerID(c)
+	if !ok {
 		return
 	}
-
-	customerID := customerIDVal.(uuid.UUID)
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	perPage, _ := strconv.Atoi(c.DefaultQuery("per_page", "10"))
 
 	orders, total, err := h.srv.GetCustomerOrders(c.Request.Context(), customerID, page, perPage)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    orders,
+	okJSON(c, gin.H{
+		"items": orders,
 		"meta": gin.H{
 			"total":    total,
 			"page":     page,
@@ -133,20 +97,12 @@ func (h *OrderHandler) GetCustomerOrders(c *gin.Context) {
 	})
 }
 
+// GetCustomerOrderDetail mengambil rincian detail pesanan spesifik milik customer.
 func (h *OrderHandler) GetCustomerOrderDetail(c *gin.Context) {
-	customerIDVal, exists := c.Get("customer_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Unauthorized context",
-				"code":    "UNAUTHORIZED",
-			},
-		})
+	customerID, ok := getCustomerID(c)
+	if !ok {
 		return
 	}
-
-	customerID := customerIDVal.(uuid.UUID)
 	orderNumber := c.Param("orderNumber")
 
 	order, err := h.srv.GetCustomerOrderDetail(c.Request.Context(), orderNumber, customerID)
@@ -161,35 +117,19 @@ func (h *OrderHandler) GetCustomerOrderDetail(c *gin.Context) {
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    order,
-	})
+	okJSON(c, order)
 }
 
+// CancelOrder memproses pembatalan pesanan oleh customer.
 func (h *OrderHandler) CancelOrder(c *gin.Context) {
-	customerIDVal, exists := c.Get("customer_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Unauthorized context",
-				"code":    "UNAUTHORIZED",
-			},
-		})
+	customerID, ok := getCustomerID(c)
+	if !ok {
 		return
 	}
-
-	customerID := customerIDVal.(uuid.UUID)
 	orderNumber := c.Param("orderNumber")
 
 	err := h.srv.CancelOrder(c.Request.Context(), orderNumber, customerID)
@@ -214,35 +154,19 @@ func (h *OrderHandler) CancelOrder(c *gin.Context) {
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "Order cancelled successfully",
-	})
+	okMessageJSON(c, "Order cancelled successfully")
 }
 
+// CompleteOrder memproses penyelesaian pesanan oleh customer ketika barang diterima.
 func (h *OrderHandler) CompleteOrder(c *gin.Context) {
-	customerIDVal, exists := c.Get("customer_id")
-	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Unauthorized context",
-				"code":    "UNAUTHORIZED",
-			},
-		})
+	customerID, ok := getCustomerID(c)
+	if !ok {
 		return
 	}
-
-	customerID := customerIDVal.(uuid.UUID)
 	orderNumber := c.Param("orderNumber")
 
 	err := h.srv.CompleteOrder(c.Request.Context(), orderNumber, customerID)
@@ -257,21 +181,14 @@ func (h *OrderHandler) CompleteOrder(c *gin.Context) {
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "Order completed successfully",
-	})
+	okMessageJSON(c, "Order completed successfully")
 }
 
+// ListAllOrders mengambil semua pesanan masuk dengan filter status (untuk admin).
 func (h *OrderHandler) ListAllOrders(c *gin.Context) {
 	status := c.Query("status")
 	paymentStatus := c.Query("payment_status")
@@ -281,18 +198,12 @@ func (h *OrderHandler) ListAllOrders(c *gin.Context) {
 
 	orders, total, err := h.srv.ListAllOrders(c.Request.Context(), status, paymentStatus, search, page, perPage)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    orders,
+	okJSON(c, gin.H{
+		"items": orders,
 		"meta": gin.H{
 			"total":    total,
 			"page":     page,
@@ -301,6 +212,7 @@ func (h *OrderHandler) ListAllOrders(c *gin.Context) {
 	})
 }
 
+// GetOrderDetail mengambil rincian detail pesanan tertentu berdasarkan ID (untuk admin).
 func (h *OrderHandler) GetOrderDetail(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
@@ -327,21 +239,14 @@ func (h *OrderHandler) GetOrderDetail(c *gin.Context) {
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"data":    order,
-	})
+	okJSON(c, order)
 }
 
+// UpdateOrderStatus memperbarui status pengiriman/proses pesanan (untuk admin).
 func (h *OrderHandler) UpdateOrderStatus(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
@@ -358,13 +263,7 @@ func (h *OrderHandler) UpdateOrderStatus(c *gin.Context) {
 
 	var req dto.OrderStatusUpdateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Validation error",
-				"code":    "VALIDATION_ERROR",
-			},
-		})
+		validationErrJSON(c, "")
 		return
 	}
 
@@ -380,21 +279,14 @@ func (h *OrderHandler) UpdateOrderStatus(c *gin.Context) {
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "Order status updated successfully",
-	})
+	okMessageJSON(c, "Order status updated successfully")
 }
 
+// UpdateOrderPaymentStatus memperbarui status pembayaran pesanan (untuk admin).
 func (h *OrderHandler) UpdateOrderPaymentStatus(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
@@ -411,13 +303,7 @@ func (h *OrderHandler) UpdateOrderPaymentStatus(c *gin.Context) {
 
 	var req dto.OrderPaymentUpdateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusUnprocessableEntity, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Validation error",
-				"code":    "VALIDATION_ERROR",
-			},
-		})
+		validationErrJSON(c, "")
 		return
 	}
 
@@ -433,17 +319,9 @@ func (h *OrderHandler) UpdateOrderPaymentStatus(c *gin.Context) {
 			})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": err.Error(),
-			},
-		})
+		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"message": "Order payment status updated successfully",
-	})
+	okMessageJSON(c, "Order payment status updated successfully")
 }

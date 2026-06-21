@@ -57,7 +57,7 @@ type ProductService interface {
 	DeleteProductImage(ctx context.Context, id uuid.UUID, imageID uuid.UUID) error
 	SetPrimaryProductImage(ctx context.Context, id uuid.UUID, imageID uuid.UUID) error
 
-	GetProductVariants(ctx context.Context, productID uuid.UUID) ([]dto.ProductVariantRes, error)
+	GetProductVariants(ctx context.Context, productID uuid.UUID) ([]dto.ProductVariantResponse, error)
 	AddProductVariant(ctx context.Context, productID uuid.UUID, req dto.ProductVariantRequest) (*model.ProductVariant, error)
 	UpdateProductVariant(ctx context.Context, productID uuid.UUID, variantID uuid.UUID, req dto.ProductVariantRequest) (*model.ProductVariant, error)
 	DeleteProductVariant(ctx context.Context, productID uuid.UUID, variantID uuid.UUID) error
