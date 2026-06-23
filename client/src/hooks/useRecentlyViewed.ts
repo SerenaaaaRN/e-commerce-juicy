@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react"
+import { useCallback, useState } from "react"
 
 const STORAGE_VERSION = "v1"
 const STORAGE_KEY = `juicy_recently_viewed:${STORAGE_VERSION}`

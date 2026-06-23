@@ -1,15 +1,20 @@
-// API response envelopes
+export type ApiError = {
+  message: string
+  code: string
+  details?: string
+}
+
 export type ApiResponse<T> = {
   success: boolean
   data: T
   message?: string
-  error?: string
-  code?: string
+  error?: ApiError
 }
 
 export type PaginatedResponse<T> = {
   success: boolean
   data: T[]
+  error?: ApiError
   meta: {
     page: number
     per_page: number
@@ -18,7 +23,6 @@ export type PaginatedResponse<T> = {
   }
 }
 
-// Domain types
 export type Category = {
   id: string
   name: string
@@ -48,7 +52,6 @@ export type ProductVariant = {
   is_active: boolean
 }
 
-// Product representation used in list responses
 export type CatalogProduct = {
   id: string
   category_id: string
@@ -74,7 +77,6 @@ export type CatalogProduct = {
   variants?: ProductVariant[]
 }
 
-// Product representation used in detail response (PDP + Admin)
 export type ProductDetail = {
   id: string
   category_id: string
@@ -104,7 +106,10 @@ export type Customer = {
   id: string
   full_name: string
   email: string
-  phone?: string
+  phone?: string | null
+  is_active?: boolean
+  order_count?: number
+  total_spent?: number
   created_at?: string
 }
 
@@ -149,7 +154,7 @@ export type OrdersListResponse = {
   }
 }
 
-export type OrderStatus = "pending" | "confirmed" | "processing" | "shipped" | "delivered" | "cancelled"
+export type OrderStatus = "pending" | "confirmed" | "processing" | "shipped" | "delivered" | "cancelled" | "returned"
 export type PaymentStatus = "unpaid" | "paid" | "refunded"
 
 export type Order = {
@@ -163,7 +168,6 @@ export type Order = {
   created_at: string
 }
 
-// Order address info shape matching Go's OrderAddressInfo DTO
 export type OrderAddressInfo = {
   recipient_name: string
   phone: string

@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { ArrowRight01Icon } from "@hugeicons/core-free-icons"
 import { formatPrice } from "@/lib/utils"
+import { ArrowRight01Icon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
 
 type CartSummaryProps = {
   subtotal: number
@@ -46,9 +46,17 @@ export const CartSummary = ({ subtotal, onCheckout }: CartSummaryProps) => {
 
       <CardFooter className="p-6">
         {/* Checkout CTA */}
-        <Button onClick={onCheckout} size="lg" className="group w-full rounded-none text-xs tracking-[0.15em] uppercase hover:bg-foreground/90">
+        <Button
+          onClick={onCheckout}
+          size="lg"
+          className="group w-full rounded-none text-xs tracking-[0.15em] uppercase hover:bg-foreground/90"
+        >
           Proceed to Checkout
-          <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={1.5} className="ml-2 transition-transform group-hover:translate-x-1" />
+          <HugeiconsIcon
+            icon={ArrowRight01Icon}
+            strokeWidth={1.5}
+            className="ml-2 transition-transform group-hover:translate-x-1"
+          />
         </Button>
       </CardFooter>
     </Card>

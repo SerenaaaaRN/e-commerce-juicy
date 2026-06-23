@@ -1,6 +1,6 @@
-import { useState } from "react"
-import { motion, AnimatePresence } from "motion/react"
 import type { ProductImage } from "@/types"
+import { AnimatePresence, motion } from "motion/react"
+import { useState } from "react"
 
 type ProductImageGalleryProps = {
   images: ProductImage[]
@@ -18,7 +18,7 @@ export const ProductImageGallery = ({ images, fallbackImage }: ProductImageGalle
     <div className="flex flex-col-reverse gap-4 md:flex-row">
       {/* Thumbnails rail - vertical on desktop, horizontal on mobile */}
       {displayImages.length > 1 ? (
-        <div className="scrollbar-thin flex gap-3 overflow-x-auto pb-2 md:flex-col md:overflow-x-visible md:pb-0">
+        <div className="flex scrollbar-thin gap-3 overflow-x-auto pb-2 md:flex-col md:overflow-x-visible md:pb-0">
           {displayImages.map((imgUrl, index) => (
             <button
               key={index}
@@ -39,7 +39,7 @@ export const ProductImageGallery = ({ images, fallbackImage }: ProductImageGalle
       ) : null}
 
       {/* Main Image View */}
-      <div className="relative flex-1 overflow-hidden bg-muted aspect-[3/4]">
+      <div className="relative aspect-3/4 flex-1 overflow-hidden bg-muted">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeIndex}

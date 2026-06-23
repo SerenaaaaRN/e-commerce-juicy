@@ -6,7 +6,3 @@ export type OrderTimelineStep = {
   key: OrderStatus
 }
 
-export type OrderStatusDisplay = {
-  label: string
-  colorClass: string
-}

@@ -15,9 +15,10 @@ type CustomerLoginRequest struct {
 }
 
 type CustomerResponse struct {
-	ID       string `json:"id"`
-	FullName string `json:"full_name"`
-	Email    string `json:"email"`
+	ID        string    `json:"id"`
+	FullName  string    `json:"full_name"`
+	Email     string    `json:"email"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 type CustomerLoginResponse struct {

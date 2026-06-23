@@ -1,4 +1,4 @@
-import { StarRating } from "./StarRating"
+import { StarRating } from "@/components/common/StarRating"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { formatPrice } from "@/lib/utils"
@@ -28,26 +28,21 @@ export const ProductInfo = ({
 
   return (
     <div className="flex flex-col gap-5 text-left">
-      
       {/* Category & Tags Row */}
       <div className="flex flex-wrap items-center gap-3">
-        <span className="text-xs font-semibold tracking-wider text-primary uppercase">
-          {categoryName}
-        </span>
+        <span className="text-xs font-semibold tracking-wider text-primary uppercase">{categoryName}</span>
         {tags.map((tag) => (
-          <Badge key={tag} variant="secondary" className="font-semibold px-2 py-0.5 border-none">
+          <Badge key={tag} variant="secondary" className="border-none px-2 py-0.5 font-semibold">
             {tag}
           </Badge>
         ))}
       </div>
 
       {/* Product Title */}
-      <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground font-heading">
-        {name}
-      </h1>
+      <h1 className="font-heading text-3xl font-bold tracking-tight text-foreground sm:text-4xl">{name}</h1>
 
       {/* Ratings Summary */}
-      <div className="flex items-center gap-3 text-xs tracking-wider uppercase text-muted-foreground">
+      <div className="flex items-center gap-3 text-xs tracking-wider text-muted-foreground uppercase">
         <StarRating rating={avgRating} />
         {avgRating > 0 ? (
           <span>
@@ -62,13 +57,9 @@ export const ProductInfo = ({
 
       {/* Prices List */}
       <div className="flex items-baseline gap-3 pt-2 font-mono">
-        <span className="text-2xl font-bold text-foreground">
-          {formatPrice(price)}
-        </span>
+        <span className="text-2xl font-bold text-foreground">{formatPrice(price)}</span>
         {hasDiscount && compareAtPrice && (
-          <span className="text-muted-foreground line-through text-sm">
-            {formatPrice(compareAtPrice)}
-          </span>
+          <span className="text-sm text-muted-foreground line-through">{formatPrice(compareAtPrice)}</span>
         )}
       </div>
 
@@ -76,12 +67,11 @@ export const ProductInfo = ({
       {description && (
         <>
           <Separator />
-          <div className="pt-2 text-sm text-muted-foreground leading-relaxed">
+          <div className="pt-2 text-sm leading-relaxed text-muted-foreground">
             <p>{description}</p>
           </div>
         </>
       )}
-
     </div>
   )
 }

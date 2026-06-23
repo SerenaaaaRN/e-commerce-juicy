@@ -5,20 +5,18 @@ type CategoryHeroProps = {
 }
 
 const HERO_IMAGES: Record<string, string> = {
-  wanita: "/luxury-minimalist-fashion-model-in-elegant-dark-cl.jpg",
-  tops: "/cashmere-sweater-ivory.jpg",
-  bottoms: "/beige-linen-trousers-relaxed-fit-luxury-fashion.jpg",
-  dresses: "/cream-cashmere-wrap-dress-elegant-luxury-fashion.jpg",
-  outerwear: "/luxury-wool-coat-front-view-editorial-fashion-phot.jpg",
+  apparel: "/cream-cashmere-wrap-dress-elegant-luxury-fashion.jpg",
+  bags: "/cashmere-sweater-ivory.jpg",
+  shoes: "/beige-linen-trousers-relaxed-fit-luxury-fashion.jpg",
   accessories: "/black-structured-leather-handbag-luxury-minimal-de.jpg",
-  sets: "/elegant-italian-woman-designer-portrait.jpg",
+  beuty: "/elegant-italian-woman-designer-portrait.jpg",
 }
 
 export const CategoryHero = ({ category }: CategoryHeroProps) => {
-  const image = HERO_IMAGES[category.slug] || HERO_IMAGES.dresses
+  const image = HERO_IMAGES[category.slug] || HERO_IMAGES.apparel
 
   return (
-    <section className="relative h-[50vh] mt-32 max-h-150 min-h-100 overflow-hidden">
+    <section className="relative mt-32 h-[50vh] max-h-150 min-h-100 overflow-hidden">
       <div className="absolute inset-0">
         <img src={image} alt={category.name} className="size-full object-cover" />
         <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-black/10" />

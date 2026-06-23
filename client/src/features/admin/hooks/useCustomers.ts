@@ -1,58 +1,58 @@
-import { useEffect, useState, useTransition, useCallback } from "react"
-import { adminApi } from "@/lib/api/admin"
-import { toast } from "sonner"
-import type { AdminOrder } from "@/types"
 import type { ClientStatistics } from "@/features/admin/types"
+import { adminApi } from "@/lib/api/admin"
+import type { AdminOrder } from "@/types"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useCallback, useState } from "react"
+import { toast } from "sonner"
 
 export const useCustomers = () => {
-  const [clients, setClients] = useState<ClientStatistics[]>([])
-  const [loading, setLoading] = useState(true)
-  const [isPending, startTransition] = useTransition()
+  const queryClient = useQueryClient()
+
+  const { data: clients = [], isLoading } = useQuery({
+    queryKey: ["admin-customers"],
+    queryFn: async () => {
+      const res = await adminApi.getCustomers()
+      if (!res.success) throw new Error(res.error?.message || "Failed to load customers")
+      return res.data as ClientStatistics[]
+    },
+  })
 
   const [detailsOpen, setDetailsOpen] = useState(false)
   const [activeClient, setActiveClient] = useState<ClientStatistics | null>(null)
   const [clientHistory, setClientHistory] = useState<AdminOrder[]>([])
-
-  useEffect(() => {
-    let isMounted = true
-
-    const fetchData = async () => {
-      try {
-        const res = await adminApi.getCustomers()
-        if (isMounted && res.success && res.data) {
-          setClients(res.data)
-        }
-      } catch {
-        toast.error("Failed to load customer statistics.")
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchData()
-
-    return () => {
-      isMounted = false
-    }
-  }, [])
 
   const handleViewClientDetails = useCallback((client: ClientStatistics) => {
     setActiveClient(client)
     setClientHistory([])
     setDetailsOpen(true)
 
-    startTransition(async () => {
-      try {
-        const res = await adminApi.getCustomerDetail(client.id)
+    adminApi
+      .getCustomerDetail(client.id)
+      .then((res) => {
         if (res.success && res.data) {
           setClientHistory(res.data.order_history || [])
         } else {
-          toast.error(res.message || "Failed to load customer details.")
+          toast.error(res.error?.message || "Failed to load customer details.")
         }
-      } catch {
+      })
+      .catch(() => {
         toast.error("Failed to load customer details.")
-      }
-    })
+      })
   }, [])
+
+  const toggleMutation = useMutation({
+    mutationFn: async ({ id, isActive }: { id: string; isActive: boolean }) => {
+      const res = await adminApi.toggleCustomerStatus(id, isActive)
+      if (!res.success) throw new Error(res.error?.message || "Failed to update status")
+    },
+    onSuccess: () => {
+      toast.success("Account credentials modified successfully!")
+      queryClient.invalidateQueries({ queryKey: ["admin-customers"] })
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : "Failed to execute account status transition.")
+    },
+  })
 
   const handleToggleClientStatus = useCallback(
     async (client: ClientStatistics, confirmFn: (msg: string) => Promise<boolean>) => {
@@ -60,31 +60,16 @@ export const useCustomers = () => {
       const promptMsg = nextStatus
         ? `Reactivate account credentials for ${client.full_name}?`
         : `Suspend account credentials for ${client.full_name}? This prevents checkout or carts management.`
-
       if (!(await confirmFn(promptMsg))) return
-
-      startTransition(async () => {
-        try {
-          const res = await adminApi.toggleCustomerStatus(client.id, nextStatus)
-          if (res.success) {
-            toast.success("Account credentials modified successfully!")
-            setClients((prev) => prev.map((c) => (c.id === client.id ? { ...c, is_active: nextStatus } : c)))
-            setActiveClient((prev) => (prev?.id === client.id ? { ...prev, is_active: nextStatus } : prev))
-          } else {
-            toast.error(res.message || "Failed to update account status.")
-          }
-        } catch {
-          toast.error("Failed to execute account status transition.")
-        }
-      })
+      toggleMutation.mutate({ id: client.id, isActive: nextStatus })
     },
-    []
+    [toggleMutation]
   )
 
   return {
     clients,
-    loading,
-    isPending,
+    loading: isLoading,
+    isPending: toggleMutation.isPending,
     detailsOpen,
     setDetailsOpen,
     activeClient,

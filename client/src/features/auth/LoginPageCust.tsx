@@ -1,13 +1,13 @@
-import { useTransition } from "react"
-import { Navigate, useNavigate, Link } from "react-router-dom"
-import { ROUTES } from "@/constants/routes"
 import { Card, CardContent } from "@/components/ui/card"
 import { FieldDescription } from "@/components/ui/field"
-import { toast } from "sonner"
-import { useCustomerAuthStore } from "@/stores/customerAuthStore"
-import { customerApi } from "@/lib/api/customer"
+import { ROUTES } from "@/constants/paths"
 import { LoginForm } from "@/features/auth/components/LoginForm"
 import type { LoginFormValues } from "@/features/auth/types"
+import { customerApi } from "@/lib/api/customer"
+import { useCustomerAuthStore } from "@/stores/customer-auth-store"
+import { useTransition } from "react"
+import { Link, Navigate, useNavigate } from "react-router-dom"
+import { toast } from "sonner"
 
 export const LoginPageCust = () => {
   const navigate = useNavigate()

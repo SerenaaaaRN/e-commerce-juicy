@@ -201,6 +201,6 @@ INSERT INTO public.product_images VALUES ('1128b9d4-9d39-40b0-89e4-0eead1fe13c0'
 INSERT INTO public.reviews VALUES ('c946d7a7-5621-460b-9566-cd2b092544f6', '3f0b9743-fc4a-49b6-beec-8e0e28e148e9', '7eb8ac10-7cfb-4610-85b4-44584dcaf385', '6fa1a9fc-fc58-464d-8762-e0a568a45c5b', 5, 'Tas nya bagus', true, '2026-05-30 15:59:45.860505+07', '2026-05-30 15:59:45.860505+07');
 INSERT INTO public.reviews VALUES ('10b86e88-abb1-42d2-97aa-cc307f046acd', '9446ee75-b503-45d8-ae7a-847d45bec1ca', '7eb8ac10-7cfb-4610-85b4-44584dcaf385', '6fa1a9fc-fc58-464d-8762-e0a568a45c5b', 5, 'bajunya bagus', true, '2026-05-30 16:00:06.314998+07', '2026-05-30 16:00:06.314998+07');
 INSERT INTO public.reviews VALUES ('b1d97f0e-9e20-4c43-becc-95d9d212544a', 'e852bf2e-561d-448a-8a63-91105e6f654c', '7eb8ac10-7cfb-4610-85b4-44584dcaf385', '6fa1a9fc-fc58-464d-8762-e0a568a45c5b', 2, NULL, true, '2026-05-30 16:00:12.696947+07', '2026-05-30 16:00:12.696947+07');
-INSERT INTO public.schema_migrations VALUES (15, false);
+INSERT INTO public.schema_migrations VALUES (5, false);
 INSERT INTO public.wishlist_items VALUES ('95915833-7b4b-4ab0-a93b-4502de571a40', '7eb8ac10-7cfb-4610-85b4-44584dcaf385', 'd49aa614-283c-48bc-a2d9-bf1c6b3ac686', '2026-05-28 14:11:10.959554+07');
 \unrestrict UbnYKWKQLb24GBe1z0WqhjEadX2jmukjzmEJ99ZzrBXOQSnJuQEJT8Ook4jZbsa

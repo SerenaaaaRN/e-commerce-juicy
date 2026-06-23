@@ -1,6 +1,7 @@
-import { useQuery, useInfiniteQuery } from "@tanstack/react-query"
+import { ordersApi } from "@/lib/api/orders"
 import { productApi, type ProductFiltersParams } from "@/lib/api/products"
-import type { Category, CatalogProduct, ProductDetail, Review } from "@/types"
+import type { CatalogProduct, Category, ProductDetail, Review } from "@/types"
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 export const useCategoriesQuery = () =>
   useQuery({
@@ -40,15 +41,31 @@ export const useProductQuery = (slug: string) =>
     enabled: !!slug,
   })
 
-export const useProductReviewsQuery = (slug: string, page: number = 1) =>
+export const useProductReviewsQuery = (slug: string, page: number = 1, perPage: number = 5) =>
   useQuery({
-    queryKey: ["reviews", slug, { page }],
+    queryKey: ["reviews", slug, { page, per_page: perPage }],
     queryFn: async () => {
-      const res = await productApi.getProductReviews(slug, { page, per_page: 5 })
+      const res = await productApi.getProductReviews(slug, { page, per_page: perPage })
       return { reviews: res.data as Review[], meta: res.meta }
     },
     enabled: !!slug,
   })
+
+export const useSubmitReviewMutation = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (payload: Parameters<typeof ordersApi.submitReview>[0]) => {
+      const res = await ordersApi.submitReview(payload)
+      if (!res.success) {
+        throw new Error(res.error?.message || "Failed to submit review.")
+      }
+      return res
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["reviews", variables.product_id] })
+    },
+  })
+}
 
 export const useInfiniteProductsQuery = (params?: Omit<ProductFiltersParams, "page">) =>
   useInfiniteQuery({

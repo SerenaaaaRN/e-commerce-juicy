@@ -1,14 +1,14 @@
-import { customerClient } from "./customerClient"
 import type { ApiResponse, Customer } from "@/types"
+import { customerClient } from "./customerClient"
 
 type LoginPayload = {
   email: string
-  password?: string
+  password: string
 }
 
 type RegisterPayload = {
   email: string
-  password?: string
+  password: string
   full_name: string
   phone?: string
 }
@@ -19,14 +19,17 @@ type ProfileUpdatePayload = {
 }
 
 type ChangePasswordPayload = {
-  current_password?: string
-  new_password?: string
+  current_password: string
+  new_password: string
 }
 
 export const customerApi = {
   // Submit customer credentials for login
   login: async (payload: LoginPayload): Promise<ApiResponse<{ token: string; customer: Customer }>> => {
-    const response = await customerClient.post<ApiResponse<{ token: string; customer: Customer }>>("/customers/login", payload)
+    const response = await customerClient.post<ApiResponse<{ token: string; customer: Customer }>>(
+      "/customers/login",
+      payload
+    )
     return response.data
   },
 

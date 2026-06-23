@@ -59,11 +59,7 @@ export const VariantSelector = ({
                   key={color}
                   value={color}
                   disabled={oos}
-                  className={`min-w-[4rem] cursor-pointer rounded-none border px-4 py-3 text-sm transition-all duration-300 disabled:cursor-not-allowed disabled:line-through disabled:opacity-40 ${
-                    selectedColor === color
-                      ? "border-foreground bg-foreground text-background"
-                      : "border-muted text-foreground hover:border-foreground"
-                  }`}
+                  className="min-w-16 cursor-pointer rounded-none border border-muted px-4 py-3 text-sm transition-all duration-300 hover:border-foreground disabled:cursor-not-allowed disabled:line-through disabled:opacity-40 data-[state=on]:border-foreground data-[state=on]:bg-foreground data-[state=on]:text-background"
                 >
                   {color}
                 </ToggleGroupItem>
@@ -93,11 +89,7 @@ export const VariantSelector = ({
                   key={size}
                   value={size}
                   disabled={oos}
-                  className={`min-w-[4rem] cursor-pointer rounded-none border px-4 py-3 text-sm transition-all duration-300 disabled:cursor-not-allowed disabled:line-through disabled:opacity-40 ${
-                    selectedSize === size
-                      ? "border-foreground bg-foreground text-background"
-                      : "border-muted text-foreground hover:border-foreground"
-                  }`}
+                  className="min-w-16 cursor-pointer rounded-none border border-muted px-4 py-3 text-sm transition-all duration-300 hover:border-foreground disabled:cursor-not-allowed disabled:line-through disabled:opacity-40 data-[state=on]:border-foreground data-[state=on]:bg-foreground data-[state=on]:text-background"
                 >
                   {size}
                 </ToggleGroupItem>
@@ -111,9 +103,9 @@ export const VariantSelector = ({
       {activeVariant ? (
         <div className="pt-2 text-xs">
           {activeVariant.stock > 0 ? (
-            <span className="text-emerald-700 tracking-wider">In Stock: {activeVariant.stock} available</span>
+            <span className="tracking-wider text-emerald-700">In Stock: {activeVariant.stock} available</span>
           ) : (
-            <span className="text-destructive tracking-wider">Sold Out</span>
+            <span className="tracking-wider text-destructive">Sold Out</span>
           )}
         </div>
       ) : null}

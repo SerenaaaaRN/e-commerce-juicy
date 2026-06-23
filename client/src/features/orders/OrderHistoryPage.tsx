@@ -1,17 +1,3 @@
-import { useState, useEffect } from "react"
-import { Navigate, Link } from "react-router-dom"
-import { ROUTES } from "@/constants/routes"
-import { useCustomerAuthStore } from "@/stores/customerAuthStore"
-import { OrderCard } from "./components/OrderCard"
-import { ordersApi } from "@/lib/api/orders"
-import { Button } from "@/components/ui/button"
-import { Spinner } from "@/components/ui/spinner"
-import { Separator } from "@/components/ui/separator"
-import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyContent, EmptyMedia } from "@/components/ui/empty"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { ShoppingBag01Icon } from "@hugeicons/core-free-icons"
-import { toast } from "sonner"
-import type { Order } from "@/types"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -20,29 +6,29 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
+import { Button } from "@/components/ui/button"
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
+import { Separator } from "@/components/ui/separator"
+import { Spinner } from "@/components/ui/spinner"
+import { ROUTES } from "@/constants/paths"
+import { useCustomerAuthStore } from "@/stores/customer-auth-store"
+import { ShoppingBag01Icon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { useEffect } from "react"
+import { Link, Navigate } from "react-router-dom"
+import { toast } from "sonner"
+import { OrderCard } from "./components/OrderCard"
+import { useCustomerOrdersQuery } from "./hooks/useOrderQueries"
 
 export const OrderHistoryPage = () => {
   const { isAuthenticated } = useCustomerAuthStore()
-
-  const [orders, setOrders] = useState<Order[]>([])
-  const [loading, setLoading] = useState(true)
+  const { data: orders = [], isLoading: loading, error } = useCustomerOrdersQuery()
 
   useEffect(() => {
-    const fetchOrders = async () => {
-      setLoading(true)
-      try {
-        const res = await ordersApi.getCustomerOrders()
-        if (res.success && res.data) {
-          setOrders(res.data.items ?? [])
-        }
-      } catch {
-        toast.error("Failed to load your purchase history.")
-      } finally {
-        setLoading(false)
-      }
+    if (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to load your purchase history.")
     }
-    fetchOrders()
-  }, [])
+  }, [error])
 
   // Guest restriction redirect
   if (!isAuthenticated) {
@@ -63,59 +49,56 @@ export const OrderHistoryPage = () => {
   }
 
   return (
-    <div className="bg-background pt-24 pb-12 lg:pt-32">
-      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <Breadcrumb className="mb-8 text-left text-xs font-bold uppercase">
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href={ROUTES.home}>Home</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator>/</BreadcrumbSeparator>
-            <BreadcrumbPage className="font-bold text-primary">Purchase History</BreadcrumbPage>
-          </BreadcrumbList>
-        </Breadcrumb>
+    <div className="container mx-auto max-w-7xl px-4 py-32 md:px-8 md:py-40">
+      <Breadcrumb className="mb-4 text-[10px] tracking-wider uppercase sm:text-xs">
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink to={ROUTES.home}>Home</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbPage className="text-primary">Purchase History</BreadcrumbPage>
+        </BreadcrumbList>
+      </Breadcrumb>
 
-        {/* Page Title Header */}
-        <header className="flex flex-col gap-2 text-left">
-          <span className="text-xs font-semibold tracking-wider text-primary uppercase">Atelier Account Details</span>
-          <h1 className="font-heading text-4xl font-bold tracking-tight text-foreground">My Orders</h1>
-          <p className="max-w-md font-sans text-sm leading-relaxed text-muted-foreground">
-            Review your historical checkout logs, custom silhouette invoices, and delivery milestones.
-          </p>
-        </header>
+      <header className="mb-8 flex flex-col gap-2 text-left sm:mb-10">
+        <span className="text-[10px] tracking-widest text-primary uppercase">Atelier Account Details</span>
+        <h1 className="font-heading text-2xl tracking-tight text-foreground sm:text-4xl">My Orders</h1>
+        <p className="max-w-md font-sans text-sm leading-relaxed text-muted-foreground">
+          Review your historical checkout logs, custom silhouette invoices, and delivery milestones.
+        </p>
+      </header>
 
-        <Separator className="my-8" />
+      <Separator className="mb-8" />
 
-        {/* Main Orders List Stack */}
-        {orders.length === 0 ? (
-          <Empty className="mx-auto max-w-md border-none bg-transparent">
-            <EmptyHeader>
-              <EmptyMedia
-                variant="icon"
-                className="mb-3 flex size-12 items-center justify-center rounded-full bg-primary/5 text-primary"
-              >
-                <HugeiconsIcon icon={ShoppingBag01Icon} strokeWidth={1.8} className="size-6 text-primary" />
-              </EmptyMedia>
-              <EmptyTitle className="text-2xl font-bold tracking-tight">No Orders Placed</EmptyTitle>
-              <EmptyDescription className="mt-2 text-sm text-muted-foreground">
-                You haven't placed any custom silhouette orders yet. Explore our latest designs to build your style
-                foundation.
-              </EmptyDescription>
-            </EmptyHeader>
-            <EmptyContent className="mt-6">
-              <Button asChild size="lg">
-                <Link to={ROUTES.shop}>Explore Atelier</Link>
-              </Button>
-            </EmptyContent>
-          </Empty>
-        ) : (
-          <div className="flex max-w-3xl flex-col gap-4">
-            {orders.map((ord) => (
-              <OrderCard key={ord.id} order={ord} />
-            ))}
-          </div>
-        )}
-      </div>
+      {/* Main Orders List Stack */}
+      {orders.length === 0 ? (
+        <Empty className="mx-auto max-w-md border-none bg-transparent">
+          <EmptyHeader>
+            <EmptyMedia
+              variant="icon"
+              className="mb-3 flex size-12 items-center justify-center rounded-full bg-primary/5 text-primary"
+            >
+              <HugeiconsIcon icon={ShoppingBag01Icon} strokeWidth={1.8} className="size-6 text-primary" />
+            </EmptyMedia>
+            <EmptyTitle className="text-2xl font-bold tracking-tight">No Orders Placed</EmptyTitle>
+            <EmptyDescription className="mt-2 text-sm text-muted-foreground">
+              You haven't placed any custom silhouette orders yet. Explore our latest designs to build your style
+              foundation.
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent className="mt-6">
+            <Button asChild size="lg">
+              <Link to={ROUTES.shop}>Explore Atelier</Link>
+            </Button>
+          </EmptyContent>
+        </Empty>
+      ) : (
+        <div className="flex max-w-3xl flex-col gap-4">
+          {orders.map((ord) => (
+            <OrderCard key={ord.id} order={ord} />
+          ))}
+        </div>
+      )}
     </div>
   )
 }

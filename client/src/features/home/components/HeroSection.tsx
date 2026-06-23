@@ -1,11 +1,11 @@
-import { Link } from "react-router-dom"
-import { motion } from "motion/react"
-import { ROUTES } from "@/constants/routes"
 import { Button } from "@/components/ui/button"
-import { HugeiconsIcon } from "@hugeicons/react"
+import { ROUTES } from "@/constants/paths"
 import { ArrowRight01Icon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { motion } from "motion/react"
+import { Link } from "react-router-dom"
 
-export function HeroSection() {
+export const HeroSection = () => {
   return (
     <section className="relative min-h-screen">
       <div className="absolute inset-0 overflow-hidden">
@@ -14,7 +14,7 @@ export function HeroSection() {
           muted
           loop
           playsInline
-          poster="/luxury-minimalist-fashion-model-in-elegant-dark-cl.jpg"
+          poster="/fallback-hero.png"
           className="absolute inset-0 h-full w-full object-cover"
         >
           <source src="/hero-misty-mountains.mp4" type="video/mp4" />
@@ -50,20 +50,6 @@ export function HeroSection() {
           </Button>
         </motion.div>
       </div>
-
-      {/* Scroll indicator - Style dari hero-section.tsx (kebab) */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1, delay: 1 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2"
-      >
-        <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 1.5, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
-          className="h-12 w-px bg-background/50"
-        />
-      </motion.div>
     </section>
   )
 }

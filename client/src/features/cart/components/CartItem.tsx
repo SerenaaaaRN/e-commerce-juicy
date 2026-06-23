@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { AspectRatio } from "@/components/ui/aspect-ratio"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { Cancel01Icon } from "@hugeicons/core-free-icons"
+
 import { formatPrice } from "@/lib/utils"
 import type { CartItem as CartItemType } from "@/types"
+import { Cancel01Icon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
 
 type CartItemProps = {
   item: CartItemType
@@ -25,19 +25,17 @@ export const CartItem = ({ item, onUpdateQty, onRemove }: CartItemProps) => {
       {/* Product Image & Info Details */}
       <div className="flex flex-1 items-center gap-4">
         <div className="w-20">
-          <AspectRatio ratio={3 / 4} className="overflow-hidden rounded-none border border-border bg-muted">
+          <div className="aspect-3/4 overflow-hidden rounded-none border border-border bg-muted">
             <img
               src={item.image_url || "/placeholder.webp"}
               alt={item.product_name}
               className="size-full object-cover object-center"
             />
-          </AspectRatio>
+          </div>
         </div>
 
         <div className="flex flex-col gap-1">
-          <h3 className="max-w-50 truncate font-serif text-lg text-foreground">
-            {item.product_name}
-          </h3>
+          <h3 className="max-w-50 truncate font-serif text-lg text-foreground">{item.product_name}</h3>
           <div className="flex flex-wrap items-center gap-2 text-xs tracking-widest text-muted-foreground uppercase">
             {item.variant_size && <span>Size: {item.variant_size}</span>}
             {item.variant_size && item.variant_color && <span>•</span>}

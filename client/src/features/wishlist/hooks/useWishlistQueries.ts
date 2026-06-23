@@ -1,5 +1,5 @@
-import { useQuery } from "@tanstack/react-query"
 import { wishlistApi, type WishlistItem } from "@/lib/api/wishlist"
+import { useQuery } from "@tanstack/react-query"
 
 export const useWishlistQuery = (enabled: boolean = true) =>
   useQuery({

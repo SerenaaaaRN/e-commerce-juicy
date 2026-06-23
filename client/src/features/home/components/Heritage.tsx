@@ -1,7 +1,7 @@
 import { motion, useScroll, useTransform } from "motion/react"
 import { useRef } from "react"
 
-export function HeritageSection() {
+export const HeritageSection = () => {
   const sectionRef = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({
     target: sectionRef,

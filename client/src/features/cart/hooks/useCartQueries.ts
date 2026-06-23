@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query"
 import { cartApi } from "@/lib/api/cart"
 import type { CartItem } from "@/types"
+import { useQuery } from "@tanstack/react-query"
 
 export const useCartQuery = (enabled: boolean = true) =>
   useQuery({

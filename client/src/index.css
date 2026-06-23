@@ -150,12 +150,6 @@
   animation: marquee 30s linear infinite;
 }
 
-/* ── GSAP-ready placeholder classes (empty — GSAP ScrollTrigger will target these) ── */
-.gsap-reveal,
-.gsap-stagger-item,
-.gsap-slide-up,
-.gsap-fade {}
-
 /* ── Grain texture overlay ── */
 .bg-grain::after {
   content: "";

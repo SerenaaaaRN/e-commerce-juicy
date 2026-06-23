@@ -1,6 +1,6 @@
+import { ROUTES } from "@/constants/paths"
+import { useCustomerAuthStore } from "@/stores/customer-auth-store"
 import { Navigate, Outlet } from "react-router-dom"
-import { ROUTES } from "@/constants/routes"
-import { useCustomerAuthStore } from "@/stores/customerAuthStore"
 
 type ProtectedRouteProps = {
   children?: React.ReactNode

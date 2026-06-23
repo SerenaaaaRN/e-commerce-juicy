@@ -1,5 +1,5 @@
-import { customerClient } from "./customerClient"
 import type { ApiResponse, Cart } from "@/types"
+import { customerClient } from "./customerClient"
 
 export type AddCartItemPayload = {
   variant_id: string

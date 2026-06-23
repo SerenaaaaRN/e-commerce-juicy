@@ -1,33 +1,32 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from "react"
-import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom"
-import { motion, AnimatePresence } from "motion/react"
-import { HugeiconsIcon } from "@hugeicons/react"
 import {
+  Cancel01Icon,
+  HeartAddIcon,
+  Menu01Icon,
+  SearchIcon,
   ShoppingBag01Icon,
   UserIcon,
-  Menu01Icon,
-  Cancel01Icon,
-  SearchIcon,
-  HeartAddIcon,
 } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { AnimatePresence, motion } from "motion/react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom"
 
-import { ROUTES } from "@/constants/routes"
-import { cn } from "@/lib/utils"
-import { useDebounce } from "@/hooks/useDebounce"
-import { useCustomerAuthStore } from "@/stores/customerAuthStore"
-import { useCartQuery } from "@/features/cart/hooks/useCartQueries"
-import { useCategoriesQuery } from "@/features/shop/hooks/useProductQueries"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Input } from "../ui/input"
+import { Input } from "@/components/ui/input"
+import ROUTES from "@/constants/paths"
+import { useCartQuery } from "@/features/cart/hooks/useCartQueries"
+import { useCategoriesQuery } from "@/features/shop/hooks/useProductQueries"
+import { useDebounce } from "@/hooks/useDebounce"
+import { cn } from "@/lib/utils"
+import { useCustomerAuthStore } from "@/stores/customer-auth-store"
 
-// --- Constants & Types ---
 const NAV_LINKS = [
   { to: ROUTES.home, label: "Atelier" },
   { to: ROUTES.shop, label: "Shop" },
@@ -37,9 +36,9 @@ const NAV_LINKS = [
 const ICON_STROKE = 1.5
 const DEBOUNCE_MS = 300
 
-// --- Custom Hooks ---
-
-/** Mengelola seluruh logika pencarian & sinkronisasi URL */
+/**
+ * Mengelola seluruh logika pencarian & sinkronisasi URL
+ */
 const useSearchSync = () => {
   const navigate = useNavigate()
   const location = useLocation()
@@ -49,12 +48,10 @@ const useSearchSync = () => {
   const [query, setQuery] = useState(urlQuery)
   const debouncedQuery = useDebounce(query, DEBOUNCE_MS)
 
-  // Sinkronisasi state lokal dengan URL param eksternal
   useEffect(() => {
     setQuery(urlQuery)
   }, [urlQuery])
 
-  // Update URL saat debounce selesai
   useEffect(() => {
     const trimmed = debouncedQuery.trim()
     const current = searchParams.get("search") || ""
@@ -89,8 +86,6 @@ const useSearchSync = () => {
 
   return { query, setQuery, submitSearch }
 }
-
-// --- Sub Components ---
 
 const NavLink = ({
   to,
@@ -252,7 +247,6 @@ export const Navbar = () => {
 
   return (
     <>
-      {/* Header */}
       <motion.header
         initial={{ y: -100 }}
         animate={{ y: 0 }}
@@ -306,7 +300,7 @@ export const Navbar = () => {
                       className="overflow-hidden"
                     >
                       <form onSubmit={submitSearch}>
-                        <input
+                        <Input
                           ref={searchInputRef}
                           type="text"
                           value={query}
@@ -334,11 +328,11 @@ export const Navbar = () => {
               {/* Cart */}
               <Link to={ROUTES.cart} className="relative p-2 text-foreground transition-colors duration-500">
                 <HugeiconsIcon icon={ShoppingBag01Icon} className="h-5 w-5" strokeWidth={ICON_STROKE} />
-                {totalItems > 0 && (
+                {totalItems > 0 ? (
                   <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center bg-foreground text-[10px] text-background transition-colors duration-500">
                     {totalItems}
                   </span>
-                )}
+                ) : null}
               </Link>
 
               {/* Wishlist */}
@@ -354,10 +348,10 @@ export const Navbar = () => {
       </motion.header>
 
       {/* Category Ribbon */}
-      {rootCategories.length > 0 && (
+      {rootCategories.length > 0 ? (
         <div
           className={cn(
-            "fixed top-16 z-40 w-full border-t border-border/40 bg-muted/30 backdrop-blur-sm transition-all duration-500 md:block lg:top-20",
+            "fixed top-16 z-40 w-full border-t border-border/40 bg-muted/30 backdrop-blur-sm transition-all duration-500 lg:top-20",
             scrolled ? "opacity-100" : "pointer-events-none opacity-0"
           )}
         >
@@ -380,11 +374,11 @@ export const Navbar = () => {
             </div>
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* Mobile Drawer */}
       <AnimatePresence>
-        {mobileMenuOpen && (
+        {mobileMenuOpen ? (
           <>
             {/* Overlay */}
             <motion.div
@@ -403,7 +397,7 @@ export const Navbar = () => {
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
               className="fixed inset-y-0 left-0 z-50 flex w-[85%] max-w-[320px] flex-col border-r border-border bg-background shadow-xl lg:hidden"
             >
-              {/* 1. Header Drawer (Fixed/Tidak Scroll) */}
+              {/* header drawer */}
               <div className="flex h-16 shrink-0 items-center justify-between border-b border-border px-6">
                 <span className="font-serif text-lg font-bold tracking-[0.2em] uppercase">Menu</span>
                 <button
@@ -414,9 +408,9 @@ export const Navbar = () => {
                 </button>
               </div>
 
-              {/* 2. Scrollable Content Area */}
+              {/* scrollable content area */}
               <div className="flex-1 overflow-y-auto overscroll-contain pb-10">
-                {/* Search Bar in Mobile */}
+                {/* searchbar mobile */}
                 <div className="border-b border-border bg-muted/20 p-6">
                   <div className="relative w-full">
                     <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
@@ -440,7 +434,7 @@ export const Navbar = () => {
                       to={link.to}
                       onClick={() => setMobileMenuOpen(false)}
                       className={cn(
-                        "text-sm px-4 py-3  font-medium tracking-wide uppercase transition-all",
+                        "px-4 py-3 text-sm font-medium tracking-wide uppercase transition-all",
                         location.pathname === link.to
                           ? "bg-primary/10 text-primary"
                           : "text-foreground/70 hover:bg-muted hover:text-foreground"
@@ -515,7 +509,7 @@ export const Navbar = () => {
               </div>
             </motion.div>
           </>
-        )}
+        ) : null}
       </AnimatePresence>
     </>
   )

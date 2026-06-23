@@ -1,13 +1,13 @@
-import { useTransition } from "react"
-import { Link, Navigate, useNavigate } from "react-router-dom"
-import { ROUTES } from "@/constants/routes"
-import { useCustomerAuthStore } from "@/stores/customerAuthStore"
-import { RegisterForm } from "./components/RegisterForm"
 import { Card, CardContent } from "@/components/ui/card"
 import { FieldDescription } from "@/components/ui/field"
-import { customerApi } from "@/lib/api/customer"
-import { toast } from "sonner"
+import { ROUTES } from "@/constants/paths"
 import type { RegisterFormValues } from "@/features/auth/types"
+import { customerApi } from "@/lib/api/customer"
+import { useCustomerAuthStore } from "@/stores/customer-auth-store"
+import { useTransition } from "react"
+import { Link, Navigate, useNavigate } from "react-router-dom"
+import { toast } from "sonner"
+import { RegisterForm } from "./components/RegisterForm"
 
 export const RegisterPage = () => {
   const navigate = useNavigate()

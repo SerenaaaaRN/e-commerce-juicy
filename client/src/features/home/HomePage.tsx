@@ -1,7 +1,7 @@
-import { HeroSection } from "./components/HeroSection"
-import { PromoStrip } from "./components/PromoStrip"
 import { CollectionGrid } from "./components/CollectionGrid"
 import { HeritageSection } from "./components/Heritage"
+import { HeroSection } from "./components/HeroSection"
+import { PromoStrip } from "./components/PromoStrip"
 
 export const HomePage = () => {
   return (

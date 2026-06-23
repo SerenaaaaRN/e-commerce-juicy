@@ -1,20 +1,21 @@
-import { useState } from "react"
-import { motion, AnimatePresence } from "motion/react"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion"
+import { editorialSpring } from "@/lib/animations"
 import { cn } from "@/lib/utils"
 import type { Category } from "@/types"
-import { HugeiconsIcon } from "@hugeicons/react"
 import { ArrowDownIcon } from "@hugeicons/core-free-icons"
-import { editorialSpring } from "@/lib/animations"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { AnimatePresence, motion } from "motion/react"
+import { useState } from "react"
+import type { SortOption } from "../types"
 
 type ProductFiltersProps = {
   categories: Category[]
   selectedCategory: string
   onCategoryChange: (category: string) => void
-  selectedSort: "price_asc" | "price_desc" | "newest" | "popular" | ""
-  onSortChange: (sort: "price_asc" | "price_desc" | "newest" | "popular" | "") => void
+  selectedSort: SortOption
+  onSortChange: (sort: SortOption) => void
   selectedSizes: string[]
   onSizesChange: (sizes: string[]) => void
   onReset: () => void
@@ -63,11 +64,7 @@ const CategoryNode = ({ cat, level = 0, selectedCategory, onCategoryChange }: Ca
             }}
             className="cursor-pointer p-1 hover:text-foreground"
           >
-            <motion.span
-              animate={{ rotate: open ? 180 : 0 }}
-              transition={editorialSpring}
-              className="block"
-            >
+            <motion.span animate={{ rotate: open ? 180 : 0 }} transition={editorialSpring} className="block">
               <HugeiconsIcon icon={ArrowDownIcon} />
             </motion.span>
           </button>
@@ -172,7 +169,7 @@ export const ProductFilters = ({
                 <ToggleGroupItem
                   key={size}
                   value={size}
-                  className="h-9 min-w-10.5 cursor-pointer rounded-none text-xs font-semibold tracking-wider uppercase data-[state=on]:border-zinc-50 data-[state=on]:bg-zinc-900 data-[state=on]:text-zinc-50 dark:data-[state=on]:bg-zinc-50 dark:data-[state=on]:text-zinc-900"
+                  className="h-9 min-w-10.5 cursor-pointer rounded-none text-xs font-semibold tracking-wider uppercase data-[state=on]:border-foreground data-[state=on]:bg-foreground data-[state=on]:text-background"
                 >
                   {size}
                 </ToggleGroupItem>
@@ -190,15 +187,14 @@ export const ProductFilters = ({
             <ToggleGroup
               type="single"
               value={selectedSort}
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onValueChange={(val) => onSortChange((val || "") as any)}
+              onValueChange={(val) => onSortChange((val || "") as SortOption)}
               className="flex flex-col items-stretch gap-1"
             >
               {sortOptions.map((opt) => (
                 <ToggleGroupItem
                   key={opt.value}
                   value={opt.value}
-                  className="h-auto cursor-pointer justify-start rounded-none border-l-2 border-transparent px-2 py-1.5 text-xs font-medium tracking-wider text-muted-foreground uppercase hover:bg-muted/30 hover:text-foreground data-[state=on]:border-zinc-900 data-[state=on]:bg-zinc-100 data-[state=on]:text-zinc-900 dark:data-[state=on]:border-zinc-50 dark:data-[state=on]:bg-zinc-800 dark:data-[state=on]:text-zinc-50"
+                  className="h-auto cursor-pointer justify-start rounded-none border-l-2 border-transparent px-2 py-1.5 text-xs font-medium tracking-wider text-muted-foreground uppercase hover:bg-muted/30 hover:text-foreground data-[state=on]:border-foreground data-[state=on]:bg-muted data-[state=on]:text-foreground"
                 >
                   {opt.label}
                 </ToggleGroupItem>

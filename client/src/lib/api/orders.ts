@@ -1,5 +1,5 @@
+import type { Address, ApiResponse, OrderDetail, OrdersListResponse } from "@/types"
 import { customerClient } from "./customerClient"
-import type { ApiResponse, Address, OrderDetail, Order, OrdersListResponse } from "@/types"
 
 type CheckoutPayload = {
   address_id: string

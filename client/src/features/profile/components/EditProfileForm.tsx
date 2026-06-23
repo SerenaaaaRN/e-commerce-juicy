@@ -1,11 +1,11 @@
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { FieldGroup, Field, FieldLabel, FieldError } from "@/components/ui/field"
-import { useCustomerAuthStore } from "@/stores/customerAuthStore"
-import { customerApi } from "@/lib/api/customer"
 import { Spinner } from "@/components/ui/spinner"
+import { useCustomerAuthStore } from "@/stores/customer-auth-store"
+import { useState } from "react"
 import { toast } from "sonner"
+import { useUpdateProfileMutation } from "../hooks/useProfileQueries"
 
 export const EditProfileForm = () => {
   const customer = useCustomerAuthStore((s) => s.customer)
@@ -14,8 +14,8 @@ export const EditProfileForm = () => {
 
   const [fullName, setFullName] = useState(customer?.full_name || "")
   const [phone, setPhone] = useState(customer?.phone || "")
-  const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const updateProfileMutation = useUpdateProfileMutation()
 
   const validate = () => {
     const newErrors: Record<string, string> = {}
@@ -29,24 +29,22 @@ export const EditProfileForm = () => {
     e.preventDefault()
     if (!validate()) return
 
-    setLoading(true)
     try {
-      const res = await customerApi.updateProfile({
+      const updatedData = await updateProfileMutation.mutateAsync({
         full_name: fullName,
         phone: phone.trim() || undefined,
       })
-      if (res.success && res.data && token) {
-        login(token, res.data) // update global state zustand
+      if (updatedData && token) {
+        login(token, updatedData) // update global state zustand
         toast.success("Profile details updated successfully.")
-      } else {
-        toast.error(res.message || "Failed to update profile details.")
       }
-    } catch {
-      toast.error("Failed to update profile. Please verify your connection.")
-    } finally {
-      setLoading(false)
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : "Failed to update profile. Please verify your connection."
+      toast.error(errMsg)
     }
   }
+
+  const loading = updateProfileMutation.isPending
 
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-lg text-left">

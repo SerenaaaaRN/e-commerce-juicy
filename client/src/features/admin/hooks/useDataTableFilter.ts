@@ -1,4 +1,4 @@
-import { useState, useDeferredValue, useMemo } from "react"
+import { useDeferredValue, useMemo, useState } from "react"
 
 export const useDataTableFilter = <T>(
   initialData: T[],

@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "format": "prettier --write \"**/*.{ts,tsx}\"",
+    "format": "prettier --write \"**/*.{tsx}\"",
     "typecheck": "tsc --noEmit",
     "preview": "vite preview"
   },
@@ -55,9 +55,10 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^16.5.0",
     "prettier": "^3.8.1",
+    "prettier-plugin-organize-imports": "^4.3.0",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.57.1",
-    "vite": "^7.3.1"
+    "vite": "^8.1.0"
   }
 }

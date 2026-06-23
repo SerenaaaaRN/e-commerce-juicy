@@ -1,27 +1,22 @@
-import { Link } from "react-router-dom"
-import { motion } from "motion/react"
-import { ROUTES } from "@/constants/routes"
 import { Separator } from "@/components/ui/separator"
+import { ROUTES } from "@/constants/paths"
+import { Facebook01Icon, InstagramIcon, TwitterIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { InstagramIcon, Facebook01Icon, TwitterIcon } from "@hugeicons/core-free-icons"
+import { motion } from "motion/react"
+import { Link } from "react-router-dom"
 
 const footerLinks = {
   shop: [
-    { label: "Tops", href: `${ROUTES.shop}?category=tops` },
-    { label: "Dresses", href: `${ROUTES.shop}?category=dresses` },
-    { label: "Sets", href: `${ROUTES.shop}?category=sets` },
-    { label: "Accessories", href: `${ROUTES.shop}?category=accessories` },
+    { label: "Apparel", href: `${ROUTES.shop}?category=apparel&page=1` },
+    { label: "Dresses", href: `${ROUTES.shop}?category=bags&page=1` },
+    { label: "Bags", href: `${ROUTES.shop}?category=shoes&page=1` },
+    { label: "Shoes", href: `${ROUTES.shop}?category=accessories` },
+    { label: "Accessories", href: `${ROUTES.shop}?` },
   ],
   about: [
-    { label: "Our Heritage", href: "/heritage" },
-    { label: "Craftsmanship", href: "/craftsmanship" },
-    { label: "Sustainability", href: "/sustainability" },
-  ],
-  support: [
-    { label: "Shipping & Returns", href: "/shipping" },
-    { label: "Sizing Guide", href: "/size-guide" },
-    { label: "Care Guidelines", href: "/care" },
-    { label: "Contact Atelier", href: "/contact" },
+    { label: "Our Heritage", href: `${ROUTES.heritage}` },
+    { label: "Craftsmanship", href: `${ROUTES.heritage}` },
+    { label: "Sustainability", href: `${ROUTES.heritage}` },
   ],
 }
 
@@ -32,7 +27,7 @@ export function Footer() {
     <footer className="bg-foreground text-background">
       <div className="mx-auto max-w-7xl px-6 py-16 lg:px-8 lg:py-24">
         {/* Main footer content */}
-        <div className="mb-16 grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+        <div className="mb-16 grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-2 lg:gap-8">
           {/* Brand Intro */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -46,15 +41,15 @@ export function Footer() {
               An editorial pursuit of pure linen and high-fashion silhouettes. Built for the modern nomad.
             </p>
             <div className="flex items-center gap-4">
-              <a href="https://instagram.com" className="transition-opacity hover:opacity-60" aria-label="Instagram">
+              <Link to="https://instagram.com" className="transition-opacity hover:opacity-60" aria-label="Instagram">
                 <HugeiconsIcon icon={InstagramIcon} className="h-5 w-5 stroke-[1.5]" />
-              </a>
-              <a href="https://facebook.com" className="transition-opacity hover:opacity-60" aria-label="Facebook">
+              </Link>
+              <Link to="https://facebook.com" className="transition-opacity hover:opacity-60" aria-label="Facebook">
                 <HugeiconsIcon icon={Facebook01Icon} className="h-5 w-5 stroke-[1.5]" />
-              </a>
-              <a href="https://twitter.com" className="transition-opacity hover:opacity-60" aria-label="Twitter">
+              </Link>
+              <Link to="https://twitter.com" className="transition-opacity hover:opacity-60" aria-label="Twitter">
                 <HugeiconsIcon icon={TwitterIcon} className="h-5 w-5 stroke-[1.5]" />
-              </a>
+              </Link>
             </div>
           </motion.div>
 
@@ -68,25 +63,6 @@ export function Footer() {
             <h4 className="mb-6 text-xs tracking-[0.2em] text-background/60 uppercase">Collections</h4>
             <ul className="space-y-3">
               {footerLinks.shop.map((link) => (
-                <li key={link.href}>
-                  <Link to={link.href} className="text-sm text-background/80 transition-colors hover:text-background">
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </motion.div>
-
-          {/* Support links */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            <h4 className="mb-6 text-xs tracking-[0.2em] text-background/60 uppercase">Atelier Support</h4>
-            <ul className="space-y-3">
-              {footerLinks.support.map((link) => (
                 <li key={link.href}>
                   <Link to={link.href} className="text-sm text-background/80 transition-colors hover:text-background">
                     {link.label}

@@ -1,13 +1,13 @@
-import { Link } from "react-router-dom"
-import { ROUTES } from "@/constants/routes"
 import { Button } from "@/components/ui/button"
-import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyContent, EmptyMedia } from "@/components/ui/empty"
-import { HugeiconsIcon } from "@hugeicons/react"
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
+import { ROUTES } from "@/constants/paths"
 import { ShoppingBag01Icon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { Link } from "react-router-dom"
 
 export const EmptyCart = () => {
   return (
-    <div className="container mx-auto flex min-h-[70vh] max-w-7xl items-center justify-center px-4 pt-24 pb-16 lg:pt-32">
+    <div className="container mx-auto flex min-h-screen max-w-7xl items-center justify-center px-4">
       <Empty className="max-w-md border-none bg-transparent">
         <EmptyHeader>
           <EmptyMedia

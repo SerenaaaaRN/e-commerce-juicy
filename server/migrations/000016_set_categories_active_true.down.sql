@@ -1,1 +1,0 @@
--- No automated rollback for data migration.

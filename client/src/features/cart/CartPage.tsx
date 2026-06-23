@@ -1,13 +1,13 @@
-import { Navigate, useNavigate } from "react-router-dom"
-import { ROUTES } from "@/constants/routes"
-import { useCustomerAuthStore } from "@/stores/customerAuthStore"
+import { Separator } from "@/components/ui/separator"
+import { ROUTES } from "@/constants/paths"
+import { useRemoveCartItemMutation, useUpdateCartItemMutation } from "@/features/cart/hooks/useCartMutations"
 import { useCartQuery } from "@/features/cart/hooks/useCartQueries"
-import { useUpdateCartItemMutation, useRemoveCartItemMutation } from "@/features/cart/hooks/useCartMutations"
+import { useCustomerAuthStore } from "@/stores/customer-auth-store"
+import { Navigate, useNavigate } from "react-router-dom"
+import { toast } from "sonner"
 import { CartItem } from "./components/CartItem"
 import { CartSummary } from "./components/CartSummary"
 import { EmptyCart } from "./components/EmptyCart"
-import { Separator } from "@/components/ui/separator"
-import { toast } from "sonner"
 
 export const CartPage = () => {
   const navigate = useNavigate()

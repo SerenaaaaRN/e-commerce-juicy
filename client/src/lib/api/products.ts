@@ -1,5 +1,5 @@
+import type { ApiResponse, CatalogProduct, Category, PaginatedResponse, ProductDetail, Review } from "@/types"
 import { customerClient } from "./customerClient"
-import type { ApiResponse, PaginatedResponse, Category, CatalogProduct, ProductDetail, Review } from "@/types"
 
 export type ProductFiltersParams = {
   category?: string

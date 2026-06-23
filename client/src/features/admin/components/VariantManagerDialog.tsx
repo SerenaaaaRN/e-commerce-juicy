@@ -1,24 +1,24 @@
-import type { UseFormReturn } from "react-hook-form"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Spinner } from "@/components/ui/spinner"
-import { Field, FieldLabel, FieldError } from "@/components/ui/field"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Dialog,
+  DialogClose,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
-  DialogClose,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { Edit01Icon, Delete02Icon } from "@hugeicons/core-free-icons"
+import { Field, FieldError, FieldLabel } from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
+import { Spinner } from "@/components/ui/spinner"
+import type { VariantFormValues } from "@/features/admin/types"
 import { formatPrice } from "@/lib/utils/format"
 import type { ProductDetail, ProductVariant } from "@/types"
-import type { VariantFormValues } from "@/features/admin/types"
+import { Delete02Icon, Edit01Icon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import type { UseFormReturn } from "react-hook-form"
 
 type VariantManagerDialogProps = {
   open: boolean
@@ -138,9 +138,7 @@ export const VariantManagerDialog = ({
                     <div className="flex items-center gap-2 font-bold text-foreground">
                       <span>{v.size}</span>
                       {v.color && (
-                        <span className="flex items-center gap-1 font-normal text-muted-foreground">
-                          • {v.color}
-                        </span>
+                        <span className="flex items-center gap-1 font-normal text-muted-foreground">• {v.color}</span>
                       )}
                     </div>
                     <div className="mt-1 flex items-center gap-3 text-[10px] font-semibold">

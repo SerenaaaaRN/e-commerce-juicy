@@ -1,18 +1,18 @@
 import { Button } from "@/components/ui/button"
-import { Spinner } from "@/components/ui/spinner"
 import {
   Dialog,
+  DialogClose,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
-  DialogClose,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { Delete02Icon } from "@hugeicons/core-free-icons"
+import { Spinner } from "@/components/ui/spinner"
 import { cn } from "@/lib/utils"
 import type { ProductDetail } from "@/types"
+import { Delete02Icon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
 
 type ImageManagerDialogProps = {
   open: boolean
@@ -58,7 +58,10 @@ export const ImageManagerDialog = ({
       <div className="flex flex-col gap-6 py-4 text-left">
         <div className="grid gap-4 sm:grid-cols-2">
           {/* Upload Form */}
-          <form onSubmit={onUploadSubmit} className="flex flex-col justify-between gap-3 rounded-lg border bg-muted/10 p-4">
+          <form
+            onSubmit={onUploadSubmit}
+            className="flex flex-col justify-between gap-3 rounded-lg border bg-muted/10 p-4"
+          >
             <div className="text-xs">
               <label className="mb-2 block font-semibold text-foreground">Option 1: Upload from Computer</label>
               <input
@@ -76,7 +79,10 @@ export const ImageManagerDialog = ({
           </form>
 
           {/* Paste URL Form */}
-          <form onSubmit={onImageUrlSubmit} className="flex flex-col justify-between gap-3 rounded-lg border bg-muted/10 p-4">
+          <form
+            onSubmit={onImageUrlSubmit}
+            className="flex flex-col justify-between gap-3 rounded-lg border bg-muted/10 p-4"
+          >
             <div className="text-xs">
               <label className="mb-2 block font-semibold text-foreground">Option 2: Add Image via Internet URL</label>
               <input
@@ -84,7 +90,7 @@ export const ImageManagerDialog = ({
                 placeholder="https://images.unsplash.com/photo-..."
                 value={imageUrlInput}
                 onChange={(e) => onImageUrlChange(e.target.value)}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-xs ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-xs ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
               />
             </div>
             <Button type="submit" disabled={isPending || !imageUrlInput.trim()} className="mt-2 w-full">

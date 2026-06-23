@@ -1,8 +1,6 @@
-import { WriteReviewCta } from "./WriteReviewCta"
-import { AspectRatio } from "@/components/ui/aspect-ratio"
-import { ORDER_STATUS } from "@/constants/orderStatus"
 import { formatPrice } from "@/lib/utils"
 import type { OrderItem } from "@/types"
+import { WriteReviewCta } from "./WriteReviewCta"
 
 type OrderItemRowProps = {
   item: OrderItem & { product_id?: string }
@@ -11,20 +9,20 @@ type OrderItemRowProps = {
 }
 
 export const OrderItemRow = ({ item, orderId, orderStatus }: OrderItemRowProps) => {
-  const showReviewButton = orderStatus === ORDER_STATUS.DELIVERED && orderId
+  const showReviewButton = orderStatus === "delivered" && orderId
 
   return (
     <div className="flex flex-col items-start justify-between gap-4 border-b border-border/40 py-4 text-left last:border-b-0 sm:flex-row sm:items-center">
       {/* Product Image & Specs Details */}
       <div className="flex flex-1 items-center gap-4">
         <div className="w-14">
-          <AspectRatio ratio={3 / 4} className="overflow-hidden rounded border border-border/40 bg-muted">
+          <div className="aspect-3/4 overflow-hidden rounded border border-border/40 bg-muted">
             <img
               src={item.image_url || "/placeholder.webp"}
               alt={item.product_name}
               className="size-full object-cover object-center"
             />
-          </AspectRatio>
+          </div>
         </div>
 
         <div className="flex flex-col gap-0.5">
