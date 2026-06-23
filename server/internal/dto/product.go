@@ -49,6 +49,7 @@ type ProductResponse struct {
 	DisplayOrder   int                      `json:"display_order"`
 	PrimaryImage   string                   `json:"primary_image"`
 	CategoryName   string                   `json:"category_name"`
+	Images         []ProductImageResponse   `json:"images,omitempty"`
 	AvgRating      float64                  `json:"avg_rating"`
 	ReviewCount    int                      `json:"review_count"`
 	Variants       []ProductVariantResponse `json:"variants,omitempty"`

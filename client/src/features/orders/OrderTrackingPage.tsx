@@ -1,30 +1,4 @@
-import { useState, useEffect } from "react"
-import { useParams, Link, Navigate } from "react-router-dom"
-import { ROUTES } from "@/constants/routes"
-import { ORDER_STATUS, PAYMENT_STATUS } from "@/constants/orderStatus"
-import { useCustomerAuthStore } from "@/stores/customerAuthStore"
-import { OrderStatusTimeline } from "./components/OrderStatusTimeline"
-import { OrderItemRow } from "./components/OrderItemRow"
-import { ordersApi } from "@/lib/api/orders"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Spinner } from "@/components/ui/spinner"
-import { Separator } from "@/components/ui/separator"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyContent, EmptyMedia } from "@/components/ui/empty"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { ShoppingBag01Icon } from "@hugeicons/core-free-icons"
-import { toast } from "sonner"
-import { useConfirm } from "@/hooks/useConfirm"
-import {
-  cn,
-  formatPrice,
-  formatDate,
-  getOrderStatusLabel,
-  getOrderStatusColor,
-  getPaymentStatusLabel,
-} from "@/lib/utils"
-import type { OrderDetail } from "@/types"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -33,37 +7,40 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
+import { Separator } from "@/components/ui/separator"
+import { Spinner } from "@/components/ui/spinner"
+import { getOrderStatusColor, getOrderStatusLabel, getPaymentStatusLabel } from "@/constants/order-status"
+import { ROUTES } from "@/constants/paths"
+import { useConfirm } from "@/hooks/useConfirm"
+import { cn, formatDate, formatPrice } from "@/lib/utils"
+import { useCustomerAuthStore } from "@/stores/customer-auth-store"
+import { ShoppingBag01Icon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { useEffect } from "react"
+import { Link, Navigate, useParams } from "react-router-dom"
+import { toast } from "sonner"
+import { OrderItemRow } from "./components/OrderItemRow"
+import { OrderStatusTimeline } from "./components/OrderStatusTimeline"
+import { useCancelOrderMutation, useCompleteOrderMutation, useOrderDetailQuery } from "./hooks/useOrderQueries"
 
 export const OrderTrackingPage = () => {
   const { orderNumber } = useParams<{ orderNumber: string }>()
   const { isAuthenticated } = useCustomerAuthStore()
 
-  // State
-  const [order, setOrder] = useState<OrderDetail | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [cancelling, setCancelling] = useState(false)
-  const [completing, setCompleting] = useState(false)
+  // Queries & Mutations
+  const { data: order = null, isLoading: loading, error } = useOrderDetailQuery(orderNumber)
+  const completeOrderMutation = useCompleteOrderMutation()
+  const cancelOrderMutation = useCancelOrderMutation()
   const { confirm: confirmAction, dialog: confirmDialog } = useConfirm()
 
   useEffect(() => {
-    const fetchOrder = async () => {
-      if (!orderNumber) return
-      setLoading(true)
-      try {
-        const res = await ordersApi.getOrderDetail(orderNumber)
-        if (res.success && res.data) {
-          setOrder(res.data)
-        } else {
-          toast.error(res.message || "Failed to load order tracking details.")
-        }
-      } catch {
-        toast.error("Failed to retrieve order details.")
-      } finally {
-        setLoading(false)
-      }
+    if (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to retrieve order details.")
     }
-    fetchOrder()
-  }, [orderNumber])
+  }, [error])
 
   const handleCompleteOrder = async () => {
     const confirmed = await confirmAction(
@@ -71,21 +48,12 @@ export const OrderTrackingPage = () => {
     )
     if (!confirmed || !orderNumber) return
 
-    setCompleting(true)
     try {
-      const res = await ordersApi.completeOrder(orderNumber)
-      if (res.success) {
-        toast.success("Order marked as received. Thank you!")
-        setOrder((prev) =>
-          prev ? { ...prev, status: ORDER_STATUS.DELIVERED, payment_status: PAYMENT_STATUS.PAID } : null
-        )
-      } else {
-        toast.error(res.message || "Failed to complete order.")
-      }
-    } catch {
-      toast.error("Failed to complete order.")
-    } finally {
-      setCompleting(false)
+      await completeOrderMutation.mutateAsync(orderNumber)
+      toast.success("Order marked as received. Thank you!")
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : "Failed to complete order."
+      toast.error(errMsg)
     }
   }
 
@@ -95,21 +63,17 @@ export const OrderTrackingPage = () => {
     )
     if (!confirmed || !orderNumber) return
 
-    setCancelling(true)
     try {
-      const res = await ordersApi.cancelOrder(orderNumber)
-      if (res.success) {
-        toast.success("Order cancelled successfully.")
-        setOrder((prev) => (prev ? { ...prev, status: ORDER_STATUS.CANCELLED } : null))
-      } else {
-        toast.error(res.message || "Failed to cancel order.")
-      }
-    } catch {
-      toast.error("Failed to cancel order.")
-    } finally {
-      setCancelling(false)
+      await cancelOrderMutation.mutateAsync(orderNumber)
+      toast.success("Order cancelled successfully.")
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : "Failed to cancel order."
+      toast.error(errMsg)
     }
   }
+
+  const completing = completeOrderMutation.isPending
+  const cancelling = cancelOrderMutation.isPending
 
   // Guest restriction redirect
   if (!isAuthenticated) {
@@ -161,14 +125,14 @@ export const OrderTrackingPage = () => {
   const grandTotal = order.total
 
   return (
-    <div className="bg-background py-12">
+    <div className="my-32 bg-background md:my-42">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <Breadcrumb className="mb-8 text-left text-xs font-bold uppercase">
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href={ROUTES.home}>Home</BreadcrumbLink>
+              <BreadcrumbLink to={ROUTES.home}>Home</BreadcrumbLink>
             </BreadcrumbItem>
-            <BreadcrumbSeparator>/</BreadcrumbSeparator>
+            <BreadcrumbSeparator />
             <BreadcrumbPage className="font-bold text-primary">Order #{orderNumber}</BreadcrumbPage>
           </BreadcrumbList>
         </Breadcrumb>
@@ -297,7 +261,7 @@ export const OrderTrackingPage = () => {
 
             <div className="flex flex-col gap-2">
               {/* Confirm received action */}
-              {order.status === ORDER_STATUS.SHIPPED ? (
+              {order.status === "shipped" ? (
                 <Button size="lg" onClick={handleCompleteOrder} disabled={completing}>
                   {completing ? (
                     <>
@@ -311,7 +275,7 @@ export const OrderTrackingPage = () => {
               ) : null}
 
               {/* Cancel order action */}
-              {(order.status === ORDER_STATUS.PENDING || order.status === ORDER_STATUS.CONFIRMED) && (
+              {(order.status === "pending" || order.status === "confirmed") && (
                 <Button variant="destructive" size="lg" onClick={handleCancelOrder} disabled={cancelling}>
                   {cancelling && <Spinner data-icon="inline-start" />}
                   {cancelling ? "Cancelling..." : "Cancel Order"}

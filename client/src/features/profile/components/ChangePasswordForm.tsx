@@ -1,17 +1,17 @@
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
-import { FieldGroup, Field, FieldLabel, FieldError } from "@/components/ui/field"
-import { customerApi } from "@/lib/api/customer"
 import { Spinner } from "@/components/ui/spinner"
+import { useState } from "react"
 import { toast } from "sonner"
+import { useChangePasswordMutation } from "../hooks/useProfileQueries"
 
 export const ChangePasswordForm = () => {
   const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
-  const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const changePasswordMutation = useChangePasswordMutation()
 
   const validate = () => {
     const newErrors: Record<string, string> = {}
@@ -36,27 +36,24 @@ export const ChangePasswordForm = () => {
     e.preventDefault()
     if (!validate()) return
 
-    setLoading(true)
     try {
-      const res = await customerApi.changePassword({
+      await changePasswordMutation.mutateAsync({
         current_password: currentPassword,
         new_password: newPassword,
       })
 
-      if (res.success) {
-        toast.success("Password changed successfully.")
-        setCurrentPassword("")
-        setNewPassword("")
-        setConfirmPassword("")
-      } else {
-        toast.error(res.message || "Failed to update password. Please check your current password.")
-      }
-    } catch {
-      toast.error("Failed to secure password. Please check your inputs.")
-    } finally {
-      setLoading(false)
+      toast.success("Password changed successfully.")
+      setCurrentPassword("")
+      setNewPassword("")
+      setConfirmPassword("")
+    } catch (err) {
+      const errMsg =
+        err instanceof Error ? err.message : "Failed to update password. Please check your current password."
+      toast.error(errMsg)
     }
   }
+
+  const loading = changePasswordMutation.isPending
 
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-lg text-left">

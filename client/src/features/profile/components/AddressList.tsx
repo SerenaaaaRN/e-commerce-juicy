@@ -1,41 +1,24 @@
-/* eslint-disable react-hooks/set-state-in-effect */
-import { useState, useEffect } from "react"
-import { AddressCard } from "./AddressCard"
-import { AddressFormModal } from "./AddressFormModal"
-import { ordersApi } from "@/lib/api/orders"
 import { Button } from "@/components/ui/button"
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Spinner } from "@/components/ui/spinner"
-import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyContent, EmptyMedia } from "@/components/ui/empty"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { ShoppingBag01Icon } from "@hugeicons/core-free-icons"
-import { toast } from "sonner"
 import { useConfirm } from "@/hooks/useConfirm"
 import type { Address } from "@/types"
+import { ShoppingBag01Icon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { useState } from "react"
+import { toast } from "sonner"
+import { useAddressesQuery, useDeleteAddressMutation, useSetDefaultAddressMutation } from "../hooks/useProfileQueries"
+import { AddressCard } from "./AddressCard"
+import { AddressFormModal } from "./AddressFormModal"
 
 export const AddressList = () => {
-  const [addresses, setAddresses] = useState<Address[]>([])
-  const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingAddress, setEditingAddress] = useState<Address | undefined>(undefined)
   const { confirm: confirmDelete, dialog: confirmDialog } = useConfirm()
 
-  const loadAddresses = async () => {
-    setLoading(true)
-    try {
-      const res = await ordersApi.getAddresses()
-      if (res.success) {
-        setAddresses(res.data)
-      }
-    } catch {
-      toast.error("Failed to retrieve shipping address list.")
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    loadAddresses()
-  }, [])
+  const { data: addresses = [], isLoading: loading, refetch: loadAddresses } = useAddressesQuery()
+  const deleteAddressMutation = useDeleteAddressMutation()
+  const setDefaultAddressMutation = useSetDefaultAddressMutation()
 
   const handleDelete = async (id: string) => {
     const confirmed = await confirmDelete(
@@ -44,29 +27,21 @@ export const AddressList = () => {
     if (!confirmed) return
 
     try {
-      const res = await ordersApi.deleteAddress(id)
-      if (res.success) {
-        toast.success("Shipping address removed.")
-        loadAddresses()
-      } else {
-        toast.error(res.message || "Failed to remove shipping address.")
-      }
-    } catch {
-      toast.error("Failed to execute request.")
+      await deleteAddressMutation.mutateAsync(id)
+      toast.success("Shipping address removed.")
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : "Failed to execute request."
+      toast.error(errMsg)
     }
   }
 
   const handleSetDefault = async (id: string) => {
     try {
-      const res = await ordersApi.setDefaultAddress(id)
-      if (res.success) {
-        toast.success("Default address updated.")
-        loadAddresses()
-      } else {
-        toast.error(res.message || "Failed to update default shipping selection.")
-      }
-    } catch {
-      toast.error("Failed to execute request.")
+      await setDefaultAddressMutation.mutateAsync(id)
+      toast.success("Default address updated.")
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : "Failed to execute request."
+      toast.error(errMsg)
     }
   }
 

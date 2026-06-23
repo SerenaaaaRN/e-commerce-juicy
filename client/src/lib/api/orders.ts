@@ -1,5 +1,5 @@
+import type { Address, ApiResponse, OrderDetail, OrdersListResponse } from "@/types"
 import { customerClient } from "./customerClient"
-import type { ApiResponse, Address, OrderDetail, Order } from "@/types"
 
 type CheckoutPayload = {
   address_id: string
@@ -35,8 +35,8 @@ export const ordersApi = {
   },
 
   // Retrieve customer order history
-  getCustomerOrders: async (): Promise<ApiResponse<Order[]>> => {
-    const response = await customerClient.get<ApiResponse<Order[]>>("/orders")
+  getCustomerOrders: async (): Promise<ApiResponse<OrdersListResponse>> => {
+    const response = await customerClient.get<ApiResponse<OrdersListResponse>>("/orders")
     return response.data
   },
 

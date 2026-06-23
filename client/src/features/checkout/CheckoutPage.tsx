@@ -1,22 +1,21 @@
-import { useState, useEffect, useTransition } from "react"
-import { Navigate, useNavigate } from "react-router-dom"
-import { ROUTES } from "@/constants/routes"
-import { useCustomerAuthStore } from "@/stores/customerAuthStore"
-import { useCartQuery } from "@/features/cart/hooks/useCartQueries"
+import { AddressForm } from "@/components/common/AddressForm"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Spinner } from "@/components/ui/spinner"
+import { ROUTES } from "@/constants/paths"
 import { useClearCartMutation } from "@/features/cart/hooks/useCartMutations"
+import { useCartQuery } from "@/features/cart/hooks/useCartQueries"
+import { ordersApi } from "@/lib/api/orders"
+import { useCustomerAuthStore } from "@/stores/customer-auth-store"
+import type { Address } from "@/types"
+import { ShoppingBag01Icon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { useEffect, useState, useTransition } from "react"
+import { Navigate, useNavigate } from "react-router-dom"
+import { toast } from "sonner"
 import { AddressSelector } from "./components/AddressSelector"
-import { AddressForm } from "./components/AddressForm"
 import { OrderSummary } from "./components/OrderSummary"
 import { PaymentSelector } from "./components/PaymentSelector"
-import { ordersApi } from "@/lib/api/orders"
-import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
-import { Spinner } from "@/components/ui/spinner"
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { ShoppingBag01Icon } from "@hugeicons/core-free-icons"
-import { toast } from "sonner"
-import type { Address } from "@/types"
 
 export const CheckoutPage = () => {
   const navigate = useNavigate()
@@ -99,18 +98,16 @@ export const CheckoutPage = () => {
   }
 
   return (
-    <div className="bg-background py-12">
+    <div className="bg-background pt-24 pb-12 lg:pt-32">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Page Title */}
-        <div className="flex flex-col gap-2 text-left">
-          <span className="text-xs font-semibold tracking-wider text-primary uppercase">Atelier Checkout Flow</span>
-          <h1 className="font-heading text-4xl font-bold tracking-tight text-foreground">Checkout</h1>
+        <header className="mb-12 flex flex-col gap-2 text-left">
+          <span className="text-xs tracking-[0.15em] text-muted-foreground uppercase">Atelier Checkout Flow</span>
+          <h1 className="font-serif text-3xl text-foreground">Checkout</h1>
           <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
             Configure your delivery destination and confirm your slow fashion order details.
           </p>
-        </div>
-
-        <Separator className="my-8" />
+        </header>
 
         {/* Checkout Split Grid Layout */}
         <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">

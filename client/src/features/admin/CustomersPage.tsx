@@ -1,31 +1,31 @@
-import { useCallback, memo } from "react"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Spinner } from "@/components/ui/spinner"
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
+import { Button } from "@/components/ui/button"
 import {
   Dialog,
+  DialogClose,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
-  DialogClose,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog"
-import { formatPrice, formatDate } from "@/lib/utils/format"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { CheckmarkCircle01Icon, Cancel01Icon } from "@hugeicons/core-free-icons"
-import { cn } from "@/lib/utils"
-import { ORDER_STATUS, ORDER_STATUS_LABELS } from "@/constants/orderStatus"
-import { useConfirm } from "@/hooks/useConfirm"
-import { useCustomers } from "@/features/admin/hooks/useCustomers"
-import { useDataTableFilter } from "@/features/admin/hooks/useDataTableFilter"
-import { PageHeader } from "@/features/admin/components/PageHeader"
+import { Spinner } from "@/components/ui/spinner"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { ORDER_STATUS_LABELS } from "@/constants/order-status"
 import { EmptyState } from "@/features/admin/components/DataEmpty"
 import { DefferedContainer } from "@/features/admin/components/DefferedContainer"
 import { FullPageSpinner } from "@/features/admin/components/FullPageSpinner"
+import { PageHeader } from "@/features/admin/components/PageHeader"
 import { SearchInput } from "@/features/admin/components/SearchInput"
+import { useCustomers } from "@/features/admin/hooks/useCustomers"
+import { useDataTableFilter } from "@/features/admin/hooks/useDataTableFilter"
 import type { ClientStatistics } from "@/features/admin/types"
+import { useConfirm } from "@/hooks/useConfirm"
+import { cn } from "@/lib/utils"
+import { formatDate, formatPrice } from "@/lib/utils/format"
+import { Cancel01Icon, CheckmarkCircle01Icon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { memo, useCallback } from "react"
 
 export const CustomersPage = () => {
   const {
@@ -172,7 +172,7 @@ export const CustomersPage = () => {
                         </div>
                         <div className="flex items-center gap-3">
                           <div className="text-right font-bold text-foreground">{formatPrice(ord.total)}</div>
-                          <Badge variant={ord.status === ORDER_STATUS.DELIVERED ? "default" : "secondary"}>
+                          <Badge variant={ord.status === "delivered" ? "default" : "secondary"}>
                             {ORDER_STATUS_LABELS[ord.status] ?? ord.status}
                           </Badge>
                         </div>

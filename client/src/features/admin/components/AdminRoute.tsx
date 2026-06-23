@@ -1,7 +1,7 @@
+import { ROUTES } from "@/constants/paths"
+import { useAdminAuthStore } from "@/stores/admin-auth-store"
 import type { ReactNode } from "react"
 import { Navigate } from "react-router-dom"
-import { ROUTES } from "@/constants/routes"
-import { useAdminAuthStore } from "@/stores/adminAuthStore"
 
 type AdminRouteProps = {
   children: ReactNode

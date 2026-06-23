@@ -1,14 +1,14 @@
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldSeparator } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
-import { Field, FieldDescription, FieldGroup, FieldLabel, FieldSeparator, FieldError } from "@/components/ui/field"
-import { registerSchema } from "@/features/auth/validations"
 import type { RegisterFormValues } from "@/features/auth/types"
-import { HugeiconsIcon } from "@hugeicons/react"
+import { registerSchema } from "@/features/auth/validations"
+import { cn } from "@/lib/utils"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { Apple, GoogleIcon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { useForm } from "react-hook-form"
 
 type RegisterFormProps = {
   onSubmit: (data: RegisterFormValues) => void

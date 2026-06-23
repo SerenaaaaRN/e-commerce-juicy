@@ -72,9 +72,10 @@ func (s *customerService) Register(ctx context.Context, req dto.CustomerRegister
 	return &dto.CustomerLoginResponse{
 		Token: token,
 		Customer: dto.CustomerResponse{
-			ID:       customer.ID.String(),
-			FullName: customer.FullName,
-			Email:    customer.Email,
+			ID:        customer.ID.String(),
+			FullName:  customer.FullName,
+			Email:     customer.Email,
+			CreatedAt: customer.CreatedAt,
 		},
 	}, nil
 }
@@ -102,9 +103,10 @@ func (s *customerService) Login(ctx context.Context, req dto.CustomerLoginReques
 	return &dto.CustomerLoginResponse{
 		Token: token,
 		Customer: dto.CustomerResponse{
-			ID:       customer.ID.String(),
-			FullName: customer.FullName,
-			Email:    customer.Email,
+			ID:        customer.ID.String(),
+			FullName:  customer.FullName,
+			Email:     customer.Email,
+			CreatedAt: customer.CreatedAt,
 		},
 	}, nil
 }

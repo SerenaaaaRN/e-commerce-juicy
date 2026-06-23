@@ -1,100 +1,91 @@
-import { Link } from "react-router-dom"
-import { ROUTES } from "@/constants/routes"
 import { Separator } from "@/components/ui/separator"
+import { ROUTES } from "@/constants/paths"
+import { Facebook01Icon, InstagramIcon, TwitterIcon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { motion } from "motion/react"
+import { Link } from "react-router-dom"
 
-export const Footer = () => {
+const footerLinks = {
+  shop: [
+    { label: "Apparel", href: `${ROUTES.shop}?category=apparel&page=1` },
+    { label: "Dresses", href: `${ROUTES.shop}?category=bags&page=1` },
+    { label: "Bags", href: `${ROUTES.shop}?category=shoes&page=1` },
+    { label: "Shoes", href: `${ROUTES.shop}?category=accessories` },
+    { label: "Accessories", href: `${ROUTES.shop}?` },
+  ],
+  about: [
+    { label: "Our Heritage", href: `${ROUTES.heritage}` },
+    { label: "Craftsmanship", href: `${ROUTES.heritage}` },
+    { label: "Sustainability", href: `${ROUTES.heritage}` },
+  ],
+}
+
+export function Footer() {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="bg-background text-foreground py-16">
-      <Separator className="mb-16" />
-      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 md:gap-8 pb-12">
-          
-          {/* Brand Intro Column */}
-          <div className="flex flex-col gap-4 md:col-span-1">
-            <span className="font-heading text-2xl font-bold tracking-[0.25em] text-primary">
-              JUICY
-            </span>
-            <p className="text-xs text-muted-foreground leading-relaxed max-w-xs uppercase tracking-wider">
-              An editorial pursuit of pure linen, high-fashion silhouettes, and sustainable artisan apparel. Built for the modern nomad.
+    <footer className="bg-foreground text-background">
+      <div className="mx-auto max-w-7xl px-6 py-16 lg:px-8 lg:py-24">
+        {/* Main footer content */}
+        <div className="mb-16 grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-2 lg:gap-8">
+          {/* Brand Intro */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="lg:col-span-1"
+          >
+            <span className="mb-6 block font-heading text-2xl font-bold tracking-[0.25em] text-primary">JUICY</span>
+            <p className="mb-6 text-sm leading-relaxed tracking-wider text-background/60 uppercase">
+              An editorial pursuit of pure linen and high-fashion silhouettes. Built for the modern nomad.
             </p>
-          </div>
-
-          {/* Collections Column */}
-          <div>
-            <h4 className="text-xs font-semibold uppercase tracking-[0.2em] mb-4 text-primary">
-              Collections
-            </h4>
-            <ul className="flex flex-col gap-2.5 text-xs text-muted-foreground uppercase tracking-widest">
-              <li>
-                <Link to={`${ROUTES.shop}?category=tops`} className="hover:text-foreground transition-colors duration-200">Tops</Link>
-              </li>
-              <li>
-                <Link to={`${ROUTES.shop}?category=dresses`} className="hover:text-foreground transition-colors duration-200">Dresses</Link>
-              </li>
-              <li>
-                <Link to={`${ROUTES.shop}?category=sets`} className="hover:text-foreground transition-colors duration-200">Sets</Link>
-              </li>
-              <li>
-                <Link to={`${ROUTES.shop}?category=accessories`} className="hover:text-foreground transition-colors duration-200">Accessories</Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Customer Care Column */}
-          <div>
-            <h4 className="text-xs font-semibold uppercase tracking-[0.2em] mb-4 text-primary">
-              Atelier Support
-            </h4>
-            <ul className="flex flex-col gap-2.5 text-xs text-muted-foreground uppercase tracking-widest">
-              <li>
-                <span className="hover:text-foreground cursor-pointer transition-colors duration-200">Shipping & Returns</span>
-              </li>
-              <li>
-                <span className="hover:text-foreground cursor-pointer transition-colors duration-200">Sizing Guide</span>
-              </li>
-              <li>
-                <span className="hover:text-foreground cursor-pointer transition-colors duration-200">Care Guidelines</span>
-              </li>
-              <li>
-                <span className="hover:text-foreground cursor-pointer transition-colors duration-200">Contact Atelier</span>
-              </li>
-            </ul>
-          </div>
-
-          {/* Newsletter Column */}
-          <div className="flex flex-col gap-4">
-            <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-              Journal Subscription
-            </h4>
-            <p className="text-xs text-muted-foreground uppercase tracking-wider leading-relaxed">
-              Sign up to receive early editorial launch invites, seasonal lookbooks, and exclusive atelier restock alerts.
-            </p>
-            <div className="flex max-w-sm items-center gap-2 border-b border-foreground/20 pb-1">
-              <input
-                type="email"
-                placeholder="ENTER YOUR EMAIL"
-                className="w-full bg-transparent border-none text-xs tracking-widest placeholder:text-muted-foreground focus:outline-none"
-              />
-              <button className="text-xs font-semibold tracking-widest text-primary hover:text-foreground transition-colors duration-200">
-                JOIN
-              </button>
+            <div className="flex items-center gap-4">
+              <Link to="https://instagram.com" className="transition-opacity hover:opacity-60" aria-label="Instagram">
+                <HugeiconsIcon icon={InstagramIcon} className="h-5 w-5 stroke-[1.5]" />
+              </Link>
+              <Link to="https://facebook.com" className="transition-opacity hover:opacity-60" aria-label="Facebook">
+                <HugeiconsIcon icon={Facebook01Icon} className="h-5 w-5 stroke-[1.5]" />
+              </Link>
+              <Link to="https://twitter.com" className="transition-opacity hover:opacity-60" aria-label="Twitter">
+                <HugeiconsIcon icon={TwitterIcon} className="h-5 w-5 stroke-[1.5]" />
+              </Link>
             </div>
-          </div>
+          </motion.div>
 
+          {/* Shop links */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+          >
+            <h4 className="mb-6 text-xs tracking-[0.2em] text-background/60 uppercase">Collections</h4>
+            <ul className="space-y-3">
+              {footerLinks.shop.map((link) => (
+                <li key={link.href}>
+                  <Link to={link.href} className="text-sm text-background/80 transition-colors hover:text-background">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </motion.div>
         </div>
 
-        {/* Bottom Rights Bar */}
-        <Separator className="my-8" />
-        <div className="flex flex-col sm:flex-row items-center justify-between text-[10px] text-muted-foreground uppercase tracking-widest gap-4">
-          <p>© {currentYear} JUICY ATELIER. ALL RIGHTS RESERVED.</p>
-          <div className="flex gap-6">
-            <span className="hover:text-foreground cursor-pointer">PRIVACY POLICY</span>
-            <span className="hover:text-foreground cursor-pointer">TERMS OF SERVICE</span>
+        {/* Bottom bar */}
+        <Separator className="mb-8 bg-background/20" />
+        <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
+          <div className="flex flex-wrap items-center justify-center gap-6 text-[10px] tracking-widest text-background/50 uppercase">
+            <span>© {currentYear} JUICY ATELIER. ALL RIGHTS RESERVED.</span>
+            <Link to="/privacy" className="transition-colors hover:text-background/80">
+              Privacy Policy
+            </Link>
+            <Link to="/terms" className="transition-colors hover:text-background/80">
+              Terms of Service
+            </Link>
           </div>
         </div>
-
       </div>
     </footer>
   )

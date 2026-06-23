@@ -1,68 +1,29 @@
-import { useState, useCallback, memo } from "react"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Spinner } from "@/components/ui/spinner"
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Separator } from "@/components/ui/separator"
+import { Button } from "@/components/ui/button"
 import {
   Dialog,
+  DialogClose,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
-  DialogClose,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog"
-import { formatPrice, formatDate } from "@/lib/utils/format"
-import { useOrders } from "@/features/admin/hooks/useOrders"
-import { useDataTableFilter } from "@/features/admin/hooks/useDataTableFilter"
-import { PageHeader } from "@/features/admin/components/PageHeader"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Separator } from "@/components/ui/separator"
+import { Spinner } from "@/components/ui/spinner"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { ORDER_STEPS, PAYMENT_BADGE, PAYMENT_STEPS, STATUS_BADGE } from "@/constants/order-status"
 import { EmptyState } from "@/features/admin/components/DataEmpty"
 import { DefferedContainer } from "@/features/admin/components/DefferedContainer"
 import { FullPageSpinner } from "@/features/admin/components/FullPageSpinner"
+import { PageHeader } from "@/features/admin/components/PageHeader"
 import { SearchInput } from "@/features/admin/components/SearchInput"
-import { ORDER_STATUS, PAYMENT_STATUS } from "@/constants/orderStatus"
-import type { AdminOrder, OrderStatus, PaymentStatus } from "@/types"
-
-const FULFILLMENT_STEPS: OrderStatus[] = [
-  ORDER_STATUS.PENDING,
-  ORDER_STATUS.CONFIRMED,
-  ORDER_STATUS.PROCESSING,
-  ORDER_STATUS.SHIPPED,
-  ORDER_STATUS.DELIVERED,
-]
-const PAYMENT_STEPS: PaymentStatus[] = [PAYMENT_STATUS.UNPAID, PAYMENT_STATUS.PAID, PAYMENT_STATUS.REFUNDED]
-
-const getStatusBadge = (status: OrderStatus) => {
-  switch (status) {
-    case ORDER_STATUS.PENDING:
-      return <Badge variant="secondary">Pending</Badge>
-    case ORDER_STATUS.CONFIRMED:
-      return <Badge>Confirmed</Badge>
-    case ORDER_STATUS.PROCESSING:
-      return <Badge variant="secondary">Processing</Badge>
-    case ORDER_STATUS.SHIPPED:
-      return <Badge>Shipped</Badge>
-    case ORDER_STATUS.DELIVERED:
-      return <Badge variant="default">Delivered</Badge>
-    default:
-      return <Badge variant="outline">{status}</Badge>
-  }
-}
-
-const getPaymentBadge = (status: PaymentStatus) => {
-  switch (status) {
-    case PAYMENT_STATUS.UNPAID:
-      return <Badge variant="destructive">Unpaid</Badge>
-    case PAYMENT_STATUS.PAID:
-      return <Badge variant="default">Paid</Badge>
-    case PAYMENT_STATUS.REFUNDED:
-      return <Badge variant="secondary">Refunded</Badge>
-    default:
-      return <Badge variant="outline">{status}</Badge>
-  }
-}
+import { useDataTableFilter } from "@/features/admin/hooks/useDataTableFilter"
+import { useOrders } from "@/features/admin/hooks/useOrders"
+import { formatDate, formatPrice } from "@/lib/utils/format"
+import type { AdminOrder } from "@/types"
+import { memo, useCallback, useState } from "react"
 
 export const OrdersPage = () => {
   const {
@@ -79,13 +40,9 @@ export const OrdersPage = () => {
   } = useOrders()
 
   const orderFilter = useCallback((o: AdminOrder, s: string) => o.order_number.toLowerCase().includes(s), [])
-
   const { search, setSearch, filteredData: searchFiltered, isStale } = useDataTableFilter(orders, orderFilter)
-
   const [statusFilter, setStatusFilter] = useState("all")
-
   const filtered = searchFiltered.filter((o) => statusFilter === "all" || o.status === statusFilter)
-
   if (loading) return <FullPageSpinner label="Loading Customer Orders..." />
 
   return (
@@ -108,11 +65,11 @@ export const OrdersPage = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Fulfillment Statuses</SelectItem>
-              <SelectItem value={ORDER_STATUS.PENDING}>Pending</SelectItem>
-              <SelectItem value={ORDER_STATUS.CONFIRMED}>Confirmed</SelectItem>
-              <SelectItem value={ORDER_STATUS.PROCESSING}>Processing</SelectItem>
-              <SelectItem value={ORDER_STATUS.SHIPPED}>Shipped</SelectItem>
-              <SelectItem value={ORDER_STATUS.DELIVERED}>Delivered</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="confirmed">Confirmed</SelectItem>
+              <SelectItem value="processing">Processing</SelectItem>
+              <SelectItem value="shipped">Shipped</SelectItem>
+              <SelectItem value="delivered">Delivered</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -168,7 +125,7 @@ export const OrdersPage = () => {
                     Fulfillment Status Flow
                   </span>
                   <div className="flex flex-wrap gap-1.5">
-                    {FULFILLMENT_STEPS.map((st) => (
+                    {ORDER_STEPS.map((st) => (
                       <Button
                         key={st}
                         variant={activeOrder.status === st ? "default" : "outline"}
@@ -177,7 +134,7 @@ export const OrdersPage = () => {
                         disabled={updating}
                         className="h-auto py-1 text-[10px] font-bold uppercase"
                       >
-                        {st}
+                        {STATUS_BADGE[st].label}
                       </Button>
                     ))}
                   </div>
@@ -196,7 +153,7 @@ export const OrdersPage = () => {
                         disabled={updating}
                         className="h-auto py-1 text-[10px] font-bold uppercase"
                       >
-                        {pst}
+                        {PAYMENT_BADGE[pst].label}
                       </Button>
                     ))}
                   </div>
@@ -310,8 +267,12 @@ const OrderRow = memo(function OrderRow({
   return (
     <TableRow>
       <TableCell className="px-6 py-4 font-mono font-bold text-foreground">{order.order_number}</TableCell>
-      <TableCell className="px-6 py-4">{getStatusBadge(order.status)}</TableCell>
-      <TableCell className="px-6 py-4">{getPaymentBadge(order.payment_status)}</TableCell>
+      <TableCell className="px-6 py-4">
+        <Badge variant={STATUS_BADGE[order.status].variant}>{STATUS_BADGE[order.status].label}</Badge>
+      </TableCell>
+      <TableCell className="px-6 py-4">
+        <Badge variant={PAYMENT_BADGE[order.payment_status].variant}>{PAYMENT_BADGE[order.payment_status].label}</Badge>
+      </TableCell>
       <TableCell className="px-6 py-4 font-medium text-muted-foreground">{order.item_count || 0} unit(s)</TableCell>
       <TableCell className="px-6 py-4 font-bold text-foreground">{formatPrice(order.total)}</TableCell>
       <TableCell className="px-6 py-4 text-xs text-muted-foreground">{formatDate(order.created_at)}</TableCell>

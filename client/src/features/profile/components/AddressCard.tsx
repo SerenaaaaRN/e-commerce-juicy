@@ -1,6 +1,7 @@
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
 import type { Address } from "@/types"
 
 type AddressCardProps = {
@@ -34,13 +35,14 @@ export const AddressCard = ({ address, onDelete, onSetDefault, onEdit }: Address
         </div>
 
         {/* Actions bar */}
-        <div className="mt-1 flex w-full gap-2 border-t border-border/40 pt-3">
+        <Separator className="mt-1" />
+        <div className="flex w-full gap-2 pt-1">
           {!address.is_default && (
             <Button
               variant="outline"
               size="sm"
               onClick={() => onSetDefault(address.id)}
-              className="h-8 cursor-pointer text-[10px] font-semibold uppercase"
+              className="h-9 cursor-pointer text-[10px] font-semibold uppercase"
             >
               Set Default
             </Button>
@@ -49,7 +51,7 @@ export const AddressCard = ({ address, onDelete, onSetDefault, onEdit }: Address
             variant="ghost"
             size="sm"
             onClick={() => onEdit(address)}
-            className="h-8 cursor-pointer text-[10px] font-semibold text-muted-foreground uppercase hover:text-foreground"
+            className="h-9 cursor-pointer text-[10px] font-semibold text-muted-foreground uppercase hover:text-foreground"
           >
             Edit
           </Button>
@@ -57,7 +59,7 @@ export const AddressCard = ({ address, onDelete, onSetDefault, onEdit }: Address
             variant="ghost"
             size="sm"
             onClick={() => onDelete(address.id)}
-            className="h-8 cursor-pointer text-[10px] font-semibold text-muted-foreground uppercase hover:text-destructive"
+            className="h-9 cursor-pointer text-[10px] font-semibold text-muted-foreground uppercase hover:text-destructive"
           >
             Delete
           </Button>

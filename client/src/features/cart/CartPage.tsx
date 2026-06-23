@@ -1,13 +1,13 @@
-import { Navigate, useNavigate } from "react-router-dom"
-import { ROUTES } from "@/constants/routes"
-import { useCustomerAuthStore } from "@/stores/customerAuthStore"
+import { Separator } from "@/components/ui/separator"
+import { ROUTES } from "@/constants/paths"
+import { useRemoveCartItemMutation, useUpdateCartItemMutation } from "@/features/cart/hooks/useCartMutations"
 import { useCartQuery } from "@/features/cart/hooks/useCartQueries"
-import { useUpdateCartItemMutation, useRemoveCartItemMutation } from "@/features/cart/hooks/useCartMutations"
+import { useCustomerAuthStore } from "@/stores/customer-auth-store"
+import { Navigate, useNavigate } from "react-router-dom"
+import { toast } from "sonner"
 import { CartItem } from "./components/CartItem"
 import { CartSummary } from "./components/CartSummary"
 import { EmptyCart } from "./components/EmptyCart"
-import { Separator } from "@/components/ui/separator"
-import { toast } from "sonner"
 
 export const CartPage = () => {
   const navigate = useNavigate()
@@ -16,7 +16,6 @@ export const CartPage = () => {
   const updateQtyMutation = useUpdateCartItemMutation()
   const removeItemMutation = useRemoveCartItemMutation()
 
-  // Guest restriction redirect
   if (!isAuthenticated) {
     return <Navigate to={ROUTES.login} replace />
   }
@@ -50,18 +49,16 @@ export const CartPage = () => {
   }
 
   return (
-    <div className="bg-background py-12">
+    <div className="my-32 bg-background md:my-42">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Page Title */}
-        <div className="flex flex-col gap-2 text-left">
-          <span className="text-xs font-semibold tracking-wider text-primary uppercase">Atelier Customer Cart</span>
-          <h1 className="font-heading text-4xl font-bold tracking-tight text-foreground">Shopping Cart</h1>
-          <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
+        <header className="mb-12 flex flex-col gap-2 text-left">
+          <span className="text-xs tracking-[0.15em] text-muted-foreground uppercase">Atelier Customer Cart</span>
+          <h1 className="font-serif text-3xl text-foreground">Shopping Cart</h1>
+          <p className="max-w-md font-sans text-sm leading-relaxed text-muted-foreground">
             Review your selected designs and silhouettes before proceeding to checkout.
           </p>
-        </div>
-
-        <Separator className="my-8" />
+        </header>
 
         {/* Dynamic Cart Layout split grid */}
         <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">

@@ -1,42 +1,33 @@
-import { useState, useTransition, useCallback, useEffect } from "react"
-import { useForm, type Resolver } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { adminApi } from "@/lib/api/admin"
-import { toast } from "sonner"
-import { variantSchema } from "@/features/admin/validations"
-import type { ProductDetail, ProductVariant } from "@/types"
 import type { VariantFormValues } from "@/features/admin/types"
+import { variantSchema } from "@/features/admin/validations"
+import { adminApi } from "@/lib/api/admin"
+import type { ProductDetail, ProductVariant } from "@/types"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useCallback, useState } from "react"
+import { useForm, type Resolver } from "react-hook-form"
+import { toast } from "sonner"
 
 export const useVariants = (
   activeProduct: ProductDetail | null,
-  setActiveProduct: React.Dispatch<React.SetStateAction<ProductDetail | null>>,
-  loadData: () => void
+  setActiveProduct: React.Dispatch<React.SetStateAction<ProductDetail | null>>
 ) => {
-  const [isPending, startTransition] = useTransition()
+  const queryClient = useQueryClient()
   const [editingVariant, setEditingVariant] = useState<ProductVariant | null>(null)
-  const [isLoadingVariants, setIsLoadingVariants] = useState(false)
 
-  const loadVariants = useCallback(async () => {
-    if (!activeProduct) return
-    setIsLoadingVariants(true)
-    try {
+  const { isLoading: isLoadingVariants } = useQuery({
+    queryKey: ["admin-product-variants", activeProduct?.id],
+    queryFn: async () => {
+      if (!activeProduct) throw new Error("No active product")
       const res = await adminApi.getVariants(activeProduct.id)
-      if (res.success && res.data) {
-        setActiveProduct((prev) => (prev && prev.id === activeProduct.id ? { ...prev, variants: res.data } : prev))
-      }
-    } catch {
-      // silent catch
-    } finally {
-      setIsLoadingVariants(false)
-    }
-  }, [activeProduct, setActiveProduct])
-
-  useEffect(() => {
-    if (activeProduct && !activeProduct.variants) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      loadVariants()
-    }
-  }, [activeProduct, loadVariants])
+      if (!res.success) throw new Error(res.error?.message || "Failed to load variants")
+      setActiveProduct((prev) =>
+        prev && prev.id === activeProduct.id ? { ...prev, variants: res.data as ProductVariant[] } : prev
+      )
+      return res.data as ProductVariant[]
+    },
+    enabled: !!activeProduct && !activeProduct.variants,
+  })
 
   const variantForm = useForm<VariantFormValues>({
     resolver: zodResolver(variantSchema) as unknown as Resolver<VariantFormValues>,
@@ -75,75 +66,93 @@ export const useVariants = (
     resetVariantForm()
   }, [resetVariantForm])
 
+  const saveMutation = useMutation({
+    mutationFn: async ({
+      productId,
+      variantId,
+      payload,
+    }: {
+      productId: string
+      variantId?: string
+      payload: Omit<ProductVariant, "id" | "product_id" | "created_at" | "updated_at">
+    }) => {
+      const res = variantId
+        ? await adminApi.updateVariant(productId, variantId, payload)
+        : await adminApi.addVariant(productId, payload)
+      if (!res.success) throw new Error(res.error?.message || "Failed to save variant")
+      return res.data as ProductVariant
+    },
+    onSuccess: (data, { variantId, productId }) => {
+      if (variantId) {
+        toast.success("Variant updated successfully!")
+        setActiveProduct((prev) => {
+          if (!prev || prev.id !== productId) return prev
+          return {
+            ...prev,
+            variants: (prev.variants || []).map((v) => (v.id === variantId ? data : v)),
+          }
+        })
+      } else {
+        toast.success("Variant appended successfully!")
+        setActiveProduct((prev) => {
+          if (!prev || prev.id !== productId) return prev
+          return { ...prev, variants: [...(prev.variants || []), data] }
+        })
+      }
+      resetVariantForm()
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] })
+    },
+    onError: (err, { variantId }) => {
+      toast.error(
+        err instanceof Error ? err.message : variantId ? "Failed to update variant." : "Failed to append variant."
+      )
+    },
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: async ({ productId, variantId }: { productId: string; variantId: string }) => {
+      const res = await adminApi.deleteVariant(productId, variantId)
+      if (!res.success) throw new Error(res.error?.message || "Failed to delete variant")
+    },
+    onSuccess: (_data, { productId, variantId }) => {
+      toast.success("Variant removed successfully!")
+      setActiveProduct((prev) => {
+        if (!prev || prev.id !== productId) return prev
+        return { ...prev, variants: (prev.variants || []).filter((v) => v.id !== variantId) }
+      })
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] })
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : "Failed to delete variant.")
+    },
+  })
+
   const handleAddVariant = variantForm.handleSubmit(async (values) => {
     if (!activeProduct) return
-
-    startTransition(async () => {
-      const payload = {
-        size: values.size.trim(),
-        color: values.color?.trim() || "",
-        stock: values.stock,
-        additional_price: values.additional_price,
-        is_active: true,
-      }
-
-      try {
-        if (editingVariant) {
-          const res = await adminApi.updateVariant(activeProduct.id, editingVariant.id, payload)
-          if (res.success && res.data) {
-            toast.success("Variant updated successfully!")
-            const updatedV = (activeProduct.variants || []).map((v) =>
-              v.id === editingVariant.id ? res.data : v
-            ) as ProductVariant[]
-            setActiveProduct((prev) => (prev ? { ...prev, variants: updatedV } : null))
-            resetVariantForm()
-            loadData()
-          } else {
-            toast.error(res.message || "Failed to update variant.")
-          }
-        } else {
-          const res = await adminApi.addVariant(activeProduct.id, payload)
-          if (res.success && res.data) {
-            toast.success("Variant appended successfully!")
-            const updatedV = [...(activeProduct.variants || []), res.data]
-            setActiveProduct((prev) => (prev ? { ...prev, variants: updatedV } : null))
-            loadData()
-            resetVariantForm()
-          } else {
-            toast.error(res.message || "Failed to append variant option.")
-          }
-        }
-      } catch {
-        toast.error(editingVariant ? "Failed to update variant." : "Failed to append variant.")
-      }
+    const payload = {
+      size: values.size.trim(),
+      color: values.color?.trim() || "",
+      stock: values.stock,
+      additional_price: values.additional_price,
+      is_active: true,
+    }
+    saveMutation.mutate({
+      productId: activeProduct.id,
+      variantId: editingVariant?.id,
+      payload,
     })
   })
 
   const handleDeleteVariant = useCallback(
     async (variantId: string, confirmFn: (msg: string) => Promise<boolean>) => {
       if (!(await confirmFn("Are you sure you want to delete this variant?")) || !activeProduct) return
-
-      startTransition(async () => {
-        try {
-          const res = await adminApi.deleteVariant(activeProduct.id, variantId)
-          if (res.success) {
-            toast.success("Variant removed successfully!")
-            const updatedV = (activeProduct.variants || []).filter((v) => v.id !== variantId)
-            setActiveProduct((prev) => (prev ? { ...prev, variants: updatedV } : null))
-            loadData()
-          } else {
-            toast.error(res.message || "Failed to delete variant.")
-          }
-        } catch {
-          toast.error("Failed to delete variant.")
-        }
-      })
+      deleteMutation.mutate({ productId: activeProduct.id, variantId })
     },
-    [activeProduct, loadData, setActiveProduct]
+    [activeProduct, deleteMutation]
   )
 
   return {
-    isPending,
+    isPending: saveMutation.isPending || deleteMutation.isPending,
     isLoadingVariants,
     variantForm,
     editingVariant,

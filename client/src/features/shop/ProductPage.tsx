@@ -1,34 +1,53 @@
-import { useState, useEffect } from "react"
-import { useParams, Link, useNavigate } from "react-router-dom"
-import { ROUTES } from "@/constants/routes"
-import { useCustomerAuthStore } from "@/stores/customerAuthStore"
-import { useRecentlyViewed } from "@/hooks/useRecentlyViewed"
-import { useProductQuery } from "@/features/shop/hooks/useProductQueries"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
+import { Button } from "@/components/ui/button"
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
+import { Spinner } from "@/components/ui/spinner"
+import { ROUTES } from "@/constants/paths"
 import { useAddCartItemMutation } from "@/features/cart/hooks/useCartMutations"
-import { useWishlistQuery } from "@/features/wishlist/hooks/useWishlistQueries"
+import { useProductQuery } from "@/features/shop/hooks/useProductQueries"
 import {
   useAddWishlistItemMutation,
   useRemoveWishlistItemMutation,
 } from "@/features/wishlist/hooks/useWishlistMutations"
+import { useWishlistQuery } from "@/features/wishlist/hooks/useWishlistQueries"
+import { useRecentlyViewed } from "@/hooks/useRecentlyViewed"
+import { useCustomerAuthStore } from "@/stores/customer-auth-store"
+import { HeartAddIcon, ShoppingBag01Icon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { useEffect, useState, type ComponentProps } from "react"
+import { Link, useNavigate, useParams } from "react-router-dom"
+import { toast } from "sonner"
 import { ProductImageGallery } from "./components/ProductImageGallery"
 import { ProductInfo } from "./components/ProductInfo"
-import { VariantSelector } from "./components/VariantSelector"
-import { AddToCartButton } from "./components/AddToCartButton"
 import { ReviewsSection } from "./components/ReviewsSection"
-import { Button } from "@/components/ui/button"
-import { Spinner } from "@/components/ui/spinner"
-import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyContent, EmptyMedia } from "@/components/ui/empty"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { ShoppingBag01Icon, HeartAddIcon } from "@hugeicons/core-free-icons"
-import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { toast } from "sonner"
+import { VariantSelector } from "./components/VariantSelector"
+
+type AddToCartButtonProps = ComponentProps<"button"> & {
+  isLoading?: boolean
+  stock: number
+}
+
+const AddToCartButton = ({ onClick, disabled = false, isLoading = false, stock }: AddToCartButtonProps) => {
+  const isOutOfStock = stock <= 0
+
+  return (
+    <Button onClick={onClick} disabled={disabled || isOutOfStock || isLoading} size="lg">
+      {isLoading ? (
+        <Spinner data-icon="inline-start" />
+      ) : (
+        <HugeiconsIcon icon={ShoppingBag01Icon} strokeWidth={1.8} data-icon="inline-start" />
+      )}
+      {isOutOfStock ? "Out of Stock" : isLoading ? "Adding to Cart..." : "Add to Cart"}
+    </Button>
+  )
+}
 
 export const ProductPage = () => {
   const { slug } = useParams<{ slug: string }>()
@@ -158,28 +177,22 @@ export const ProductPage = () => {
   }
 
   return (
-    <div className="bg-background py-12">
+    <div className="bg-background py-32 md:py-42">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Navigation Breadcrumb trail */}
-        <Breadcrumb className="mb-8 text-left font-semibold tracking-widest uppercase">
-          <BreadcrumbList className="text-xs">
+        <Breadcrumb className="mb-8 text-left text-xs font-bold uppercase">
+          <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link to={ROUTES.home}>Home</Link>
-              </BreadcrumbLink>
+              <BreadcrumbLink to={ROUTES.home}>Home</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link to={ROUTES.shop}>Shop</Link>
-              </BreadcrumbLink>
+              <BreadcrumbLink to={ROUTES.shop}>Shop</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage className="max-w-50 truncate uppercase sm:max-w-none">
-                {currentProduct.name}
-              </BreadcrumbPage>
-            </BreadcrumbItem>
+            <BreadcrumbPage className="max-w-50 truncate font-bold text-primary uppercase sm:max-w-none">
+              {currentProduct.name}
+            </BreadcrumbPage>
           </BreadcrumbList>
         </Breadcrumb>
 

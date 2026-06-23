@@ -1,15 +1,15 @@
-import { Link } from "react-router-dom"
-import { ROUTES } from "@/constants/routes"
-import { useWishlistQuery } from "@/features/wishlist/hooks/useWishlistQueries"
-import { useRemoveWishlistItemMutation } from "@/features/wishlist/hooks/useWishlistMutations"
 import { Button } from "@/components/ui/button"
-import { Spinner } from "@/components/ui/spinner"
 import { Card, CardContent } from "@/components/ui/card"
-import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyContent, EmptyMedia } from "@/components/ui/empty"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { HeartAddIcon } from "@hugeicons/core-free-icons"
-import { toast } from "sonner"
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
+import { Spinner } from "@/components/ui/spinner"
+import { ROUTES } from "@/constants/paths"
+import { useRemoveWishlistItemMutation } from "@/features/wishlist/hooks/useWishlistMutations"
+import { useWishlistQuery } from "@/features/wishlist/hooks/useWishlistQueries"
 import { formatPrice } from "@/lib/utils"
+import { HeartAddIcon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { Link } from "react-router-dom"
+import { toast } from "sonner"
 
 export const WishlistPage = () => {
   const { data: wishlist, isLoading } = useWishlistQuery()
@@ -32,7 +32,7 @@ export const WishlistPage = () => {
 
   if (items.length === 0) {
     return (
-      <div className="container mx-auto flex min-h-[60vh] max-w-7xl items-center justify-center px-4 py-20">
+      <div className="container mx-auto flex min-h-screen max-w-7xl items-center justify-center px-4">
         <Empty className="max-w-md border-none bg-transparent">
           <EmptyHeader>
             <EmptyMedia
@@ -57,7 +57,7 @@ export const WishlistPage = () => {
   }
 
   return (
-    <div className="container mx-auto max-w-7xl px-4 py-12">
+    <div className="container mx-auto max-w-7xl px-4 pt-24 pb-12 lg:pt-32">
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">My Wishlist</h1>
         <p className="mt-2 text-sm text-muted-foreground">
@@ -69,11 +69,11 @@ export const WishlistPage = () => {
         {items.map((item) => (
           <Card key={item.id} className="group overflow-hidden border-border/50">
             <Link to={`${ROUTES.shop}/${item.product_slug}`}>
-              <div className="aspect-4/5 overflow-hidden bg-muted">
+              <div className="aspect-3/4 overflow-hidden bg-muted">
                 <img
                   src={item.image_url || "/placeholder.svg"}
                   alt={item.product_name}
-                  className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  className="size-full object-cover transition-transform"
                 />
               </div>
             </Link>

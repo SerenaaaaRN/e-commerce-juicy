@@ -1,9 +1,9 @@
-import { ProductCard } from "./ProductCard"
 import { ProductGridSkeleton } from "@/components/common/LoadingSkeleton"
-import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyMedia } from "@/components/ui/empty"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { ShoppingBag01Icon } from "@hugeicons/core-free-icons"
+import { ProductCard } from "@/components/common/ProductCard"
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import type { CatalogProduct } from "@/types"
+import { ShoppingBag01Icon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
 
 type ProductGridProps = {
   products: CatalogProduct[]
@@ -18,16 +18,17 @@ export const ProductGrid = ({ products, isLoading, cols = 4 }: ProductGridProps)
 
   if (products.length === 0) {
     return (
-      <div className="flex justify-center items-center py-20 w-full">
-        <Empty className="border-none max-w-md bg-transparent">
+      <div className="flex w-full items-center justify-center py-20">
+        <Empty className="max-w-md border-none bg-transparent">
           <EmptyHeader>
-            <EmptyMedia variant="icon" className="bg-primary/5 text-primary size-12 rounded-full mb-3 flex items-center justify-center">
+            <EmptyMedia
+              variant="icon"
+              className="mb-3 flex size-12 items-center justify-center rounded-full bg-primary/5 text-primary"
+            >
               <HugeiconsIcon icon={ShoppingBag01Icon} strokeWidth={1.8} className="size-6 text-primary" />
             </EmptyMedia>
-            <EmptyTitle className="text-xl font-bold tracking-tight">
-              No Items Found
-            </EmptyTitle>
-            <EmptyDescription className="text-sm text-muted-foreground mt-2">
+            <EmptyTitle className="text-xl font-bold tracking-tight">No Items Found</EmptyTitle>
+            <EmptyDescription className="mt-2 text-sm text-muted-foreground">
               We couldn't find any silhouettes matching your current criteria. Try adjusting or clearing your filters.
             </EmptyDescription>
           </EmptyHeader>
@@ -40,8 +41,8 @@ export const ProductGrid = ({ products, isLoading, cols = 4 }: ProductGridProps)
     <div
       className={
         cols === 2
-          ? "grid grid-cols-1 sm:grid-cols-2 gap-8 lg:gap-12"
-          : "grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8"
+          ? "grid grid-cols-1 gap-8 sm:grid-cols-2 lg:gap-12"
+          : "grid grid-cols-2 gap-6 md:grid-cols-3 lg:gap-8 xl:grid-cols-4"
       }
     >
       {products.map((product) => (

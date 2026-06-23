@@ -1,14 +1,38 @@
-import { useState, useEffect } from "react"
-import { productApi } from "@/lib/api/products"
-import { ReviewCard } from "./ReviewCard"
-import { StarRating } from "./StarRating"
-import { Separator } from "@/components/ui/separator"
+import { StarRating } from "@/components/common/StarRating"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia } from "@/components/ui/empty"
+import { Separator } from "@/components/ui/separator"
 import { Spinner } from "@/components/ui/spinner"
-import { Empty, EmptyHeader, EmptyDescription, EmptyMedia } from "@/components/ui/empty"
-import { HugeiconsIcon } from "@hugeicons/react"
+import { formatDate } from "@/lib/utils"
 import { ShoppingBag01Icon } from "@hugeicons/core-free-icons"
-import type { Review } from "@/types"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { useState } from "react"
+import { useProductReviewsQuery } from "../hooks/useProductQueries"
+
+type ReviewCardProps = {
+  customerName: string
+  rating: number
+  comment: string | null
+  createdAt: string
+}
+
+const ReviewCard = ({ customerName, rating, comment, createdAt }: ReviewCardProps) => {
+  return (
+    <Card className="border border-border/60 shadow-sm">
+      <CardContent className="px-4">
+        <div className="flex items-center justify-between text-xs">
+          <span className="truncate font-semibold text-foreground">{customerName}</span>
+          <span className="whitespace-nowrap text-muted-foreground">{formatDate(createdAt)}</span>
+        </div>
+
+        <StarRating rating={rating} />
+
+        {comment ? <p className="mt-1 font-sans text-sm leading-relaxed text-muted-foreground">{comment}</p> : null}
+      </CardContent>
+    </Card>
+  )
+}
 
 type ReviewsSectionProps = {
   slug: string
@@ -17,33 +41,13 @@ type ReviewsSectionProps = {
 }
 
 export const ReviewsSection = ({ slug, avgRating, reviewCount }: ReviewsSectionProps) => {
-  const [reviews, setReviews] = useState<Review[]>([])
-  const [loading, setLoading] = useState(false)
   const [page, setPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
-
-  useEffect(() => {
-    const fetchReviews = async () => {
-      setLoading(true)
-      try {
-        const res = await productApi.getProductReviews(slug, { page, per_page: 5 })
-        if (res.success) {
-          setReviews(res.data)
-          if (res.meta) {
-            setTotalPages(res.meta.total_pages)
-          }
-        }
-      } catch (err) {
-        console.error("Failed to load reviews", err)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchReviews()
-  }, [slug, page])
+  const { data, isLoading: loading } = useProductReviewsQuery(slug, page)
+  const reviews = data?.reviews ?? []
+  const totalPages = data?.meta?.total_pages ?? 1
 
   return (
-    <div className="mt-10 flex flex-col gap-6 text-left">
+    <section className="mt-10 flex flex-col gap-6 text-left">
       <Separator />
 
       {/* Reviews Summary Header Block */}
@@ -133,7 +137,7 @@ export const ReviewsSection = ({ slug, avgRating, reviewCount }: ReviewsSectionP
           ) : null}
         </div>
       )}
-    </div>
+    </section>
   )
 }
 

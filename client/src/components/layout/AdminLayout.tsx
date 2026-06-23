@@ -1,40 +1,40 @@
-import { Link, Outlet, useLocation, useNavigate } from "react-router-dom"
-import { ROUTES } from "@/constants/routes"
-import { useAdminAuthStore } from "@/stores/adminAuthStore"
-import { adminApi } from "@/lib/api"
-import { cn } from "@/lib/utils"
-import {
-  Sidebar,
-  SidebarProvider,
-  SidebarInset,
-  SidebarContent,
-  SidebarHeader,
-  SidebarFooter,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarTrigger,
-} from "@/components/ui/sidebar"
-import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible"
-import { Separator } from "@/components/ui/separator"
+import { Button } from "@/components/ui/button"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Button } from "@/components/ui/button"
-import { HugeiconsIcon } from "@hugeicons/react"
+import { Separator } from "@/components/ui/separator"
 import {
-  ShoppingBag01Icon,
-  UserIcon,
-  StarIcon,
-  ArrowLeft01Icon,
-  DeliveryTruck02Icon,
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar"
+import { ROUTES } from "@/constants/paths"
+import { adminApi } from "@/lib/api"
+import { cn } from "@/lib/utils"
+import { useAdminAuthStore } from "@/stores/admin-auth-store"
+import {
   ArrowDown01Icon,
+  ArrowLeft01Icon,
   DashboardBrowsingIcon,
+  DeliveryTruck02Icon,
+  ShoppingBag01Icon,
+  StarIcon,
+  UserIcon,
 } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 
 const menuItems = [

@@ -1,12 +1,12 @@
-import { useState } from "react"
+import { StarRating } from "@/components/common/StarRating"
 import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
-import { FieldGroup, Field, FieldLabel } from "@/components/ui/field"
-import { ordersApi } from "@/lib/api/orders"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Spinner } from "@/components/ui/spinner"
+import { Textarea } from "@/components/ui/textarea"
+import { useSubmitReviewMutation } from "@/features/shop/hooks/useProductQueries"
+import { useState } from "react"
 import { toast } from "sonner"
-import { StarRating } from "@/features/shop/components/StarRating"
 
 type WriteReviewCtaProps = {
   productId: string
@@ -18,32 +18,29 @@ export const WriteReviewCta = ({ productId, orderId, productName }: WriteReviewC
   const [isOpen, setIsOpen] = useState(false)
   const [rating, setRating] = useState(5)
   const [comment, setComment] = useState("")
-  const [loading, setLoading] = useState(false)
+  const submitReviewMutation = useSubmitReviewMutation()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
     try {
-      const res = await ordersApi.submitReview({
+      await submitReviewMutation.mutateAsync({
         product_id: productId,
         order_id: orderId,
         rating,
         body: comment.trim() || undefined,
       })
 
-      if (res.success) {
-        toast.success(`Review for ${productName} submitted. Thank you for your support!`)
-        setComment("")
-        setIsOpen(false)
-      } else {
-        toast.error(res.message || "Failed to submit review. You may have already reviewed this item.")
-      }
-    } catch {
-      toast.error("Failed to submit review. Review details are invalid or already processed.")
-    } finally {
-      setLoading(false)
+      toast.success(`Review for ${productName} submitted. Thank you for your support!`)
+      setComment("")
+      setIsOpen(false)
+    } catch (err) {
+      const errMsg =
+        err instanceof Error ? err.message : "Failed to submit review. Review details are invalid or already processed."
+      toast.error(errMsg)
     }
   }
+
+  const loading = submitReviewMutation.isPending
 
   return (
     <>
@@ -51,35 +48,27 @@ export const WriteReviewCta = ({ productId, orderId, productName }: WriteReviewC
         variant="outline"
         size="sm"
         onClick={() => setIsOpen(true)}
-        className="text-[10px] uppercase font-semibold h-8 cursor-pointer"
+        className="h-8 cursor-pointer text-[10px] font-semibold uppercase"
       >
         Write Review
       </Button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="max-w-md">
-          
-          <DialogHeader className="text-left flex flex-col gap-1">
-            <DialogTitle className="text-lg font-bold tracking-tight text-foreground">
-              Review Silhouette
-            </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground font-sans">
+          <DialogHeader className="flex flex-col gap-1 text-left">
+            <DialogTitle className="text-lg font-bold tracking-tight text-foreground">Review Silhouette</DialogTitle>
+            <DialogDescription className="font-sans text-xs text-muted-foreground">
               Provide feedback for the artisanal quality of your {productName}.
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="pt-4 text-left">
             <FieldGroup className="gap-5">
-              
               {/* Star Rating Choices selector */}
               <Field>
                 <FieldLabel>Atelier Rating</FieldLabel>
                 <div className="pt-1.5">
-                  <StarRating
-                    rating={rating}
-                    interactive
-                    onChange={setRating}
-                  />
+                  <StarRating rating={rating} interactive onChange={setRating} />
                 </div>
               </Field>
 
@@ -113,10 +102,8 @@ export const WriteReviewCta = ({ productId, orderId, productName }: WriteReviewC
                   {loading ? "Submitting..." : "Submit Review"}
                 </Button>
               </div>
-
             </FieldGroup>
           </form>
-
         </DialogContent>
       </Dialog>
     </>

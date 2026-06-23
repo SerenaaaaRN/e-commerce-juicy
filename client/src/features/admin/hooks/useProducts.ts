@@ -1,25 +1,39 @@
-import { useEffect, useState, useTransition, useCallback } from "react"
-import { useForm, type Resolver } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import axios from "axios"
+import type { CategoryFormValues, ProductFormValues } from "@/features/admin/types"
+import { categorySchema, productSchema } from "@/features/admin/validations"
 import { adminApi } from "@/lib/api/admin"
+import type { CatalogProduct, Category, ProductDetail } from "@/types"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useCallback, useState } from "react"
+import { useForm, type Resolver } from "react-hook-form"
 import { toast } from "sonner"
-import { productSchema, categorySchema } from "@/features/admin/validations"
-import type { Category, CatalogProduct, ProductDetail } from "@/types"
-import type { ProductFormValues, CategoryFormValues } from "@/features/admin/types"
 
 export const useProducts = () => {
-  const [products, setProducts] = useState<CatalogProduct[]>([])
-  const [categories, setCategories] = useState<Category[]>([])
-  const [loading, setLoading] = useState(true)
-  const [isPending, startTransition] = useTransition()
+  const queryClient = useQueryClient()
+
+  const { data: products = [], isLoading: productsLoading } = useQuery({
+    queryKey: ["admin-products"],
+    queryFn: async () => {
+      const res = await adminApi.getProducts({ admin: true, per_page: 9999 })
+      if (!res.success) throw new Error(res.error?.message || "Failed to load products")
+      return res.data as CatalogProduct[]
+    },
+  })
+
+  const { data: categories = [], isLoading: categoriesLoading } = useQuery({
+    queryKey: ["admin-categories"],
+    queryFn: async () => {
+      const res = await adminApi.getCategories()
+      if (!res.success) throw new Error(res.error?.message || "Failed to load categories")
+      return res.data as Category[]
+    },
+  })
 
   const [productModalOpen, setProductModalOpen] = useState(false)
   const [activeProduct, setActiveProduct] = useState<ProductDetail | null>(null)
   const [categoryFilter, setCategoryFilter] = useState("all")
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
 
-  // Cast schemas through Resolver type to handle Zod number/coercion input type divergence smoothly
   const productForm = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema) as unknown as Resolver<ProductFormValues>,
     defaultValues: {
@@ -46,32 +60,6 @@ export const useProducts = () => {
       display_order: 1,
     },
   })
-
-  const loadData = useCallback(async (shouldTriggerLoader = false) => {
-    if (shouldTriggerLoader) setLoading(true)
-    try {
-      const [prodRes, catRes] = await Promise.all([
-        adminApi.getProducts({ admin: true, per_page: 9999 }),
-        adminApi.getCategories(),
-      ])
-
-      if (prodRes.success && prodRes.data) {
-        setProducts(prodRes.data)
-      }
-      if (catRes.success && catRes.data) {
-        setCategories(catRes.data)
-      }
-    } catch {
-      // silent fail
-    } finally {
-      if (shouldTriggerLoader) setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadData(true)
-  }, [loadData])
 
   const handleOpenAddProduct = useCallback(() => {
     setActiveProduct(null)
@@ -110,53 +98,132 @@ export const useProducts = () => {
     [productForm]
   )
 
-  const handleProductSubmit = productForm.handleSubmit(async (values) => {
-    startTransition(async () => {
-      try {
-        const parsedTags = values.tags
-          ? values.tags
-              .split(",")
-              .map((t: string) => t.trim())
-              .filter(Boolean)
-          : []
-const payload: Record<string, unknown> = {
-          name: values.name.trim(),
-          slug: values.slug.trim(),
-          description: values.description?.trim() || "",
-          category_id: values.category_id,
-          price: values.price,
-          is_available: values.is_available,
-          is_featured: values.is_featured,
-          display_order: values.display_order,
-          tags: parsedTags,
-        }
-        if (values.compare_at_price !== undefined && !isNaN(values.compare_at_price) && values.compare_at_price > 0) {
-          payload.compare_at_price = values.compare_at_price
-        }
+  const createProductMutation = useMutation({
+    mutationFn: async (payload: Record<string, unknown>) => {
+      const res = await adminApi.createProduct(payload)
+      if (!res.success) throw new Error(res.error?.message || "Failed to create product")
+      return res.data
+    },
+    onSuccess: () => {
+      toast.success("New product catalog created successfully!")
+      setProductModalOpen(false)
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] })
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : "Failed to catalog product.")
+    },
+  })
 
-        if (activeProduct) {
-          const res = await adminApi.updateProduct(activeProduct.id, payload)
-          if (res.success) {
-            toast.success("Product details modified successfully!")
-            setProductModalOpen(false)
-            loadData()
-          } else {
-            toast.error(res.message || "Failed to update product details.")
-          }
-        } else {
-          const res = await adminApi.createProduct(payload)
-          if (res.success) {
-            toast.success("New product catalog created successfully!")
-            setProductModalOpen(false)
-            loadData()
-          } else {
-            toast.error(res.message || "Failed to catalog product.")
-          }
-        }
-      } catch {
-        toast.error("An error occurred during submission.")
-      }
-    })
+  const updateProductMutation = useMutation({
+    mutationFn: async ({ id, payload }: { id: string; payload: Record<string, unknown> }) => {
+      const res = await adminApi.updateProduct(id, payload)
+      if (!res.success) throw new Error(res.error?.message || "Failed to update product")
+      return res.data
+    },
+    onSuccess: () => {
+      toast.success("Product details modified successfully!")
+      setProductModalOpen(false)
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] })
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : "Failed to update product details.")
+    },
+  })
+
+  const deleteProductMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await adminApi.deleteProduct(id)
+      if (!res.success) throw new Error(res.error?.message || "Failed to delete product")
+    },
+    onSuccess: () => {
+      toast.success("Product catalogue removed successfully!")
+      queryClient.invalidateQueries({ queryKey: ["admin-products"] })
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : "Failed to delete product catalog.")
+    },
+  })
+
+  const createCategoryMutation = useMutation({
+    mutationFn: async (payload: Omit<Category, "id">) => {
+      const res = await adminApi.createCategory(payload)
+      if (!res.success) throw new Error(res.error?.message || "Failed to create category")
+      return res.data
+    },
+    onSuccess: () => {
+      toast.success("Category created successfully!")
+      queryClient.invalidateQueries({ queryKey: ["admin-categories"] })
+      categoryForm.reset({
+        name: "",
+        slug: "",
+        description: "",
+        parent_id: "",
+        display_order: 1,
+      })
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : "Failed to create category.")
+    },
+  })
+
+  const updateCategoryMutation = useMutation({
+    mutationFn: async ({ id, payload }: { id: string; payload: Omit<Category, "id"> }) => {
+      const res = await adminApi.updateCategory(id, payload)
+      if (!res.success) throw new Error(res.error?.message || "Failed to update category")
+      return res.data
+    },
+    onSuccess: () => {
+      toast.success("Category updated successfully!")
+      setEditingCategory(null)
+      queryClient.invalidateQueries({ queryKey: ["admin-categories"] })
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : "Failed to update category.")
+    },
+  })
+
+  const deleteCategoryMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await adminApi.deleteCategory(id)
+      if (!res.success) throw new Error(res.error?.message || "Failed to delete category")
+    },
+    onSuccess: () => {
+      toast.success("Category removed successfully!")
+      queryClient.invalidateQueries({ queryKey: ["admin-categories"] })
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : "Failed to remove category.")
+    },
+  })
+
+  const handleProductSubmit = productForm.handleSubmit(async (values) => {
+    const parsedTags = values.tags
+      ? values.tags
+          .split(",")
+          .map((t: string) => t.trim())
+          .filter(Boolean)
+      : []
+
+    const payload: Record<string, unknown> = {
+      name: values.name.trim(),
+      slug: values.slug.trim(),
+      description: values.description?.trim() || "",
+      category_id: values.category_id,
+      price: values.price,
+      is_available: values.is_available,
+      is_featured: values.is_featured,
+      display_order: values.display_order,
+      tags: parsedTags,
+    }
+    if (values.compare_at_price !== undefined && !isNaN(values.compare_at_price) && values.compare_at_price > 0) {
+      payload.compare_at_price = values.compare_at_price
+    }
+
+    if (activeProduct) {
+      updateProductMutation.mutate({ id: activeProduct.id, payload })
+    } else {
+      createProductMutation.mutate(payload)
+    }
   })
 
   const handleDeleteProduct = useCallback(
@@ -167,68 +234,26 @@ const payload: Record<string, unknown> = {
         ))
       )
         return
-
-      try {
-        const res = await adminApi.deleteProduct(id)
-        if (res.success) {
-          toast.success("Product catalogue removed successfully!")
-          startTransition(() => loadData())
-        } else {
-          toast.error(res.message || "Failed to delete product catalog.")
-        }
-      } catch (err) {
-        const msg = axios.isAxiosError(err)
-          ? err.response?.data?.error?.message || err.message
-          : "Failed to delete catalog product."
-        toast.error(msg)
-      }
+      deleteProductMutation.mutate(id)
     },
-    [loadData]
+    [deleteProductMutation]
   )
 
   const handleCategorySubmit = categoryForm.handleSubmit(async (values) => {
-    startTransition(async () => {
-      const payload: Omit<Category, "id"> = {
-        name: values.name.trim(),
-        slug: values.slug.trim(),
-        description: values.description?.trim() || undefined,
-        parent_id: values.parent_id || null,
-        is_active: true,
-        display_order: values.display_order,
-      }
+    const payload: Omit<Category, "id"> = {
+      name: values.name.trim(),
+      slug: values.slug.trim(),
+      description: values.description?.trim() || undefined,
+      parent_id: values.parent_id || null,
+      is_active: true,
+      display_order: values.display_order,
+    }
 
-      try {
-        if (editingCategory) {
-          const res = await adminApi.updateCategory(editingCategory.id, payload)
-          if (res.success) {
-            toast.success("Category updated successfully!")
-            setEditingCategory(null)
-            loadData()
-          } else {
-            toast.error(res.message || "Failed to update category.")
-          }
-        } else {
-          const res = await adminApi.createCategory(payload)
-          if (res.success && res.data) {
-            toast.success("Category created successfully!")
-            setCategories((curr) => [...curr, res.data])
-          } else {
-            toast.error(res.message || "Failed to create category.")
-          }
-        }
-        if (!editingCategory) {
-          categoryForm.reset({
-            name: "",
-            slug: "",
-            description: "",
-            parent_id: "",
-            display_order: 1,
-          })
-        }
-      } catch {
-        toast.error(editingCategory ? "Failed to update category." : "Failed to append category.")
-      }
-    })
+    if (editingCategory) {
+      updateCategoryMutation.mutate({ id: editingCategory.id, payload })
+    } else {
+      createCategoryMutation.mutate(payload)
+    }
   })
 
   const handleOpenEditCategory = useCallback(
@@ -264,29 +289,23 @@ const payload: Record<string, unknown> = {
         ))
       )
         return
-
-      try {
-        const res = await adminApi.deleteCategory(id)
-        if (res.success) {
-          toast.success("Category removed successfully!")
-          startTransition(() => loadData())
-        } else {
-          toast.error(res.message || "Failed to remove category.")
-        }
-      } catch (err) {
-        const msg = axios.isAxiosError(err)
-          ? err.response?.data?.error?.message || err.message
-          : "Failed to delete category."
-        toast.error(msg)
-      }
+      deleteCategoryMutation.mutate(id)
     },
-    [loadData]
+    [deleteCategoryMutation]
   )
+
+  const isPending =
+    createProductMutation.isPending ||
+    updateProductMutation.isPending ||
+    deleteProductMutation.isPending ||
+    createCategoryMutation.isPending ||
+    updateCategoryMutation.isPending ||
+    deleteCategoryMutation.isPending
 
   return {
     products,
     categories,
-    loading,
+    loading: productsLoading || categoriesLoading,
     isPending,
     productModalOpen,
     setProductModalOpen,
@@ -305,6 +324,5 @@ const payload: Record<string, unknown> = {
     handleOpenEditCategory,
     handleCancelEditCategory,
     handleDeleteCategory,
-    loadData,
   }
 }

@@ -1,5 +1,5 @@
-import { customerClient } from "./customerClient"
 import type { ApiResponse } from "@/types"
+import { customerClient } from "./customerClient"
 
 export type WishlistItem = {
   id: string

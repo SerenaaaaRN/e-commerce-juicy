@@ -1,5 +1,6 @@
+import { Separator } from "@/components/ui/separator"
+import { ORDER_STATUS_LABELS } from "@/constants/order-status"
 import { cn } from "@/lib/utils"
-import { ORDER_STATUS, ORDER_STATUS_LABELS } from "@/constants/orderStatus"
 import type { OrderStatus } from "@/types"
 
 type OrderStatusTimelineProps = {
@@ -13,32 +14,30 @@ type TimelineStep = {
 }
 
 const STEPS: TimelineStep[] = [
-  { label: ORDER_STATUS_LABELS[ORDER_STATUS.PENDING], description: "Order Placed", key: ORDER_STATUS.PENDING },
-  { label: ORDER_STATUS_LABELS[ORDER_STATUS.CONFIRMED], description: "Payment Verified", key: ORDER_STATUS.CONFIRMED },
-  { label: ORDER_STATUS_LABELS[ORDER_STATUS.PROCESSING], description: "Atelier Assembly", key: ORDER_STATUS.PROCESSING },
-  { label: ORDER_STATUS_LABELS[ORDER_STATUS.SHIPPED], description: "En Route", key: ORDER_STATUS.SHIPPED },
-  { label: ORDER_STATUS_LABELS[ORDER_STATUS.DELIVERED], description: "Delivered", key: ORDER_STATUS.DELIVERED },
+  { label: ORDER_STATUS_LABELS["pending"], description: "Order Placed", key: "pending" },
+  { label: ORDER_STATUS_LABELS["confirmed"], description: "Payment Verified", key: "confirmed" },
+  {
+    label: ORDER_STATUS_LABELS["processing"],
+    description: "Atelier Assembly",
+    key: "processing",
+  },
+  { label: ORDER_STATUS_LABELS["shipped"], description: "En Route", key: "shipped" },
+  { label: ORDER_STATUS_LABELS["delivered"], description: "Delivered", key: "delivered" },
 ]
 
 export const OrderStatusTimeline = ({ status }: OrderStatusTimelineProps) => {
-  // Determine index of current status in steps
   const currentIdx = STEPS.findIndex((s) => s.key === status)
 
   return (
-    <div className="flex flex-col gap-6 w-full text-left pt-2">
-      
-      <h3 className="text-sm font-semibold tracking-tight text-foreground uppercase">
-        Delivery Status Timeline
-      </h3>
+    <div className="flex w-full flex-col gap-6 pt-2 text-left">
+      <h3 className="text-sm font-semibold tracking-tight text-foreground uppercase">Delivery Status Timeline</h3>
 
-      {/* Steppers container */}
-      <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-6 md:gap-4 pt-4 pb-6 w-full">
-        
-        {/* Desktop connection lines */}
-        <div className="absolute top-1/2 left-0 h-0.5 bg-border/40 w-full -translate-y-1/2 hidden md:block z-0" />
+      <div className="relative flex w-full flex-col items-start justify-between gap-6 pt-4 pb-6 md:flex-row md:items-center md:gap-4">
+        {/* Timeline connection line */}
+        <Separator className="absolute top-1/3 left-0 z-0 hidden -translate-y-1/2 md:block" />
         <div
-          className="absolute top-1/2 left-0 h-0.5 bg-primary -translate-y-1/2 transition-all duration-700 hidden md:block z-0"
-          style={{ width: `${(currentIdx / (STEPS.length - 1)) * 100}%` }}
+          className="absolute top-1/3 left-0 z-0 hidden h-0.5 -translate-y-1/2 bg-primary transition-all duration-700 md:block"
+          style={{ width: `${(Math.max(0, currentIdx) / (STEPS.length - 1)) * 100}%` }}
         />
 
         {STEPS.map((step, idx) => {
@@ -48,46 +47,36 @@ export const OrderStatusTimeline = ({ status }: OrderStatusTimelineProps) => {
           return (
             <div
               key={step.key}
-              className="flex md:flex-col items-center md:text-center gap-4 md:gap-2.5 z-10 flex-1 w-full md:w-auto relative"
+              className="relative z-10 flex w-full flex-1 items-center gap-4 md:w-auto md:flex-col md:gap-2.5 md:text-center"
             >
-              
-              {/* Stepper Node Indicator */}
               <div
                 className={cn(
-                  "size-8 flex items-center justify-center rounded-full border-2 text-xs font-bold font-mono transition-all duration-500",
-                  isCompleted 
-                    ? "bg-primary border-primary text-primary-foreground shadow-md shadow-primary/10" 
-                    : "bg-background border-border text-muted-foreground"
+                  "flex size-8 items-center justify-center rounded-full border-2 font-mono text-xs font-bold transition-all duration-500",
+                  isCompleted
+                    ? "border-primary bg-primary text-primary-foreground shadow-md shadow-primary/10"
+                    : "border-border bg-background text-muted-foreground"
                 )}
               >
-                {isActive ? (
-                  <span className="size-2 rounded-full bg-white animate-ping" />
-                ) : (
-                  <span>{idx + 1}</span>
-                )}
+                {isActive ? <span className="size-2 animate-ping rounded-full bg-white" /> : <span>{idx + 1}</span>}
               </div>
 
-              {/* Labels details */}
-              <div className="flex flex-col md:items-center text-left md:text-center">
+              <div className="flex flex-col text-left md:items-center md:text-center">
                 <span
                   className={cn(
-                    "text-xs font-bold uppercase tracking-wider",
+                    "text-xs font-bold tracking-wider uppercase",
                     isCompleted ? "text-foreground" : "text-muted-foreground"
                   )}
                 >
                   {step.label}
                 </span>
-                <span className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">
+                <span className="mt-0.5 text-[10px] tracking-widest text-muted-foreground uppercase">
                   {step.description}
                 </span>
               </div>
-
             </div>
           )
         })}
-
       </div>
-
     </div>
   )
 }

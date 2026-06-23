@@ -1,5 +1,5 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { wishlistApi } from "@/lib/api/wishlist"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 export const useAddWishlistItemMutation = () => {
   const queryClient = useQueryClient()

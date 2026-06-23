@@ -1,33 +1,33 @@
-import { useState, useEffect, useMemo, useCallback, memo } from "react"
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Field, FieldLabel, FieldError } from "@/components/ui/field"
 import { Badge } from "@/components/ui/badge"
-import { Spinner } from "@/components/ui/spinner"
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Field, FieldError, FieldLabel } from "@/components/ui/field"
+import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { formatPrice } from "@/lib/utils/format"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { Edit01Icon, Delete02Icon } from "@hugeicons/core-free-icons"
-import { useConfirm } from "@/hooks/useConfirm"
-import { useProducts } from "@/features/admin/hooks/useProducts"
-import { useVariants } from "@/features/admin/hooks/useVariants"
-import { useProductImages } from "@/features/admin/hooks/useProductImages"
-import { useDataTableFilter } from "@/features/admin/hooks/useDataTableFilter"
-import { PageHeader } from "@/features/admin/components/PageHeader"
+import { Spinner } from "@/components/ui/spinner"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Textarea } from "@/components/ui/textarea"
 import { EmptyState } from "@/features/admin/components/DataEmpty"
 import { DefferedContainer } from "@/features/admin/components/DefferedContainer"
 import { FullPageSpinner } from "@/features/admin/components/FullPageSpinner"
-import { SearchInput } from "@/features/admin/components/SearchInput"
-import { ProductFormDialog } from "@/features/admin/components/ProductFormDialog"
-import { VariantManagerDialog } from "@/features/admin/components/VariantManagerDialog"
 import { ImageManagerDialog } from "@/features/admin/components/ImageManagerDialog"
-import type { CatalogProduct, ProductDetail, Category } from "@/types"
-import { adminApi } from "@/lib/api"
+import { PageHeader } from "@/features/admin/components/PageHeader"
+import { ProductFormDialog } from "@/features/admin/components/ProductFormDialog"
+import { SearchInput } from "@/features/admin/components/SearchInput"
+import { VariantManagerDialog } from "@/features/admin/components/VariantManagerDialog"
+import { useDataTableFilter } from "@/features/admin/hooks/useDataTableFilter"
+import { useProductImages } from "@/features/admin/hooks/useProductImages"
+import { useProducts } from "@/features/admin/hooks/useProducts"
+import { useVariants } from "@/features/admin/hooks/useVariants"
 import { buildCategoryOptions, getCategoryDescendants } from "@/features/admin/utils"
+import { useConfirm } from "@/hooks/useConfirm"
+import { adminApi } from "@/lib/api"
+import { formatPrice } from "@/lib/utils/format"
+import type { CatalogProduct, Category, ProductDetail } from "@/types"
+import { Delete02Icon, Edit01Icon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { memo, useCallback, useEffect, useMemo, useState } from "react"
 
 export const ProductsPage = () => {
   const ctx = useProducts()
@@ -82,8 +82,8 @@ export const ProductsPage = () => {
   const [variantsModalOpen, setVariantsModalOpen] = useState(false)
   const [imagesModalOpen, setImagesModalOpen] = useState(false)
 
-  const variantCtx = useVariants(ctx.activeProduct, ctx.setActiveProduct, ctx.loadData)
-  const imageCtx = useProductImages(ctx.activeProduct, ctx.setActiveProduct, ctx.loadData)
+  const variantCtx = useVariants(ctx.activeProduct, ctx.setActiveProduct)
+  const imageCtx = useProductImages(ctx.activeProduct, ctx.setActiveProduct)
 
   const productFilter = useCallback(
     (p: CatalogProduct, s: string) => p.name.toLowerCase().includes(s) || p.slug.toLowerCase().includes(s),

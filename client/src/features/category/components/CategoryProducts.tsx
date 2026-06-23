@@ -1,8 +1,8 @@
-import { useProductsQuery } from "@/features/shop/hooks/useProductQueries"
-import { ProductCard } from "@/features/shop/components/ProductCard"
-import { Spinner } from "@/components/ui/spinner"
-import { Link } from "react-router-dom"
+import { ProductCard } from "@/components/common/ProductCard"
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
+import { useProductsQuery } from "@/features/shop/hooks/useProductQueries"
+import { Link } from "react-router-dom"
 
 type CategoryProductsProps = {
   slug: string
@@ -15,8 +15,8 @@ export const CategoryProducts = ({ slug, categoryName }: CategoryProductsProps) 
 
   if (isLoading && products.length === 0) {
     return (
-      <section className="py-16 bg-muted/10">
-        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex justify-center py-12">
+      <section className="bg-muted/10 py-16">
+        <div className="container mx-auto flex max-w-7xl justify-center px-4 pt-24 pb-12 sm:px-6 lg:px-8 lg:pt-32">
           <Spinner size={24} className="text-primary" />
         </div>
       </section>
@@ -26,33 +26,25 @@ export const CategoryProducts = ({ slug, categoryName }: CategoryProductsProps) 
   if (products.length === 0) return null
 
   return (
-    <section className="py-16 bg-muted/10">
+    <section className="bg-muted/10 py-16">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex items-end justify-between mb-10">
+        <div className="mb-10 flex items-end justify-between">
           <div>
-            <span className="text-xs font-semibold tracking-wider text-primary uppercase">
-              Koleksi
-            </span>
-            <h2 className="text-2xl font-bold tracking-tight text-foreground mt-1">
-              Produk {categoryName}
-            </h2>
+            <span className="text-xs font-semibold tracking-wider text-primary uppercase">Koleksi</span>
+            <h2 className="mt-1 text-2xl font-bold tracking-tight text-foreground">Produk {categoryName}</h2>
           </div>
           <Button variant="outline" size="sm" asChild className="hidden sm:flex">
-            <Link to={`/shop?category=${slug}`}>
-              Lihat Semua
-            </Link>
+            <Link to={`/shop?category=${slug}`}>Lihat Semua</Link>
           </Button>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8">
+        <div className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-3 lg:grid-cols-4">
           {products.slice(0, 8).map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
         <div className="mt-8 text-center sm:hidden">
           <Button variant="outline" size="sm" asChild>
-            <Link to={`/shop?category=${slug}`}>
-              Lihat Semua Produk {categoryName}
-            </Link>
+            <Link to={`/shop?category=${slug}`}>Lihat Semua Produk {categoryName}</Link>
           </Button>
         </div>
       </div>

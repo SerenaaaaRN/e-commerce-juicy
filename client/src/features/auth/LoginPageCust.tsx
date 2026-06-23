@@ -1,13 +1,13 @@
-import { useTransition } from "react"
-import { Navigate, useNavigate, Link } from "react-router-dom"
-import { ROUTES } from "@/constants/routes"
 import { Card, CardContent } from "@/components/ui/card"
 import { FieldDescription } from "@/components/ui/field"
-import { toast } from "sonner"
-import { useCustomerAuthStore } from "@/stores/customerAuthStore"
-import { customerApi } from "@/lib/api/customer"
+import { ROUTES } from "@/constants/paths"
 import { LoginForm } from "@/features/auth/components/LoginForm"
 import type { LoginFormValues } from "@/features/auth/types"
+import { customerApi } from "@/lib/api/customer"
+import { useCustomerAuthStore } from "@/stores/customer-auth-store"
+import { useTransition } from "react"
+import { Link, Navigate, useNavigate } from "react-router-dom"
+import { toast } from "sonner"
 
 export const LoginPageCust = () => {
   const navigate = useNavigate()
@@ -46,8 +46,8 @@ export const LoginPageCust = () => {
               <aside className="flex flex-col justify-center p-6 text-left md:p-8">
                 {/* Header Info */}
                 <header className="mb-4 flex flex-col items-center gap-2 text-center">
-                  <span className="text-xs font-semibold tracking-wider text-primary uppercase">Juicy Storefront</span>
-                  <h1 className="text-2xl font-bold tracking-tight text-foreground">Welcome back</h1>
+                  <span className="text-xs tracking-[0.15em] text-muted-foreground uppercase">Juicy Storefront</span>
+                  <h1 className="font-serif text-3xl text-foreground">Welcome back</h1>
                   <p className="font-sans text-xs text-balance text-muted-foreground">
                     Enter your email and passcode credentials to view your profile.
                   </p>
@@ -65,7 +65,7 @@ export const LoginPageCust = () => {
               {/* Image Side */}
               <aside className="relative hidden bg-muted md:block">
                 <img
-                  src="/jiso.jpg"
+                  src="/shop-hero-luxury-fashion-collection.jpg"
                   alt="Juicy Storefront Image"
                   className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
                 />

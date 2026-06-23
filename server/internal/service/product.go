@@ -92,6 +92,17 @@ func (s *productService) ListProducts(
 			}
 		}
 
+		imagesRes := make([]dto.ProductImageResponse, len(p.Images))
+		for k, img := range p.Images {
+			imagesRes[k] = dto.ProductImageResponse{
+				ID:           img.ID,
+				ImageURL:     img.ImageURL,
+				AltText:      img.AltText,
+				IsPrimary:    img.IsPrimary,
+				DisplayOrder: img.DisplayOrder,
+			}
+		}
+
 		res[i] = dto.ProductResponse{
 			ID:             p.ID,
 			CategoryID:     p.CategoryID,
@@ -106,6 +117,7 @@ func (s *productService) ListProducts(
 			DisplayOrder:   p.DisplayOrder,
 			PrimaryImage:   primaryImg,
 			CategoryName:   p.Category.Name,
+			Images:         imagesRes,
 			AvgRating:      pStats.AvgRating,
 			ReviewCount:    pStats.ReviewCount,
 			Variants:       variantsRes,

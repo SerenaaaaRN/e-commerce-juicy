@@ -1,16 +1,16 @@
-import { client } from "./client"
+import type { ClientStatistics } from "@/features/admin/types"
 import type {
+  AdminOrder,
+  AdminReview,
   ApiResponse,
-  PaginatedResponse,
-  Category,
   CatalogProduct,
+  Category,
+  OrderDetail,
+  PaginatedResponse,
   ProductDetail,
   ProductVariant,
-  AdminOrder,
-  OrderDetail,
-  AdminReview,
 } from "@/types"
-import type { ClientStatistics } from "@/features/admin/types"
+import { client } from "./adminClient"
 
 // Analytics response shapes
 export type AnalyticsOverview = {
@@ -161,7 +161,7 @@ export const adminApi = {
   },
 
   setPrimaryImage: async (id: string, imageId: string): Promise<ApiResponse<null>> => {
-    const response = await client.patch<ApiResponse<null>>(`/admin/products/${id}/images/${imageId}/primary`)
+    const response = await client.put<ApiResponse<null>>(`/admin/products/${id}/images/${imageId}/primary`)
     return response.data
   },
 
@@ -244,7 +244,7 @@ export const adminApi = {
   },
 
   toggleReviewPublish: async (id: string, isPublished: boolean): Promise<ApiResponse<null>> => {
-    const response = await client.patch<ApiResponse<null>>(`/admin/reviews/${id}/publish`, {
+    const response = await client.put<ApiResponse<null>>(`/admin/reviews/${id}/publish`, {
       is_published: isPublished,
     })
     return response.data

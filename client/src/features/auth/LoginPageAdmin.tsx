@@ -1,13 +1,13 @@
-import { useTransition } from "react"
-import { Navigate, useNavigate, Link } from "react-router-dom"
-import { ROUTES } from "@/constants/routes"
 import { Card, CardContent } from "@/components/ui/card"
 import { FieldDescription } from "@/components/ui/field"
-import { useAdminAuthStore } from "@/stores/adminAuthStore"
-import { adminApi } from "@/lib/api/admin"
-import { toast } from "sonner"
+import { ROUTES } from "@/constants/paths"
 import { LoginForm } from "@/features/auth/components/LoginForm"
 import type { LoginFormValues } from "@/features/auth/types"
+import { adminApi } from "@/lib/api/admin"
+import { useAdminAuthStore } from "@/stores/admin-auth-store"
+import { useTransition } from "react"
+import { Link, Navigate, useNavigate } from "react-router-dom"
+import { toast } from "sonner"
 
 export const LoginPageAdmin = () => {
   const navigate = useNavigate()

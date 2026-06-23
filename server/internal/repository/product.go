@@ -100,7 +100,7 @@ func (r *productRepo) FindAll(
 	case "popular":
 		query = query.Order("is_featured DESC, display_order ASC, created_at DESC")
 	default:
-		query = query.Order("display_order ASC, created_at DESC")
+		query = query.Order("price DESC")
 	}
 
 	offset := (page - 1) * perPage

@@ -1,6 +1,6 @@
 import { Input } from "@/components/ui/input"
-import { HugeiconsIcon } from "@hugeicons/react"
 import { SearchIcon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
 import type { ComponentProps } from "react"
 
 type SearchInputProps = Omit<ComponentProps<typeof Input>, "type"> & {
