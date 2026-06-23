@@ -158,7 +158,7 @@ export const ProductPage = () => {
   }
 
   return (
-    <div className="bg-background py-12">
+    <div className="bg-background my-42">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Navigation Breadcrumb trail */}
         <Breadcrumb className="mb-8 text-left font-semibold tracking-widest uppercase">

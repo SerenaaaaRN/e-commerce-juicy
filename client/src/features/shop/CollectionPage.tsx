@@ -4,7 +4,6 @@ import { useCategoriesQuery, useInfiniteProductsQuery, useProductsQuery } from "
 import { ProductFilters } from "./components/ProductFilters"
 import { ProductGrid } from "./components/ProductGrid"
 import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { Spinner } from "@/components/ui/spinner"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -143,18 +142,29 @@ export const CollectionPage = () => {
   }
 
   return (
-    <div className="bg-background py-12">
-      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Typographic Header */}
-        <header className="flex flex-col gap-2 text-left">
-          <span className="text-xs font-semibold tracking-wider text-primary uppercase">Atelier Curated Catalog</span>
-          <h1 className="font-heading text-4xl font-bold tracking-tight text-foreground uppercase">The Shop</h1>
-          <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
+    <div className="bg-background pb-12">
+      {/* Hero Banner — full width */}
+      <header className="relative mb-12 flex flex-col items-center justify-center overflow-hidden bg-muted py-24 text-center lg:py-32">
+        {/* Background Image */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src="/shop-hero-luxury-fashion-collection.jpg"
+            alt="Luxury Fashion Collection"
+            className="size-full object-cover dark:brightness-50"
+          />
+          <div className="absolute inset-0 bg-background/20" />
+        </div>
+
+        <div className="relative z-10 flex flex-col items-center px-4">
+          <span className="mb-4 text-xs tracking-[0.2em] text-foreground uppercase drop-shadow-sm">Atelier Curated Catalog</span>
+          <h1 className="font-serif text-4xl tracking-tight text-foreground drop-shadow-sm lg:text-5xl">The Collection</h1>
+          <p className="mt-4 max-w-md text-sm leading-relaxed tracking-wide text-foreground drop-shadow-sm">
             Browse our complete collection of pure raw textures and high-fashion silhouettes.
           </p>
-        </header>
+        </div>
+      </header>
 
-        <Separator className="my-8" />
+      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
         {/* Content Layout Grid */}
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">

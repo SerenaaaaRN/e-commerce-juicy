@@ -57,7 +57,7 @@ export const WishlistPage = () => {
   }
 
   return (
-    <div className="container mx-auto max-w-7xl px-4 py-12">
+    <div className="container mx-auto max-w-7xl px-4 pt-24 pb-12 lg:pt-32">
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">My Wishlist</h1>
         <p className="mt-2 text-sm text-muted-foreground">

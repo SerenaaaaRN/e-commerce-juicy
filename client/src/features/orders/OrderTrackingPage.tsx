@@ -161,7 +161,7 @@ export const OrderTrackingPage = () => {
   const grandTotal = order.total
 
   return (
-    <div className="bg-background py-12">
+    <div className="bg-background pt-24 pb-12 lg:pt-32">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <Breadcrumb className="mb-8 text-left text-xs font-bold uppercase">
           <BreadcrumbList>

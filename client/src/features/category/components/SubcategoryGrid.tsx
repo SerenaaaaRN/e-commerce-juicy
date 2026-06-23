@@ -8,9 +8,10 @@ type SubcategoryGridProps = {
 }
 
 const SUBCAT_IMAGES = [
-  "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=600&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1576566588028-4147f3842f27?q=80&w=600&auto=format&fit=crop",
-  "https://images.unsplash.com/photo-1598550472225-efd91e7f8757?q=80&w=600&auto=format&fit=crop",
+  "/silk-blouse-ivory.jpg",
+  "/tailored-blazer-charcoal.jpg",
+  "/wool-trousers-charcoal.jpg",
+  "/silk-scarf-abstract-pattern-luxury-accessory-elega.jpg",
 ]
 
 export const SubcategoryGrid = ({ subcategories }: SubcategoryGridProps) => {

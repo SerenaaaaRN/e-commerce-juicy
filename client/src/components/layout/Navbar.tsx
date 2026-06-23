@@ -1,22 +1,6 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom"
 import { motion, AnimatePresence } from "motion/react"
-import { ROUTES } from "@/constants/routes"
-import { useCustomerAuthStore } from "@/stores/customerAuthStore"
-import { useCartQuery } from "@/features/cart/hooks/useCartQueries"
-import { useCategoriesQuery } from "@/features/shop/hooks/useProductQueries"
-import { cn } from "@/lib/utils"
-import { slideDown, staggerContainer, fadeInUp } from "@/lib/animations"
-import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   ShoppingBag01Icon,
@@ -26,310 +10,514 @@ import {
   SearchIcon,
   HeartAddIcon,
 } from "@hugeicons/core-free-icons"
-import { useDebounce } from "@/hooks/useDebounce"
 
-const activeLinkClass = "text-primary font-medium"
-const inactiveLinkClass = "text-muted-foreground hover:text-foreground transition-colors duration-200"
+import { ROUTES } from "@/constants/routes"
+import { cn } from "@/lib/utils"
+import { useDebounce } from "@/hooks/useDebounce"
+import { useCustomerAuthStore } from "@/stores/customerAuthStore"
+import { useCartQuery } from "@/features/cart/hooks/useCartQueries"
+import { useCategoriesQuery } from "@/features/shop/hooks/useProductQueries"
+import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu"
+import { Input } from "../ui/input"
+
+// --- Constants & Types ---
+const NAV_LINKS = [
+  { to: ROUTES.home, label: "Atelier" },
+  { to: ROUTES.shop, label: "Shop" },
+  { to: ROUTES.heritage, label: "Heritage" },
+] as const
+
+const ICON_STROKE = 1.5
+const DEBOUNCE_MS = 300
+
+// --- Custom Hooks ---
+
+/** Mengelola seluruh logika pencarian & sinkronisasi URL */
+const useSearchSync = () => {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const [searchParams] = useSearchParams()
+
+  const urlQuery = searchParams.get("search") || ""
+  const [query, setQuery] = useState(urlQuery)
+  const debouncedQuery = useDebounce(query, DEBOUNCE_MS)
+
+  // Sinkronisasi state lokal dengan URL param eksternal
+  useEffect(() => {
+    setQuery(urlQuery)
+  }, [urlQuery])
+
+  // Update URL saat debounce selesai
+  useEffect(() => {
+    const trimmed = debouncedQuery.trim()
+    const current = searchParams.get("search") || ""
+
+    if (trimmed === current) return
+
+    const params = new URLSearchParams(searchParams)
+    if (!trimmed) {
+      params.delete("search")
+    } else {
+      params.set("search", trimmed)
+      params.set("page", "1")
+    }
+
+    const targetPath =
+      location.pathname === ROUTES.shop
+        ? `${ROUTES.shop}?${params.toString()}`
+        : `${ROUTES.shop}?search=${encodeURIComponent(trimmed)}`
+
+    navigate(targetPath, { replace: true })
+  }, [debouncedQuery, navigate, location.pathname, searchParams])
+
+  const submitSearch = useCallback(
+    (e?: React.FormEvent) => {
+      e?.preventDefault()
+      if (query.trim()) {
+        navigate(`/shop?search=${encodeURIComponent(query.trim())}`)
+      }
+    },
+    [query, navigate]
+  )
+
+  return { query, setQuery, submitSearch }
+}
+
+// --- Sub Components ---
+
+const NavLink = ({
+  to,
+  label,
+  isActive,
+  scrolled,
+}: {
+  to: string
+  label: string
+  isActive: boolean
+  scrolled: boolean
+}) => (
+  <Link
+    to={to}
+    className={cn(
+      "text-sm tracking-[0.2em] uppercase transition-colors duration-500",
+      isActive
+        ? "text-foreground"
+        : scrolled
+          ? "text-foreground/60 hover:text-foreground"
+          : "text-foreground/70 hover:text-foreground"
+    )}
+  >
+    {label}
+  </Link>
+)
+
+const UserMenu = ({ scrolled }: { scrolled: boolean }) => {
+  const isAuthenticated = useCustomerAuthStore((s) => s.isAuthenticated)
+  const customer = useCustomerAuthStore((s) => s.customer)
+  const logout = useCustomerAuthStore((s) => s.logout)
+
+  const triggerClass = cn(
+    "hidden rounded-full p-2 transition-colors duration-500 hover:bg-muted sm:block",
+    scrolled ? "text-foreground" : "text-foreground"
+  )
+
+  if (isAuthenticated) {
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon" className={triggerClass}>
+            <HugeiconsIcon icon={UserIcon} className="h-5 w-5" strokeWidth={ICON_STROKE} />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="mt-2 w-56">
+          <div className="flex flex-col px-3 py-2 text-xs">
+            <span className="truncate font-semibold">{customer?.full_name}</span>
+            <span className="truncate text-muted-foreground">{customer?.email}</span>
+          </div>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem asChild>
+            <Link to={ROUTES.profile} className="w-full cursor-pointer">
+              Account Settings
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link to={ROUTES.orders} className="w-full cursor-pointer">
+              My Orders
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={logout}
+            className="cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive"
+          >
+            Log Out
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    )
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className={triggerClass}>
+          <HugeiconsIcon icon={UserIcon} className="h-5 w-5" strokeWidth={ICON_STROKE} />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="mt-2 w-48">
+        <DropdownMenuItem asChild>
+          <Link to={ROUTES.login} className="w-full cursor-pointer">
+            Log In
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link to={ROUTES.register} className="w-full cursor-pointer">
+            Register
+          </Link>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
+// --- Main Component ---
 
 export const Navbar = () => {
   const location = useLocation()
   const navigate = useNavigate()
+  const { query, setQuery, submitSearch } = useSearchSync()
+
+  // UI State
+  const [isScrolled, setIsScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
 
-  const isAuthenticated = useCustomerAuthStore((s) => s.isAuthenticated)
-  const { data: cart } = useCartQuery(isAuthenticated)
+  // Refs
+  const searchInputRef = useRef<HTMLInputElement>(null)
+  const searchContainerRef = useRef<HTMLDivElement>(null)
+  const prevPathnameRef = useRef(location.pathname)
+
+  // Data
+  const { data: cart } = useCartQuery(useCustomerAuthStore((s) => s.isAuthenticated))
   const { data: categories } = useCategoriesQuery()
-  const customer = useCustomerAuthStore((s) => s.customer)
-  const logout = useCustomerAuthStore((s) => s.logout)
 
-  const totalItems = cart?.items.reduce((sum, item) => sum + item.quantity, 0) ?? 0
+  const totalItems = useMemo(() => cart?.items.reduce((sum, i) => sum + i.quantity, 0) ?? 0, [cart])
+  const rootCategories = useMemo(() => (categories ?? []).filter((c) => !c.parent_id), [categories])
 
-  const rootCategories = (categories ?? []).filter((c) => !c.parent_id)
+  // Derived Styles
+  const isTransparentPage = ["/", ROUTES.shop, ROUTES.heritage].includes(location.pathname)
+  const scrolled = isScrolled || !isTransparentPage
 
-  const [searchParams] = useSearchParams()
-  const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "")
-
-  const urlQuery = searchParams.get("search") || ""
+  // Effects
+  useEffect(() => {
+    const onScroll = () => setIsScrolled(window.scrollY > 50)
+    window.addEventListener("scroll", onScroll, { passive: true })
+    return () => window.removeEventListener("scroll", onScroll)
+  }, [])
 
   useEffect(() => {
-    setSearchQuery(urlQuery)
-  }, [urlQuery])
-
-  const debouncedSearchQuery = useDebounce(searchQuery, 300)
+    if (prevPathnameRef.current !== location.pathname) {
+      prevPathnameRef.current = location.pathname
+      setMobileMenuOpen(false)
+    }
+  }, [location.pathname])
 
   useEffect(() => {
-    const currentQuery = searchParams.get("search") || ""
-    const trimmedQuery = debouncedSearchQuery.trim()
+    if (isSearchOpen) searchInputRef.current?.focus()
+  }, [isSearchOpen])
 
-    if (trimmedQuery === "") {
-      if (currentQuery !== "" && location.pathname === ROUTES.shop) {
-        const updated = new URLSearchParams(searchParams)
-        updated.delete("search")
-        navigate(`${ROUTES.shop}?${updated.toString()}`, { replace: true })
+  useEffect(() => {
+    if (!isSearchOpen) return
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
+        setIsSearchOpen(false)
       }
-      return
     }
+    const handleEsc = (e: KeyboardEvent) => e.key === "Escape" && setIsSearchOpen(false)
 
-    if (trimmedQuery === currentQuery) {
-      return
+    document.addEventListener("mousedown", handleClickOutside)
+    document.addEventListener("keydown", handleEsc)
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+      document.removeEventListener("keydown", handleEsc)
     }
-    if (location.pathname === ROUTES.shop) {
-      const updated = new URLSearchParams(searchParams)
-      updated.set("search", trimmedQuery)
-      updated.set("page", "1")
-      navigate(`${ROUTES.shop}?${updated.toString()}`, { replace: true })
-      return
-    }
-
-    navigate(`${ROUTES.shop}?search=${encodeURIComponent(trimmedQuery)}`)
-  }, [debouncedSearchQuery, navigate, location.pathname, searchParams])
-
-  const toggleMobileMenu = () => setMobileMenuOpen((prev) => !prev)
+  }, [isSearchOpen])
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md">
-      <div className="container mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        {/* Mobile Navigation Trigger */}
-        <button onClick={toggleMobileMenu} className="flex p-2 text-foreground md:hidden" aria-label="Toggle Menu">
-          <HugeiconsIcon icon={mobileMenuOpen ? Cancel01Icon : Menu01Icon} strokeWidth={2} />
-        </button>
+    <>
+      {/* Header */}
+      <motion.header
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className={cn(
+          "fixed top-0 right-0 left-0 z-50 transition-all duration-500",
+          scrolled ? "border-b border-border bg-background/80 backdrop-blur-md" : "bg-transparent"
+        )}
+      >
+        <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between lg:h-20">
+            {/* Mobile Toggle */}
+            <button
+              onClick={() => setMobileMenuOpen((p) => !p)}
+              className="-ml-2 p-2 text-foreground transition-colors duration-500 lg:hidden"
+              aria-label="Toggle menu"
+            >
+              <HugeiconsIcon
+                icon={mobileMenuOpen ? Cancel01Icon : Menu01Icon}
+                className="h-5 w-5"
+                strokeWidth={ICON_STROKE}
+              />
+            </button>
 
-        {/* Brand Logo */}
-        <Link to={ROUTES.home} className="flex items-center gap-2">
-          <span className="font-heading text-2xl font-bold tracking-[0.25em] text-foreground transition-colors duration-300 hover:text-primary">
-            JUICY
-          </span>
-        </Link>
+            {/* Desktop Nav */}
+            <div className="hidden items-center gap-12 lg:flex">
+              {NAV_LINKS.map((link) => (
+                <NavLink key={link.to} {...link} isActive={location.pathname === link.to} scrolled={scrolled} />
+              ))}
+            </div>
 
-        {/* Desktop Navigation Links */}
-        <nav className="hidden items-center gap-8 text-sm tracking-widest uppercase md:flex">
-          <Link
-            to={ROUTES.home}
-            className={cn(
-              "relative py-2 text-xs transition-colors duration-200",
-              location.pathname === ROUTES.home ? activeLinkClass : inactiveLinkClass
-            )}
-          >
-            Atelier
-            {location.pathname === ROUTES.home && <span className="absolute bottom-0 left-0 h-0.5 w-full bg-primary" />}
-          </Link>
-          <Link
-            to={ROUTES.shop}
-            className={cn(
-              "relative py-2 text-xs transition-colors duration-200",
-              location.pathname === ROUTES.shop ? activeLinkClass : inactiveLinkClass
-            )}
-          >
-            Shop
-            {location.pathname === ROUTES.shop && <span className="absolute bottom-0 left-0 h-0.5 w-full bg-primary" />}
-          </Link>
-        </nav>
+            {/* Logo */}
+            <Link
+              to={ROUTES.home}
+              className="absolute left-1/2 -translate-x-1/2 font-serif text-xl tracking-[0.25em] text-foreground uppercase transition-colors duration-500 lg:text-2xl"
+            >
+              JUICY
+            </Link>
 
-        {/* Action Controls */}
-        <div className="flex items-center gap-2 md:gap-4">
-          {/* Desktop Search Bar */}
-          <div className="relative hidden w-full max-w-50 md:flex lg:max-w-60">
-            <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
-              <HugeiconsIcon icon={SearchIcon} className="size-4" />
-            </span>
-            <Input
-              type="text"
-              placeholder="Search silhouettes..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-8 w-full rounded-none border border-input bg-muted/40 py-1 pr-4 pl-9 text-xs transition-all duration-200"
-            />
-          </div>
-
-          {/* Cart Badge */}
-          <Link
-            to={ROUTES.cart}
-            className="relative p-2 text-foreground transition-colors duration-200 hover:text-primary"
-          >
-            <HugeiconsIcon icon={ShoppingBag01Icon} strokeWidth={1.8} />
-            {totalItems > 0 && (
-              <span className="absolute top-0 right-0 flex size-5 animate-pulse items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white">
-                {totalItems}
-              </span>
-            )}
-          </Link>
-
-          {/* Wishlist */}
-          <Link to={ROUTES.wishlist} className="p-2 text-foreground transition-colors duration-200 hover:text-primary">
-            <HugeiconsIcon icon={HeartAddIcon} strokeWidth={1.8} />
-          </Link>
-
-          {/* User Account Controls */}
-          {isAuthenticated ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full p-2 hover:bg-muted">
-                  <HugeiconsIcon icon={UserIcon} strokeWidth={1.8} />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="mt-2 w-56">
-                <div className="flex flex-col px-3 py-2 text-xs">
-                  <span className="truncate font-semibold text-foreground">{customer?.full_name}</span>
-                  <span className="truncate text-muted-foreground">{customer?.email}</span>
-                </div>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link to={ROUTES.profile} className="w-full cursor-pointer">
-                    Account Settings
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to={ROUTES.orders} className="w-full cursor-pointer">
-                    My Orders
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={logout}
-                  className="cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive"
+            {/* Right Actions */}
+            <div className="flex items-center gap-2 lg:gap-4">
+              {/* Search */}
+              <div ref={searchContainerRef} className="relative flex items-center">
+                <AnimatePresence>
+                  {isSearchOpen ? (
+                    <motion.div
+                      initial={{ width: 0, opacity: 0 }}
+                      animate={{ width: 200, opacity: 1 }}
+                      exit={{ width: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      className="overflow-hidden"
+                    >
+                      <form onSubmit={submitSearch}>
+                        <input
+                          ref={searchInputRef}
+                          type="text"
+                          value={query}
+                          onChange={(e) => setQuery(e.target.value)}
+                          placeholder="Search silhouettes..."
+                          className="w-full border-b border-foreground/30 bg-transparent py-1 pr-2 text-sm text-foreground transition-colors duration-500 outline-none placeholder:text-foreground/50"
+                        />
+                      </form>
+                    </motion.div>
+                  ) : null}
+                </AnimatePresence>
+                <button
+                  onClick={() => setIsSearchOpen((p) => !p)}
+                  className="p-2 text-foreground transition-colors duration-500"
+                  aria-label="Search"
                 >
-                  Log Out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full p-2 hover:bg-muted">
-                  <HugeiconsIcon icon={UserIcon} strokeWidth={1.8} />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="mt-2 w-48">
-                <DropdownMenuItem asChild>
-                  <Link to={ROUTES.login} className="w-full cursor-pointer">
-                    Log In
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to={ROUTES.register} className="w-full cursor-pointer">
-                    Register
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-        </div>
-      </div>
+                  <HugeiconsIcon
+                    icon={isSearchOpen ? Cancel01Icon : SearchIcon}
+                    className="h-5 w-5"
+                    strokeWidth={ICON_STROKE}
+                  />
+                </button>
+              </div>
+
+              {/* Cart */}
+              <Link to={ROUTES.cart} className="relative p-2 text-foreground transition-colors duration-500">
+                <HugeiconsIcon icon={ShoppingBag01Icon} className="h-5 w-5" strokeWidth={ICON_STROKE} />
+                {totalItems > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center bg-foreground text-[10px] text-background transition-colors duration-500">
+                    {totalItems}
+                  </span>
+                )}
+              </Link>
+
+              {/* Wishlist */}
+              <Link to={ROUTES.wishlist} className="hidden p-2 text-foreground transition-colors duration-500 sm:block">
+                <HugeiconsIcon icon={HeartAddIcon} className="h-5 w-5" strokeWidth={ICON_STROKE} />
+              </Link>
+
+              {/* User */}
+              <UserMenu scrolled={scrolled} />
+            </div>
+          </div>
+        </nav>
+      </motion.header>
 
       {/* Category Ribbon */}
-      {rootCategories.length > 0 ? (
-        <div className="hidden border-t border-border/40 bg-muted/30 md:block">
+      {rootCategories.length > 0 && (
+        <div
+          className={cn(
+            "fixed top-16 z-40 w-full border-t border-border/40 bg-muted/30 backdrop-blur-sm transition-all duration-500 md:block lg:top-20",
+            scrolled ? "opacity-100" : "pointer-events-none opacity-0"
+          )}
+        >
           <div className="container mx-auto max-w-7xl overflow-x-auto px-4 sm:px-6 lg:px-8">
             <div className="flex min-w-max items-center gap-1 py-2">
-              {rootCategories.map((cat) => {
-                const isActive = location.pathname === `/category/${cat.slug}`
-                return (
-                  <Link
-                    key={cat.id}
-                    to={`/category/${cat.slug}`}
-                    className={cn(
-                      "rounded-sm px-3 py-1.5 text-[11px] tracking-wider whitespace-nowrap uppercase transition-colors duration-200",
-                      isActive
-                        ? "bg-primary/10 font-semibold text-primary"
-                        : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-                    )}
-                  >
-                    {cat.name}
-                  </Link>
-                )
-              })}
+              {rootCategories.map((cat) => (
+                <Link
+                  key={cat.id}
+                  to={`/category/${cat.slug}`}
+                  className={cn(
+                    "rounded-sm px-3 py-1.5 text-[11px] tracking-wider whitespace-nowrap uppercase transition-colors duration-200",
+                    location.pathname === `/category/${cat.slug}`
+                      ? "bg-primary/10 font-semibold text-primary"
+                      : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                  )}
+                >
+                  {cat.name}
+                </Link>
+              ))}
             </div>
           </div>
         </div>
-      ) : null}
+      )}
 
-      {/* Mobile Drawer menu — AnimatePresence */}
+      {/* Mobile Drawer */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          <motion.div
-            key="mobile-menu"
-            variants={slideDown}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            className="flex flex-col gap-4 bg-background px-4 py-4 md:hidden"
-          >
-            {/* Mobile Search Bar */}
-            <div className="relative w-full">
-              <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
-                <HugeiconsIcon icon={SearchIcon} className="size-4" />
-              </span>
-              <Input
-                type="text"
-                placeholder="Search silhouettes..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-9 w-full rounded-none border border-input bg-muted/40 py-2 pr-4 pl-9 text-xs transition-all duration-200"
-              />
-            </div>
+          <>
+            {/* Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
+              onClick={() => setMobileMenuOpen(false)}
+            />
 
-            <Separator />
-            <motion.nav
-              variants={staggerContainer}
-              initial="hidden"
-              animate="visible"
-              className="flex flex-col gap-4 text-sm tracking-widest uppercase"
+            {/* Drawer Panel - Menggunakan Flex Column agar konten bisa scroll */}
+            <motion.div
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed inset-y-0 left-0 z-50 flex w-[85%] max-w-[320px] flex-col border-r border-border bg-background shadow-xl lg:hidden"
             >
-              <motion.div variants={fadeInUp}>
-                <Link
-                  to={ROUTES.home}
-                  onClick={toggleMobileMenu}
-                  className={cn(
-                    "block rounded-md px-1 py-2 text-xs transition-colors",
-                    location.pathname === ROUTES.home
-                      ? "bg-accent/20 font-semibold text-primary"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
+              {/* 1. Header Drawer (Fixed/Tidak Scroll) */}
+              <div className="flex h-16 shrink-0 items-center justify-between border-b border-border px-6">
+                <span className="font-serif text-lg font-bold tracking-[0.2em] uppercase">Menu</span>
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="-mr-2 p-2 text-muted-foreground hover:text-foreground"
                 >
-                  Atelier
-                </Link>
-              </motion.div>
-              <motion.div variants={fadeInUp}>
-                <Link
-                  to={ROUTES.shop}
-                  onClick={toggleMobileMenu}
-                  className={cn(
-                    "block rounded-md px-1 py-2 text-xs transition-colors",
-                    location.pathname === ROUTES.shop
-                      ? "bg-accent/20 font-semibold text-primary"
-                      : "text-muted-foreground hover:text-foreground"
+                  <HugeiconsIcon icon={Cancel01Icon} className="h-6 w-6" strokeWidth={ICON_STROKE} />
+                </button>
+              </div>
+
+              {/* 2. Scrollable Content Area */}
+              <div className="flex-1 overflow-y-auto overscroll-contain pb-10">
+                {/* Search Bar in Mobile */}
+                <div className="border-b border-border bg-muted/20 p-6">
+                  <div className="relative w-full">
+                    <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground">
+                      <HugeiconsIcon icon={SearchIcon} className="size-4" />
+                    </span>
+                    <Input
+                      type="text"
+                      placeholder="Search silhouettes..."
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      className="h-10 w-full rounded-md border border-input bg-background px-9 text-sm focus:ring-1 focus:ring-primary focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Navigation Links */}
+                <nav className="flex flex-col gap-1 px-4 py-6">
+                  {NAV_LINKS.map((link) => (
+                    <Link
+                      key={link.to}
+                      to={link.to}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={cn(
+                        "text-sm px-4 py-3  font-medium tracking-wide uppercase transition-all",
+                        location.pathname === link.to
+                          ? "bg-primary/10 text-primary"
+                          : "text-foreground/70 hover:bg-muted hover:text-foreground"
+                      )}
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                </nav>
+
+                {/* Categories Section */}
+                <div className="border-t border-border px-4 py-6">
+                  <p className="mb-4 px-4 text-xs font-semibold tracking-[0.15em] text-muted-foreground uppercase">
+                    Categories
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {rootCategories.map((cat) => (
+                      <Link
+                        key={cat.id}
+                        to={`/category/${cat.slug}`}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="rounded-md border border-transparent px-4 py-2.5 text-sm text-foreground/80 transition-colors hover:border-border hover:bg-muted hover:text-foreground"
+                      >
+                        {cat.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Account Section */}
+                <div className="mt-auto border-t border-border px-4 py-6">
+                  <p className="mb-4 px-4 text-xs font-semibold tracking-[0.15em] text-muted-foreground uppercase">
+                    Account
+                  </p>
+                  {useCustomerAuthStore.getState().isAuthenticated ? (
+                    <div className="flex flex-col gap-2">
+                      <Link
+                        to={ROUTES.profile}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="rounded-lg px-4 py-3 text-sm font-medium text-foreground/70 hover:bg-muted hover:text-foreground"
+                      >
+                        Profile
+                      </Link>
+                      <Link
+                        to={ROUTES.orders}
+                        onClick={() => setMobileMenuOpen(false)}
+                        className="rounded-lg px-4 py-3 text-sm font-medium text-foreground/70 hover:bg-muted hover:text-foreground"
+                      >
+                        Orders
+                      </Link>
+                      <button
+                        onClick={() => {
+                          useCustomerAuthStore.getState().logout()
+                          navigate("/")
+                          setMobileMenuOpen(false)
+                        }}
+                        className="rounded-lg px-4 py-3 text-left text-sm font-medium text-red-500 hover:bg-red-50 hover:text-red-600"
+                      >
+                        Sign Out
+                      </button>
+                    </div>
+                  ) : (
+                    <Link
+                      to={ROUTES.login}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="block rounded-lg px-4 py-3 text-sm font-medium text-primary hover:bg-primary/5"
+                    >
+                      Sign In / Register
+                    </Link>
                   )}
-                >
-                  Shop
-                </Link>
-              </motion.div>
-              <motion.div variants={fadeInUp}>
-                <Separator className="my-1" />
-              </motion.div>
-              <motion.div variants={fadeInUp}>
-                <span className="px-1 text-[10px] tracking-widest text-muted-foreground">Kategori</span>
-              </motion.div>
-              {rootCategories.map((cat) => (
-                <motion.div key={cat.id} variants={fadeInUp}>
-                  <Link
-                    to={`/category/${cat.slug}`}
-                    onClick={toggleMobileMenu}
-                    className={cn(
-                      "block rounded-md px-1 py-2 text-xs transition-colors",
-                      location.pathname === `/category/${cat.slug}`
-                        ? "bg-accent/20 font-semibold text-primary"
-                        : "text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    {cat.name}
-                  </Link>
-                </motion.div>
-              ))}
-            </motion.nav>
-          </motion.div>
+                </div>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
-    </header>
+    </>
   )
 }
 

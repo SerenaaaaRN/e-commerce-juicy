@@ -50,8 +50,8 @@ export const RegisterPage = () => {
               <div className="flex flex-col justify-center p-6 text-left md:p-8">
                 {/* Header block */}
                 <header className="mb-4 flex flex-col items-center gap-2 text-center">
-                  <span className="text-xs font-semibold tracking-wider text-primary uppercase">Join the Atelier</span>
-                  <h1 className="text-2xl font-bold tracking-tight text-foreground">Create your account</h1>
+                  <span className="text-xs tracking-[0.15em] text-muted-foreground uppercase">Join the Atelier</span>
+                  <h1 className="font-serif text-3xl text-foreground">Create your account</h1>
                   <p className="text-center font-sans text-xs text-balance text-muted-foreground">
                     Enter your email and credentials below to create your account
                   </p>

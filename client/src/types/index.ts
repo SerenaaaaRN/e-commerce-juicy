@@ -140,6 +140,15 @@ export type Cart = {
   total: number
 }
 
+export type OrdersListResponse = {
+  items: Order[]
+  meta: {
+    total: number
+    page: number
+    per_page: number
+  }
+}
+
 export type OrderStatus = "pending" | "confirmed" | "processing" | "shipped" | "delivered" | "cancelled"
 export type PaymentStatus = "unpaid" | "paid" | "refunded"
 

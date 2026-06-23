@@ -15,23 +15,23 @@ export const CartSummary = ({ subtotal, onCheckout }: CartSummaryProps) => {
   const grandTotal = subtotal + shippingFee
 
   return (
-    <Card className="border border-border/80 shadow-md">
-      <CardHeader className="pb-0">
-        <CardTitle className="text-sm font-semibold tracking-tight text-foreground uppercase">Order Summary</CardTitle>
+    <Card className="rounded-none border border-border shadow-none">
+      <CardHeader className="pb-4">
+        <CardTitle className="font-serif text-xl text-foreground">Order Summary</CardTitle>
       </CardHeader>
 
       <CardContent className="flex flex-col gap-4 text-left">
-        <div className="flex flex-col gap-3 text-xs font-medium tracking-wider text-muted-foreground uppercase">
+        <div className="flex flex-col gap-3 text-sm tracking-wide text-muted-foreground">
           {/* Subtotal row */}
           <div className="flex justify-between">
             <span>Subtotal</span>
-            <span className="font-mono font-semibold text-foreground">{formatPrice(subtotal)}</span>
+            <span className="text-foreground">{formatPrice(subtotal)}</span>
           </div>
 
           {/* Shipping row */}
           <div className="flex justify-between">
             <span>Shipping</span>
-            <span className="animate-pulse font-semibold text-emerald-700">FREE</span>
+            <span className="text-emerald-700">Complimentary</span>
           </div>
         </div>
 
@@ -39,16 +39,16 @@ export const CartSummary = ({ subtotal, onCheckout }: CartSummaryProps) => {
 
         {/* Grand Total row */}
         <div className="flex items-baseline justify-between text-foreground">
-          <span className="text-xs font-bold tracking-wider uppercase">Total Cost</span>
-          <span className="font-mono text-xl font-bold">{formatPrice(grandTotal)}</span>
+          <span className="font-serif text-lg">Total Cost</span>
+          <span className="text-xl tracking-wide">{formatPrice(grandTotal)}</span>
         </div>
       </CardContent>
 
-      <CardFooter className="p-4">
+      <CardFooter className="p-6">
         {/* Checkout CTA */}
-        <Button onClick={onCheckout} size="lg" className="w-full">
+        <Button onClick={onCheckout} size="lg" className="group w-full rounded-none text-xs tracking-[0.15em] uppercase hover:bg-foreground/90">
           Proceed to Checkout
-          <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={1.8} data-icon="inline-end" />
+          <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={1.5} className="ml-2 transition-transform group-hover:translate-x-1" />
         </Button>
       </CardFooter>
     </Card>

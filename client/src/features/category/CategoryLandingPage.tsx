@@ -6,8 +6,6 @@ import { CategoryHero } from "./components/CategoryHero"
 import { SubcategoryGrid } from "./components/SubcategoryGrid"
 import { CategoryProducts } from "./components/CategoryProducts"
 import { CategoryPromoBanner } from "./components/CategoryPromoBanner"
-import { CategoryInfo } from "./components/CategoryInfo"
-import { RecentlyViewedSection } from "@/features/home/components/RecentlyViewedSection"
 import { Spinner } from "@/components/ui/spinner"
 import { Button } from "@/components/ui/button"
 
@@ -74,8 +72,6 @@ export const CategoryLandingPage = () => {
       <SubcategoryGrid subcategories={subcategories} />
       <CategoryProducts slug={slug} categoryName={category.name} />
       <CategoryPromoBanner category={category} />
-      <CategoryInfo category={category} />
-      <RecentlyViewedSection />
     </div>
   )
 }

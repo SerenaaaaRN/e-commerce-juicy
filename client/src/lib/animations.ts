@@ -25,18 +25,18 @@ export const staggerContainer: Variants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.08,
+      staggerChildren: 0.05,
       delayChildren: 0.05,
     },
   },
 }
 
 export const fadeInUp: Variants = {
-  hidden: { opacity: 0, y: 35 },
+  hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: editorialSpring,
+    transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] },
   },
 }
 

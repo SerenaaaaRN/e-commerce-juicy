@@ -32,8 +32,8 @@ export const OrderHistoryPage = () => {
       setLoading(true)
       try {
         const res = await ordersApi.getCustomerOrders()
-        if (res.success) {
-          setOrders(res.data)
+        if (res.success && res.data) {
+          setOrders(res.data.items ?? [])
         }
       } catch {
         toast.error("Failed to load your purchase history.")
@@ -63,7 +63,7 @@ export const OrderHistoryPage = () => {
   }
 
   return (
-    <div className="bg-background py-12">
+    <div className="bg-background pt-24 pb-12 lg:pt-32">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <Breadcrumb className="mb-8 text-left text-xs font-bold uppercase">
           <BreadcrumbList>

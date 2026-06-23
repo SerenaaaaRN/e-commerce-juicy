@@ -16,7 +16,7 @@ export const CategoryProducts = ({ slug, categoryName }: CategoryProductsProps) 
   if (isLoading && products.length === 0) {
     return (
       <section className="py-16 bg-muted/10">
-        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex justify-center py-12">
+        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex justify-center pt-24 pb-12 lg:pt-32">
           <Spinner size={24} className="text-primary" />
         </div>
       </section>

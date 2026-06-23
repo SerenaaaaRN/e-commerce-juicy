@@ -5,6 +5,7 @@ import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
 import { SmoothScroll } from "@/components/layout/SmoothScroll"
 import { HomePage } from "@/features/home/HomePage"
+import { HeritagePage } from "@/features/heritage/HeritagePage"
 import { CollectionPage } from "@/features/shop/CollectionPage"
 import { ProductPage } from "@/features/shop/ProductPage"
 import { LoginPageCust } from "@/features/auth/LoginPageCust"
@@ -81,6 +82,7 @@ const AppContent = () => {
         <Routes>
           {/* Public Storefront Routes */}
           <Route path={ROUTES.home} element={<HomePage />} />
+          <Route path={ROUTES.heritage} element={<HeritagePage />} />
           <Route path={ROUTES.shop} element={<CollectionPage />} />
           <Route path={ROUTES.product} element={<ProductPage />} />
           <Route path={ROUTES.category} element={<CategoryLandingPage />} />
