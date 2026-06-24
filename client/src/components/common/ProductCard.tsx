@@ -1,24 +1,31 @@
 import { cn, formatPrice } from "@/lib/utils"
 import type { CatalogProduct } from "@/types"
-import { motion } from "motion/react"
+import { motion, type Variants } from "motion/react"
 import { useState } from "react"
 import { Link } from "react-router-dom"
 
 type ProductCardProps = {
   product: CatalogProduct
+  variants?: Variants
 }
 
-export const ProductCard = ({ product }: ProductCardProps) => {
+export const ProductCard = ({ product, variants }: ProductCardProps) => {
   const [isHovered, setIsHovered] = useState(false)
   const images = product.images?.filter((img) => img.image_url) ?? []
   const hoverImage = images.length > 1 ? images[1].image_url : product.primary_image
+  const hasCustomVariants = !!variants
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
+      variants={variants}
+      {...(!hasCustomVariants
+        ? {
+            initial: { opacity: 0, y: 30 },
+            whileInView: { opacity: 1, y: 0 },
+            viewport: { once: true, margin: "-50px" },
+            transition: { duration: 0.6, ease: "easeOut" },
+          }
+        : {})}
     >
       <Link
         to={`/shop/${product.slug}`}

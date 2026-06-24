@@ -15,8 +15,13 @@ export const CategoryProducts = ({ slug, categoryName }: CategoryProductsProps) 
 
   if (isLoading && products.length === 0) {
     return (
-      <section className="bg-muted/10 py-16">
-        <div className="container mx-auto flex max-w-7xl justify-center px-4 pt-24 pb-12 sm:px-6 lg:px-8 lg:pt-32">
+      <section
+        className="bg-muted/10 py-12"
+        aria-busy="true"
+        aria-live="polite"
+        aria-label="Memuat produk"
+      >
+        <div className="container mx-auto flex max-w-7xl justify-center px-4 py-16 sm:px-6 lg:px-8">
           <Spinner size={24} className="text-primary" />
         </div>
       </section>
@@ -26,15 +31,22 @@ export const CategoryProducts = ({ slug, categoryName }: CategoryProductsProps) 
   if (products.length === 0) return null
 
   return (
-    <section className="bg-muted/10 py-16">
+    <section className="bg-muted/10 py-12" aria-labelledby="products-heading">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-10 flex items-end justify-between">
+        <div className="mb-8 flex items-end justify-between">
           <div>
             <span className="text-xs font-semibold tracking-wider text-primary uppercase">Koleksi</span>
-            <h2 className="mt-1 text-2xl font-bold tracking-tight text-foreground">Produk {categoryName}</h2>
+            <h2 id="products-heading" className="mt-1 text-2xl font-bold tracking-tight text-foreground">
+              Produk {categoryName}
+            </h2>
           </div>
           <Button variant="outline" size="sm" asChild className="hidden sm:flex">
-            <Link to={`/shop?category=${slug}`}>Lihat Semua</Link>
+            <Link
+              to={`/shop?category=${slug}`}
+              aria-label={`Lihat semua produk dalam kategori ${categoryName}`}
+            >
+              Lihat Semua
+            </Link>
           </Button>
         </div>
         <div className="grid grid-cols-2 gap-x-4 gap-y-8 md:grid-cols-3 lg:grid-cols-4">
@@ -44,7 +56,12 @@ export const CategoryProducts = ({ slug, categoryName }: CategoryProductsProps) 
         </div>
         <div className="mt-8 text-center sm:hidden">
           <Button variant="outline" size="sm" asChild>
-            <Link to={`/shop?category=${slug}`}>Lihat Semua Produk {categoryName}</Link>
+            <Link
+              to={`/shop?category=${slug}`}
+              aria-label={`Lihat semua produk dalam kategori ${categoryName}`}
+            >
+              Lihat Semua Produk {categoryName}
+            </Link>
           </Button>
         </div>
       </div>

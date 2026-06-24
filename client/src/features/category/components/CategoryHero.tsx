@@ -16,19 +16,32 @@ export const CategoryHero = ({ category }: CategoryHeroProps) => {
   const image = HERO_IMAGES[category.slug] || HERO_IMAGES.apparel
 
   return (
-    <section className="relative mt-32 h-[50vh] max-h-150 min-h-100 overflow-hidden">
+    <section
+      className="relative mt-16 h-[40vh] max-h-120 min-h-80 overflow-hidden lg:mt-20"
+      aria-labelledby="hero-category-title"
+    >
       <div className="absolute inset-0">
-        <img src={image} alt={category.name} className="size-full object-cover" />
-        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/30 to-black/10" />
+        <img
+          src={image}
+          alt={`Koleksi ${category.name}`}
+          className="size-full object-cover"
+          loading="eager"
+        />
+        <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/30 to-black/10" />
       </div>
-      <div className="absolute inset-0 flex flex-col justify-end px-4 pb-16 sm:px-6 lg:px-8">
+      <div className="absolute inset-0 flex flex-col justify-end px-4 pb-10 sm:px-6 lg:px-8">
         <div className="container mx-auto max-w-7xl">
-          <span className="mb-3 block text-[10px] font-semibold tracking-widest text-primary uppercase">Koleksi</span>
-          <h1 className="mb-3 text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">{category.name}</h1>
+          <span className="mb-2 block text-[10px] font-semibold tracking-widest text-primary uppercase">Koleksi</span>
+          <h1
+            id="hero-category-title"
+            className="mb-2 text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl"
+          >
+            {category.name}
+          </h1>
           {category.description && (
-            <p className="max-w-xl text-sm leading-relaxed text-white/80 sm:text-base">{category.description}</p>
+            <p className="max-w-xl text-xs leading-relaxed text-white/80 sm:text-sm">{category.description}</p>
           )}
-          <p className="mt-4 text-xs text-white/60">{category.product_count} Produk Tersedia</p>
+          <p className="mt-3 text-[11px] text-white/60">{category.product_count} Produk Tersedia</p>
         </div>
       </div>
     </section>

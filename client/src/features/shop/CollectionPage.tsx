@@ -14,8 +14,10 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Spinner } from "@/components/ui/spinner"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { useCategoriesQuery, useInfiniteProductsQuery, useProductsQuery } from "@/features/shop/hooks/useProductQueries"
+import { parallaxSpring, staggerContainer, fadeInUp } from "@/lib/animations"
 import { FilterIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
+import { motion, useScroll, useTransform, useSpring, useReducedMotion } from "motion/react"
 import { useEffect, useRef, useState } from "react"
 import { useSearchParams } from "react-router-dom"
 import { ProductFilters } from "./components/ProductFilters"
@@ -24,6 +26,21 @@ import type { SortOption } from "./types"
 
 export const CollectionPage = () => {
   const [searchParams, setSearchParams] = useSearchParams()
+
+  const headerRef = useRef<HTMLElement>(null)
+  const prefersReducedMotion = useReducedMotion()
+
+  const { scrollYProgress } = useScroll({
+    target: headerRef,
+    offset: ["start start", "end start"],
+  })
+
+  const smoothScroll = useSpring(scrollYProgress, parallaxSpring)
+
+  // Scale starts slightly larger to allow clean vertical movement without exposing edges
+  const scale = useTransform(smoothScroll, [0, 1], prefersReducedMotion ? [1, 1] : [1.05, 1.2])
+  // Use negative pixel values to shift the image upwards as the user scrolls down, creating a natural parallax depth
+  const y = useTransform(smoothScroll, [0, 1], prefersReducedMotion ? 0 : -80)
 
   const currentCategory = searchParams.get("category") || ""
   const currentSort = (searchParams.get("sort") as SortOption) || ""
@@ -141,28 +158,46 @@ export const CollectionPage = () => {
   return (
     <div className="bg-background">
       {/* Hero Banner — full width */}
-      <header className="relative mb-12 flex flex-col items-center justify-center overflow-hidden py-24 text-center lg:py-32">
+      <header
+        ref={headerRef}
+        className="relative mb-12 flex flex-col items-center justify-center overflow-hidden py-24 text-center lg:py-32"
+      >
         {/* Background Image */}
         <div className="absolute inset-0 z-0">
-          <img
+          <motion.img
             src="/shop-hero-luxury-fashion-collection.jpg"
             alt="Luxury Fashion Collection"
+            style={{ scale, y }}
             className="size-full object-cover dark:brightness-50"
           />
           <div className="absolute inset-0 bg-background/20" />
         </div>
 
-        <div className="relative z-10 flex flex-col items-center px-4">
-          <span className="mb-4 text-xs tracking-[0.2em] text-foreground uppercase drop-shadow-sm">
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+          className="relative z-10 flex flex-col items-center px-4"
+        >
+          <motion.span
+            variants={fadeInUp}
+            className="mb-4 text-xs tracking-[0.2em] text-foreground uppercase drop-shadow-sm"
+          >
             Atelier Curated Catalog
-          </span>
-          <h1 className="font-serif text-4xl tracking-tight text-foreground drop-shadow-sm lg:text-5xl">
+          </motion.span>
+          <motion.h1
+            variants={fadeInUp}
+            className="font-serif text-4xl tracking-tight text-foreground drop-shadow-sm lg:text-5xl"
+          >
             The Collection
-          </h1>
-          <p className="mt-4 max-w-md text-sm leading-relaxed tracking-wide text-foreground drop-shadow-sm">
+          </motion.h1>
+          <motion.p
+            variants={fadeInUp}
+            className="mt-4 max-w-md text-sm leading-relaxed tracking-wide text-foreground drop-shadow-sm"
+          >
             Browse our complete collection of pure raw textures and high-fashion silhouettes.
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
       </header>
 
       <div className="container mx-auto my-16 max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -308,7 +343,12 @@ export const CollectionPage = () => {
             </Card>
 
             {/* Products Grid */}
-            <ProductGrid products={products} isLoading={isLoading} cols={cols} />
+            <ProductGrid
+              key={`${currentCategory}-${currentPage}-${currentSearch}-${currentSort}-${isLoading}`}
+              products={products}
+              isLoading={isLoading}
+              cols={cols}
+            />
 
             {/* Infinite Scroll Sentinel indicator */}
             {isInfiniteScroll && (
