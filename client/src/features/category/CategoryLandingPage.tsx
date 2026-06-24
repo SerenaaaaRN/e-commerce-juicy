@@ -11,8 +11,9 @@ import { SubcategoryGrid } from "./components/SubcategoryGrid"
 
 export const CategoryLandingPage = () => {
   const { slug } = useParams<{ slug: string }>()
-  const { data: categories = [] } = useCategoriesQuery()
-  const { isLoading } = useProductsQuery(slug ? { category: slug, per_page: 8 } : undefined)
+  const { data: categories = [], isLoading: isCategoriesLoading } = useCategoriesQuery()
+  // Prefetch products so it starts loading alongside categories, but we don't block the layout on it
+  useProductsQuery(slug ? { category: slug, per_page: 8 } : undefined)
 
   const category = useMemo(() => {
     if (!slug || categories.length === 0) return null
@@ -45,7 +46,8 @@ export const CategoryLandingPage = () => {
     )
   }
 
-  if (isLoading && !category) {
+  // Only block layout rendering on the category metadata itself
+  if (isCategoriesLoading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <Spinner size={32} className="text-primary" />

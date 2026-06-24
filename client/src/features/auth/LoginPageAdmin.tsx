@@ -71,8 +71,8 @@ export const LoginPageAdmin = () => {
               {/* Image Side */}
               <aside className="relative hidden bg-muted md:block">
                 <img
-                  src="/jiso.jpg"
-                  alt="Juicy Management Console Image"
+                  src="/shop-hero-luxury-fashion-collection.jpg"
+                  alt="Juicy Storefront Image"
                   className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
                 />
               </aside>

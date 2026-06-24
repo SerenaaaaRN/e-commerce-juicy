@@ -38,9 +38,9 @@ export const CategoryHero = ({ category }: CategoryHeroProps) => {
           >
             {category.name}
           </h1>
-          {category.description && (
+          {category.description ? (
             <p className="max-w-xl text-xs leading-relaxed text-white/80 sm:text-sm">{category.description}</p>
-          )}
+          ) : null}
           <p className="mt-3 text-[11px] text-white/60">{category.product_count} Produk Tersedia</p>
         </div>
       </div>

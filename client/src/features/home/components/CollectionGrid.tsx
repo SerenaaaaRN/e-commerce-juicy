@@ -2,14 +2,14 @@ import { ProductCard } from "@/components/common/ProductCard"
 import { ROUTES } from "@/constants/paths"
 import { useProductsQuery } from "@/features/shop/hooks/useProductQueries"
 import { fadeInUp, staggerContainer } from "@/lib/animations"
-import { motion, useScroll, useSpring, useTransform } from "motion/react"
+import { motion, useScroll, useTransform, useSpring } from "motion/react"
 import { useRef } from "react"
 import { Link } from "react-router-dom"
+import { type CatalogProduct } from "@/types"
 
-export const CollectionGrid = () => {
+// Pisahkan konten ke komponen terpisah agar useScroll hanya berjalan saat elemen sudah di-render ke DOM
+const CollectionGridContent = ({ products }: { products: CatalogProduct[] }) => {
   const containerRef = useRef<HTMLDivElement>(null)
-  const { data, isLoading } = useProductsQuery({ per_page: 12, page: 1 })
-  const products = data?.products || []
 
   // Track the vertical scroll position of the grid container relative to viewport
   const { scrollYProgress } = useScroll({
@@ -17,25 +17,17 @@ export const CollectionGrid = () => {
     offset: ["start end", "end start"],
   })
 
-  // Map raw scroll progress directly (without spring lag) to distinct, wider y offsets for each column to create a more dramatic parallax depth
-  const yLeft = useTransform(scrollYProgress, [0, 1], [150, -150])
-  const yCenter = useTransform(scrollYProgress, [0, 1], [-50, 50])
-  const yRight = useTransform(scrollYProgress, [0, 1], [300, -300])
+  // Add spring smoothing for a more responsive and fluid start
+  const smoothProgress = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  })
 
-  if (isLoading) {
-    return (
-      <section className="px-6 py-24 lg:px-8 lg:py-32">
-        <div className="mx-auto max-w-7xl text-center">
-          <p className="animate-pulse text-muted-foreground">Loading Collection...</p>
-        </div>
-      </section>
-    )
-  }
-
-  // Fallback to empty grid if no products
-  if (products.length === 0) {
-    return null
-  }
+  // Map the smooth progress to distinct, wider y offsets for each column
+  const yLeft = useTransform(smoothProgress, [0, 1], [100, -100])
+  const yCenter = useTransform(smoothProgress, [0, 1], [-30, 30])
+  const yRight = useTransform(smoothProgress, [0, 1], [200, -200])
 
   return (
     <section className="px-6 py-24 lg:px-8 lg:py-32">
@@ -143,4 +135,26 @@ export const CollectionGrid = () => {
       </div>
     </section>
   )
+}
+
+export const CollectionGrid = () => {
+  const { data, isLoading } = useProductsQuery({ per_page: 12, page: 1 })
+  const products = data?.products || []
+
+  if (isLoading) {
+    return (
+      <section className="px-6 py-24 lg:px-8 lg:py-32">
+        <div className="mx-auto max-w-7xl text-center">
+          <p className="animate-pulse text-muted-foreground">Loading Collection...</p>
+        </div>
+      </section>
+    )
+  }
+
+  // Fallback to empty grid if no products
+  if (products.length === 0) {
+    return null
+  }
+
+  return <CollectionGridContent products={products} />
 }

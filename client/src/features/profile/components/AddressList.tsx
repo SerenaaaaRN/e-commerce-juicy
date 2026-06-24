@@ -64,11 +64,11 @@ export const AddressList = () => {
           </span>
         </div>
 
-        {addresses.length > 0 && (
+        {addresses.length > 0 ? (
           <Button onClick={() => setIsModalOpen(true)} size="sm" className="cursor-pointer">
             + New Address
           </Button>
-        )}
+        ) : null}
       </div>
 
       {/* Main Address Cards Grid */}

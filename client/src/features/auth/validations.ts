@@ -5,6 +5,8 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 })
 
+const PASSWORD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/
+
 export const registerSchema = z
   .object({
     full_name: z.string().min(1, "Full name is required"),
@@ -15,7 +17,7 @@ export const registerSchema = z
       .string()
       .min(8, "Password must be at least 8 characters")
       .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/,
+        PASSWORD_REGEX,
         "Password must contain at least one uppercase letter, one lowercase letter, and one number"
       ),
     confirmPassword: z.string().min(1, "Confirm password is required"),

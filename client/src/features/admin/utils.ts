@@ -24,9 +24,18 @@ export function buildCategoryOptions(categories: Category[]) {
 
 export const getCategoryDescendants = (categories: Category[], categoryId: string): string[] => {
   const ids: string[] = [categoryId]
+  const childrenMap = new Map<string, Category[]>()
+
+  for (const cat of categories) {
+    const parentId = cat.parent_id || ""
+    if (!childrenMap.has(parentId)) {
+      childrenMap.set(parentId, [])
+    }
+    childrenMap.get(parentId)!.push(cat)
+  }
 
   const walk = (id: string) => {
-    const children = categories.filter((c) => c.parent_id === id)
+    const children = childrenMap.get(id) || []
     for (const child of children) {
       ids.push(child.id)
       walk(child.id)

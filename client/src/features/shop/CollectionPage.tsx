@@ -14,11 +14,11 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Spinner } from "@/components/ui/spinner"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { useCategoriesQuery, useInfiniteProductsQuery, useProductsQuery } from "@/features/shop/hooks/useProductQueries"
-import { parallaxSpring, staggerContainer, fadeInUp } from "@/lib/animations"
+import { fadeInUp, staggerContainer } from "@/lib/animations"
 import { FilterIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { motion, useScroll, useTransform, useSpring, useReducedMotion } from "motion/react"
-import { useEffect, useRef, useState } from "react"
+import { motion } from "motion/react"
+import { useEffect, useRef, useState, useTransition } from "react"
 import { useSearchParams } from "react-router-dom"
 import { ProductFilters } from "./components/ProductFilters"
 import { ProductGrid } from "./components/ProductGrid"
@@ -28,19 +28,6 @@ export const CollectionPage = () => {
   const [searchParams, setSearchParams] = useSearchParams()
 
   const headerRef = useRef<HTMLElement>(null)
-  const prefersReducedMotion = useReducedMotion()
-
-  const { scrollYProgress } = useScroll({
-    target: headerRef,
-    offset: ["start start", "end start"],
-  })
-
-  const smoothScroll = useSpring(scrollYProgress, parallaxSpring)
-
-  // Scale starts slightly larger to allow clean vertical movement without exposing edges
-  const scale = useTransform(smoothScroll, [0, 1], prefersReducedMotion ? [1, 1] : [1.05, 1.2])
-  // Use negative pixel values to shift the image upwards as the user scrolls down, creating a natural parallax depth
-  const y = useTransform(smoothScroll, [0, 1], prefersReducedMotion ? 0 : -80)
 
   const currentCategory = searchParams.get("category") || ""
   const currentSort = (searchParams.get("sort") as SortOption) || ""
@@ -114,6 +101,8 @@ export const CollectionPage = () => {
     }
   }, [isInfiniteScroll, infiniteQuery.hasNextPage, infiniteQuery.isFetchingNextPage, infiniteQuery.fetchNextPage])
 
+  const [isPendingFilter, startTransition] = useTransition()
+
   const updateParams = (newParams: Record<string, string | number | null>) => {
     const updated = new URLSearchParams(searchParams)
     Object.entries(newParams).forEach(([key, val]) => {
@@ -132,7 +121,9 @@ export const CollectionPage = () => {
     ) {
       updated.set("page", "1")
     }
-    setSearchParams(updated)
+    startTransition(() => {
+      setSearchParams(updated)
+    })
   }
 
   const handleCategoryChange = (category: string) => {
@@ -152,7 +143,9 @@ export const CollectionPage = () => {
   }
 
   const handleReset = () => {
-    setSearchParams(new URLSearchParams())
+    startTransition(() => {
+      setSearchParams(new URLSearchParams())
+    })
   }
 
   return (
@@ -164,10 +157,9 @@ export const CollectionPage = () => {
       >
         {/* Background Image */}
         <div className="absolute inset-0 z-0">
-          <motion.img
+          <img
             src="/shop-hero-luxury-fashion-collection.jpg"
             alt="Luxury Fashion Collection"
-            style={{ scale, y }}
             className="size-full object-cover dark:brightness-50"
           />
           <div className="absolute inset-0 bg-background/20" />
@@ -343,12 +335,14 @@ export const CollectionPage = () => {
             </Card>
 
             {/* Products Grid */}
-            <ProductGrid
-              key={`${currentCategory}-${currentPage}-${currentSearch}-${currentSort}-${isLoading}`}
-              products={products}
-              isLoading={isLoading}
-              cols={cols}
-            />
+            <div className={isPendingFilter ? "opacity-50 transition-opacity" : ""}>
+              <ProductGrid
+                key={`${currentCategory}-${currentPage}-${currentSearch}-${currentSort}-${isLoading}`}
+                products={products}
+                isLoading={isLoading}
+                cols={cols}
+              />
+            </div>
 
             {/* Infinite Scroll Sentinel indicator */}
             {isInfiniteScroll && (

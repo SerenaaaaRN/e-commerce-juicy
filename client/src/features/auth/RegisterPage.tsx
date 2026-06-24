@@ -74,8 +74,8 @@ export const RegisterPage = () => {
               {/* Image Side */}
               <div className="relative hidden bg-muted md:block">
                 <img
-                  src="/jiso.jpg"
-                  alt="Register Atelier Cover"
+                  src="/shop-hero-luxury-fashion-collection.jpg"
+                  alt="Juicy Storefront Image"
                   className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
                 />
               </div>

@@ -162,7 +162,7 @@ export const HeritagePage = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
-                className={`relative mb-12 flex flex-col items-start gap-6 lg:mb-16 lg:flex-row lg:items-center lg:gap-12 ${
+                className={`relative mb-12 flex flex-col items-start gap-6 lg:mb-16 lg:flex-row lg:items-center lg:gap-12 [content-visibility:auto] ${
                   index % 2 === 0 ? "lg:flex-row" : "lg:flex-row-reverse"
                 }`}
               >

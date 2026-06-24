@@ -1,17 +1,21 @@
-import { ArtisanStorytelling } from "./components/ArtisanStorytelling"
-import { CollectionGrid } from "./components/CollectionGrid"
-import { HeritageSection } from "./components/Heritage"
+import { Suspense, lazy } from "react"
 import { HeroSection } from "./components/HeroSection"
 import { PromoStrip } from "./components/PromoStrip"
+
+const ArtisanStorytelling = lazy(() => import("./components/ArtisanStorytelling").then(mod => ({ default: mod.ArtisanStorytelling })))
+const CollectionGrid = lazy(() => import("./components/CollectionGrid").then(mod => ({ default: mod.CollectionGrid })))
+const HeritageSection = lazy(() => import("./components/Heritage").then(mod => ({ default: mod.HeritageSection })))
 
 export const HomePage = () => {
   return (
     <div className="flex w-full flex-col">
       <HeroSection />
       <PromoStrip />
-      <ArtisanStorytelling />
-      <CollectionGrid />
-      <HeritageSection />
+      <Suspense fallback={<div className="h-96" />}>
+        <ArtisanStorytelling />
+        <CollectionGrid />
+        <HeritageSection />
+      </Suspense>
     </div>
   )
 }

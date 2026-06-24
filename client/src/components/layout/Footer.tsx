@@ -1,27 +1,21 @@
 import { Separator } from "@/components/ui/separator"
 import { ROUTES } from "@/constants/paths"
+import { useCategoriesQuery } from "@/features/shop/hooks/useProductQueries"
 import { Facebook01Icon, InstagramIcon, TwitterIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { motion } from "motion/react"
+import { useMemo } from "react"
 import { Link } from "react-router-dom"
-
-const footerLinks = {
-  shop: [
-    { label: "Apparel", href: `${ROUTES.shop}?category=apparel&page=1` },
-    { label: "Dresses", href: `${ROUTES.shop}?category=bags&page=1` },
-    { label: "Bags", href: `${ROUTES.shop}?category=shoes&page=1` },
-    { label: "Shoes", href: `${ROUTES.shop}?category=accessories` },
-    { label: "Accessories", href: `${ROUTES.shop}?` },
-  ],
-  about: [
-    { label: "Our Heritage", href: `${ROUTES.heritage}` },
-    { label: "Craftsmanship", href: `${ROUTES.heritage}` },
-    { label: "Sustainability", href: `${ROUTES.heritage}` },
-  ],
-}
+import { Skeleton } from "../ui/skeleton"
 
 export function Footer() {
   const currentYear = new Date().getFullYear()
+  const { data: categories } = useCategoriesQuery()
+
+  const rootCategories = useMemo(() => {
+    if (!categories) return []
+    return categories.filter(c => !c.parent_id).slice(0, 5)
+  }, [categories])
 
   return (
     <footer className="bg-foreground text-background">
@@ -62,13 +56,23 @@ export function Footer() {
           >
             <h4 className="mb-6 text-xs tracking-[0.2em] text-background/60 uppercase">Collections</h4>
             <ul className="space-y-3">
-              {footerLinks.shop.map((link) => (
-                <li key={link.href}>
-                  <Link to={link.href} className="text-sm text-background/80 transition-colors hover:text-background">
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
+              {rootCategories.length > 0 ? (
+                rootCategories.map(cat => (
+                  <li key={cat.id}>
+                    <Link to={`${ROUTES.shop}?category=${cat.slug}&page-1`}  className="text-sm text-background/80 transition-colors hover:text-background">
+                      {cat.name}
+                    </Link>
+                  </li>
+                ))
+              ): (
+                <ul>
+                  {Array.from({length:4}).map((_, i) => (
+                    <li key={i}>
+                      <Skeleton className="h-4 w-24"/>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </ul>
           </motion.div>
         </div>

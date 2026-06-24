@@ -27,7 +27,7 @@ import { formatPrice } from "@/lib/utils/format"
 import type { CatalogProduct, Category, ProductDetail } from "@/types"
 import { Delete02Icon, Edit01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { memo, useCallback, useEffect, useMemo, useState } from "react"
+import { memo, useCallback, useEffect, useMemo, useState, useTransition } from "react"
 
 export const ProductsPage = () => {
   const ctx = useProducts()
@@ -41,6 +41,7 @@ export const ProductsPage = () => {
 
   const [selectedParent, setSelectedParent] = useState("all")
   const [selectedSub, setSelectedSub] = useState("all")
+  const [isPendingFilter, startTransition] = useTransition()
 
   useEffect(() => {
     if (ctx.categoryFilter === "all") {
@@ -64,16 +65,20 @@ export const ProductsPage = () => {
   const handleParentChange = (val: string) => {
     setSelectedParent(val)
     setSelectedSub("all")
-    ctx.setCategoryFilter(val)
+    startTransition(() => {
+      ctx.setCategoryFilter(val)
+    })
   }
 
   const handleSubChange = (val: string) => {
     setSelectedSub(val)
-    if (val === "all") {
-      ctx.setCategoryFilter(selectedParent)
-    } else {
-      ctx.setCategoryFilter(val)
-    }
+    startTransition(() => {
+      if (val === "all") {
+        ctx.setCategoryFilter(selectedParent)
+      } else {
+        ctx.setCategoryFilter(val)
+      }
+    })
   }
 
   const parentCategories = ctx.categories.filter((c) => !c.parent_id)
@@ -208,7 +213,7 @@ export const ProductsPage = () => {
             </div>
           </div>
 
-          <DefferedContainer isStale={isStale} className="rounded-lg border border-border/60 bg-card shadow-sm">
+          <DefferedContainer isStale={isStale || isPendingFilter} className="rounded-lg border border-border/60 bg-card shadow-sm">
             <Table>
               <TableHeader>
                 <TableRow>
