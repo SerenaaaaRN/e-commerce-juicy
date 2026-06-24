@@ -10,26 +10,17 @@ export const HeroSection = () => {
     <section className="relative min-h-screen overflow-hidden">
       {/* hero background */}
       <div className="absolute inset-0 overflow-hidden bg-black">
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          poster="/fallback-hero.png"
-          className="absolute inset-0 h-full w-full object-cover"
-        >
-          <source src="/hero-misty-mountains.mp4" type="video/mp4" />
-        </video>
+        <img src="/fallback-hero.png" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-foreground/35" />
       </div>
 
       <div className="relative z-10 flex h-screen flex-col justify-end p-8 pb-24 lg:p-16 lg:pb-32">
         <div className="max-w-2xl">
-          {/* Editorial Text Masking Reveal (Word-by-Word) */}
-          <h1 className="mb-6 font-serif text-4xl leading-[1.0] text-balance text-background md:text-5xl lg:text-7xl">
+          {/* Editorial Text Masking Reveal */}
+          <h1 className="mb-6 font-serif text-4xl leading-none text-balance text-background md:text-5xl lg:text-7xl">
             <span className="block">
               {["The", "Art", "of"].map((word, idx) => (
-                <span key={idx} className="inline-block overflow-hidden mr-[0.25em] last:mr-0 pb-1 pt-0.5">
+                <span key={idx} className="mr-[0.25em] inline-block overflow-hidden pt-0.5 pb-1 last:mr-0">
                   <motion.span
                     initial={{ y: "100%" }}
                     animate={{ y: 0 }}
@@ -47,7 +38,7 @@ export const HeroSection = () => {
             </span>
             <span className="block">
               {["Quiet", "Luxury"].map((word, idx) => (
-                <span key={idx} className="inline-block overflow-hidden mr-[0.25em] last:mr-0 pb-1.5 pt-0.5">
+                <span key={idx} className="mr-[0.25em] inline-block overflow-hidden pt-0.5 pb-1.5 last:mr-0">
                   <motion.span
                     initial={{ y: "100%" }}
                     animate={{ y: 0 }}
@@ -84,7 +75,7 @@ export const HeroSection = () => {
             <Button
               asChild
               size="lg"
-              className="group bg-background text-foreground tracking-[0.2em] font-sans font-semibold text-xs py-6 px-8 rounded-none border border-transparent transition-all duration-500 hover:bg-primary hover:text-primary-foreground hover:border-primary uppercase"
+              className="group rounded-none border border-transparent bg-background px-8 py-6 font-sans text-xs font-semibold tracking-[0.2em] text-foreground uppercase transition-all duration-500 hover:border-primary hover:bg-primary hover:text-primary-foreground"
             >
               <Link to={ROUTES.shop}>
                 Discover Collection
