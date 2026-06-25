@@ -29,13 +29,13 @@ export const LoginPageAdmin = () => {
             email: admin.email,
             name: admin.username,
           })
-          toast.success(`Access granted. Welcome back, Admin ${admin.username}!`)
+          toast.success(`Access granted. Welcome back, ${admin.username}!`)
           navigate(ROUTES.adminDashboard)
         } else {
           toast.error(res.message || "Invalid email or passcode. Access denied.")
         }
       } catch {
-        toast.error("Server offline. Please try again later.")
+        toast.error("Invalid email or passcode. Access denied.")
       }
     })
   }

@@ -41,8 +41,13 @@ type Config struct {
 func Load() (*Config, error) {
 	_ = godotenv.Load()
 
+	appPort := getEnv("APP_PORT", "")
+	if appPort == "" {
+		appPort = getEnv("PORT", "8080")
+	}
+
 	cfg := &Config{
-		AppPort:                getEnv("APP_PORT", "8080"),
+		AppPort:                appPort,
 		AppEnv:                 getEnv("APP_ENV", "development"),
 		DBHost:                 getEnv("DB_HOST", "localhost"),
 		DBPort:                 getEnv("DB_PORT", "5432"),
@@ -64,7 +69,7 @@ func Load() (*Config, error) {
 	}
 
 	cfg.JWTAdminAccessExpiryMinutes = getEnvInt("JWT_ADMIN_ACCESS_EXPIRY_MINUTES", 15)
-	cfg.JWTAdminRefreshExpiryDays = getEnvInt("JWT_ADMIN_REFRESH_EXPIRY_DAYS", 7)
+	cfg.JWTAdminRefreshExpiryDays = getEnvInt("JWT_ADMIN_REFRESH_EXPIRY_DAYS", 1)
 	cfg.JWTCustomerExpiryDays = getEnvInt("JWT_CUSTOMER_EXPIRY_DAYS", 7)
 	cfg.DefaultShippingFee = getEnvFloat("DEFAULT_SHIPPING_FEE", 25000.0)
 

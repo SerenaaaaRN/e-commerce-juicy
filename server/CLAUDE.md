@@ -619,7 +619,7 @@ source: crypto/rand (fallback ke math/rand time-based jika crypto gagal)
 | `DATABASE_URL` | (empty) | No | Full DSN (overrides individual params) |
 | `JWT_ADMIN_SECRET` | (empty) | **Yes** | HMAC key for admin JWT |
 | `JWT_ADMIN_ACCESS_EXPIRY_MINUTES` | `15` | No | Admin access token expiry |
-| `JWT_ADMIN_REFRESH_EXPIRY_DAYS` | `7` | No | Admin refresh token expiry |
+| `JWT_ADMIN_REFRESH_EXPIRY_DAYS` | `1` | No | Admin refresh token expiry |
 | `JWT_CUSTOMER_SECRET` | (empty) | **Yes** | HMAC key for customer JWT |
 | `JWT_CUSTOMER_EXPIRY_DAYS` | `7` | No | Customer token expiry |
 | `CLOUDINARY_CLOUD_NAME` | (empty) | No | Cloudinary (mock fallback if empty) |
