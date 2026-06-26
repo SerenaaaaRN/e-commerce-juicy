@@ -82,7 +82,7 @@ export type ProductDetail = {
   category_id: string
   name: string
   slug: string
-  description?: string
+  description?: string 
   price: number
   compare_at_price?: number
   is_available: boolean

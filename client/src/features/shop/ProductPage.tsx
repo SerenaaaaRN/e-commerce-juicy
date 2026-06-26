@@ -81,7 +81,7 @@ export const ProductPage = () => {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto flex min-h-[60vh] max-w-7xl items-center justify-center px-4 py-20">
+      <div className="container mx-auto flex min-h-screen max-w-7xl items-center justify-center px-4 py-20">
         <div className="flex flex-col items-center gap-4">
           <Spinner size={32} className="text-primary" />
           <span className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">

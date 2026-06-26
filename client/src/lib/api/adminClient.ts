@@ -1,5 +1,6 @@
 import { useAdminAuthStore } from "@/stores/admin-auth-store"
 import axios from "axios"
+import { getMockResponse } from "./mockHandlers"
 
 const VITE_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api"
 
@@ -86,6 +87,15 @@ client.interceptors.response.use(
         return Promise.reject(refreshErr)
       } finally {
         isRefreshing = false
+      }
+    }
+
+    // Mock Fallback for Network Errors or 500s
+    if (!error.response || error.response.status >= 500 || error.code === 'ERR_NETWORK') {
+      const mockResponse = getMockResponse(originalRequest)
+      if (mockResponse) {
+        console.warn(`[Mock Fallback Admin] Intercepted failed request to ${originalRequest.url}`)
+        return Promise.resolve(mockResponse)
       }
     }
 
