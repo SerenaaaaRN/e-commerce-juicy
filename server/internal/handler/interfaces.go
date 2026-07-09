@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"mime/multipart"
 
 	"github.com/SerenaaaaRN/juicy/internal/dto"
 	"github.com/SerenaaaaRN/juicy/internal/model"
@@ -45,14 +46,14 @@ type CategoryService interface {
 }
 
 type ProductService interface {
-	ListProducts(ctx context.Context, categorySlug string, featuredOnly bool, tag string, sort string, page, perPage int, includeUnavailable bool, sizes []string, search string) ([]dto.ProductResponse, int64, error)
+	ListProducts(ctx context.Context, filter dto.ProductFilter) ([]dto.ProductResponse, int64, error)
 	GetProductBySlug(ctx context.Context, slug string) (*dto.ProductDetailResponse, error)
 	GetProductByID(ctx context.Context, id uuid.UUID) (*dto.ProductDetailResponse, error)
 	CreateProduct(ctx context.Context, product *model.Product) (*model.Product, error)
 	UpdateProduct(ctx context.Context, id uuid.UUID, product *model.Product) (*model.Product, error)
 	DeleteProduct(ctx context.Context, id uuid.UUID) error
 
-	AddProductImages(ctx context.Context, id uuid.UUID, filePaths []string) error
+	AddProductImages(ctx context.Context, id uuid.UUID, files []*multipart.FileHeader) error
 	AddProductImageUrl(ctx context.Context, id uuid.UUID, imageUrl string) error
 	DeleteProductImage(ctx context.Context, id uuid.UUID, imageID uuid.UUID) error
 	SetPrimaryProductImage(ctx context.Context, id uuid.UUID, imageID uuid.UUID) error
@@ -101,6 +102,6 @@ type WishlistService interface {
 }
 
 type AnalyticsService interface {
-	GetOverview(ctx context.Context) (map[string]interface{}, error)
-	GetOrdersChart(ctx context.Context) ([]map[string]interface{}, error)
+	GetOverview(ctx context.Context) (*dto.AnalyticsOverview, error)
+	GetOrdersChart(ctx context.Context) ([]dto.OrdersChartItem, error)
 }

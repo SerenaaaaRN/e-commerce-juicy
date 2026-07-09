@@ -11,21 +11,18 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
-
-var (
-	ErrEmailTaken    = errors.New("EMAIL_TAKEN")
-	ErrWrongPassword = errors.New("WRONG_PASSWORD")
-	ErrInactiveUser  = errors.New("USER_INACTIVE")
-)
-
 type customerService struct {
 	repo   CustomerRepository
 	config *config.Config
 }
 
+const CustomerAccessTokenType = "access"
+
 type CustomerClaims struct {
 	CustomerID string `json:"customer_id"`
+	TokenType  string `json:"token_type"`
 	jwt.RegisteredClaims
 }
 
@@ -58,13 +55,13 @@ func (s *customerService) Register(ctx context.Context, req dto.CustomerRegister
 
 	err = s.repo.Create(ctx, customer)
 	if err != nil {
-		if stringsContains(err.Error(), "unique") || stringsContains(err.Error(), "duplicate") {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return nil, ErrEmailTaken
 		}
 		return nil, err
 	}
 
-	token, err := s.generateToken(customer.ID.String(), time.Duration(s.config.JWTCustomerExpiryDays)*24*time.Hour)
+	token, err := s.generateToken(customer.ID.String(), CustomerAccessTokenType, time.Duration(s.config.JWTCustomerExpiryDays)*24*time.Hour)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +92,7 @@ func (s *customerService) Login(ctx context.Context, req dto.CustomerLoginReques
 		return nil, ErrInvalidCredentials
 	}
 
-	token, err := s.generateToken(customer.ID.String(), time.Duration(s.config.JWTCustomerExpiryDays)*24*time.Hour)
+	token, err := s.generateToken(customer.ID.String(), CustomerAccessTokenType, time.Duration(s.config.JWTCustomerExpiryDays)*24*time.Hour)
 	if err != nil {
 		return nil, err
 	}
@@ -260,9 +257,10 @@ func (s *customerService) GetCustomerDetail(ctx context.Context, id uuid.UUID) (
 	}, nil
 }
 
-func (s *customerService) generateToken(customerID string, expiry time.Duration) (string, error) {
+func (s *customerService) generateToken(customerID string, tokenType string, expiry time.Duration) (string, error) {
 	claims := &CustomerClaims{
 		CustomerID: customerID,
+		TokenType:  tokenType,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expiry)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -273,6 +271,4 @@ func (s *customerService) generateToken(customerID string, expiry time.Duration)
 	return token.SignedString([]byte(s.config.JWTCustomerSecret))
 }
 
-func stringsContains(s, substr string) bool {
-	return len(s) >= len(substr) && (s == substr || (len(substr) > 0 && (s[0:len(substr)] == substr || stringsContains(s[1:], substr))))
-}
+

@@ -20,7 +20,7 @@ Dua portal: **Customer API** (public + authenticated) dan **Admin API** (authent
 | **Password** | bcrypt via `golang.org/x/crypto` |
 | **Image Upload** | Cloudinary v2 (with mock fallback) |
 | **Email** | Resend v2 (with mock fallback) |
-| **Background Worker** | Custom pool pattern (`golang.org/x/sync`) |
+| **Background Worker** | Custom pool pattern (env-configurable pool/queue sizes) |
 | **UUID** | google/uuid |
 | **Config** | godotenv + os.Getenv |
 | **Migrations** | Plain SQL (golang-migrate compatible) |
@@ -45,31 +45,37 @@ golang.org/x/sync v0.20.0
 ## Arsitektur: Layered Pattern
 
 ```
-cmd/main.go
+cmd/main.go → internal/app/   # Entry point → DI wiring
   ↓
-internal/config/       → Environment variables (.env)
-internal/database/     → GORM connection (pool: 25 max open, 10 idle)
-internal/router/       → All route definitions (Gin groups, middleware)
+internal/config/              → Environment variables (.env)
+internal/database/            → GORM connection (pool: 25 max open, 10 idle)
   ↓
-internal/handler/      → HTTP layer (request binding, response formatting)
+internal/repository/          → Database access (GORM queries)
   ↓ (interface)
-internal/service/      → Business logic, validation, orchestration
+internal/service/             → Business logic, validation, orchestration
   ↓ (interface)
-internal/repository/   → Database access (GORM queries)
+internal/handler/             → HTTP layer (request binding, typed response formatting)
   ↓
-[PostgreSQL]
+internal/router/              → Route definitions (Gin groups, middleware)
+  ↓
+[Gin Engine → http.Server]
 ```
 
-### Dependency Injection Flow (di `cmd/main.go`)
+### Dependency Injection Flow
 
 ```
-config.Load() → database.Connect(cfg)
-  → repository.New*Repository(db)
-  → service.New*Service(repo, ...)
-  → handler.New*Handler(srv)
-  → router.NewRouter(handler...)
-  → r.Setup(ginEngine)
-  → srv.ListenAndServe()
+main.go → config.Load()
+        → gin.SetMode()
+        → app.New(cfg)               # internal/app/app.go
+            → database.Connect(cfg)
+            → repository.New*Repository(db)
+            → service.New*Service(repo, ...)
+            → handler.New*Handler(srv)
+            → handler.Handlers{...} (aggregate struct)
+            → router.NewRouter(h, cfg) + Setup(ginEngine)
+            → &http.Server{Handler: ginEngine}
+        → a.ListenAndServe()
+        → graceful shutdown
 ```
 
 ---
@@ -79,7 +85,10 @@ config.Load() → database.Connect(cfg)
 ```
 server/
 ├── cmd/
-│   └── main.go                  # Entry point: init all layers, graceful shutdown
+│   └── main.go                  # Entry point: ~30 lines (config → app.New → serve → shutdown)
+
+├── internal/app/
+│   └── app.go                   # DI wiring: repo → service → handler → router → App struct
 │
 ├── internal/
 │   ├── config/
@@ -104,7 +113,7 @@ server/
 │   │   ├── review.go            #   Review { ID, ProductID, CustomerID, OrderID, Rating, Body(*), IsPublished }
 │   │   └── wishlist.go          #   WishlistItem { ID, CustomerID, VariantID } — unique(CustomerID+VariantID)
 │   │
-│   ├── dto/                     # Data Transfer Objects (7 files)
+│   ├── dto/                     # Data Transfer Objects (8 files)
 │   │   ├── admin.go             #   AdminLoginRequest, AdminResponse, AdminLoginResponse
 │   │   ├── customer.go          #   CustomerRegisterRequest, CustomerLoginRequest, UpdateProfileRequest,
 │   │   │                       #   ChangePasswordRequest, AddressRequest, UpdateCustomerStatusRequest,
@@ -117,11 +126,16 @@ server/
 │   │   │                       #   OrderCheckoutResponse, OrderResponse, OrderDetailResponse,
 │   │   │                       #   OrderItemResponse, OrderAddressInfo, AdminOrderResponse
 │   │   ├── review.go            #   CreateReviewRequest, ReviewPublishRequest, ReviewResponse, AdminReviewResponse
-│   │   └── wishlist.go          #   AddWishlistItemRequest, WishlistItemResponse, WishlistCheckResponse
+│   │   ├── wishlist.go          #   AddWishlistItemRequest, WishlistItemResponse, WishlistCheckResponse
+│   │   └── analytics.go         #   AnalyticsOverview, OrdersChartItem, etc.
 │   │
-│   ├── handler/                 # HTTP handlers (12 files)
+│   ├── handler/                 # HTTP handlers (14 files)
 │   │   ├── interfaces.go        #   All service interfaces (AdminService, CustomerService, etc.)
-│   │   ├── helper.go            #   getCustomerID(), getAdminID(), okJSON(), createdJSON(), errJSON(), validationErrJSON()
+│   │   ├── handlers.go          #   Handlers struct aggregating all 10 handlers
+│   │   ├── response.go          #   Typed responses: SuccessResponse, ErrorResponse, PaginationMeta,
+│   │   │                       #   okJSON(), createdJSON(), errJSON(), validationErrJSON(),
+│   │   │                       #   okPaginatedJSON(), parseUUIDParam(), parsePaginationParams()
+│   │   ├── helper.go            #   getCustomerID(), getAdminID()
 │   │   ├── admin.go             #   AdminHandler: Login, Refresh, Logout, GetProfile
 │   │   ├── customer.go          #   CustomerHandler: Register, Login, GetProfile, UpdateProfile,
 │   │   │                       #   ChangePassword, ListCustomers, GetCustomerDetail, UpdateCustomerStatus
@@ -140,23 +154,28 @@ server/
 │   │   ├── wishlist.go          #   WishlistHandler: GetWishlist, CheckWishlist, AddToWishlist, RemoveFromWishlist
 │   │   └── analytics.go         #   AnalyticsHandler: GetOverview, GetOrdersChart
 │   │
+│   ├── router/                  # Route definitions (1 file)
+│   │   └── router.go            #   Router struct, Setup() → all routes grouped by auth level
+│   │
 │   ├── middleware/              # Gin middleware (3 files)
 │   │   ├── cors.go              #   Dynamic CORS from ALLOWED_ORIGINS config, preflight 204
 │   │   ├── admin_auth.go        #   JWT Bearer validation, AdminClaims{AdminID, TokenType},
 │   │   │                       #   401 on invalid/expired, set "admin_id" in context
-│   │   └── customer_auth.go     #   JWT Bearer validation, CustomerClaims{CustomerID},
+│   │   └── customer_auth.go     #   JWT Bearer validation, CustomerClaims{CustomerID, TokenType},
 │   │                           #   401 on invalid/expired, set "customer_id" in context
 │   │
-│   ├── repository/              # Database access (9 files)
+│   ├── repository/              # Database access (11 files)
 │   │   ├── admin.go             #   FindByEmail, FindByID
 │   │   ├── customer.go          #   FindByEmail, FindByID, Create, Update, FindAll (paginated + LIKE search),
 │   │   │                       #   UpdateStatus, GetStats (aggregate), GetOrderHistory
 │   │   ├── address.go           #   FindByID, FindByCustomerID, Create (tx), Update (tx), Delete, SetDefault (tx)
 │   │   ├── category.go          #   FindAllActive, FindAll, FindByID, FindBySlug, Create, Update, Delete, GetProductCounts
-│   │   ├── product.go           #   FindAll (10 params: CTE for subcategories, EXISTS for sizes,
+│   │   ├── checks.go            #   Compile-time interface satisfaction checks for all repos
+│   │   ├── product.go           #   FindAll (ProductFilter: CTE for subcategories, EXISTS for sizes,
 │   │   │                       #   array @> for tags, ORDER BY sort, pagination),
 │   │   │                       #   FindBySlug, FindByID, Create, Update, Delete,
 │   │   │                       #   Image CRUD, Variant CRUD (soft-deactivate),
+│   │   │                       #   FindVariantsByIDs (batch variant→productID lookup),
 │   │   │                       #   GetReviewStats, GetReviewStat
 │   │   ├── cart.go              #   FindByCustomerID (nested Preload), FindItemByID, UpsertItem (ON CONFLICT),
 │   │   │                       #   UpdateItemQuantity, RemoveItem, ClearCart
@@ -170,10 +189,13 @@ server/
 │   │   ├── review.go            #   Create, FindByProductID (paginated + Preload Customer),
 │   │   │                       #   FindAll (paginated + Preload Customer+Product, optional filters),
 │   │   │                       #   FindByID, UpdatePublishStatus, Delete, Exists
-│   │   └── wishlist.go          #   FindByCustomerID (nested Preload), Exists, Add, Remove (RowsAffected check)
+│   │   ├── wishlist.go          #   FindByCustomerID (nested Preload), Exists, Add, Remove (RowsAffected check)
+│   │   └── analytics.go         #   GetOverview (6 aggregate queries), GetOrdersChart (monthly TO_CHAR)
 │   │
-│   └── service/                 # Business logic (14 files)
+│   └── service/                 # Business logic (16 files)
 │       ├── interfaces.go        #   All repository interfaces (used by services)
+│       ├── errors.go            #   All sentinel errors (single source of truth, 20+ errors)
+│       ├── helper.go            #   getPrimaryImageURL, toImageResponses, toVariantResponses
 │       ├── background.go        #   BackgroundWorker: pool goroutines, channel queue, graceful shutdown
 │       ├── cloudinary.go        #   CloudinaryService: UploadImage, DeleteImage (mock fallback)
 │       ├── email.go             #   EmailService: SendOrderConfirmation, SendAdminOrderAlert,
@@ -188,15 +210,15 @@ server/
 │       ├── cart.go              #   cartService: GetCart (with price calc), AddItem (stock check + upsert),
 │       │                       #   UpdateQuantity (stock check), RemoveItem, ClearCart
 │       ├── order.go             #   orderService: Checkout (tx: lock stock → create order → clear cart → email),
-│       │                       #   GetCustomerOrders, GetOrderDetail, CancelOrder (tx + restock),
+│       │                       #   GetCustomerOrders, GetOrderDetail (resolveVariantProductIDs),
+│       │                       #   CancelOrder (tx + restock),
 │       │                       #   CompleteOrder, ListAllOrders, UpdateStatus (email on shipped),
 │       │                       #   UpdatePaymentStatus, Order number generation
 │       ├── review.go            #   reviewService: SubmitReview (multi-step validation), GetProductReviews,
 │       │                       #   ListAllReviews, UpdatePublishStatus, Delete
 │       ├── wishlist.go          #   wishlistService: GetWishlist (with product/variant info), CheckWishlist,
 │       │                       #   AddToWishlist (dedup check), RemoveFromWishlist
-│       └── analytics.go         #   analyticsService: GetOverview (4 concurrent queries via errgroup),
-│       │                       #   GetOrdersChart (6-month aggregate with TO_CHAR)
+│       └── analytics.go         #   analyticsService: thin delegator to AnalyticsRepository
 │
 ├── migrations/                  # SQL migrations (golang-migrate format)
 │   ├── 000001_core.up/down.sql       # Types: order_status, payment_status; Tables: admins, customers, categories
@@ -206,11 +228,13 @@ server/
 │   ├── 000005_engagement.up/down.sql          # Tables: reviews (unique product+customer+order), wishlist_items (unique customer+variant)
 │   └── seed.sql                               # Production seed data (categories, products, variants, images, orders, reviews, customers)
 │
+├── .golangci.yml                 # Linter config (govet, ineffassign, unused, misspell, sloglint, gosimple)
 ├── .env                          # Local env vars (dev defaults)
 ├── .env.example                  # Template for env vars
+├── bcrypt.go                     # CLI helper: `go run bcrypt.go <password>` (//go:build ignore)
 ├── go.mod
 ├── go.sum
-└── main.exe                      # Compiled binary
+└── cmd.exe                       # Compiled binary
 ```
 
 ---
@@ -424,6 +448,7 @@ type Config struct {
     ResendAPIKey, ResendFromEmail, AdminAlertEmail
     AllowedOrigins string  // comma-separated CORS origins
     DefaultShippingFee float64  // default: 25000
+    BackgroundWorkerPoolSize, BackgroundWorkerQueueSize int  // default: 5, 100
 }
 ```
 
@@ -447,18 +472,19 @@ type Config struct {
 - 401 untuk semua error (missing, invalid, expired, wrong type)
 
 **CustomerAuth** (`middleware/customer_auth.go`):
-- Sama seperti AdminAuth tapi dengan `CustomerClaims{CustomerID}` dan `JWTCustomerSecret`
-- **Tidak ada** pengecekan `TokenType` (access/refresh bisa dipakai untuk akses)
+- Sama seperti AdminAuth tapi dengan `CustomerClaims{CustomerID, TokenType}` dan `JWTCustomerSecret`
+- Verifikasi `TokenType == "access"` (mencegah refresh token sebagai access)
 - Set `c.Set("customer_id", uuid.UUID)`
 
 ### Handler Layer
 
 - Setiap handler menerima `service interface` via constructor
-- `helper.go` menyediakan: `getCustomerID(ctx)`, `getAdminID(ctx)`, `okJSON()`, `createdJSON()`, `errJSON()`, `validationErrJSON()`
+- `helper.go` menyediakan: `getCustomerID(ctx)`, `getAdminID(ctx)`
+- `response.go` menyediakan typed response helpers: `okJSON()`, `createdJSON()`, `errJSON()`, `validationErrJSON()`, `okPaginatedJSON()`, `parseUUIDParam()`, `parsePaginationParams()`
 - Input binding: `c.ShouldBindJSON(&dto.SomeRequest)` dengan Gin binding tags
 - Error mapping: `errors.Is(err, service.ErrXxx)` → HTTP status code
-- Pagination meta dihitung di level handler: `totalPages = ceil(total / perPage)`
-- Response selalu `{"success": bool, "data": ...}` atau `{"success": false, "error": {...}}`
+- Pagination meta dihitung via helper: `PaginationMeta{Page, PerPage, Total, TotalPages}` via `calcTotalPages()`
+- Response selalu `{"success": bool, "data": ...}` atau `{"success": false, "error": {...}}` — tanpa `gin.H{}` raw
 
 ### Service Layer
 
@@ -468,7 +494,8 @@ type Config struct {
 - JWT token generation: `HS256` via `golang-jwt/jwt/v5`
 - Cloudinary & Email: graceful **mock fallback** saat credential tidak dikonfigurasi
 - Order email: **fire-and-forget** via `BackgroundWorker.Submit()`
-- Concurrent analytics: `errgroup` (4 goroutines parallel)
+- Image batch upload: **Cloudinary rollback** jika salah satu upload/DB save gagal
+- ProductID mapping: **batch variant→productID lookup** (`FindVariantsByIDs`) untuk order detail items (sebelumnya ngirim variantID sebagai productID)
 
 ### Repository Layer
 
@@ -490,7 +517,7 @@ NewBackgroundWorker(ctx, poolSize, queueSize)
   → spawns poolSize goroutines
   → each worker: select { ctx.Done(), <-tasks }
   → Submit(task) non-blocking via select { case tasks <- task }
-  → Shutdown(): cancel context → close channel → Wait() all workers
+  → Shutdown(): cancel() → Wait() workers exit via ctx.Done() → channel GC'd
   → Panic recovery per task execution
   → Sentinel error: ErrWorkerPoolClosed
 ```
@@ -515,7 +542,7 @@ NewBackgroundWorker(ctx, poolSize, queueSize)
 | Claim | Value |
 |---|---|
 | CustomerID | string UUID |
-| TokenType | **tidak ada** — hanya RegisteredClaims |
+| TokenType | "access" |
 | Expiry | configurable (default 7 hari) |
 | No refresh token | customer token langsung expired, user harus login ulang |
 
@@ -631,6 +658,8 @@ source: crypto/rand (fallback ke math/rand time-based jika crypto gagal)
 | `ADMIN_ALERT_EMAIL` | `admin@juicy.com` | No | Admin notification email |
 | `ALLOWED_ORIGINS` | `http://localhost:5173` | No | Comma-separated CORS origins |
 | `DEFAULT_SHIPPING_FEE` | `25000` | No | Default shipping fee |
+| `BACKGROUND_WORKER_POOL_SIZE` | `5` | No | Background worker goroutine pool size |
+| `BACKGROUND_WORKER_QUEUE_SIZE` | `100` | No | Background worker channel buffer size |
 
 ---
 
@@ -676,11 +705,10 @@ type ProductService interface {
 type productService struct {
     repo              ProductRepository
     cloudinaryService *CloudinaryService
-    db                *gorm.DB
 }
 
-func NewProductService(repo ProductRepository, cloudinaryService *CloudinaryService, db *gorm.DB) *productService {
-    return &productService{repo: repo, cloudinaryService: cloudinaryService, db: db}
+func NewProductService(repo ProductRepository, cloudinaryService *CloudinaryService) *productService {
+    return &productService{repo: repo, cloudinaryService: cloudinaryService}
 }
 ```
 
@@ -700,11 +728,10 @@ func (r *addressRepo) Create(ctx context.Context, address *model.Address) error 
 }
 ```
 
-### Pagination Response
+### Pagination Response (Typed Helpers)
 ```go
 func (h *CustomerHandler) ListCustomers(c *gin.Context) {
-    page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-    perPage, _ := strconv.Atoi(c.DefaultQuery("per_page", "10"))
+    page, perPage := parsePaginationParams(c)
     search := c.Query("search")
 
     customers, total, err := h.srv.ListCustomers(c.Request.Context(), page, perPage, search)
@@ -713,16 +740,7 @@ func (h *CustomerHandler) ListCustomers(c *gin.Context) {
         return
     }
 
-    totalPages := int(math.Ceil(float64(total) / float64(perPage)))
-    okJSON(c, gin.H{
-        "items": customers,
-        "meta": gin.H{
-            "page":        page,
-            "per_page":    perPage,
-            "total":       total,
-            "total_pages": totalPages,
-        },
-    })
+    okPaginatedJSON(c, customers, page, perPage, total)
 }
 ```
 
@@ -740,13 +758,18 @@ func (s *addressService) GetAddressByID(ctx context.Context, id, customerID uuid
 }
 ```
 
-### JSON Response Helpers
+### JSON Response Helpers (Typed)
 ```go
 okJSON(c, data)          // 200: {"success":true, "data": data}
 createdJSON(c, data)     // 201: {"success":true, "data": data}
 okMessageJSON(c, msg)    // 200: {"success":true, "message": msg}
 errJSON(c, status, msg, code)   // {"success":false, "error":{message, code}}
 validationErrJSON(c, details)   // 422: {"success":false, "error":{..., details}}
+okPaginatedJSON(c, items, page, perPage, total)  // 200: {data, meta{page,per_page,total,total_pages}}
+
+// URL param helpers
+parseUUIDParam(c, "id") uuid.UUID     // returns UUID or aborts with 400
+parsePaginationParams(c) (page, perPage int)  // defaults: page=1, perPage=10
 ```
 
 ---
@@ -769,14 +792,19 @@ Format: `golang-migrate` compatible (sequential numbering + `up`/`down`).
 
 ## Catatan Penting
 
-- **No DI container**: Semua dependency injection manual di `main.go` — constructor chain
+- **No DI container**: Semua dependency injection manual di `internal/app/app.go` — constructor chain
 - **No migration tool built-in**: Migrations tidak di-run oleh aplikasi, perlu dijalankan manual atau via `golang-migrate`
-- **CustomerAuth tidak validasi TokenType**: Refresh token customer bisa jadi access token (beda dengan admin yang punya guard `TokenType == "access"`)
+- **CustomerAuth validasi TokenType**: Customer auth middleware validasi `TokenType == "access"` — mencegah refresh token dipakai sebagai access token. Sama untuk AdminAuth.
 - **Email & Cloudinary** punya **mock fallback**: Jika credential tidak diset, service log ke stdout dan return placeholder — tidak fail
 - **Order email fire-and-forget**: Error email tidak mempengaruhi response order — hanya di-log
+- **Image batch upload rollback**: Jika salah satu upload Cloudinary atau DB save gagal dalam batch, semua image yang sudah terupload di-rollback (delete dari Cloudinary)
+- **Order item ProductID**: Di-resolve via batch lookup `FindVariantsByIDs` menghindari N+1 — mengembalikan product_id yang benar (sebelumnya salah mengirim variant_id)
 - **Price calculation di cart**: `unitPrice = product.price + variant.additional_price` — dihitung per request, tidak disimpan di cart
 - **Order item snapshot**: Product name, variant, price di-copy ke `order_items` saat checkout — perubahan data produk setelahnya tidak mengubah histori
 - **Variant soft delete**: Tidak dihapus, hanya `is_active = false` — menjaga integritas referensi order_items
 - **No Soft Delete untuk model lain**: Product, Category, dll di-hard-delete
 - **Pool connection**: 25 max open, 10 max idle — via GORM `sql.DB` config
 - **`gorm.SkipDefaultTransaction: true`**: Mencegah GORM membungkus query tunggal dalam transaction (kecuali explicit `Transaction()`)
+- **Compile-time interface checks**: `repository/checks.go` verifikasi semua repo memenuhi interface service
+- **Graceful shutdown order**: HTTP server berhenti menerima request **sebelum** worker pool di-drain
+- **Logging via log/slog**: Semua log terstruktur via `log/slog` (bukan `log.Println`/`log.Printf`)

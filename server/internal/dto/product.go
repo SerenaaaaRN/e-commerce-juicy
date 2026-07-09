@@ -115,3 +115,14 @@ type ProductReviewStat struct {
 	AvgRating   float64
 	ReviewCount int
 }
+
+type ProductFilter struct {
+	CategorySlug       string
+	FeaturedOnly       bool
+	Tag                string
+	Sort               string
+	Page, PerPage      int
+	IncludeUnavailable bool
+	Sizes              []string
+	Search             string
+}

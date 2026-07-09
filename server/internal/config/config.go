@@ -34,8 +34,10 @@ type Config struct {
 	ResendAPIKey       string
 	ResendFromEmail    string
 	AdminAlertEmail    string
-	AllowedOrigins     string
-	DefaultShippingFee float64
+	AllowedOrigins            string
+	DefaultShippingFee        float64
+	BackgroundWorkerPoolSize  int
+	BackgroundWorkerQueueSize int
 }
 
 func Load() (*Config, error) {
@@ -72,6 +74,8 @@ func Load() (*Config, error) {
 	cfg.JWTAdminRefreshExpiryDays = getEnvInt("JWT_ADMIN_REFRESH_EXPIRY_DAYS", 1)
 	cfg.JWTCustomerExpiryDays = getEnvInt("JWT_CUSTOMER_EXPIRY_DAYS", 7)
 	cfg.DefaultShippingFee = getEnvFloat("DEFAULT_SHIPPING_FEE", 25000.0)
+	cfg.BackgroundWorkerPoolSize = getEnvInt("BACKGROUND_WORKER_POOL_SIZE", 5)
+	cfg.BackgroundWorkerQueueSize = getEnvInt("BACKGROUND_WORKER_QUEUE_SIZE", 100)
 
 	if cfg.JWTAdminSecret == "" {
 		return nil, fmt.Errorf("JWT_ADMIN_SECRET is required")

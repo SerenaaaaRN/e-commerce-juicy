@@ -20,27 +20,20 @@ func NewProductRepository(db *gorm.DB) *productRepo {
 
 func (r *productRepo) FindAll(
 	ctx context.Context,
-	categorySlug string,
-	featuredOnly bool,
-	tag string,
-	sort string,
-	page, perPage int,
-	includeUnavailable bool,
-	sizes []string,
-	search string,
+	filter dto.ProductFilter,
 ) ([]model.Product, int64, error) {
 	var products []model.Product
 	var total int64
 
 	query := r.db.WithContext(ctx).Model(&model.Product{})
 
-	if !includeUnavailable {
+	if !filter.IncludeUnavailable {
 		query = query.Where("is_available = ?", true)
 	}
 
-	if categorySlug != "" {
+	if filter.CategorySlug != "" {
 		var cat model.Category
-		if err := r.db.WithContext(ctx).Where("slug = ?", categorySlug).First(&cat).Error; err == nil {
+		if err := r.db.WithContext(ctx).Where("slug = ?", filter.CategorySlug).First(&cat).Error; err == nil {
 			var descendants []uuid.UUID
 			err = r.db.WithContext(ctx).Raw(`
 				WITH RECURSIVE cat_tree AS (
@@ -59,25 +52,25 @@ func (r *productRepo) FindAll(
 			}
 		} else {
 			query = query.Joins("JOIN categories ON categories.id = products.category_id").
-				Where("categories.slug = ?", categorySlug)
+				Where("categories.slug = ?", filter.CategorySlug)
 		}
 	}
 
-	if len(sizes) > 0 {
-		query = query.Where("EXISTS (SELECT 1 FROM product_variants pv WHERE pv.product_id = products.id AND pv.is_active = ? AND pv.size IN ?)", true, sizes)
+	if len(filter.Sizes) > 0 {
+		query = query.Where("EXISTS (SELECT 1 FROM product_variants pv WHERE pv.product_id = products.id AND pv.is_active = ? AND pv.size IN ?)", true, filter.Sizes)
 	}
 
-	if search != "" {
-		searchTerm := "%" + strings.ToLower(search) + "%"
+	if filter.Search != "" {
+		searchTerm := "%" + strings.ToLower(filter.Search) + "%"
 		query = query.Where("LOWER(products.name) LIKE ? OR LOWER(products.description) LIKE ?", searchTerm, searchTerm)
 	}
 
-	if featuredOnly {
+	if filter.FeaturedOnly {
 		query = query.Where("is_featured = ?", true)
 	}
 
-	if tag != "" {
-		query = query.Where("tags @> ?", `["`+tag+`"]`)
+	if filter.Tag != "" {
+		query = query.Where("tags @> ?", `["`+filter.Tag+`"]`)
 	}
 
 	err := query.Count(&total).Error
@@ -90,7 +83,7 @@ func (r *productRepo) FindAll(
 		return db.Where("is_active = ?", true)
 	})
 
-	switch strings.ToLower(sort) {
+	switch strings.ToLower(filter.Sort) {
 	case "price_asc":
 		query = query.Order("price ASC")
 	case "price_desc":
@@ -103,8 +96,8 @@ func (r *productRepo) FindAll(
 		query = query.Order("price DESC")
 	}
 
-	offset := (page - 1) * perPage
-	err = query.Offset(offset).Limit(perPage).Find(&products).Error
+	offset := (filter.Page - 1) * filter.PerPage
+	err = query.Offset(offset).Limit(filter.PerPage).Find(&products).Error
 	if err != nil {
 		return nil, 0, err
 	}
@@ -177,6 +170,12 @@ func (r *productRepo) FindImageByID(ctx context.Context, id uuid.UUID) (*model.P
 	return &image, nil
 }
 
+func (r *productRepo) FindImagesByProductID(ctx context.Context, productID uuid.UUID) ([]model.ProductImage, error) {
+	var images []model.ProductImage
+	err := r.db.WithContext(ctx).Where("product_id = ?", productID).Order("display_order ASC").Find(&images).Error
+	return images, err
+}
+
 func (r *productRepo) SetPrimaryImage(ctx context.Context, id uuid.UUID, productID uuid.UUID) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		err := tx.Model(&model.ProductImage{}).Where("product_id = ?", productID).Update("is_primary", false).Error
@@ -191,6 +190,19 @@ func (r *productRepo) FindVariantsByProductID(ctx context.Context, productID uui
 	var variants []model.ProductVariant
 	err := r.db.WithContext(ctx).Where("product_id = ? AND is_active = ?", productID, true).Order("size ASC, color ASC").Find(&variants).Error
 	return variants, err
+}
+
+func (r *productRepo) FindVariantsByIDs(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]uuid.UUID, error) {
+	var variants []model.ProductVariant
+	err := r.db.WithContext(ctx).Where("id IN ?", ids).Find(&variants).Error
+	if err != nil {
+		return nil, err
+	}
+	result := make(map[uuid.UUID]uuid.UUID, len(variants))
+	for _, v := range variants {
+		result[v.ID] = v.ProductID
+	}
+	return result, nil
 }
 
 func (r *productRepo) FindVariantByID(ctx context.Context, id uuid.UUID) (*model.ProductVariant, error) {

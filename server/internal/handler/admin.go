@@ -15,7 +15,6 @@ type AdminHandler struct {
 	config *config.Config
 }
 
-// NewAdminHandler membuat instance baru dari AdminHandler.
 func NewAdminHandler(srv AdminService, cfg *config.Config) *AdminHandler {
 	return &AdminHandler{
 		srv:    srv,
@@ -23,7 +22,6 @@ func NewAdminHandler(srv AdminService, cfg *config.Config) *AdminHandler {
 	}
 }
 
-// Login menangani proses autentikasi admin dan memberikan token akses serta refresh cookie.
 func (h *AdminHandler) Login(c *gin.Context) {
 	var req dto.AdminLoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -34,13 +32,7 @@ func (h *AdminHandler) Login(c *gin.Context) {
 	resp, refreshToken, err := h.srv.Login(c.Request.Context(), req)
 	if err != nil {
 		if errors.Is(err, service.ErrInvalidCredentials) {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"success": false,
-				"error": gin.H{
-					"message": "Invalid email or password",
-					"code":    "INVALID_CREDENTIALS",
-				},
-			})
+			errJSON(c, http.StatusUnauthorized, "Invalid email or password", "INVALID_CREDENTIALS")
 			return
 		}
 		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
@@ -61,29 +53,16 @@ func (h *AdminHandler) Login(c *gin.Context) {
 	okJSON(c, resp)
 }
 
-// Refresh menangani pembaruan token akses admin menggunakan refresh token dari cookie.
 func (h *AdminHandler) Refresh(c *gin.Context) {
 	refreshToken, err := c.Cookie("refresh_token")
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Refresh token is missing",
-				"code":    "UNAUTHORIZED",
-			},
-		})
+		errJSON(c, http.StatusUnauthorized, "Refresh token is missing", "UNAUTHORIZED")
 		return
 	}
 
 	resp, newRefreshToken, err := h.srv.Refresh(c.Request.Context(), refreshToken)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Invalid refresh token",
-				"code":    "UNAUTHORIZED",
-			},
-		})
+		errJSON(c, http.StatusUnauthorized, "Invalid refresh token", "UNAUTHORIZED")
 		return
 	}
 
@@ -101,9 +80,7 @@ func (h *AdminHandler) Refresh(c *gin.Context) {
 	okJSON(c, resp)
 }
 
-// Logout menangani proses keluar sistem admin dengan menghapus cookie refresh token.
 func (h *AdminHandler) Logout(c *gin.Context) {
-
 	secure := h.config.AppEnv == "production"
 	c.SetCookie(
 		"refresh_token",
@@ -118,7 +95,6 @@ func (h *AdminHandler) Logout(c *gin.Context) {
 	okMessageJSON(c, "Successfully logged out")
 }
 
-// GetProfile mengambil data profil admin yang sedang login berdasarkan ID.
 func (h *AdminHandler) GetProfile(c *gin.Context) {
 	adminID, ok := getAdminID(c)
 	if !ok {
@@ -126,13 +102,7 @@ func (h *AdminHandler) GetProfile(c *gin.Context) {
 	}
 	profile, err := h.srv.GetAdminByID(c.Request.Context(), adminID)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Admin profile not found",
-				"code":    "NOT_FOUND",
-			},
-		})
+		errJSON(c, http.StatusNotFound, "Admin profile not found", "NOT_FOUND")
 		return
 	}
 

@@ -11,10 +11,8 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("╔══════════════════════════════════════╗")
-		fmt.Println("║  Encode:  go run bcrypt.go <password>")
-		fmt.Println("║  Verify:  go run bcrypt.go <password> <hash>")
-		fmt.Println("╚══════════════════════════════════════╝")
+		fmt.Println("Encode:  go run bcrypt.go <password>")
+		fmt.Println("Verify:  go run bcrypt.go <password> <hash>")
 		return
 	}
 

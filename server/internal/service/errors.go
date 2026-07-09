@@ -1,0 +1,30 @@
+package service
+
+import "errors"
+
+var (
+	ErrProductNotFound  = errors.New("PRODUCT_NOT_FOUND")
+	ErrVariantNotFound  = errors.New("VARIANT_NOT_FOUND")
+	ErrImageNotFound    = errors.New("IMAGE_NOT_FOUND")
+	ErrOrderNotFound    = errors.New("ORDER_NOT_FOUND")
+	ErrOutOfStock       = errors.New("OUT_OF_STOCK")
+	ErrInsufficientStock = errors.New("INSUFFICIENT_STOCK")
+	ErrNotPurchased     = errors.New("NOT_PURCHASED")
+	ErrOrderNotDelivered = errors.New("ORDER_NOT_DELIVERED")
+	ErrAlreadyReviewed  = errors.New("ALREADY_REVIEWED")
+	ErrReviewNotFound   = errors.New("REVIEW_NOT_FOUND")
+	ErrInvalidCredentials = errors.New("INVALID_CREDENTIALS")
+	ErrUnauthorized     = errors.New("UNAUTHORIZED")
+	ErrEmailTaken       = errors.New("EMAIL_TAKEN")
+	ErrWrongPassword    = errors.New("WRONG_PASSWORD")
+	ErrInactiveUser     = errors.New("USER_INACTIVE")
+	ErrCartEmpty          = errors.New("CART_EMPTY")
+	ErrCannotCancelOrder  = errors.New("CANNOT_CANCEL_ORDER")
+	ErrAddressNotFound    = errors.New("ADDRESS_NOT_FOUND")
+	ErrCategoryNotFound   = errors.New("CATEGORY_NOT_FOUND")
+	ErrCategoryHasProducts = errors.New("CATEGORY_HAS_PRODUCTS")
+	ErrWishlistItemExists = errors.New("WISHLIST_ITEM_EXISTS")
+	ErrCartItemNotFound   = errors.New("CART_ITEM_NOT_FOUND")
+	ErrCartUnauthorized   = errors.New("CART_UNAUTHORIZED")
+	ErrWorkerPoolClosed   = errors.New("WORKER_POOL_CLOSED")
+)

@@ -2,13 +2,8 @@ package service
 
 import (
 	"context"
-	"errors"
-	"log"
+	"log/slog"
 	"sync"
-)
-
-var (
-	ErrWorkerPoolClosed = errors.New("worker pool is closed")
 )
 
 type BackgroundWorker struct {
@@ -52,14 +47,21 @@ func (w *BackgroundWorker) worker() {
 }
 
 func (w *BackgroundWorker) drainRemaining() {
-	dropped := 0
+	executed := 0
 	for {
 		select {
-		case <-w.tasks:
-			dropped++
+		case task, ok := <-w.tasks:
+			if !ok {
+				if executed > 0 {
+					slog.Info("BackgroundWorker executed queued tasks during shutdown", "count", executed)
+				}
+				return
+			}
+			w.execute(task)
+			executed++
 		default:
-			if dropped > 0 {
-				log.Printf("[BackgroundWorker] WARNING: %d tasks were dropped during shutdown", dropped)
+			if executed > 0 {
+				slog.Info("BackgroundWorker executed queued tasks during shutdown", "count", executed)
 			}
 			return
 		}
@@ -69,7 +71,7 @@ func (w *BackgroundWorker) drainRemaining() {
 func (w *BackgroundWorker) execute(task func(ctx context.Context)) {
 	defer func() {
 		if r := recover(); r != nil {
-			log.Printf("[BackgroundWorker] PANIC RECOVERED: %v", r)
+			slog.Error("BackgroundWorker panic recovered", "recover", r)
 		}
 	}()
 	task(w.ctx)
@@ -87,9 +89,7 @@ func (w *BackgroundWorker) Submit(task func(ctx context.Context)) error {
 func (w *BackgroundWorker) Shutdown() {
 	w.once.Do(func() {
 		w.cancel()
-		close(w.tasks)
-		log.Println("[BackgroundWorker] Draining active and queued jobs...")
 		w.wg.Wait()
-		log.Println("[BackgroundWorker] All background jobs finished.")
+		slog.Info("BackgroundWorker stopped")
 	})
 }

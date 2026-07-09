@@ -45,7 +45,7 @@ type CategoryRepository interface {
 }
 
 type ProductRepository interface {
-	FindAll(ctx context.Context, categorySlug string, featuredOnly bool, tag string, sort string, page, perPage int, includeUnavailable bool, sizes []string, search string) ([]model.Product, int64, error)
+	FindAll(ctx context.Context, filter dto.ProductFilter) ([]model.Product, int64, error)
 	FindBySlug(ctx context.Context, slug string) (*model.Product, error)
 	FindByID(ctx context.Context, id uuid.UUID) (*model.Product, error)
 	Create(ctx context.Context, product *model.Product) error
@@ -55,9 +55,11 @@ type ProductRepository interface {
 	CreateImage(ctx context.Context, image *model.ProductImage) error
 	DeleteImage(ctx context.Context, id uuid.UUID, productID uuid.UUID) error
 	FindImageByID(ctx context.Context, id uuid.UUID) (*model.ProductImage, error)
+	FindImagesByProductID(ctx context.Context, productID uuid.UUID) ([]model.ProductImage, error)
 	SetPrimaryImage(ctx context.Context, id uuid.UUID, productID uuid.UUID) error
 
 	FindVariantsByProductID(ctx context.Context, productID uuid.UUID) ([]model.ProductVariant, error)
+	FindVariantsByIDs(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]uuid.UUID, error)
 	FindVariantByID(ctx context.Context, id uuid.UUID) (*model.ProductVariant, error)
 	CreateVariant(ctx context.Context, variant *model.ProductVariant) error
 	UpdateVariant(ctx context.Context, variant *model.ProductVariant) error
@@ -95,6 +97,11 @@ type WishlistRepository interface {
 	Exists(ctx context.Context, customerID uuid.UUID, variantID uuid.UUID) (bool, error)
 	Add(ctx context.Context, item *model.WishlistItem) error
 	Remove(ctx context.Context, customerID uuid.UUID, variantID uuid.UUID) error
+}
+
+type AnalyticsRepository interface {
+	GetOverview(ctx context.Context) (*dto.AnalyticsOverview, error)
+	GetOrdersChart(ctx context.Context) ([]dto.OrdersChartItem, error)
 }
 
 type ReviewRepository interface {

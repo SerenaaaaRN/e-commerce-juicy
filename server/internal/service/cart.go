@@ -2,16 +2,13 @@ package service
 
 import (
 	"context"
-	"errors"
 
 	"github.com/SerenaaaaRN/juicy/internal/dto"
 	"github.com/SerenaaaaRN/juicy/internal/model"
 	"github.com/google/uuid"
 )
 
-var (
-	ErrInsufficientStock = errors.New("INSUFFICIENT_STOCK")
-)
+
 
 type cartService struct {
 	repo        CartRepository
@@ -41,16 +38,7 @@ func (s *cartService) GetCart(ctx context.Context, customerID uuid.UUID) (*dto.C
 			continue
 		}
 
-		primaryImg := ""
-		for _, img := range product.Images {
-			if img.IsPrimary {
-				primaryImg = img.ImageURL
-				break
-			}
-		}
-		if primaryImg == "" && len(product.Images) > 0 {
-			primaryImg = product.Images[0].ImageURL
-		}
+		primaryImg := getPrimaryImageURL(product.Images)
 
 		unitPrice := product.Price + item.Variant.AdditionalPrice
 		subtotal := unitPrice * float64(item.Quantity)
@@ -123,11 +111,11 @@ func (s *cartService) AddCartItem(ctx context.Context, customerID uuid.UUID, req
 func (s *cartService) UpdateCartItemQuantity(ctx context.Context, id uuid.UUID, customerID uuid.UUID, req dto.UpdateCartItemQuantityRequest) error {
 	item, err := s.repo.FindItemByID(ctx, id)
 	if err != nil {
-		return errors.New("cart item not found")
+		return ErrCartItemNotFound
 	}
 
 	if item.CustomerID != customerID {
-		return errors.New("unauthorized cart access")
+		return ErrCartUnauthorized
 	}
 
 	variant, err := s.productRepo.FindVariantByID(ctx, item.VariantID)

@@ -2,18 +2,12 @@ package service
 
 import (
 	"context"
-	"errors"
-	"log"
+	"log/slog"
 	"time"
 
 	"github.com/SerenaaaaRN/juicy/internal/dto"
 	"github.com/SerenaaaaRN/juicy/internal/model"
 	"github.com/google/uuid"
-)
-
-var (
-	ErrCategoryNotFound    = errors.New("CATEGORY_NOT_FOUND")
-	ErrCategoryHasProducts = errors.New("CATEGORY_HAS_PRODUCTS")
 )
 
 type categoryService struct {
@@ -32,7 +26,7 @@ func (s *categoryService) ListActiveCategories(ctx context.Context) ([]dto.Categ
 
 	countMap, err := s.repo.GetProductCounts(ctx)
 	if err != nil {
-		log.Printf("Warning: failed to query product counts for categories: %v", err)
+		slog.Warn("Failed to query product counts for categories", "error", err)
 		countMap = make(map[uuid.UUID]int64)
 	}
 

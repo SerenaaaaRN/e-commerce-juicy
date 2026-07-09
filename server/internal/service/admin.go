@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/SerenaaaaRN/juicy/internal/config"
@@ -10,11 +9,6 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
-)
-
-var (
-	ErrInvalidCredentials = errors.New("INVALID_CREDENTIALS")
-	ErrUnauthorized       = errors.New("UNAUTHORIZED")
 )
 
 type adminService struct {

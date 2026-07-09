@@ -2,15 +2,10 @@ package service
 
 import (
 	"context"
-	"errors"
 
 	"github.com/SerenaaaaRN/juicy/internal/dto"
 	"github.com/SerenaaaaRN/juicy/internal/model"
 	"github.com/google/uuid"
-)
-
-var (
-	ErrWishlistItemExists = errors.New("WISHLIST_ITEM_EXISTS")
 )
 
 type wishlistService struct {

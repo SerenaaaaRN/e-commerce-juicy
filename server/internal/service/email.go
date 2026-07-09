@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 
 	"github.com/SerenaaaaRN/juicy/internal/config"
 	"github.com/SerenaaaaRN/juicy/internal/model"
@@ -19,7 +19,7 @@ type EmailService struct {
 
 func NewEmailService(cfg *config.Config) *EmailService {
 	if cfg.ResendAPIKey == "" {
-		log.Println("⚠️ RESEND_API_KEY is not set. Email services will fallback to mock stdout logging mode.")
+		slog.Warn("RESEND_API_KEY not set, using mock email mode")
 		return &EmailService{mock: true}
 	}
 
@@ -45,7 +45,7 @@ func (s *EmailService) SendOrderConfirmation(ctx context.Context, customerEmail,
 	`, customerName, order.OrderNumber, order.Status, order.Total)
 
 	if s.mock {
-		log.Printf("[Email Mock] Sending Order Confirmation to %s (%s). Subject: %s", customerName, customerEmail, subject)
+		slog.Debug("Email mock sending order confirmation", "customer", customerEmail, "subject", subject)
 		return
 	}
 
@@ -58,9 +58,9 @@ func (s *EmailService) SendOrderConfirmation(ctx context.Context, customerEmail,
 
 	_, err := s.client.Emails.SendWithContext(ctx, params)
 	if err != nil {
-		log.Printf("⚠️ Failed to send order confirmation email via Resend: %v", err)
+		slog.Error("Failed to send order confirmation email", "error", err, "customer", customerEmail)
 	} else {
-		log.Printf("✓ Order confirmation email sent to %s", customerEmail)
+		slog.Info("Order confirmation email sent", "customer", customerEmail)
 	}
 }
 
@@ -76,7 +76,7 @@ func (s *EmailService) SendAdminOrderAlert(ctx context.Context, order *model.Ord
 	`, order.OrderNumber, order.Total, strOrDash(order.PaymentMethod), strOrDash(order.Notes))
 
 	if s.mock {
-		log.Printf("[Email Mock] Sending Admin Alert to %s. Subject: %s", s.adminAlertEmail, subject)
+		slog.Debug("Email mock sending admin alert", "admin_email", s.adminAlertEmail, "subject", subject)
 		return
 	}
 
@@ -89,9 +89,9 @@ func (s *EmailService) SendAdminOrderAlert(ctx context.Context, order *model.Ord
 
 	_, err := s.client.Emails.SendWithContext(ctx, params)
 	if err != nil {
-		log.Printf("⚠️ Failed to send admin order alert email via Resend: %v", err)
+		slog.Error("Failed to send admin alert email", "error", err)
 	} else {
-		log.Printf("✓ Admin order alert email sent")
+		slog.Info("Admin alert email sent")
 	}
 }
 
@@ -106,7 +106,7 @@ func (s *EmailService) SendShippingUpdate(ctx context.Context, customerEmail, cu
 	`, customerName, order.OrderNumber)
 
 	if s.mock {
-		log.Printf("[Email Mock] Sending Shipping Update to %s (%s). Subject: %s", customerName, customerEmail, subject)
+		slog.Debug("Email mock sending shipping update", "customer", customerEmail, "subject", subject)
 		return
 	}
 
@@ -119,9 +119,9 @@ func (s *EmailService) SendShippingUpdate(ctx context.Context, customerEmail, cu
 
 	_, err := s.client.Emails.SendWithContext(ctx, params)
 	if err != nil {
-		log.Printf("⚠️ Failed to send shipping update email via Resend: %v", err)
+		slog.Error("Failed to send shipping update email", "error", err, "customer", customerEmail)
 	} else {
-		log.Printf("✓ Shipping update email sent to %s", customerEmail)
+		slog.Info("Shipping update email sent", "customer", customerEmail)
 	}
 }
 

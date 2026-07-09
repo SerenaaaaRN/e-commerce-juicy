@@ -2,7 +2,7 @@ package database
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -37,6 +37,6 @@ func Connect(cfg *config.Config) (*gorm.DB, error) {
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
 
-	log.Println("✓ Database connected successfully")
+	slog.Info("Database connected successfully")
 	return db, nil
 }

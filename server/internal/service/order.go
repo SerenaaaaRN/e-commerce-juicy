@@ -3,22 +3,16 @@ package service
 import (
 	"context"
 	"crypto/rand"
-
 	"errors"
 	"fmt"
+	"log/slog"
 	"math/big"
 	"time"
 
 	"github.com/SerenaaaaRN/juicy/internal/config"
 	"github.com/SerenaaaaRN/juicy/internal/dto"
 	"github.com/SerenaaaaRN/juicy/internal/model"
-	"github.com/SerenaaaaRN/juicy/internal/repository"
 	"github.com/google/uuid"
-)
-
-var (
-	ErrCartEmpty         = errors.New("CART_EMPTY")
-	ErrCannotCancelOrder = errors.New("CANNOT_CANCEL_ORDER")
 )
 
 type orderService struct {
@@ -81,16 +75,7 @@ func (s *orderService) Checkout(ctx context.Context, customerID uuid.UUID, req d
 			return nil, fmt.Errorf("failed to fetch product for variant: %w", err)
 		}
 
-		primaryImg := ""
-		for _, img := range product.Images {
-			if img.IsPrimary {
-				primaryImg = img.ImageURL
-				break
-			}
-		}
-		if primaryImg == "" && len(product.Images) > 0 {
-			primaryImg = product.Images[0].ImageURL
-		}
+		primaryImg := getPrimaryImageURL(product.Images)
 
 		unitPrice := product.Price + item.Variant.AdditionalPrice
 		subtotal += unitPrice * float64(item.Quantity)
@@ -133,8 +118,8 @@ func (s *orderService) Checkout(ctx context.Context, customerID uuid.UUID, req d
 
 	err = s.repo.Create(ctx, order, orderItems)
 	if err != nil {
-		if errors.Is(err, repository.ErrOutOfStock) {
-			return nil, repository.ErrOutOfStock
+		if errors.Is(err, ErrOutOfStock) {
+			return nil, ErrOutOfStock
 		}
 		return nil, fmt.Errorf("checkout create order: %w", err)
 	}
@@ -161,22 +146,15 @@ func (s *orderService) GetCustomerOrders(ctx context.Context, customerID uuid.UU
 		return nil, 0, err
 	}
 
-	orderIDs := make([]uuid.UUID, len(orders))
-	for i, o := range orders {
-		orderIDs[i] = o.ID
-	}
-
-	counts, _ := s.repo.GetItemCounts(ctx, orderIDs)
-
 	res := make([]dto.OrderResponse, len(orders))
-	for i, o := range orders {
+	for i, order := range orders {
 		res[i] = dto.OrderResponse{
-			ID:          o.ID,
-			OrderNumber: o.OrderNumber,
-			Status:      o.Status,
-			Total:       o.Total,
-			ItemCount:   counts[o.ID],
-			CreatedAt:   o.CreatedAt,
+			ID:          order.ID,
+			OrderNumber: order.OrderNumber,
+			Status:      order.Status,
+			Total:       order.Total,
+			ItemCount:   len(order.Items),
+			CreatedAt:   order.CreatedAt,
 		}
 	}
 
@@ -189,62 +167,21 @@ func (s *orderService) GetCustomerOrderDetail(ctx context.Context, orderNumber s
 		return nil, ErrOrderNotFound
 	}
 
-	var address *model.Address
-	if order.AddressID != nil {
-		address, _ = s.addressRepo.FindByID(ctx, *order.AddressID)
-	}
-	if address == nil {
-		address = &model.Address{}
+	if order.CustomerID != customerID {
+		return nil, ErrOrderNotFound
 	}
 
-	itemsRes := make([]dto.OrderItemResponse, len(order.Items))
-	for i, item := range order.Items {
-		var pID *uuid.UUID
-		if item.VariantID != nil {
-			if variant, err := s.productRepo.FindVariantByID(ctx, *item.VariantID); err == nil {
-				pID = &variant.ProductID
-			}
-		}
-
-		itemsRes[i] = dto.OrderItemResponse{
-			ProductID:    pID,
-			ProductName:  item.ProductName,
-			VariantSize:  item.VariantSize,
-			VariantColor: item.VariantColor,
-			ImageURL:     item.ImageURL,
-			Quantity:     item.Quantity,
-			UnitPrice:    item.UnitPrice,
-			Subtotal:     item.UnitPrice * float64(item.Quantity),
-		}
-	}
-
-	return &dto.OrderDetailResponse{
-		ID:            order.ID,
-		OrderNumber:   order.OrderNumber,
-		Status:        order.Status,
-		PaymentStatus: order.PaymentStatus,
-		Subtotal:      order.Subtotal,
-		ShippingFee:   order.ShippingFee,
-		Total:         order.Total,
-		Notes:         order.Notes,
-		ShippedAt:     order.ShippedAt,
-		DeliveredAt:   order.DeliveredAt,
-		Address: dto.OrderAddressInfo{
-			RecipientName: address.RecipientName,
-			Phone:         address.Phone,
-			AddressLine:   address.AddressLine,
-			City:          address.City,
-			Province:      address.Province,
-			PostalCode:    address.PostalCode,
-		},
-		Items:     itemsRes,
-		CreatedAt: order.CreatedAt,
-	}, nil
+	variantProductMap := s.resolveVariantProductIDs(ctx, order.Items)
+	return mapToOrderDetailResponse(order, variantProductMap), nil
 }
 
 func (s *orderService) CancelOrder(ctx context.Context, orderNumber string, customerID uuid.UUID) error {
 	order, err := s.repo.FindByOrderNumberAndCustomerID(ctx, orderNumber, customerID)
 	if err != nil {
+		return ErrOrderNotFound
+	}
+
+	if order.CustomerID != customerID {
 		return ErrOrderNotFound
 	}
 
@@ -261,40 +198,31 @@ func (s *orderService) CompleteOrder(ctx context.Context, orderNumber string, cu
 		return ErrOrderNotFound
 	}
 
+	if order.CustomerID != customerID {
+		return ErrOrderNotFound
+	}
+
 	return s.repo.CompleteOrderTx(ctx, order.ID)
 }
 
-func (s *orderService) ListAllOrders(
-	ctx context.Context,
-	status string,
-	paymentStatus string,
-	search string,
-	page, perPage int,
-) ([]dto.AdminOrderResponse, int64, error) {
+func (s *orderService) ListAllOrders(ctx context.Context, status string, paymentStatus string, search string, page, perPage int) ([]dto.AdminOrderResponse, int64, error) {
 	orders, total, err := s.repo.FindAll(ctx, status, paymentStatus, search, page, perPage)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	orderIDs := make([]uuid.UUID, len(orders))
-	for i, o := range orders {
-		orderIDs[i] = o.ID
-	}
-
-	counts, _ := s.repo.GetItemCounts(ctx, orderIDs)
-
 	res := make([]dto.AdminOrderResponse, len(orders))
-	for i, o := range orders {
+	for i, order := range orders {
 		res[i] = dto.AdminOrderResponse{
-			ID:            o.ID,
-			OrderNumber:   o.OrderNumber,
-			CustomerName:  o.Customer.FullName,
-			CustomerEmail: o.Customer.Email,
-			Status:        o.Status,
-			PaymentStatus: o.PaymentStatus,
-			Total:         o.Total,
-			ItemCount:     counts[o.ID],
-			CreatedAt:     o.CreatedAt,
+			ID:            order.ID,
+			OrderNumber:   order.OrderNumber,
+			CustomerName:  order.Customer.FullName,
+			CustomerEmail: order.Customer.Email,
+			Status:        order.Status,
+			PaymentStatus: order.PaymentStatus,
+			Total:         order.Total,
+			ItemCount:     len(order.Items),
+			CreatedAt:     order.CreatedAt,
 		}
 	}
 
@@ -307,54 +235,8 @@ func (s *orderService) GetOrderDetail(ctx context.Context, id uuid.UUID) (*dto.O
 		return nil, ErrOrderNotFound
 	}
 
-	itemsRes := make([]dto.OrderItemResponse, len(order.Items))
-	for i, item := range order.Items {
-		var pID *uuid.UUID
-		if item.VariantID != nil {
-			if variant, err := s.productRepo.FindVariantByID(ctx, *item.VariantID); err == nil {
-				pID = &variant.ProductID
-			}
-		}
-
-		itemsRes[i] = dto.OrderItemResponse{
-			ProductID:    pID,
-			ProductName:  item.ProductName,
-			VariantSize:  item.VariantSize,
-			VariantColor: item.VariantColor,
-			ImageURL:     item.ImageURL,
-			Quantity:     item.Quantity,
-			UnitPrice:    item.UnitPrice,
-			Subtotal:     item.UnitPrice * float64(item.Quantity),
-		}
-	}
-
-	var addrInfo dto.OrderAddressInfo
-	if order.Address != nil {
-		addrInfo = dto.OrderAddressInfo{
-			RecipientName: order.Address.RecipientName,
-			Phone:         order.Address.Phone,
-			AddressLine:   order.Address.AddressLine,
-			City:          order.Address.City,
-			Province:      order.Address.Province,
-			PostalCode:    order.Address.PostalCode,
-		}
-	}
-
-	return &dto.OrderDetailResponse{
-		ID:            order.ID,
-		OrderNumber:   order.OrderNumber,
-		Status:        order.Status,
-		PaymentStatus: order.PaymentStatus,
-		Subtotal:      order.Subtotal,
-		ShippingFee:   order.ShippingFee,
-		Total:         order.Total,
-		Notes:         order.Notes,
-		ShippedAt:     order.ShippedAt,
-		DeliveredAt:   order.DeliveredAt,
-		Address:       addrInfo,
-		Items:         itemsRes,
-		CreatedAt:     order.CreatedAt,
-	}, nil
+	variantProductMap := s.resolveVariantProductIDs(ctx, order.Items)
+	return mapToOrderDetailResponse(order, variantProductMap), nil
 }
 
 func (s *orderService) UpdateOrderStatus(ctx context.Context, id uuid.UUID, status string) error {
@@ -384,6 +266,72 @@ func (s *orderService) UpdateOrderPaymentStatus(ctx context.Context, id uuid.UUI
 	}
 
 	return s.repo.UpdatePaymentStatus(ctx, id, paymentStatus)
+}
+
+func mapToOrderDetailResponse(order *model.Order, variantProductMap map[uuid.UUID]uuid.UUID) *dto.OrderDetailResponse {
+	itemsRes := make([]dto.OrderItemResponse, len(order.Items))
+	for i, item := range order.Items {
+		var pID *uuid.UUID
+		if item.VariantID != nil {
+			if prodID, ok := variantProductMap[*item.VariantID]; ok {
+				pID = &prodID
+			}
+		}
+
+		itemsRes[i] = dto.OrderItemResponse{
+			ProductID:    pID,
+			ProductName:  item.ProductName,
+			VariantSize:  item.VariantSize,
+			VariantColor: item.VariantColor,
+			ImageURL:     item.ImageURL,
+			Quantity:     item.Quantity,
+			UnitPrice:    item.UnitPrice,
+			Subtotal:     item.UnitPrice * float64(item.Quantity),
+		}
+	}
+
+	addr := order.Address
+
+	return &dto.OrderDetailResponse{
+		ID:            order.ID,
+		OrderNumber:   order.OrderNumber,
+		Status:        order.Status,
+		PaymentStatus: order.PaymentStatus,
+		Subtotal:      order.Subtotal,
+		ShippingFee:   order.ShippingFee,
+		Total:         order.Total,
+		Notes:         order.Notes,
+		ShippedAt:     order.ShippedAt,
+		DeliveredAt:   order.DeliveredAt,
+		Address: dto.OrderAddressInfo{
+			RecipientName: addr.RecipientName,
+			Phone:         addr.Phone,
+			AddressLine:   addr.AddressLine,
+			City:          addr.City,
+			Province:      addr.Province,
+			PostalCode:    addr.PostalCode,
+		},
+		Items:     itemsRes,
+		CreatedAt: order.CreatedAt,
+	}
+}
+
+func (s *orderService) resolveVariantProductIDs(ctx context.Context, items []model.OrderItem) map[uuid.UUID]uuid.UUID {
+	var variantIDs []uuid.UUID
+	for _, item := range items {
+		if item.VariantID != nil {
+			variantIDs = append(variantIDs, *item.VariantID)
+		}
+	}
+	if len(variantIDs) == 0 {
+		return nil
+	}
+	result, err := s.productRepo.FindVariantsByIDs(ctx, variantIDs)
+	if err != nil {
+		slog.Warn("Failed to resolve variant product IDs", "error", err)
+		return nil
+	}
+	return result
 }
 
 func generateRandomAlphanumeric(length int) string {

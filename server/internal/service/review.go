@@ -2,19 +2,10 @@ package service
 
 import (
 	"context"
-	"errors"
 
 	"github.com/SerenaaaaRN/juicy/internal/dto"
 	"github.com/SerenaaaaRN/juicy/internal/model"
 	"github.com/google/uuid"
-)
-
-var (
-	ErrNotPurchased      = errors.New("NOT_PURCHASED")
-	ErrOrderNotDelivered = errors.New("ORDER_NOT_DELIVERED")
-	ErrAlreadyReviewed   = errors.New("ALREADY_REVIEWED")
-	ErrReviewNotFound    = errors.New("REVIEW_NOT_FOUND")
-	ErrOrderNotFound     = errors.New("ORDER_NOT_FOUND")
 )
 
 type reviewService struct {

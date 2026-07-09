@@ -58,6 +58,18 @@ func CustomerAuth(cfg *config.Config) gin.HandlerFunc {
 			return
 		}
 
+		if claims.TokenType != service.CustomerAccessTokenType {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"success": false,
+				"error": gin.H{
+					"message": "Invalid or expired token",
+					"code":    "UNAUTHORIZED",
+				},
+			})
+			c.Abort()
+			return
+		}
+
 		customerID, err := uuid.Parse(claims.CustomerID)
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{

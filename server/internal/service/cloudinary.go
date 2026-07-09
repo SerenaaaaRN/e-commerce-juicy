@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/SerenaaaaRN/juicy/internal/config"
 	"github.com/cloudinary/cloudinary-go/v2"
@@ -18,13 +18,13 @@ type CloudinaryService struct {
 
 func NewCloudinaryService(cfg *config.Config) *CloudinaryService {
 	if cfg.CloudinaryCloudName == "" || cfg.CloudinaryAPIKey == "" || cfg.CloudinaryAPISecret == "" {
-		log.Println("Cloudinary credentials are not set. Product image uploads will fallback to mock placeholder mode.")
+		slog.Warn("Cloudinary credentials not set, using mock mode")
 		return &CloudinaryService{mock: true}
 	}
 
 	cld, err := cloudinary.NewFromParams(cfg.CloudinaryCloudName, cfg.CloudinaryAPIKey, cfg.CloudinaryAPISecret)
 	if err != nil {
-		log.Printf("Failed to initialize Cloudinary client: %v. Falling back to mock mode.", err)
+		slog.Warn("Failed to initialize Cloudinary client, falling back to mock mode", "error", err)
 		return &CloudinaryService{mock: true}
 	}
 
@@ -37,7 +37,7 @@ func NewCloudinaryService(cfg *config.Config) *CloudinaryService {
 
 func (s *CloudinaryService) UploadImage(ctx context.Context, file interface{}) (string, string, error) {
 	if s.mock {
-		log.Println("[Cloudinary Mock] Uploading file. Returning default placeholder.")
+		slog.Debug("Cloudinary mock uploading file, returning placeholder")
 		return "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=600", "mock_cloudinary_public_id", nil
 	}
 
@@ -53,7 +53,7 @@ func (s *CloudinaryService) UploadImage(ctx context.Context, file interface{}) (
 
 func (s *CloudinaryService) DeleteImage(ctx context.Context, publicID string) error {
 	if s.mock {
-		log.Printf("[Cloudinary Mock] Deleting publicID: %s", publicID)
+		slog.Debug("Cloudinary mock deleting image", "public_id", publicID)
 		return nil
 	}
 

@@ -2,16 +2,11 @@ package service
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"github.com/SerenaaaaRN/juicy/internal/dto"
 	"github.com/SerenaaaaRN/juicy/internal/model"
 	"github.com/google/uuid"
-)
-
-var (
-	ErrAddressNotFound = errors.New("ADDRESS_NOT_FOUND")
 )
 
 type addressService struct {

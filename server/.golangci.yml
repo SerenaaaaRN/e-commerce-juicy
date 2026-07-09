@@ -1,0 +1,21 @@
+linters-settings:
+  sloglint:
+    no-mixed-args: true
+    key-naming-case: snake
+  staticcheck:
+    checks: ["all"]
+
+linters:
+  enable:
+    - govet
+    - ineffassign
+    - unused
+    - misspell
+    - sloglint
+    - gosimple
+    - staticcheck
+    - usetesting
+    - usestdlibvars
+
+run:
+  timeout: 3m

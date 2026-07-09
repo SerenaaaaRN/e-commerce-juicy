@@ -7,19 +7,16 @@ import (
 	"github.com/SerenaaaaRN/juicy/internal/dto"
 	"github.com/SerenaaaaRN/juicy/internal/service"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 type AddressHandler struct {
 	srv AddressService
 }
 
-// NewAddressHandler membuat instance baru dari AddressHandler.
 func NewAddressHandler(srv AddressService) *AddressHandler {
 	return &AddressHandler{srv: srv}
 }
 
-// GetAddresses menangani pengambilan semua daftar alamat milik customer yang sedang login.
 func (h *AddressHandler) GetAddresses(c *gin.Context) {
 	customerID, ok := getCustomerID(c)
 	if !ok {
@@ -34,35 +31,20 @@ func (h *AddressHandler) GetAddresses(c *gin.Context) {
 	okJSON(c, addresses)
 }
 
-// GetAddressByID menangani pengambilan detail alamat spesifik berdasarkan ID.
 func (h *AddressHandler) GetAddressByID(c *gin.Context) {
 	customerID, ok := getCustomerID(c)
 	if !ok {
 		return
 	}
-	idStr := c.Param("id")
-	id, err := uuid.Parse(idStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Invalid address ID format",
-				"code":    "BAD_REQUEST",
-			},
-		})
+	id, ok := parseUUIDParam(c, "id")
+	if !ok {
 		return
 	}
 
 	address, err := h.srv.GetAddressByID(c.Request.Context(), id, customerID)
 	if err != nil {
 		if errors.Is(err, service.ErrAddressNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{
-				"success": false,
-				"error": gin.H{
-					"message": "Address not found",
-					"code":    "ADDRESS_NOT_FOUND",
-				},
-			})
+			errJSON(c, http.StatusNotFound, "Address not found", "ADDRESS_NOT_FOUND")
 			return
 		}
 		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
@@ -72,7 +54,6 @@ func (h *AddressHandler) GetAddressByID(c *gin.Context) {
 	okJSON(c, address)
 }
 
-// CreateAddress menangani pembuatan alamat pengiriman baru untuk customer.
 func (h *AddressHandler) CreateAddress(c *gin.Context) {
 	customerID, ok := getCustomerID(c)
 	if !ok {
@@ -93,22 +74,13 @@ func (h *AddressHandler) CreateAddress(c *gin.Context) {
 	createdJSON(c, address)
 }
 
-// UpdateAddress menangani pembaruan data alamat pengiriman customer.
 func (h *AddressHandler) UpdateAddress(c *gin.Context) {
 	customerID, ok := getCustomerID(c)
 	if !ok {
 		return
 	}
-	idStr := c.Param("id")
-	id, err := uuid.Parse(idStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Invalid address ID format",
-				"code":    "BAD_REQUEST",
-			},
-		})
+	id, ok := parseUUIDParam(c, "id")
+	if !ok {
 		return
 	}
 
@@ -121,13 +93,7 @@ func (h *AddressHandler) UpdateAddress(c *gin.Context) {
 	address, err := h.srv.UpdateAddress(c.Request.Context(), id, customerID, req)
 	if err != nil {
 		if errors.Is(err, service.ErrAddressNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{
-				"success": false,
-				"error": gin.H{
-					"message": "Address not found",
-					"code":    "ADDRESS_NOT_FOUND",
-				},
-			})
+			errJSON(c, http.StatusNotFound, "Address not found", "ADDRESS_NOT_FOUND")
 			return
 		}
 		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
@@ -137,35 +103,20 @@ func (h *AddressHandler) UpdateAddress(c *gin.Context) {
 	okJSON(c, address)
 }
 
-// DeleteAddress menangani penghapusan alamat pengiriman customer.
 func (h *AddressHandler) DeleteAddress(c *gin.Context) {
 	customerID, ok := getCustomerID(c)
 	if !ok {
 		return
 	}
-	idStr := c.Param("id")
-	id, err := uuid.Parse(idStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Invalid address ID format",
-				"code":    "BAD_REQUEST",
-			},
-		})
+	id, ok := parseUUIDParam(c, "id")
+	if !ok {
 		return
 	}
 
-	err = h.srv.DeleteAddress(c.Request.Context(), id, customerID)
+	err := h.srv.DeleteAddress(c.Request.Context(), id, customerID)
 	if err != nil {
 		if errors.Is(err, service.ErrAddressNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{
-				"success": false,
-				"error": gin.H{
-					"message": "Address not found",
-					"code":    "ADDRESS_NOT_FOUND",
-				},
-			})
+			errJSON(c, http.StatusNotFound, "Address not found", "ADDRESS_NOT_FOUND")
 			return
 		}
 		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")
@@ -175,35 +126,20 @@ func (h *AddressHandler) DeleteAddress(c *gin.Context) {
 	okMessageJSON(c, "Address deleted successfully")
 }
 
-// SetDefaultAddress mengubah alamat pengiriman tertentu menjadi alamat utama (default).
 func (h *AddressHandler) SetDefaultAddress(c *gin.Context) {
 	customerID, ok := getCustomerID(c)
 	if !ok {
 		return
 	}
-	idStr := c.Param("id")
-	id, err := uuid.Parse(idStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"success": false,
-			"error": gin.H{
-				"message": "Invalid address ID format",
-				"code":    "BAD_REQUEST",
-			},
-		})
+	id, ok := parseUUIDParam(c, "id")
+	if !ok {
 		return
 	}
 
-	err = h.srv.SetDefaultAddress(c.Request.Context(), id, customerID)
+	err := h.srv.SetDefaultAddress(c.Request.Context(), id, customerID)
 	if err != nil {
 		if errors.Is(err, service.ErrAddressNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{
-				"success": false,
-				"error": gin.H{
-					"message": "Address not found",
-					"code":    "ADDRESS_NOT_FOUND",
-				},
-			})
+			errJSON(c, http.StatusNotFound, "Address not found", "ADDRESS_NOT_FOUND")
 			return
 		}
 		errJSON(c, http.StatusInternalServerError, err.Error(), "INTERNAL_ERROR")

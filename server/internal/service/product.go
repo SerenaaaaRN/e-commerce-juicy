@@ -2,49 +2,36 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"log"
+	"io"
+	"log/slog"
+	"mime/multipart"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/SerenaaaaRN/juicy/internal/dto"
 	"github.com/SerenaaaaRN/juicy/internal/model"
 	"github.com/google/uuid"
-	"gorm.io/gorm"
-)
-
-var (
-	ErrProductNotFound = errors.New("PRODUCT_NOT_FOUND")
-	ErrVariantNotFound = errors.New("VARIANT_NOT_FOUND")
-	ErrImageNotFound   = errors.New("IMAGE_NOT_FOUND")
 )
 
 type productService struct {
 	repo              ProductRepository
 	cloudinaryService *CloudinaryService
-	db                *gorm.DB
 }
 
-func NewProductService(repo ProductRepository, cloudinaryService *CloudinaryService, db *gorm.DB) *productService {
+func NewProductService(repo ProductRepository, cloudinaryService *CloudinaryService) *productService {
 	return &productService{
 		repo:              repo,
 		cloudinaryService: cloudinaryService,
-		db:                db,
 	}
 }
 
 func (s *productService) ListProducts(
 	ctx context.Context,
-	categorySlug string,
-	featuredOnly bool,
-	tag string,
-	sort string,
-	page, perPage int,
-	includeUnavailable bool,
-	sizes []string,
-	search string,
+	filter dto.ProductFilter,
 ) ([]dto.ProductResponse, int64, error) {
-	products, total, err := s.repo.FindAll(ctx, categorySlug, featuredOnly, tag, sort, page, perPage, includeUnavailable, sizes, search)
+	products, total, err := s.repo.FindAll(ctx, filter)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -60,48 +47,18 @@ func (s *productService) ListProducts(
 
 	statsMap, err := s.repo.GetReviewStats(ctx, productIDs)
 	if err != nil {
-		log.Printf("Warning: failed to fetch review statistics: %v", err)
+		slog.Warn("Failed to fetch review statistics", "error", err)
 		statsMap = make(map[uuid.UUID]dto.ProductReviewStat)
 	}
 
 	res := make([]dto.ProductResponse, len(products))
 	for i, p := range products {
-		primaryImg := ""
-		for _, img := range p.Images {
-			if img.IsPrimary {
-				primaryImg = img.ImageURL
-				break
-			}
-		}
-
-		if primaryImg == "" && len(p.Images) > 0 {
-			primaryImg = p.Images[0].ImageURL
-		}
+		primaryImg := getPrimaryImageURL(p.Images)
 
 		pStats := statsMap[p.ID]
 
-		variantsRes := make([]dto.ProductVariantResponse, len(p.Variants))
-		for j, v := range p.Variants {
-			variantsRes[j] = dto.ProductVariantResponse{
-				ID:              v.ID,
-				Size:            v.Size,
-				Color:           v.Color,
-				Stock:           v.Stock,
-				AdditionalPrice: v.AdditionalPrice,
-				IsActive:        v.IsActive,
-			}
-		}
-
-		imagesRes := make([]dto.ProductImageResponse, len(p.Images))
-		for k, img := range p.Images {
-			imagesRes[k] = dto.ProductImageResponse{
-				ID:           img.ID,
-				ImageURL:     img.ImageURL,
-				AltText:      img.AltText,
-				IsPrimary:    img.IsPrimary,
-				DisplayOrder: img.DisplayOrder,
-			}
-		}
+		variantsRes := toVariantResponses(p.Variants)
+		imagesRes := toImageResponses(p.Images)
 
 		res[i] = dto.ProductResponse{
 			ID:             p.ID,
@@ -188,17 +145,54 @@ func (s *productService) DeleteProduct(ctx context.Context, id uuid.UUID) error 
 			cldID = *img.CloudinaryPublicID
 		}
 		if err := s.cloudinaryService.DeleteImage(ctx, cldID); err != nil {
-			log.Printf("Warning: failed to delete cloudinary image: %v", err)
+			slog.Warn("Failed to delete cloudinary image", "error", err)
 		}
 	}
 
 	return s.repo.Delete(ctx, id)
 }
 
-func (s *productService) AddProductImages(ctx context.Context, id uuid.UUID, filePaths []string) error {
+func (s *productService) AddProductImages(ctx context.Context, id uuid.UUID, files []*multipart.FileHeader) error {
 	product, err := s.repo.FindByID(ctx, id)
 	if err != nil {
 		return ErrProductNotFound
+	}
+
+	tempDir, err := os.MkdirTemp("", "juicy-uploads-*")
+	if err != nil {
+		return fmt.Errorf("failed to create temp directory: %w", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	var tempPaths []string
+	var uploadedIDs []string
+	defer func() {
+		for _, p := range tempPaths {
+			os.Remove(p)
+		}
+	}()
+
+	for _, file := range files {
+		tempPath := filepath.Join(tempDir, uuid.New().String()+filepath.Ext(file.Filename))
+		src, err := file.Open()
+		if err != nil {
+			return fmt.Errorf("failed to open uploaded file: %w", err)
+		}
+
+		dst, err := os.Create(tempPath)
+		if err != nil {
+			src.Close()
+			return fmt.Errorf("failed to create temp file: %w", err)
+		}
+
+		_, err = io.Copy(dst, src)
+		src.Close()
+		dst.Close()
+		if err != nil {
+			return fmt.Errorf("failed to save temp file: %w", err)
+		}
+
+		tempPaths = append(tempPaths, tempPath)
 	}
 
 	maxOrder := -1
@@ -212,13 +206,15 @@ func (s *productService) AddProductImages(ctx context.Context, id uuid.UUID, fil
 		}
 	}
 
-	for _, path := range filePaths {
+	for _, path := range tempPaths {
 		maxOrder++
 
 		secureURL, publicID, err := s.cloudinaryService.UploadImage(ctx, path)
 		if err != nil {
+			s.rollbackCloudinaryUploads(ctx, uploadedIDs)
 			return fmt.Errorf("failed to upload image: %w", err)
 		}
+		uploadedIDs = append(uploadedIDs, publicID)
 
 		isPrimary := false
 		if !hasPrimary {
@@ -235,6 +231,7 @@ func (s *productService) AddProductImages(ctx context.Context, id uuid.UUID, fil
 		}
 
 		if err := s.repo.CreateImage(ctx, newImage); err != nil {
+			s.rollbackCloudinaryUploads(ctx, uploadedIDs)
 			return err
 		}
 	}
@@ -291,7 +288,7 @@ func (s *productService) DeleteProductImage(ctx context.Context, id uuid.UUID, i
 		cldID = *image.CloudinaryPublicID
 	}
 	if err := s.cloudinaryService.DeleteImage(ctx, cldID); err != nil {
-		log.Printf("Warning: failed to delete cloudinary image %s: %v", cldID, err)
+		slog.Warn("Failed to delete cloudinary image", "public_id", cldID, "error", err)
 	}
 
 	err = s.repo.DeleteImage(ctx, imageID, id)
@@ -300,10 +297,11 @@ func (s *productService) DeleteProductImage(ctx context.Context, id uuid.UUID, i
 	}
 
 	if image.IsPrimary {
-		var remain []model.ProductImage
-		err := s.db.WithContext(ctx).Where("product_id = ?", id).Order("display_order ASC").Find(&remain).Error
+		remain, err := s.repo.FindImagesByProductID(ctx, id)
 		if err == nil && len(remain) > 0 {
-			s.repo.SetPrimaryImage(ctx, remain[0].ID, id)
+			if err := s.repo.SetPrimaryImage(ctx, remain[0].ID, id); err != nil {
+			slog.Warn("Failed to promote primary image", "error", err)
+		}
 		}
 	}
 
@@ -407,44 +405,25 @@ func (s *productService) DeleteProductVariant(ctx context.Context, productID uui
 	return s.repo.DeactivateVariant(ctx, variantID, productID)
 }
 
+func (s *productService) rollbackCloudinaryUploads(ctx context.Context, publicIDs []string) {
+	for _, id := range publicIDs {
+		if err := s.cloudinaryService.DeleteImage(ctx, id); err != nil {
+			slog.Warn("Failed to rollback Cloudinary upload", "public_id", id, "error", err)
+		}
+	}
+}
+
 func (s *productService) mapToDetailResponse(ctx context.Context, p *model.Product) (*dto.ProductDetailResponse, error) {
 
 	stat, err := s.repo.GetReviewStat(ctx, p.ID)
 	if err != nil {
-		log.Printf("Warning: failed to query product detail stats: %v", err)
+		slog.Warn("Failed to query product detail stats", "error", err)
 		stat = &dto.ProductReviewStat{}
 	}
 
-	imagesRes := make([]dto.ProductImageResponse, len(p.Images))
-	for i, img := range p.Images {
-		imagesRes[i] = dto.ProductImageResponse{
-			ID:           img.ID,
-			ImageURL:     img.ImageURL,
-			AltText:      img.AltText,
-			IsPrimary:    img.IsPrimary,
-			DisplayOrder: img.DisplayOrder,
-		}
-	}
-
-	variantsRes := make([]dto.ProductVariantResponse, len(p.Variants))
-	for i, v := range p.Variants {
-		variantsRes[i] = dto.ProductVariantResponse{
-			ID:              v.ID,
-			Size:            v.Size,
-			Color:           v.Color,
-			Stock:           v.Stock,
-			AdditionalPrice: v.AdditionalPrice,
-			IsActive:        v.IsActive,
-		}
-	}
-
-	var primaryImage string
-	for _, img := range p.Images {
-		if img.IsPrimary {
-			primaryImage = img.ImageURL
-			break
-		}
-	}
+	imagesRes := toImageResponses(p.Images)
+	variantsRes := toVariantResponses(p.Variants)
+	primaryImage := getPrimaryImageURL(p.Images)
 
 	return &dto.ProductDetailResponse{
 		ID:             p.ID,

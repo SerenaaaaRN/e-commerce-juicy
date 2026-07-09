@@ -8,44 +8,14 @@ import (
 )
 
 type Router struct {
-	adminHandler     *handler.AdminHandler
-	customerHandler  *handler.CustomerHandler
-	addressHandler   *handler.AddressHandler
-	categoryHandler  *handler.CategoryHandler
-	productHandler   *handler.ProductHandler
-	cartHandler      *handler.CartHandler
-	orderHandler     *handler.OrderHandler
-	reviewHandler    *handler.ReviewHandler
-	wishlistHandler  *handler.WishlistHandler
-	analyticsHandler *handler.AnalyticsHandler
-	config           *config.Config
+	h      *handler.Handlers
+	config *config.Config
 }
 
-func NewRouter(
-	adminHandler *handler.AdminHandler,
-	customerHandler *handler.CustomerHandler,
-	addressHandler *handler.AddressHandler,
-	categoryHandler *handler.CategoryHandler,
-	productHandler *handler.ProductHandler,
-	cartHandler *handler.CartHandler,
-	orderHandler *handler.OrderHandler,
-	reviewHandler *handler.ReviewHandler,
-	wishlistHandler *handler.WishlistHandler,
-	analyticsHandler *handler.AnalyticsHandler,
-	cfg *config.Config,
-) *Router {
+func NewRouter(h *handler.Handlers, cfg *config.Config) *Router {
 	return &Router{
-		adminHandler:     adminHandler,
-		customerHandler:  customerHandler,
-		addressHandler:   addressHandler,
-		categoryHandler:  categoryHandler,
-		productHandler:   productHandler,
-		cartHandler:      cartHandler,
-		orderHandler:     orderHandler,
-		reviewHandler:    reviewHandler,
-		wishlistHandler:  wishlistHandler,
-		analyticsHandler: analyticsHandler,
-		config:           cfg,
+		h:      h,
+		config: cfg,
 	}
 }
 
@@ -62,96 +32,96 @@ func (r *Router) Setup(engine *gin.Engine) {
 
 	api := engine.Group("/api")
 	{
-		api.POST("/customers/register", r.customerHandler.Register)
-		api.POST("/customers/login", r.customerHandler.Login)
+		api.POST("/customers/register", r.h.Customer.Register)
+		api.POST("/customers/login", r.h.Customer.Login)
 
 		shop := api.Group("/shop")
 		{
-			shop.GET("/categories", r.categoryHandler.ListActiveCategories)
-			shop.GET("/products", r.productHandler.ListProducts)
-			shop.GET("/products/:slug", r.productHandler.GetProductBySlug)
-			shop.GET("/products/:slug/reviews", r.reviewHandler.GetProductReviews)
+			shop.GET("/categories", r.h.Category.ListActiveCategories)
+			shop.GET("/products", r.h.Product.ListProducts)
+			shop.GET("/products/:slug", r.h.Product.GetProductBySlug)
+			shop.GET("/products/:slug/reviews", r.h.Review.GetProductReviews)
 		}
 
 		customerAuth := api.Group("")
 		customerAuth.Use(middleware.CustomerAuth(r.config))
 		{
-			customerAuth.GET("/customers/profile", r.customerHandler.GetProfile)
-			customerAuth.PUT("/customers/profile", r.customerHandler.UpdateProfile)
-			customerAuth.PUT("/customers/profile/password", r.customerHandler.ChangePassword)
+			customerAuth.GET("/customers/profile", r.h.Customer.GetProfile)
+			customerAuth.PUT("/customers/profile", r.h.Customer.UpdateProfile)
+			customerAuth.PUT("/customers/profile/password", r.h.Customer.ChangePassword)
 
-			customerAuth.GET("/addresses", r.addressHandler.GetAddresses)
-			customerAuth.GET("/addresses/:id", r.addressHandler.GetAddressByID)
-			customerAuth.POST("/addresses", r.addressHandler.CreateAddress)
-			customerAuth.PUT("/addresses/:id", r.addressHandler.UpdateAddress)
-			customerAuth.DELETE("/addresses/:id", r.addressHandler.DeleteAddress)
-			customerAuth.PUT("/addresses/:id/default", r.addressHandler.SetDefaultAddress)
+			customerAuth.GET("/addresses", r.h.Address.GetAddresses)
+			customerAuth.GET("/addresses/:id", r.h.Address.GetAddressByID)
+			customerAuth.POST("/addresses", r.h.Address.CreateAddress)
+			customerAuth.PUT("/addresses/:id", r.h.Address.UpdateAddress)
+			customerAuth.DELETE("/addresses/:id", r.h.Address.DeleteAddress)
+			customerAuth.PUT("/addresses/:id/default", r.h.Address.SetDefaultAddress)
 
-			customerAuth.GET("/cart", r.cartHandler.GetCart)
-			customerAuth.POST("/cart/items", r.cartHandler.AddCartItem)
-			customerAuth.PUT("/cart/items/:id", r.cartHandler.UpdateCartItemQuantity)
-			customerAuth.DELETE("/cart/items/:id", r.cartHandler.RemoveCartItem)
-			customerAuth.DELETE("/cart", r.cartHandler.ClearCart)
+			customerAuth.GET("/cart", r.h.Cart.GetCart)
+			customerAuth.POST("/cart/items", r.h.Cart.AddCartItem)
+			customerAuth.PUT("/cart/items/:id", r.h.Cart.UpdateCartItemQuantity)
+			customerAuth.DELETE("/cart/items/:id", r.h.Cart.RemoveCartItem)
+			customerAuth.DELETE("/cart", r.h.Cart.ClearCart)
 
-			customerAuth.POST("/orders/checkout", r.orderHandler.Checkout)
-			customerAuth.GET("/orders", r.orderHandler.GetCustomerOrders)
-			customerAuth.GET("/orders/:orderNumber", r.orderHandler.GetCustomerOrderDetail)
-			customerAuth.POST("/orders/:orderNumber/cancel", r.orderHandler.CancelOrder)
-			customerAuth.POST("/orders/:orderNumber/complete", r.orderHandler.CompleteOrder)
+			customerAuth.POST("/orders/checkout", r.h.Order.Checkout)
+			customerAuth.GET("/orders", r.h.Order.GetCustomerOrders)
+			customerAuth.GET("/orders/:orderNumber", r.h.Order.GetCustomerOrderDetail)
+			customerAuth.POST("/orders/:orderNumber/cancel", r.h.Order.CancelOrder)
+			customerAuth.POST("/orders/:orderNumber/complete", r.h.Order.CompleteOrder)
 
-			customerAuth.GET("/wishlist", r.wishlistHandler.GetWishlist)
-			customerAuth.GET("/wishlist/check/:variantId", r.wishlistHandler.CheckWishlist)
-			customerAuth.POST("/wishlist/items", r.wishlistHandler.AddToWishlist)
-			customerAuth.DELETE("/wishlist/items/:variantId", r.wishlistHandler.RemoveFromWishlist)
+			customerAuth.GET("/wishlist", r.h.Wishlist.GetWishlist)
+			customerAuth.GET("/wishlist/check/:variantId", r.h.Wishlist.CheckWishlist)
+			customerAuth.POST("/wishlist/items", r.h.Wishlist.AddToWishlist)
+			customerAuth.DELETE("/wishlist/items/:variantId", r.h.Wishlist.RemoveFromWishlist)
 
-			customerAuth.POST("/reviews", r.reviewHandler.SubmitReview)
+			customerAuth.POST("/reviews", r.h.Review.SubmitReview)
 		}
 
-		api.POST("/admin/login", r.adminHandler.Login)
-		api.POST("/admin/refresh", r.adminHandler.Refresh)
-		api.POST("/admin/logout", r.adminHandler.Logout)
+		api.POST("/admin/login", r.h.Admin.Login)
+		api.POST("/admin/refresh", r.h.Admin.Refresh)
+		api.POST("/admin/logout", r.h.Admin.Logout)
 
 		adminAuth := api.Group("/admin")
 		adminAuth.Use(middleware.AdminAuth(r.config))
 		{
-			adminAuth.GET("/profile", r.adminHandler.GetProfile)
-			adminAuth.GET("/customers", r.customerHandler.ListCustomers)
-			adminAuth.GET("/customers/:id", r.customerHandler.GetCustomerDetail)
-			adminAuth.PATCH("/customers/:id/status", r.customerHandler.UpdateCustomerStatus)
+			adminAuth.GET("/profile", r.h.Admin.GetProfile)
+			adminAuth.GET("/customers", r.h.Customer.ListCustomers)
+			adminAuth.GET("/customers/:id", r.h.Customer.GetCustomerDetail)
+			adminAuth.PATCH("/customers/:id/status", r.h.Customer.UpdateCustomerStatus)
 
-			adminAuth.GET("/categories", r.categoryHandler.ListAllCategories)
-			adminAuth.GET("/categories/:id", r.categoryHandler.GetCategoryByID)
-			adminAuth.POST("/categories", r.categoryHandler.CreateCategory)
-			adminAuth.PUT("/categories/:id", r.categoryHandler.UpdateCategory)
-			adminAuth.DELETE("/categories/:id", r.categoryHandler.DeleteCategory)
+			adminAuth.GET("/categories", r.h.Category.ListAllCategories)
+			adminAuth.GET("/categories/:id", r.h.Category.GetCategoryByID)
+			adminAuth.POST("/categories", r.h.Category.CreateCategory)
+			adminAuth.PUT("/categories/:id", r.h.Category.UpdateCategory)
+			adminAuth.DELETE("/categories/:id", r.h.Category.DeleteCategory)
 
-			adminAuth.GET("/products", r.productHandler.ListProducts)
-			adminAuth.GET("/products/:id", r.productHandler.GetProductByID)
-			adminAuth.POST("/products", r.productHandler.CreateProduct)
-			adminAuth.PUT("/products/:id", r.productHandler.UpdateProduct)
-			adminAuth.DELETE("/products/:id", r.productHandler.DeleteProduct)
+			adminAuth.GET("/products", r.h.Product.ListProducts)
+			adminAuth.GET("/products/:id", r.h.Product.GetProductByID)
+			adminAuth.POST("/products", r.h.Product.CreateProduct)
+			adminAuth.PUT("/products/:id", r.h.Product.UpdateProduct)
+			adminAuth.DELETE("/products/:id", r.h.Product.DeleteProduct)
 
-			adminAuth.POST("/products/:id/images", r.productHandler.AddProductImages)
-			adminAuth.POST("/products/:id/images/url", r.productHandler.AddProductImageUrl)
-			adminAuth.DELETE("/products/:id/images/:imageId", r.productHandler.DeleteProductImage)
-			adminAuth.PUT("/products/:id/images/:imageId/primary", r.productHandler.SetPrimaryProductImage)
+			adminAuth.POST("/products/:id/images", r.h.Product.AddProductImages)
+			adminAuth.POST("/products/:id/images/url", r.h.Product.AddProductImageUrl)
+			adminAuth.DELETE("/products/:id/images/:imageId", r.h.Product.DeleteProductImage)
+			adminAuth.PUT("/products/:id/images/:imageId/primary", r.h.Product.SetPrimaryProductImage)
 
-			adminAuth.GET("/products/:id/variants", r.productHandler.GetProductVariants)
-			adminAuth.POST("/products/:id/variants", r.productHandler.AddProductVariant)
-			adminAuth.PUT("/products/:id/variants/:variantId", r.productHandler.UpdateProductVariant)
-			adminAuth.DELETE("/products/:id/variants/:variantId", r.productHandler.DeleteProductVariant)
+			adminAuth.GET("/products/:id/variants", r.h.Product.GetProductVariants)
+			adminAuth.POST("/products/:id/variants", r.h.Product.AddProductVariant)
+			adminAuth.PUT("/products/:id/variants/:variantId", r.h.Product.UpdateProductVariant)
+			adminAuth.DELETE("/products/:id/variants/:variantId", r.h.Product.DeleteProductVariant)
 
-			adminAuth.GET("/orders", r.orderHandler.ListAllOrders)
-			adminAuth.GET("/orders/:id", r.orderHandler.GetOrderDetail)
-			adminAuth.PUT("/orders/:id/status", r.orderHandler.UpdateOrderStatus)
-			adminAuth.PUT("/orders/:id/payment", r.orderHandler.UpdateOrderPaymentStatus)
+			adminAuth.GET("/orders", r.h.Order.ListAllOrders)
+			adminAuth.GET("/orders/:id", r.h.Order.GetOrderDetail)
+			adminAuth.PUT("/orders/:id/status", r.h.Order.UpdateOrderStatus)
+			adminAuth.PUT("/orders/:id/payment", r.h.Order.UpdateOrderPaymentStatus)
 
-			adminAuth.GET("/reviews", r.reviewHandler.ListAllReviews)
-			adminAuth.PUT("/reviews/:id/publish", r.reviewHandler.UpdateReviewPublishStatus)
-			adminAuth.DELETE("/reviews/:id", r.reviewHandler.DeleteReview)
+			adminAuth.GET("/reviews", r.h.Review.ListAllReviews)
+			adminAuth.PUT("/reviews/:id/publish", r.h.Review.UpdateReviewPublishStatus)
+			adminAuth.DELETE("/reviews/:id", r.h.Review.DeleteReview)
 
-			adminAuth.GET("/analytics/overview", r.analyticsHandler.GetOverview)
-			adminAuth.GET("/analytics/orders/chart", r.analyticsHandler.GetOrdersChart)
+			adminAuth.GET("/analytics/overview", r.h.Analytics.GetOverview)
+			adminAuth.GET("/analytics/orders/chart", r.h.Analytics.GetOrdersChart)
 		}
 	}
 }
