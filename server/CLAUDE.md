@@ -45,7 +45,7 @@ golang.org/x/sync v0.20.0
 ## Arsitektur: Layered Pattern
 
 ```
-cmd/main.go → internal/app/   # Entry point → DI wiring
+cmd/api/main.go → internal/app/   # Entry point → DI wiring (cmd/api = Vercel Go entrypoint detection)
   ↓
 internal/config/              → Environment variables (.env)
 internal/database/            → GORM connection (pool: 25 max open, 10 idle)
@@ -84,8 +84,9 @@ main.go → config.Load()
 
 ```
 server/
-├── cmd/
+├── cmd/api/
 │   └── main.go                  # Entry point: ~30 lines (config → app.New → serve → shutdown)
+│                               #   NOTE: path `cmd/api` adalah syarat deteksi Go zero-config Vercel
 
 ├── internal/app/
 │   └── app.go                   # DI wiring: repo → service → handler → router → App struct
