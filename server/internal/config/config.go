@@ -43,9 +43,9 @@ type Config struct {
 func Load() (*Config, error) {
 	_ = godotenv.Load()
 
-	appPort := getEnv("APP_PORT", "")
+	appPort := getEnv("PORT", "")
 	if appPort == "" {
-		appPort = getEnv("PORT", "8080")
+		appPort = getEnv("APP_PORT", "8080")
 	}
 
 	cfg := &Config{
