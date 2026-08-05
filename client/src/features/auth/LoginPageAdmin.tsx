@@ -1,22 +1,17 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { FieldDescription } from "@/components/ui/field"
-import { ROUTES } from "@/constants/paths"
+import { useNavigate } from "@tanstack/react-router"
 import { LoginForm } from "@/features/auth/components/LoginForm"
 import type { LoginFormValues } from "@/features/auth/types"
 import { adminApi } from "@/lib/api/admin"
 import { useAdminAuthStore } from "@/stores/admin-auth-store"
 import { useTransition } from "react"
-import { Link, Navigate, useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 
 export const LoginPageAdmin = () => {
   const navigate = useNavigate()
-  const { isAuthenticated, login } = useAdminAuthStore()
+  const { login } = useAdminAuthStore()
   const [isPending, startTransition] = useTransition()
-
-  if (isAuthenticated) {
-    return <Navigate to={ROUTES.adminDashboard} replace />
-  }
 
   const handleSubmit = (data: LoginFormValues) => {
     startTransition(async () => {
@@ -30,7 +25,7 @@ export const LoginPageAdmin = () => {
             name: admin.username,
           })
           toast.success(`Access granted. Welcome back, ${admin.username}!`)
-          navigate(ROUTES.adminDashboard)
+          navigate({ to: "/admin/dashboard" })
         } else {
           toast.error(res.message || "Invalid email or passcode. Access denied.")
         }
@@ -79,16 +74,15 @@ export const LoginPageAdmin = () => {
             </CardContent>
           </Card>
 
-          {/* Footer Notice */}
           <FieldDescription className="px-6 text-center text-xs">
             By clicking continue, you agree to our{" "}
-            <Link to={ROUTES.terms} className="underline hover:text-primary">
+            <a href="#" className="underline hover:text-primary">
               Terms of Service
-            </Link>{" "}
+            </a>{" "}
             and{" "}
-            <Link to={ROUTES.privacy} className="underline hover:text-primary">
+            <a href="#" className="underline hover:text-primary">
               Privacy Policy
-            </Link>
+            </a>
             .
           </FieldDescription>
         </div>

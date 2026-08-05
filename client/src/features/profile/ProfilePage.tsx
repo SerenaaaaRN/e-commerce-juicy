@@ -9,10 +9,9 @@ import {
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ROUTES } from "@/constants/paths"
 import { formatDate } from "@/lib/utils"
 import { useCustomerAuthStore } from "@/stores/customer-auth-store"
-import { Navigate } from "react-router-dom"
+import { Navigate } from "@tanstack/react-router"
 import { AddressList } from "./components/AddressList"
 import { ChangePasswordForm } from "./components/ChangePasswordForm"
 import { EditProfileForm } from "./components/EditProfileForm"
@@ -21,14 +20,14 @@ export const ProfilePage = () => {
   const isAuthenticated = useCustomerAuthStore((s) => s.isAuthenticated)
   const customer = useCustomerAuthStore((s) => s.customer)
 
-  if (!isAuthenticated) return <Navigate to={ROUTES.login} replace />
+  if (!isAuthenticated) return <Navigate to="/login" replace />
 
   return (
     <div className="container mx-auto max-w-7xl px-4 py-32 md:px-8 md:py-40">
       <Breadcrumb className="mb-4 text-[10px] tracking-wider uppercase sm:text-xs">
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink to={ROUTES.home}>Home</BreadcrumbLink>
+            <BreadcrumbLink to="/">Home</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbPage className="text-primary">Profile Account</BreadcrumbPage>

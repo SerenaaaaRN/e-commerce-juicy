@@ -2,13 +2,12 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Spinner } from "@/components/ui/spinner"
-import { ROUTES } from "@/constants/paths"
 import { useRemoveWishlistItemMutation } from "@/features/wishlist/hooks/useWishlistMutations"
 import { useWishlistQuery } from "@/features/wishlist/hooks/useWishlistQueries"
 import { formatPrice } from "@/lib/utils"
 import { HeartAddIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Link } from "react-router-dom"
+import { Link } from "@tanstack/react-router"
 import { toast } from "sonner"
 
 export const WishlistPage = () => {
@@ -48,7 +47,7 @@ export const WishlistPage = () => {
           </EmptyHeader>
           <EmptyContent className="mt-6">
             <Button asChild variant="outline">
-              <Link to={ROUTES.shop}>Browse Silhouettes</Link>
+              <Link to="/shop">Browse Silhouettes</Link>
             </Button>
           </EmptyContent>
         </Empty>
@@ -68,7 +67,7 @@ export const WishlistPage = () => {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {items.map((item) => (
           <Card key={item.id} className="group overflow-hidden border-border/50">
-            <Link to={`${ROUTES.shop}/${item.product_slug}`}>
+            <Link to="/shop/$slug" params={{ slug: item.product_slug }}>
               <div className="aspect-3/4 overflow-hidden bg-muted">
                 <img
                   src={item.image_url || "/placeholder.svg"}

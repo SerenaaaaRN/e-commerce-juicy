@@ -1,11 +1,10 @@
 import { Separator } from "@/components/ui/separator"
-import { ROUTES } from "@/constants/paths"
 import { useCategoriesQuery } from "@/features/shop/hooks/useProductQueries"
 import { Facebook01Icon, InstagramIcon, TwitterIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
+import { Link } from "@tanstack/react-router"
 import { motion } from "motion/react"
 import { useMemo } from "react"
-import { Link } from "react-router-dom"
 import { Skeleton } from "../ui/skeleton"
 
 export function Footer() {
@@ -35,15 +34,33 @@ export function Footer() {
               An editorial pursuit of pure linen and high-fashion silhouettes. Built for the modern nomad.
             </p>
             <div className="flex items-center gap-4">
-              <Link to="https://instagram.com" className="transition-opacity hover:opacity-60" aria-label="Instagram">
+              <a
+                href="https://instagram.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-opacity hover:opacity-60"
+                aria-label="Instagram"
+              >
                 <HugeiconsIcon icon={InstagramIcon} className="h-5 w-5 stroke-[1.5]" />
-              </Link>
-              <Link to="https://facebook.com" className="transition-opacity hover:opacity-60" aria-label="Facebook">
+              </a>
+              <a
+                href="https://facebook.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-opacity hover:opacity-60"
+                aria-label="Facebook"
+              >
                 <HugeiconsIcon icon={Facebook01Icon} className="h-5 w-5 stroke-[1.5]" />
-              </Link>
-              <Link to="https://twitter.com" className="transition-opacity hover:opacity-60" aria-label="Twitter">
+              </a>
+              <a
+                href="https://twitter.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-opacity hover:opacity-60"
+                aria-label="Twitter"
+              >
                 <HugeiconsIcon icon={TwitterIcon} className="h-5 w-5 stroke-[1.5]" />
-              </Link>
+              </a>
             </div>
           </motion.div>
 
@@ -59,7 +76,7 @@ export function Footer() {
               {rootCategories.length > 0 ? (
                 rootCategories.map(cat => (
                   <li key={cat.id}>
-                    <Link to={`${ROUTES.shop}?category=${cat.slug}&page-1`}  className="text-sm text-background/80 transition-colors hover:text-background">
+                    <Link to="/shop" search={{ category: cat.slug, page: 1 }} className="text-sm text-background/80 transition-colors hover:text-background">
                       {cat.name}
                     </Link>
                   </li>
@@ -82,12 +99,12 @@ export function Footer() {
         <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
           <div className="flex flex-wrap items-center justify-center gap-6 text-[10px] tracking-widest text-background/50 uppercase">
             <span>© {currentYear} JUICY ATELIER. ALL RIGHTS RESERVED.</span>
-            <Link to="/privacy" className="transition-colors hover:text-background/80">
+            <a href="/privacy" className="transition-colors hover:text-background/80">
               Privacy Policy
-            </Link>
-            <Link to="/terms" className="transition-colors hover:text-background/80">
+            </a>
+            <a href="/terms" className="transition-colors hover:text-background/80">
               Terms of Service
-            </Link>
+            </a>
           </div>
         </div>
       </div>

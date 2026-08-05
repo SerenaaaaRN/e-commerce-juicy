@@ -1,8 +1,8 @@
 import { cn, formatPrice } from "@/lib/utils"
 import type { CatalogProduct } from "@/types"
+import { Link } from "@tanstack/react-router"
 import { motion, type Variants } from "motion/react"
 import { useState } from "react"
-import { Link } from "react-router-dom"
 
 type ProductCardProps = {
   product: CatalogProduct
@@ -28,7 +28,8 @@ export const ProductCard = ({ product, variants }: ProductCardProps) => {
         : {})}
     >
       <Link
-        to={`/shop/${product.slug}`}
+        to="/shop/$slug"
+        params={{ slug: product.slug }}
         className="group block"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}

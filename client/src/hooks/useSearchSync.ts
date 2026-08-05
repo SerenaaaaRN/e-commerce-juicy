@@ -1,6 +1,5 @@
-import ROUTES from "@/constants/paths"
+import { useNavigate, useRouterState } from "@tanstack/react-router"
 import { useCallback, useEffect, useState, type FormEvent } from "react"
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom"
 import useDebounce from "./useDebounce"
 
 const DEBOUNCE_MS = 300
@@ -11,10 +10,10 @@ const DEBOUNCE_MS = 300
 
 const useSearchSync = () => {
   const navigate = useNavigate()
-  const location = useLocation()
-  const [searchParams] = useSearchParams()
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const searchParams = useRouterState({ select: (s) => s.location.search }) as Record<string, unknown>
 
-  const urlQuery = searchParams.get("search") || ""
+  const urlQuery = typeof searchParams.search === "string" ? searchParams.search : ""
   const [query, setQuery] = useState(urlQuery)
   const debouncedQuery = useDebounce(query, DEBOUNCE_MS)
 
@@ -24,31 +23,27 @@ const useSearchSync = () => {
 
   useEffect(() => {
     const trimmed = debouncedQuery.trim()
-    const current = searchParams.get("search") || ""
+    const current = urlQuery
 
     if (trimmed === current) return
+    if (pathname !== "/shop" && !trimmed) return
 
-    const params = new URLSearchParams(searchParams)
-    if (!trimmed) {
-      params.delete("search")
-    } else {
-      params.set("search", trimmed)
-      params.set("page", "1")
-    }
-
-    const targetPath =
-      location.pathname === ROUTES.shop
-        ? `${ROUTES.shop}?${params.toString()}`
-        : `${ROUTES.shop}?search=${encodeURIComponent(trimmed)}`
-
-    navigate(targetPath, { replace: true })
-  }, [debouncedQuery, navigate, location.pathname, searchParams])
+    navigate({
+      to: "/shop",
+      replace: true,
+      search: (prev) => {
+        if (trimmed) return { ...prev, search: trimmed, page: 1 }
+        const { search: _removed, ...rest } = prev
+        return { ...rest, page: 1 }
+      },
+    })
+  }, [debouncedQuery, urlQuery, navigate, pathname])
 
   const submitSearch = useCallback(
     (e?: FormEvent) => {
       e?.preventDefault()
       if (query.trim()) {
-        navigate(`/shop?search=${encodeURIComponent(query.trim())}`)
+        navigate({ to: "/shop", search: { search: query.trim(), page: 1 } })
       }
     },
     [query, navigate]

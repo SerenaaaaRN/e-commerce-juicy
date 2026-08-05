@@ -1,9 +1,8 @@
 import { Separator } from "@/components/ui/separator"
-import { ROUTES } from "@/constants/paths"
 import { useRemoveCartItemMutation, useUpdateCartItemMutation } from "@/features/cart/hooks/useCartMutations"
 import { useCartQuery } from "@/features/cart/hooks/useCartQueries"
 import { useCustomerAuthStore } from "@/stores/customer-auth-store"
-import { Navigate, useNavigate } from "react-router-dom"
+import { Navigate, useNavigate } from "@tanstack/react-router"
 import { toast } from "sonner"
 import { CartItem } from "./components/CartItem"
 import { CartSummary } from "./components/CartSummary"
@@ -17,7 +16,7 @@ export const CartPage = () => {
   const removeItemMutation = useRemoveCartItemMutation()
 
   if (!isAuthenticated) {
-    return <Navigate to={ROUTES.login} replace />
+    return <Navigate to="/login" replace />
   }
 
   const items = cart?.items ?? []
@@ -45,7 +44,7 @@ export const CartPage = () => {
   }
 
   const handleCheckout = () => {
-    navigate(ROUTES.checkout)
+    navigate({ to: "/checkout" })
   }
 
   return (

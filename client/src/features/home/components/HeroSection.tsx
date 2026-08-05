@@ -1,9 +1,8 @@
 import { Button } from "@/components/ui/button"
-import { ROUTES } from "@/constants/paths"
 import { ArrowRight01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { motion } from "motion/react"
-import { Link } from "react-router-dom"
+import { Link } from "@tanstack/react-router"
 
 export const HeroSection = () => {
   return (
@@ -77,7 +76,7 @@ export const HeroSection = () => {
               size="lg"
               className="group rounded-none border border-transparent bg-background px-8 py-6 font-sans text-xs font-semibold tracking-[0.2em] text-foreground uppercase transition-all duration-500 hover:border-primary hover:bg-primary hover:text-primary-foreground"
             >
-              <Link to={ROUTES.shop}>
+              <Link to="/shop">
                 Discover Collection
                 <HugeiconsIcon
                   icon={ArrowRight01Icon}

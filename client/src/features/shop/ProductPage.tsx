@@ -9,7 +9,6 @@ import {
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Spinner } from "@/components/ui/spinner"
-import { ROUTES } from "@/constants/paths"
 import { useAddCartItemMutation } from "@/features/cart/hooks/useCartMutations"
 import { useProductQuery } from "@/features/shop/hooks/useProductQueries"
 import {
@@ -19,10 +18,10 @@ import {
 import { useWishlistQuery } from "@/features/wishlist/hooks/useWishlistQueries"
 import { useRecentlyViewed } from "@/hooks/useRecentlyViewed"
 import { useCustomerAuthStore } from "@/stores/customer-auth-store"
+import { Link, useNavigate, useParams } from "@tanstack/react-router"
 import { HeartAddIcon, ShoppingBag01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { useEffect, useState, type ComponentProps } from "react"
-import { Link, useNavigate, useParams } from "react-router-dom"
 import { toast } from "sonner"
 import { ProductImageGallery } from "./components/ProductImageGallery"
 import { ProductInfo } from "./components/ProductInfo"
@@ -50,7 +49,7 @@ const AddToCartButton = ({ onClick, disabled = false, isLoading = false, stock }
 }
 
 export const ProductPage = () => {
-  const { slug } = useParams<{ slug: string }>()
+  const { slug } = useParams({ from: "/_public/shop/$slug" })
   const navigate = useNavigate()
   const isAuthenticated = useCustomerAuthStore((s) => s.isAuthenticated)
   const { data: currentProduct, isLoading, error } = useProductQuery(slug || "")
@@ -60,11 +59,9 @@ export const ProductPage = () => {
   const removeWishlistMutation = useRemoveWishlistItemMutation()
   const { addItem: addToRecentlyViewed } = useRecentlyViewed()
 
-  // Selections state
   const [selectedSize, setSelectedSize] = useState("")
   const [selectedColor, setSelectedColor] = useState("")
 
-  // Reset selections when product changes
   useEffect(() => {
     if (currentProduct) {
       setSelectedSize("")
@@ -110,7 +107,7 @@ export const ProductPage = () => {
           </EmptyHeader>
           <EmptyContent className="mt-6">
             <Button asChild variant="outline">
-              <Link to={ROUTES.shop}>Back to Shop</Link>
+              <Link to="/shop">Back to Shop</Link>
             </Button>
           </EmptyContent>
         </Empty>
@@ -118,23 +115,20 @@ export const ProductPage = () => {
     )
   }
 
-  // Find currently active variant based on size & color choices
   const variants = currentProduct.variants || []
   const activeVariant = variants.find((v) => v.size === selectedSize && v.color === selectedColor)
   const wishlistVariantId = activeVariant?.id || variants[0]?.id || ""
   const inWishlist = wishlistVariantId ? (wishlist?.wishlistIds.has(wishlistVariantId) ?? false) : false
 
-  // Settle active unit price (base product price + variant specific surcharge if any)
   const unitPrice = activeVariant ? currentProduct.price + activeVariant.additional_price : currentProduct.price
 
-  // Stock tracking details
   const availableStock = activeVariant ? activeVariant.stock : 0
   const hasVariants = variants.length > 0
   const isSelectionComplete = !hasVariants || (selectedSize !== "" && selectedColor !== "")
 
   const handleAddToCart = async () => {
     if (!isAuthenticated) {
-      navigate(`${ROUTES.login}?redirect=${encodeURIComponent(`/shop/${slug}`)}`)
+      navigate({ to: "/login" })
       toast.error("Please log in to add items to your cart.")
       return
     }
@@ -179,15 +173,14 @@ export const ProductPage = () => {
   return (
     <div className="bg-background py-32 md:py-42">
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Navigation Breadcrumb trail */}
         <Breadcrumb className="mb-8 text-left text-xs font-bold uppercase">
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink to={ROUTES.home}>Home</BreadcrumbLink>
+              <BreadcrumbLink to="/">Home</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbLink to={ROUTES.shop}>Shop</BreadcrumbLink>
+              <BreadcrumbLink to="/shop">Shop</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbPage className="max-w-50 truncate font-bold text-primary uppercase sm:max-w-none">
@@ -196,16 +189,12 @@ export const ProductPage = () => {
           </BreadcrumbList>
         </Breadcrumb>
 
-        {/* PDP Two-Column Split Grid */}
         <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-16">
-          {/* Visual Column */}
           <div className="w-full lg:col-span-6">
             <ProductImageGallery images={currentProduct.images || []} fallbackImage="/placeholder.webp" />
           </div>
 
-          {/* Details & Selection Column */}
           <div className="flex w-full flex-col gap-6 lg:col-span-6">
-            {/* Base Product Info Details */}
             <ProductInfo
               name={currentProduct.name}
               categoryName={currentProduct.category?.name || "Apparel"}
@@ -217,7 +206,6 @@ export const ProductPage = () => {
               tags={currentProduct.tags}
             />
 
-            {/* Variant Pills Selector */}
             {hasVariants ? (
               <VariantSelector
                 variants={variants}
@@ -228,7 +216,6 @@ export const ProductPage = () => {
               />
             ) : null}
 
-            {/* Cart trigger block */}
             <div className="flex flex-col gap-3 pt-4">
               <div className="flex items-center gap-3">
                 <div className="flex-1">
@@ -252,7 +239,6 @@ export const ProductPage = () => {
           </div>
         </div>
 
-        {/* Dynamic Reviews and Feedback list */}
         <ReviewsSection
           slug={currentProduct.slug}
           avgRating={currentProduct.avg_rating}

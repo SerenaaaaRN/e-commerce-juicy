@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button"
 import type { Category } from "@/types"
-import { Link } from "react-router-dom"
+import { Link } from "@tanstack/react-router"
 
 type CategoryPromoBannerProps = {
   category: Category
@@ -24,7 +24,8 @@ export const CategoryPromoBanner = ({ category }: CategoryPromoBannerProps) => {
             </p>
             <Button asChild>
               <Link
-                to={`/shop?category=${category.slug}`}
+                to="/shop"
+                search={{ category: category.slug }}
                 aria-label={`Belanja sekarang untuk koleksi ${category.name}`}
               >
                 Belanja Sekarang

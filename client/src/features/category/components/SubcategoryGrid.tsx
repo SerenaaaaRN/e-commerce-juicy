@@ -1,7 +1,7 @@
 import type { Category } from "@/types"
 import { ArrowRight01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Link } from "react-router-dom"
+import { Link } from "@tanstack/react-router"
 
 type SubcategoryGridProps = {
   subcategories: Category[]
@@ -29,7 +29,8 @@ export const SubcategoryGrid = ({ subcategories }: SubcategoryGridProps) => {
             subcategories.map((sub) => (
               <Link
                 key={sub.id}
-                to={`/category/${sub.slug}`}
+                to="/category/$slug"
+                params={{ slug: sub.slug }}
                 className="group block"
                 aria-label={`Jelajahi subkategori ${sub.name}, berisi ${sub.product_count} produk`}
               >

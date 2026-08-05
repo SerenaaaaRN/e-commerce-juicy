@@ -10,12 +10,11 @@ import { Button } from "@/components/ui/button"
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Separator } from "@/components/ui/separator"
 import { Spinner } from "@/components/ui/spinner"
-import { ROUTES } from "@/constants/paths"
 import { useCustomerAuthStore } from "@/stores/customer-auth-store"
+import { Link, Navigate } from "@tanstack/react-router"
 import { ShoppingBag01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { useEffect } from "react"
-import { Link, Navigate } from "react-router-dom"
 import { toast } from "sonner"
 import { OrderCard } from "./components/OrderCard"
 import { useCustomerOrdersQuery } from "./hooks/useOrderQueries"
@@ -30,9 +29,8 @@ export const OrderHistoryPage = () => {
     }
   }, [error])
 
-  // Guest restriction redirect
   if (!isAuthenticated) {
-    return <Navigate to={ROUTES.login} replace />
+    return <Navigate to="/login" replace />
   }
 
   if (loading) {
@@ -53,7 +51,7 @@ export const OrderHistoryPage = () => {
       <Breadcrumb className="mb-4 text-[10px] tracking-wider uppercase sm:text-xs">
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink to={ROUTES.home}>Home</BreadcrumbLink>
+            <BreadcrumbLink to="/">Home</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbPage className="text-primary">Purchase History</BreadcrumbPage>
@@ -70,7 +68,6 @@ export const OrderHistoryPage = () => {
 
       <Separator className="mb-8" />
 
-      {/* Main Orders List Stack */}
       {orders.length === 0 ? (
         <Empty className="mx-auto max-w-md border-none bg-transparent">
           <EmptyHeader>
@@ -88,7 +85,7 @@ export const OrderHistoryPage = () => {
           </EmptyHeader>
           <EmptyContent className="mt-6">
             <Button asChild size="lg">
-              <Link to={ROUTES.shop}>Explore Atelier</Link>
+              <Link to="/shop">Explore Atelier</Link>
             </Button>
           </EmptyContent>
         </Empty>

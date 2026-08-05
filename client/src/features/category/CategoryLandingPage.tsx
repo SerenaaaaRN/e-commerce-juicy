@@ -1,18 +1,17 @@
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
-import { ROUTES } from "@/constants/paths"
 import { useCategoriesQuery, useProductsQuery } from "@/features/shop/hooks/useProductQueries"
 import { useMemo } from "react"
-import { Link, useParams } from "react-router-dom"
+import { Link, useParams } from "@tanstack/react-router"
 import { CategoryHero } from "./components/CategoryHero"
 import { CategoryProducts } from "./components/CategoryProducts"
 import { CategoryPromoBanner } from "./components/CategoryPromoBanner"
 import { SubcategoryGrid } from "./components/SubcategoryGrid"
 
 export const CategoryLandingPage = () => {
-  const { slug } = useParams<{ slug: string }>()
+  const { slug } = useParams({ from: "/_public/category/$slug" })
   const { data: categories = [], isLoading: isCategoriesLoading } = useCategoriesQuery()
-  // Prefetch products so it starts loading alongside categories, but we don't block the layout on it
+
   useProductsQuery(slug ? { category: slug, per_page: 8 } : undefined)
 
   const category = useMemo(() => {
@@ -40,13 +39,12 @@ export const CategoryLandingPage = () => {
       <div className="container mx-auto max-w-7xl px-4 py-20 text-center">
         <p className="text-muted-foreground">Kategori tidak ditemukan.</p>
         <Button variant="outline" className="mt-4" asChild>
-          <Link to={ROUTES.shop}>Kembali ke Shop</Link>
+          <Link to="/shop">Kembali ke Shop</Link>
         </Button>
       </div>
     )
   }
 
-  // Only block layout rendering on the category metadata itself
   if (isCategoriesLoading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
@@ -60,7 +58,7 @@ export const CategoryLandingPage = () => {
       <div className="container mx-auto max-w-7xl px-4 py-20 text-center">
         <p className="text-muted-foreground">Kategori "{slug}" tidak ditemukan.</p>
         <Button variant="outline" className="mt-4" asChild>
-          <Link to={ROUTES.shop}>Kembali ke Shop</Link>
+          <Link to="/shop">Kembali ke Shop</Link>
         </Button>
       </div>
     )
