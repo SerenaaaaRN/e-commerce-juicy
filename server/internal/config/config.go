@@ -43,18 +43,23 @@ type Config struct {
 func Load() (*Config, error) {
 	_ = godotenv.Load()
 
+	appPort := getEnv("PORT", "")
+	if appPort == "" {
+		appPort = getEnv("APP_PORT", "8080")
+	}
+
 	cfg := &Config{
-		AppPort:                     getEnv("APP_PORT", getEnv("PORT", "8080")),
+		AppPort:                     appPort,
 		AppEnv:                      getEnv("APP_ENV", "development"),
-		DBHost:                      os.Getenv("DB_HOST"),
+		DBHost:                      getEnv("DB_HOST", "localhost"),
 		DBPort:                      getEnv("DB_PORT", "5432"),
-		DBName:                      os.Getenv("DB_NAME"),
-		DBUser:                      os.Getenv("DB_USER"),
-		DBPassword:                  os.Getenv("DB_PASSWORD"),
+		DBName:                      getEnv("DB_NAME", "juicy"),
+		DBUser:                      getEnv("DB_USER", "postgres"),
+		DBPassword:                  getEnv("DB_PASSWORD", "postgres"),
 		DBSSLMode:                   getEnv("DB_SSLMODE", "disable"),
 		DatabaseURL:                 os.Getenv("DATABASE_URL"),
-		JWTAdminSecret:              os.Getenv("JWT_ADMIN_SECRET"),
-		JWTCustomerSecret:           os.Getenv("JWT_CUSTOMER_SECRET"),
+		JWTAdminSecret:              getEnv("JWT_ADMIN_SECRET", "juicy_admin_default_secret_32_bytes!"),
+		JWTCustomerSecret:           getEnv("JWT_CUSTOMER_SECRET", "juicy_customer_default_secret_32_bytes!"),
 		CloudinaryCloudName:         os.Getenv("CLOUDINARY_CLOUD_NAME"),
 		CloudinaryAPIKey:            os.Getenv("CLOUDINARY_API_KEY"),
 		CloudinaryAPISecret:         os.Getenv("CLOUDINARY_API_SECRET"),
@@ -62,28 +67,13 @@ func Load() (*Config, error) {
 		ResendAPIKey:                os.Getenv("RESEND_API_KEY"),
 		ResendFromEmail:             getEnv("RESEND_FROM_EMAIL", "noreply@juicy.com"),
 		AdminAlertEmail:             getEnv("ADMIN_ALERT_EMAIL", "admin@juicy.com"),
-		AllowedOrigins:              getEnv("ALLOWED_ORIGINS", "http://localhost:5173"),
+		AllowedOrigins:              getEnv("ALLOWED_ORIGINS", "http://localhost:5173,https://juicy.rillah.dev"),
 		JWTAdminAccessExpiryMinutes: getEnvInt("JWT_ADMIN_ACCESS_EXPIRY_MINUTES", 15),
 		JWTAdminRefreshExpiryDays:   getEnvInt("JWT_ADMIN_REFRESH_EXPIRY_DAYS", 1),
 		JWTCustomerExpiryDays:       getEnvInt("JWT_CUSTOMER_EXPIRY_DAYS", 7),
 		DefaultShippingFee:          getEnvFloat("DEFAULT_SHIPPING_FEE", 25000.0),
 		BackgroundWorkerPoolSize:   getEnvInt("BACKGROUND_WORKER_POOL_SIZE", 5),
 		BackgroundWorkerQueueSize:  getEnvInt("BACKGROUND_WORKER_QUEUE_SIZE", 100),
-	}
-
-	required := map[string]string{
-		"JWT_ADMIN_SECRET":   cfg.JWTAdminSecret,
-		"JWT_CUSTOMER_SECRET": cfg.JWTCustomerSecret,
-	}
-
-	for name, val := range required {
-		if val == "" {
-			return nil, fmt.Errorf("%s is required", name)
-		}
-	}
-
-	if cfg.DatabaseURL == "" && cfg.DBHost == "" {
-		return nil, fmt.Errorf("DATABASE_URL or DB_HOST is required")
 	}
 
 	return cfg, nil
