@@ -43,45 +43,47 @@ type Config struct {
 func Load() (*Config, error) {
 	_ = godotenv.Load()
 
-	appPort := getEnv("PORT", "")
-	if appPort == "" {
-		appPort = getEnv("APP_PORT", "8080")
-	}
-
 	cfg := &Config{
-		AppPort:                appPort,
-		AppEnv:                 getEnv("APP_ENV", "development"),
-		DBHost:                 getEnv("DB_HOST", "localhost"),
-		DBPort:                 getEnv("DB_PORT", "5432"),
-		DBName:                 getEnv("DB_NAME", "juicy"),
-		DBUser:                 getEnv("DB_USER", "postgres"),
-		DBPassword:             getEnv("DB_PASSWORD", "postgres"),
-		DBSSLMode:              getEnv("DB_SSLMODE", "disable"),
-		DatabaseURL:            os.Getenv("DATABASE_URL"),
-		JWTAdminSecret:         getEnv("JWT_ADMIN_SECRET", ""),
-		JWTCustomerSecret:      getEnv("JWT_CUSTOMER_SECRET", ""),
-		CloudinaryCloudName:    os.Getenv("CLOUDINARY_CLOUD_NAME"),
-		CloudinaryAPIKey:       os.Getenv("CLOUDINARY_API_KEY"),
-		CloudinaryAPISecret:    os.Getenv("CLOUDINARY_API_SECRET"),
-		CloudinaryUploadFolder: getEnv("CLOUDINARY_UPLOAD_FOLDER", "juicy"),
-		ResendAPIKey:           os.Getenv("RESEND_API_KEY"),
-		ResendFromEmail:        getEnv("RESEND_FROM_EMAIL", "noreply@juicy.com"),
-		AdminAlertEmail:        getEnv("ADMIN_ALERT_EMAIL", "admin@juicy.com"),
-		AllowedOrigins:         getEnv("ALLOWED_ORIGINS", "http://localhost:5173"),
+		AppPort:                     getEnv("APP_PORT", getEnv("PORT", "8080")),
+		AppEnv:                      getEnv("APP_ENV", "development"),
+		DBHost:                      os.Getenv("DB_HOST"),
+		DBPort:                      getEnv("DB_PORT", "5432"),
+		DBName:                      os.Getenv("DB_NAME"),
+		DBUser:                      os.Getenv("DB_USER"),
+		DBPassword:                  os.Getenv("DB_PASSWORD"),
+		DBSSLMode:                   getEnv("DB_SSLMODE", "disable"),
+		DatabaseURL:                 os.Getenv("DATABASE_URL"),
+		JWTAdminSecret:              os.Getenv("JWT_ADMIN_SECRET"),
+		JWTCustomerSecret:           os.Getenv("JWT_CUSTOMER_SECRET"),
+		CloudinaryCloudName:         os.Getenv("CLOUDINARY_CLOUD_NAME"),
+		CloudinaryAPIKey:            os.Getenv("CLOUDINARY_API_KEY"),
+		CloudinaryAPISecret:         os.Getenv("CLOUDINARY_API_SECRET"),
+		CloudinaryUploadFolder:      getEnv("CLOUDINARY_UPLOAD_FOLDER", "juicy"),
+		ResendAPIKey:                os.Getenv("RESEND_API_KEY"),
+		ResendFromEmail:             getEnv("RESEND_FROM_EMAIL", "noreply@juicy.com"),
+		AdminAlertEmail:             getEnv("ADMIN_ALERT_EMAIL", "admin@juicy.com"),
+		AllowedOrigins:              getEnv("ALLOWED_ORIGINS", "http://localhost:5173"),
+		JWTAdminAccessExpiryMinutes: getEnvInt("JWT_ADMIN_ACCESS_EXPIRY_MINUTES", 15),
+		JWTAdminRefreshExpiryDays:   getEnvInt("JWT_ADMIN_REFRESH_EXPIRY_DAYS", 1),
+		JWTCustomerExpiryDays:       getEnvInt("JWT_CUSTOMER_EXPIRY_DAYS", 7),
+		DefaultShippingFee:          getEnvFloat("DEFAULT_SHIPPING_FEE", 25000.0),
+		BackgroundWorkerPoolSize:   getEnvInt("BACKGROUND_WORKER_POOL_SIZE", 5),
+		BackgroundWorkerQueueSize:  getEnvInt("BACKGROUND_WORKER_QUEUE_SIZE", 100),
 	}
 
-	cfg.JWTAdminAccessExpiryMinutes = getEnvInt("JWT_ADMIN_ACCESS_EXPIRY_MINUTES", 15)
-	cfg.JWTAdminRefreshExpiryDays = getEnvInt("JWT_ADMIN_REFRESH_EXPIRY_DAYS", 1)
-	cfg.JWTCustomerExpiryDays = getEnvInt("JWT_CUSTOMER_EXPIRY_DAYS", 7)
-	cfg.DefaultShippingFee = getEnvFloat("DEFAULT_SHIPPING_FEE", 25000.0)
-	cfg.BackgroundWorkerPoolSize = getEnvInt("BACKGROUND_WORKER_POOL_SIZE", 5)
-	cfg.BackgroundWorkerQueueSize = getEnvInt("BACKGROUND_WORKER_QUEUE_SIZE", 100)
-
-	if cfg.JWTAdminSecret == "" {
-		return nil, fmt.Errorf("JWT_ADMIN_SECRET is required")
+	required := map[string]string{
+		"JWT_ADMIN_SECRET":   cfg.JWTAdminSecret,
+		"JWT_CUSTOMER_SECRET": cfg.JWTCustomerSecret,
 	}
-	if cfg.JWTCustomerSecret == "" {
-		return nil, fmt.Errorf("JWT_CUSTOMER_SECRET is required")
+
+	for name, val := range required {
+		if val == "" {
+			return nil, fmt.Errorf("%s is required", name)
+		}
+	}
+
+	if cfg.DatabaseURL == "" && cfg.DBHost == "" {
+		return nil, fmt.Errorf("DATABASE_URL or DB_HOST is required")
 	}
 
 	return cfg, nil
@@ -91,10 +93,7 @@ func (c *Config) DSN() string {
 	if c.DatabaseURL != "" {
 		return c.DatabaseURL
 	}
-	return fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
-		c.DBHost, c.DBPort, c.DBUser, c.DBPassword, c.DBName, c.DBSSLMode,
-	)
+	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s", c.DBHost, c.DBPort, c.DBUser, c.DBPassword, c.DBName, c.DBSSLMode)
 }
 
 func (c *Config) IsDevelopment() bool {
