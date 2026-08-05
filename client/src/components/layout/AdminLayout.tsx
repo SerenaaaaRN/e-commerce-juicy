@@ -20,7 +20,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { ROUTES } from "@/constants/paths"
+import { Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router"
 import { adminApi } from "@/lib/api"
 import { cn } from "@/lib/utils"
 import { useAdminAuthStore } from "@/stores/admin-auth-store"
@@ -34,39 +34,38 @@ import {
   UserIcon,
 } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Link, Outlet, useLocation, useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 
 const menuItems = [
   {
     name: "Dashboard",
-    path: ROUTES.adminDashboard,
+    path: "/admin/dashboard",
     icon: () => <HugeiconsIcon icon={DashboardBrowsingIcon} />,
   },
   {
     name: "Products",
-    path: ROUTES.adminProducts,
+    path: "/admin/products",
     icon: () => <HugeiconsIcon icon={ShoppingBag01Icon} />,
   },
   {
     name: "Orders",
-    path: ROUTES.adminOrders,
+    path: "/admin/orders",
     icon: () => <HugeiconsIcon icon={DeliveryTruck02Icon} />,
   },
   {
     name: "Customers",
-    path: ROUTES.adminCustomers,
+    path: "/admin/customers",
     icon: () => <HugeiconsIcon icon={UserIcon} />,
   },
   {
     name: "Reviews",
-    path: ROUTES.adminReviews,
+    path: "/admin/reviews",
     icon: () => <HugeiconsIcon icon={StarIcon} />,
   },
 ]
 
 export const AdminLayout = () => {
-  const location = useLocation()
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
   const navigate = useNavigate()
   const { admin, logout } = useAdminAuthStore()
 
@@ -78,10 +77,10 @@ export const AdminLayout = () => {
     }
     logout()
     toast.success("Logged out from admin console.")
-    navigate(ROUTES.adminLogin)
+    navigate({ to: "/admin/login" })
   }
 
-  const activePath = location.pathname
+  const activePath = pathname
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -152,7 +151,7 @@ export const AdminLayout = () => {
               tooltip="Back to Storefront"
               className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
-              <Link to={ROUTES.home}>
+              <Link to="/">
                 <HugeiconsIcon icon={ArrowLeft01Icon} />
                 <span>Back to Store</span>
               </Link>

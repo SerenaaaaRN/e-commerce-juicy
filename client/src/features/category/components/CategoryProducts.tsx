@@ -2,7 +2,7 @@ import { ProductCard } from "@/components/common/ProductCard"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { useProductsQuery } from "@/features/shop/hooks/useProductQueries"
-import { Link } from "react-router-dom"
+import { Link } from "@tanstack/react-router"
 
 type CategoryProductsProps = {
   slug: string
@@ -42,7 +42,8 @@ export const CategoryProducts = ({ slug, categoryName }: CategoryProductsProps) 
           </div>
           <Button variant="outline" size="sm" asChild className="hidden sm:flex">
             <Link
-              to={`/shop?category=${slug}`}
+              to="/shop"
+              search={{ category: slug }}
               aria-label={`Lihat semua produk dalam kategori ${categoryName}`}
             >
               Lihat Semua
@@ -57,7 +58,8 @@ export const CategoryProducts = ({ slug, categoryName }: CategoryProductsProps) 
         <div className="mt-8 text-center sm:hidden">
           <Button variant="outline" size="sm" asChild>
             <Link
-              to={`/shop?category=${slug}`}
+              to="/shop"
+              search={{ category: slug }}
               aria-label={`Lihat semua produk dalam kategori ${categoryName}`}
             >
               Lihat Semua Produk {categoryName}

@@ -1,9 +1,8 @@
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
-import { ROUTES } from "@/constants/paths"
 import { ShoppingBag01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Link } from "react-router-dom"
+import { Link } from "@tanstack/react-router"
 
 export const EmptyCart = () => {
   return (
@@ -25,7 +24,7 @@ export const EmptyCart = () => {
 
         <EmptyContent className="mt-6">
           <Button asChild size="lg" className="rounded-none text-xs tracking-[0.15em] uppercase">
-            <Link to={ROUTES.shop}>Shop the Collection</Link>
+            <Link to="/shop">Shop the Collection</Link>
           </Button>
         </EmptyContent>
       </Empty>

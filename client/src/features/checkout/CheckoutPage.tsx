@@ -2,7 +2,6 @@ import { AddressForm } from "@/components/common/AddressForm"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Spinner } from "@/components/ui/spinner"
-import { ROUTES } from "@/constants/paths"
 import { useClearCartMutation } from "@/features/cart/hooks/useCartMutations"
 import { useCartQuery } from "@/features/cart/hooks/useCartQueries"
 import { ordersApi } from "@/lib/api/orders"
@@ -11,7 +10,7 @@ import type { Address } from "@/types"
 import { ShoppingBag01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { useEffect, useState, useTransition } from "react"
-import { Navigate, useNavigate } from "react-router-dom"
+import { Navigate, useNavigate } from "@tanstack/react-router"
 import { toast } from "sonner"
 import { AddressSelector } from "./components/AddressSelector"
 import { OrderSummary } from "./components/OrderSummary"
@@ -26,7 +25,6 @@ export const CheckoutPage = () => {
   const items = cart?.items ?? []
   const subtotal = items.reduce((sum, item) => sum + item.unit_price * item.quantity, 0)
 
-  // Local state
   const [isPending, startTransition] = useTransition()
   const [addresses, setAddresses] = useState<Address[]>([])
   const [selectedAddressId, setSelectedAddressId] = useState("")
@@ -34,14 +32,12 @@ export const CheckoutPage = () => {
   const [fetchingAddresses, setFetchingAddresses] = useState(false)
   const [showAddressForm, setShowAddressForm] = useState(false)
 
-  // Fetch addresses
   const loadAddresses = async () => {
     setFetchingAddresses(true)
     try {
       const res = await ordersApi.getAddresses()
       if (res.success) {
         setAddresses(res.data)
-        // Auto-select default address if found
         const defaultAddr = res.data.find((a) => a.is_default)
         if (defaultAddr) {
           setSelectedAddressId(defaultAddr.id)
@@ -60,13 +56,12 @@ export const CheckoutPage = () => {
     loadAddresses()
   }, [])
 
-  // Redirect checks
   if (!isAuthenticated) {
-    return <Navigate to={ROUTES.login} replace />
+    return <Navigate to="/login" replace />
   }
 
   if (items.length === 0) {
-    return <Navigate to={ROUTES.shop} replace />
+    return <Navigate to="/shop" replace />
   }
 
   const handlePlaceOrder = () => {
@@ -87,7 +82,7 @@ export const CheckoutPage = () => {
           toast.success("Your artisanal silhouette order has been placed successfully!")
           const orderNum = res.data.order_number
           clearCartMutation.mutate()
-          navigate(`${ROUTES.orders}/${orderNum}`)
+          navigate({ to: "/orders/$orderNumber", params: { orderNumber: orderNum } })
         } else {
           toast.error(res.message || "Failed to submit checkout order.")
         }

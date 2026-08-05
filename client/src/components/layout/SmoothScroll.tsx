@@ -1,13 +1,13 @@
+import { useRouterState } from "@tanstack/react-router"
 import { ReactLenis, useLenis } from "lenis/react"
 import { useEffect, type ReactNode } from "react"
-import { useLocation } from "react-router-dom"
 
 type SmoothScrollProps = {
   children: ReactNode
 }
 
 export const SmoothScroll = ({ children }: SmoothScrollProps) => {
-  const { pathname } = useLocation()
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
   const lenis = useLenis()
 
   useEffect(() => {

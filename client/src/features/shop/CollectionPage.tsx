@@ -19,21 +19,22 @@ import { FilterIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { motion } from "motion/react"
 import { useEffect, useRef, useState, useTransition } from "react"
-import { useSearchParams } from "react-router-dom"
+import { useSearch, useNavigate } from "@tanstack/react-router"
 import { ProductFilters } from "./components/ProductFilters"
 import { ProductGrid } from "./components/ProductGrid"
 import type { SortOption } from "./types"
 
 export const CollectionPage = () => {
-  const [searchParams, setSearchParams] = useSearchParams()
+  const searchParams = useSearch({ from: "/_public/shop/" })
+  const navigate = useNavigate()
 
   const headerRef = useRef<HTMLElement>(null)
 
-  const currentCategory = searchParams.get("category") || ""
-  const currentSort = (searchParams.get("sort") as SortOption) || ""
-  const currentPage = Number(searchParams.get("page")) || 1
-  const currentSizesStr = searchParams.get("sizes") || ""
-  const currentSearch = searchParams.get("search") || ""
+  const currentCategory = searchParams.category || ""
+  const currentSort = (searchParams.sort as SortOption) || ""
+  const currentPage = searchParams.page || 1
+  const currentSizesStr = searchParams.sizes || ""
+  const currentSearch = searchParams.search || ""
   const perPage = 8
 
   const currentSizes = currentSizesStr ? currentSizesStr.split(",") : []
@@ -104,25 +105,30 @@ export const CollectionPage = () => {
   const [isPendingFilter, startTransition] = useTransition()
 
   const updateParams = (newParams: Record<string, string | number | null>) => {
-    const updated = new URLSearchParams(searchParams)
-    Object.entries(newParams).forEach(([key, val]) => {
-      if (val === null || val === "") {
-        updated.delete(key)
-      } else {
-        updated.set(key, String(val))
-      }
-    })
-
-    if (
-      newParams.category !== undefined ||
-      newParams.sort !== undefined ||
-      newParams.sizes !== undefined ||
-      newParams.search !== undefined
-    ) {
-      updated.set("page", "1")
-    }
     startTransition(() => {
-      setSearchParams(updated)
+      navigate({
+        to: "/shop",
+        search: (prev) => {
+          const next = { ...prev }
+          Object.entries(newParams).forEach(([key, val]) => {
+            if (val === null || val === "") {
+              delete (next as Record<string, unknown>)[key]
+            } else {
+              (next as Record<string, unknown>)[key] = val
+            }
+          })
+          if (
+            newParams.category !== undefined ||
+            newParams.sort !== undefined ||
+            newParams.sizes !== undefined ||
+            newParams.search !== undefined
+          ) {
+            next.page = 1
+          }
+          return next
+        },
+        replace: true,
+      })
     })
   }
 
@@ -144,7 +150,11 @@ export const CollectionPage = () => {
 
   const handleReset = () => {
     startTransition(() => {
-      setSearchParams(new URLSearchParams())
+      navigate({
+        to: "/shop",
+        search: { category: "", sort: "" as SortOption, page: 1, sizes: "", search: "" },
+        replace: true,
+      })
     })
   }
 

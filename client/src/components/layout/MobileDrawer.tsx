@@ -1,10 +1,9 @@
 import { Cancel01Icon, SearchIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
+import { Link, useRouterState } from "@tanstack/react-router"
 import { AnimatePresence, motion } from "motion/react"
-import { Link, useLocation } from "react-router-dom"
 
 import { Input } from "@/components/ui/input"
-import ROUTES from "@/constants/paths"
 import { cn } from "@/lib/utils"
 import type { Category } from "@/types"
 
@@ -14,13 +13,13 @@ type MobileDrawerProps = {
   query: string
   onQueryChange: (val: string) => void
   categories: Category[]
-  navLinks: readonly { to: string; label: string }[]
+  navLinks: readonly { to: "/" | "/shop" | "/heritage"; label: string }[]
 }
 
 const ICON_STROKE = 1.5
 
 export const MobileDrawer = ({ isOpen, onClose, query, onQueryChange, categories, navLinks }: MobileDrawerProps) => {
-  const location = useLocation()
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
 
   return (
     <AnimatePresence>
@@ -72,7 +71,7 @@ export const MobileDrawer = ({ isOpen, onClose, query, onQueryChange, categories
               {/* Navigation Links */}
               <nav className="flex flex-col gap-1 px-4 py-6">
                 {navLinks
-                  .filter((link) => link.to === ROUTES.heritage)
+                  .filter((link) => link.to === "/heritage")
                   .map((link) => (
                     <Link
                       key={link.to}
@@ -80,7 +79,7 @@ export const MobileDrawer = ({ isOpen, onClose, query, onQueryChange, categories
                       onClick={onClose}
                       className={cn(
                         "px-4 py-3 text-sm font-medium tracking-wide uppercase transition-all",
-                        location.pathname === link.to
+                        pathname === link.to
                           ? "bg-primary/10 text-primary"
                           : "text-foreground/70 hover:bg-muted hover:text-foreground"
                       )}
@@ -99,7 +98,8 @@ export const MobileDrawer = ({ isOpen, onClose, query, onQueryChange, categories
                   {categories.map((cat) => (
                     <Link
                       key={cat.id}
-                      to={`/category/${cat.slug}`}
+                      to="/category/$slug"
+                      params={{ slug: cat.slug }}
                       onClick={onClose}
                       className="rounded-md border border-transparent px-4 py-2.5 text-sm text-foreground/80 transition-colors hover:border-border hover:bg-muted hover:text-foreground"
                     >

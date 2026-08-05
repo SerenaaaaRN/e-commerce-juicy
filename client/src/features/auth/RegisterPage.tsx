@@ -1,22 +1,15 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { FieldDescription } from "@/components/ui/field"
-import { ROUTES } from "@/constants/paths"
 import type { RegisterFormValues } from "@/features/auth/types"
 import { customerApi } from "@/lib/api/customer"
-import { useCustomerAuthStore } from "@/stores/customer-auth-store"
+import { Link, useNavigate } from "@tanstack/react-router"
 import { useTransition } from "react"
-import { Link, Navigate, useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 import { RegisterForm } from "./components/RegisterForm"
 
 export const RegisterPage = () => {
   const navigate = useNavigate()
-  const { isAuthenticated } = useCustomerAuthStore()
   const [isPending, startTransition] = useTransition()
-
-  if (isAuthenticated) {
-    return <Navigate to={ROUTES.home} replace />
-  }
 
   const handleSubmit = (data: RegisterFormValues) => {
     startTransition(async () => {
@@ -30,7 +23,7 @@ export const RegisterPage = () => {
 
         if (res.success) {
           toast.success("Account created successfully! Please sign in.")
-          navigate(ROUTES.login)
+          navigate({ to: "/login" })
         } else {
           toast.error(res.message || "Failed to create account. Email may already be in use.")
         }
@@ -46,9 +39,7 @@ export const RegisterPage = () => {
         <div className="flex flex-col gap-6">
           <Card className="overflow-hidden border border-border/80 p-0 shadow-md">
             <CardContent className="grid p-0 md:grid-cols-2">
-              {/* Form Side */}
               <div className="flex flex-col justify-center p-6 text-left md:p-8">
-                {/* Header block */}
                 <header className="mb-4 flex flex-col items-center gap-2 text-center">
                   <span className="text-xs tracking-[0.15em] text-muted-foreground uppercase">Join the Atelier</span>
                   <h1 className="font-serif text-3xl text-foreground">Create your account</h1>
@@ -57,21 +48,18 @@ export const RegisterPage = () => {
                   </p>
                 </header>
 
-                {/* Form */}
                 <RegisterForm onSubmit={handleSubmit} isPending={isPending} />
 
-                {/* Redirect Link */}
                 <div className="mt-4 text-center">
                   <span className="text-xs text-muted-foreground">
                     Already have an account?{" "}
-                    <Link to={ROUTES.login} className="font-bold text-primary hover:underline">
+                    <Link to="/login" className="font-bold text-primary hover:underline">
                       Sign In
                     </Link>
                   </span>
                 </div>
               </div>
 
-              {/* Image Side */}
               <div className="relative hidden bg-muted md:block">
                 <img
                   src="/shop-hero-luxury-fashion-collection.jpg"
@@ -82,16 +70,15 @@ export const RegisterPage = () => {
             </CardContent>
           </Card>
 
-          {/* Footer Notice */}
           <FieldDescription className="px-6 text-center text-xs">
             By clicking continue, you agree to our{" "}
-            <Link to={ROUTES.terms} className="underline hover:text-primary">
+            <a href="#" className="underline hover:text-primary">
               Terms of Service
-            </Link>{" "}
+            </a>{" "}
             and{" "}
-            <Link to={ROUTES.privacy} className="underline hover:text-primary">
+            <a href="#" className="underline hover:text-primary">
               Privacy Policy
-            </Link>
+            </a>
             .
           </FieldDescription>
         </div>

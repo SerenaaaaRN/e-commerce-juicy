@@ -1,12 +1,11 @@
 import { Cancel01Icon, HeartAddIcon, Menu01Icon, SearchIcon, ShoppingBag01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
+import { Link, useRouterState } from "@tanstack/react-router"
 import { AnimatePresence, motion } from "motion/react"
 import { useEffect, useMemo, useRef, useState } from "react"
-import { Link, useLocation } from "react-router-dom"
 import { UserMenu } from "./UserMenu"
 
 import { Input } from "@/components/ui/input"
-import ROUTES from "@/constants/paths"
 import { useCartQuery } from "@/features/cart/hooks/useCartQueries"
 import { useCategoriesQuery } from "@/features/shop/hooks/useProductQueries"
 import { useSearchSync } from "@/hooks/useSearchSync"
@@ -17,9 +16,9 @@ import { MobileDrawer } from "./MobileDrawer"
 export const ICON_STROKE = 1.5
 
 const NAV_LINKS = [
-  { to: ROUTES.home, label: "Atelier" },
-  { to: ROUTES.shop, label: "Shop" },
-  { to: ROUTES.heritage, label: "Heritage" },
+  { to: "/", label: "Atelier" },
+  { to: "/shop", label: "Shop" },
+  { to: "/heritage", label: "Heritage" },
 ] as const
 
 const NavLink = ({
@@ -51,7 +50,7 @@ const NavLink = ({
 // --- Main Component ---
 
 export const Navbar = () => {
-  const location = useLocation()
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
   const { query, setQuery, submitSearch } = useSearchSync()
 
   // UI State
@@ -62,7 +61,7 @@ export const Navbar = () => {
   // Refs
   const searchInputRef = useRef<HTMLInputElement>(null)
   const searchContainerRef = useRef<HTMLDivElement>(null)
-  const prevPathnameRef = useRef(location.pathname)
+  const prevPathnameRef = useRef(pathname)
 
   // Data
   const { data: cart } = useCartQuery(useCustomerAuthStore((s) => s.isAuthenticated))
@@ -72,7 +71,7 @@ export const Navbar = () => {
   const rootCategories = useMemo(() => (categories ?? []).filter((c) => !c.parent_id), [categories])
 
   // Derived Styles
-  const isTransparentPage = ["/", ROUTES.shop, ROUTES.heritage].includes(location.pathname)
+  const isTransparentPage = ["/", "/shop", "/heritage"].includes(pathname)
   const scrolled = isScrolled || !isTransparentPage
 
   // Effects
@@ -83,11 +82,11 @@ export const Navbar = () => {
   }, [])
 
   useEffect(() => {
-    if (prevPathnameRef.current !== location.pathname) {
-      prevPathnameRef.current = location.pathname
+    if (prevPathnameRef.current !== pathname) {
+      prevPathnameRef.current = pathname
       setMobileMenuOpen(false)
     }
-  }, [location.pathname])
+  }, [pathname])
 
   useEffect(() => {
     if (isSearchOpen) searchInputRef.current?.focus()
@@ -139,13 +138,13 @@ export const Navbar = () => {
             {/* Desktop Nav */}
             <div className="hidden items-center gap-12 lg:flex">
               {NAV_LINKS.map((link) => (
-                <NavLink key={link.to} {...link} isActive={location.pathname === link.to} scrolled={scrolled} />
+                <NavLink key={link.to} {...link} isActive={pathname === link.to} scrolled={scrolled} />
               ))}
             </div>
 
             {/* Logo */}
             <Link
-              to={ROUTES.home}
+              to="/"
               className="absolute left-1/2 -translate-x-1/2 font-serif text-xl tracking-[0.25em] text-foreground uppercase transition-colors duration-500 lg:text-2xl"
             >
               JUICY
@@ -192,7 +191,7 @@ export const Navbar = () => {
 
               {/* Cart */}
               <Link
-                to={ROUTES.cart}
+                to="/cart"
                 className="relative hidden p-2 text-foreground transition-colors duration-500 lg:block"
               >
                 <HugeiconsIcon icon={ShoppingBag01Icon} className="h-5 w-5" strokeWidth={ICON_STROKE} />
@@ -204,7 +203,7 @@ export const Navbar = () => {
               </Link>
 
               {/* Wishlist */}
-              <Link to={ROUTES.wishlist} className="hidden p-2 text-foreground transition-colors duration-500 sm:block">
+              <Link to="/wishlist" className="hidden p-2 text-foreground transition-colors duration-500 sm:block">
                 <HugeiconsIcon icon={HeartAddIcon} className="h-5 w-5" strokeWidth={ICON_STROKE} />
               </Link>
 
@@ -228,10 +227,11 @@ export const Navbar = () => {
               {rootCategories.map((cat) => (
                 <Link
                   key={cat.id}
-                  to={`/category/${cat.slug}`}
+                  to="/category/$slug"
+                  params={{ slug: cat.slug }}
                   className={cn(
                     "rounded-sm px-3 py-1.5 text-[11px] tracking-wider whitespace-nowrap uppercase transition-colors duration-200",
-                    location.pathname === `/category/${cat.slug}`
+                    pathname === `/category/${cat.slug}`
                       ? "bg-primary/10 font-semibold text-primary"
                       : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                   )}

@@ -6,12 +6,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import ROUTES from "@/constants/paths"
+import { Link } from "@tanstack/react-router"
 import { cn } from "@/lib/utils"
 import useCustomerAuthStore from "@/stores/customer-auth-store"
 import { UserIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Link } from "react-router-dom"
 import { ICON_STROKE } from "./Navbar"
 
 const UserMenu = ({ scrolled }: { scrolled: boolean }) => {
@@ -39,12 +38,12 @@ const UserMenu = ({ scrolled }: { scrolled: boolean }) => {
           </div>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
-            <Link to={ROUTES.profile} className="w-full cursor-pointer">
+            <Link to="/profile" className="w-full cursor-pointer">
               Account Settings
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link to={ROUTES.orders} className="w-full cursor-pointer">
+            <Link to="/orders" className="w-full cursor-pointer">
               My Orders
             </Link>
           </DropdownMenuItem>
@@ -69,12 +68,12 @@ const UserMenu = ({ scrolled }: { scrolled: boolean }) => {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="mt-2 w-48">
         <DropdownMenuItem asChild>
-          <Link to={ROUTES.login} className="w-full cursor-pointer">
+          <Link to="/login" className="w-full cursor-pointer">
             Log In
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link to={ROUTES.register} className="w-full cursor-pointer">
+          <Link to="/register" className="w-full cursor-pointer">
             Register
           </Link>
         </DropdownMenuItem>

@@ -1,15 +1,14 @@
 import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
-import { routes, type RouteConfig } from "@/constants/routes"
 import { useCartQuery } from "@/features/cart/hooks/useCartQueries"
 import { useWishlistQuery } from "@/features/wishlist/hooks/useWishlistQueries"
 import { customerApi } from "@/lib/api"
 import { useCustomerAuthStore } from "@/stores/customer-auth-store"
-import { useEffect, type ReactNode } from "react"
-import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom"
+import { createRootRoute, Outlet, useRouterState } from "@tanstack/react-router"
+import { useEffect } from "react"
 
 const ScrollToTop = () => {
-  const { pathname } = useLocation()
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -18,19 +17,7 @@ const ScrollToTop = () => {
   return null
 }
 
-const renderRoutes = (routeList: RouteConfig[]): ReactNode =>
-  routeList.map((route, i) => {
-    if (route.index) {
-      return <Route key={`index-${i}`} index element={route.element} />
-    }
-    return (
-      <Route key={route.path ?? `group-${i}`} path={route.path} element={route.element}>
-        {route.children && renderRoutes(route.children)}
-      </Route>
-    )
-  })
-
-const AppContent = () => {
+const RootContent = () => {
   const isAuthenticated = useCustomerAuthStore((s) => s.isAuthenticated)
   const logout = useCustomerAuthStore((s) => s.logout)
 
@@ -55,22 +42,17 @@ const AppContent = () => {
 
   return (
     <div className="relative flex min-h-screen flex-col bg-background font-sans text-foreground antialiased selection:bg-primary/10 selection:text-primary">
-      <Routes>{renderRoutes(routes)}</Routes>
-
+      <Outlet />
       <Toaster />
     </div>
   )
 }
 
-export const App = () => {
-  return (
-    <BrowserRouter>
-      <TooltipProvider>
-        <ScrollToTop />
-        <AppContent />
-      </TooltipProvider>
-    </BrowserRouter>
-  )
-}
-
-export default App
+export const Route = createRootRoute({
+  component: () => (
+    <TooltipProvider>
+      <ScrollToTop />
+      <RootContent />
+    </TooltipProvider>
+  ),
+})

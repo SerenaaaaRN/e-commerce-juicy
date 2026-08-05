@@ -1,8 +1,7 @@
-import { ROUTES } from "@/constants/paths"
 import { ArrowRight01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { motion } from "motion/react"
-import { Link } from "react-router-dom"
+import { Link } from "@tanstack/react-router"
 
 const timeline = [
   {
@@ -299,7 +298,7 @@ export const HeritagePage = () => {
               Experience the culmination of our heritage in every piece we create.
             </p>
             <Link
-              to={ROUTES.shop}
+              to="/shop"
               className="group inline-flex items-center gap-3 bg-foreground px-8 py-4 text-sm tracking-[0.2em] text-background uppercase transition-all duration-300 hover:gap-5"
             >
               View Collection

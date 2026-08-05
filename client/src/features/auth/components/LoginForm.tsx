@@ -9,7 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { AppleIcon, GoogleIcon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { useForm } from "react-hook-form"
-import { Link } from "react-router-dom"
+import { Link } from "@tanstack/react-router"
 
 type LoginFormProps = {
   onSubmit: (data: LoginFormValues) => void

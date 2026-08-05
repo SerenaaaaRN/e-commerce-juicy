@@ -13,24 +13,22 @@ import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTi
 import { Separator } from "@/components/ui/separator"
 import { Spinner } from "@/components/ui/spinner"
 import { getOrderStatusColor, getOrderStatusLabel, getPaymentStatusLabel } from "@/constants/order-status"
-import { ROUTES } from "@/constants/paths"
 import { useConfirm } from "@/hooks/useConfirm"
 import { cn, formatDate, formatPrice } from "@/lib/utils"
 import { useCustomerAuthStore } from "@/stores/customer-auth-store"
+import { Link, Navigate, useParams } from "@tanstack/react-router"
 import { ShoppingBag01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { useEffect } from "react"
-import { Link, Navigate, useParams } from "react-router-dom"
 import { toast } from "sonner"
 import { OrderItemRow } from "./components/OrderItemRow"
 import { OrderStatusTimeline } from "./components/OrderStatusTimeline"
 import { useCancelOrderMutation, useCompleteOrderMutation, useOrderDetailQuery } from "./hooks/useOrderQueries"
 
 export const OrderTrackingPage = () => {
-  const { orderNumber } = useParams<{ orderNumber: string }>()
+  const { orderNumber } = useParams({ from: "/_public/_auth/orders/$orderNumber" })
   const { isAuthenticated } = useCustomerAuthStore()
 
-  // Queries & Mutations
   const { data: order = null, isLoading: loading, error } = useOrderDetailQuery(orderNumber)
   const completeOrderMutation = useCompleteOrderMutation()
   const cancelOrderMutation = useCancelOrderMutation()
@@ -75,9 +73,8 @@ export const OrderTrackingPage = () => {
   const completing = completeOrderMutation.isPending
   const cancelling = cancelOrderMutation.isPending
 
-  // Guest restriction redirect
   if (!isAuthenticated) {
-    return <Navigate to={ROUTES.login} replace />
+    return <Navigate to="/login" replace />
   }
 
   if (loading) {
@@ -111,7 +108,7 @@ export const OrderTrackingPage = () => {
           </EmptyHeader>
           <EmptyContent className="mt-6">
             <Button asChild variant="outline">
-              <Link to={ROUTES.shop}>Back to Shop</Link>
+              <Link to="/shop">Back to Shop</Link>
             </Button>
           </EmptyContent>
         </Empty>
@@ -130,14 +127,13 @@ export const OrderTrackingPage = () => {
         <Breadcrumb className="mb-8 text-left text-xs font-bold uppercase">
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink to={ROUTES.home}>Home</BreadcrumbLink>
+              <BreadcrumbLink to="/">Home</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbPage className="font-bold text-primary">Order #{orderNumber}</BreadcrumbPage>
           </BreadcrumbList>
         </Breadcrumb>
 
-        {/* Order Header Card */}
         <Card className="mb-8 border border-border/80 shadow-md">
           <CardContent className="flex flex-col justify-between gap-6 p-6 text-left md:flex-row md:items-center md:p-8">
             <div className="flex flex-col gap-1">
@@ -169,18 +165,14 @@ export const OrderTrackingPage = () => {
           </CardContent>
         </Card>
 
-        {/* Details Layout split grid */}
         <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
-          {/* Main Info Tracking Column */}
           <div className="flex w-full flex-col gap-8 lg:col-span-8">
-            {/* Visual Milestones timeline */}
             <Card className="border border-border/80 shadow-md">
               <CardContent className="p-6">
                 <OrderStatusTimeline status={order.status} />
               </CardContent>
             </Card>
 
-            {/* List of Purchased Items */}
             <Card className="border border-border/80 shadow-md">
               <CardHeader className="pb-0">
                 <CardTitle className="text-left text-sm font-semibold tracking-tight text-foreground uppercase">
@@ -202,9 +194,7 @@ export const OrderTrackingPage = () => {
             </Card>
           </div>
 
-          {/* Delivery & Shipping Info Sidebar Column */}
           <div className="flex w-full flex-col gap-6 text-left lg:col-span-4">
-            {/* Delivery address card */}
             <Card className="border border-border/80 shadow-md">
               <CardHeader className="pb-0">
                 <CardTitle className="text-sm font-semibold tracking-tight text-foreground uppercase">
@@ -231,7 +221,6 @@ export const OrderTrackingPage = () => {
               </CardContent>
             </Card>
 
-            {/* Financial totals Card */}
             <Card className="border border-border/80 shadow-md">
               <CardHeader className="pb-0">
                 <CardTitle className="text-sm font-semibold tracking-tight text-foreground uppercase">
@@ -260,7 +249,6 @@ export const OrderTrackingPage = () => {
             </Card>
 
             <div className="flex flex-col gap-2">
-              {/* Confirm received action */}
               {order.status === "shipped" ? (
                 <Button size="lg" onClick={handleCompleteOrder} disabled={completing}>
                   {completing ? (
@@ -274,7 +262,6 @@ export const OrderTrackingPage = () => {
                 </Button>
               ) : null}
 
-              {/* Cancel order action */}
               {(order.status === "pending" || order.status === "confirmed") && (
                 <Button variant="destructive" size="lg" onClick={handleCancelOrder} disabled={cancelling}>
                   {cancelling && <Spinner data-icon="inline-start" />}
@@ -282,7 +269,7 @@ export const OrderTrackingPage = () => {
                 </Button>
               )}
               <Button asChild variant="outline" size="lg">
-                <Link to={ROUTES.shop}>Return to Shop</Link>
+                <Link to="/shop">Return to Shop</Link>
               </Button>
             </div>
 
